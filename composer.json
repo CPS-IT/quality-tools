@@ -1,0 +1,9 @@
+{
+	"name": "cpsit/quality-tools",
+	"description": "A collection of tools for quality assurance in TYPO3 projects.",
+	"homepage": "https://github.com/CPS-IT/quality-tools",
+	"license": "GPL-3.0-or-later",
+	"require": {
+		"typo3/cms-core": "^13.4"
+	}
+}
