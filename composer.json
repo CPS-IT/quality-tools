@@ -1,9 +1,31 @@
 {
 	"name": "cpsit/quality-tools",
 	"description": "A collection of tools for quality assurance in TYPO3 projects.",
-	"homepage": "https://github.com/CPS-IT/quality-tools",
 	"license": "GPL-3.0-or-later",
+	"homepage": "https://github.com/CPS-IT/quality-tools",
 	"require": {
-		"typo3/cms-core": "^13.4"
+		"a9f/typo3-fractor": "~0.5.1",
+		"armin/editorconfig-cli": "^2.0",
+		"codeception/codeception": "^5.0.6",
+		"codeception/module-asserts": "^3.0",
+		"codeception/module-db": "^3.1",
+		"codeception/module-phpbrowser": "^3.0",
+		"codeception/module-webdriver": "^3.2",
+		"ergebnis/composer-normalize": "^2.45",
+		"helmich/typo3-typoscript-lint": "^3.3",
+		"phpstan/phpstan": "^2.1",
+		"phpunit/php-code-coverage": "^11.0",
+		"ssch/typo3-rector": "^3.5",
+		"typo3/cms-core": "^13.4",
+		"typo3/coding-standards": "^0.8.0",
+		"typo3/testing-framework": "^7.1 || ^8.2 || ^9.2"
+	},
+	"config": {
+		"allow-plugins": {
+			"a9f/fractor-extension-installer": true,
+			"ergebnis/composer-normalize": true,
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		}
 	}
 }
