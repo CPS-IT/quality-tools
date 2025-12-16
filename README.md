@@ -27,6 +27,7 @@ composer require --dev cpsit/quality-tools
 ## Table of Contents
 
 - [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
+- [PHP CS Fixer](docs/PhpCsFixer.md) - PHP coding standards fixer configuration
 - [PHPStan](docs/Phpstan.md) - Static analysis tool configuration
 - [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
 - [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
