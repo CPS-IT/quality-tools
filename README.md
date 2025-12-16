@@ -28,6 +28,7 @@ composer require --dev cpsit/quality-tools
 
 - [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
 - [PHPStan](docs/Phpstan.md) - Static analysis tool configuration
+- [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
 - [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
 
 
