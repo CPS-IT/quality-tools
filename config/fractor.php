@@ -9,10 +9,12 @@ use a9f\FractorTypoScript\Configuration\TypoScriptProcessorOption;
 use a9f\Typo3Fractor\Set\Typo3LevelSetList;
 use Helmich\TypoScriptParser\Parser\Printer\PrettyPrinterConfiguration;
 
+$installPath = realpath(\Composer\InstalledVersions::getRootPackage()['install_path']);
+
 return FractorConfiguration::configure()
     ->withPaths([
-        __DIR__ . '/config/sites/',
-        __DIR__ . '/packages/',
+        $installPath . '/config/sites/',
+        $installPath . '/packages/',
     ])
     ->withSets([
         Typo3LevelSetList::UP_TO_TYPO3_13,
