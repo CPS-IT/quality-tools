@@ -1,6 +1,6 @@
 paths:
-  - packages/*/Configuration/TypoScript
-  - packages/*/Configuration/TSconfig
+  - packages/**/Configuration/TypoScript
+  - packages/**/Configuration/TSconfig
 filePatterns:
   - "*.typoscript"
   - "*.tsconfig"
