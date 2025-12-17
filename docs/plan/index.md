@@ -12,13 +12,13 @@ This directory contains the complete planning and implementation documentation f
 
 The following features represent Phase 1 of the simplified MVP implementation:
 
-- **[001 - Console Application](feature/done/001-console-application.md)** *(2-3 hours)*  
+- **[001 - Console Application](feature/done/001-console-application.md)** *(2-3 hours)*
   Main Symfony Console application with basic project root detection
 
-- **[002 - Base Command](feature/done/002-base-command.md)** *(2-3 hours)*  
+- **[002 - Base Command](feature/done/002-base-command.md)** *(2-3 hours)*
   Single base command class with shared functionality for all tools
 
-- **[003 - Tool Commands](feature/003-tool-commands.md)** *(4-6 hours)*  
+- **[003 - Tool Commands](feature/done/003-tool-commands.md)** *(4-6 hours)*
   Individual command implementations for all quality tools
 
 **Total Core Implementation:** 8-12 hours
@@ -40,7 +40,7 @@ The 'qt' tool transforms verbose commands into simple, user-friendly alternative
 # Before
 app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php --dry-run
 
-# After  
+# After
 qt lint:rector
 ```
 

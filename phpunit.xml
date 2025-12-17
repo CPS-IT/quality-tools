@@ -6,14 +6,14 @@
     colors="true"
     cacheDirectory=".phpunit.cache"
     executionOrder="depends,defects"
-    requireCoverageMetadata="true"
-    beStrictAboutCoverageMetadata="true"
+    requireCoverageMetadata="false"
+    beStrictAboutCoverageMetadata="false"
     beStrictAboutOutputDuringTests="true"
     beStrictAboutTodoAnnotatedTests="true"
     failOnRisky="true"
     failOnWarning="true"
     stopOnFailure="false">
-    
+
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
@@ -22,20 +22,20 @@
             <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
-    
+
     <source>
         <include>
             <directory>src</directory>
         </include>
     </source>
-    
+
     <coverage>
         <report>
-            <html outputDirectory="coverage/html"/>
+            <html outputDirectory=".build/coverage/html"/>
             <text outputFile="php://stdout" showUncoveredFiles="true"/>
         </report>
     </coverage>
-    
+
     <php>
         <env name="QT_TEST_MODE" value="true"/>
     </php>

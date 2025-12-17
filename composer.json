@@ -43,7 +43,7 @@
 		"test": "vendor/bin/phpunit",
 		"test:unit": "vendor/bin/phpunit --testsuite Unit",
 		"test:integration": "vendor/bin/phpunit --testsuite Integration",
-		"test:coverage": "vendor/bin/phpunit --coverage-html coverage/html --coverage-text",
-		"test:coverage-clover": "vendor/bin/phpunit --coverage-clover coverage/clover.xml"
+		"test:coverage": "vendor/bin/phpunit --coverage-html .build/coverage/html --coverage-text",
+		"test:coverage-clover": "vendor/bin/phpunit --coverage-clover .build/coverage/clover.xml"
 	}
 }

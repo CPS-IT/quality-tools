@@ -18,10 +18,10 @@ final class ExecutableTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Store original working directory
         $this->originalCwd = getcwd();
-        
+
         // Store original environment variables
         $this->originalEnv = [
             'QT_PROJECT_ROOT' => getenv('QT_PROJECT_ROOT'),
@@ -33,7 +33,7 @@ final class ExecutableTest extends TestCase
     {
         // Restore original working directory
         chdir($this->originalCwd);
-        
+
         // Restore environment variables
         foreach ($this->originalEnv as $key => $value) {
             if ($value === false) {
@@ -42,7 +42,7 @@ final class ExecutableTest extends TestCase
                 putenv($key . '=' . $value);
             }
         }
-        
+
         parent::tearDown();
     }
 
@@ -111,14 +111,14 @@ final class ExecutableTest extends TestCase
         // Create isolated non-TYPO3 project directory
         $tempDir = sys_get_temp_dir() . '/qt_integration_test_' . uniqid();
         mkdir($tempDir, 0777, true);
-        
+
         // Create non-TYPO3 composer.json
         $composerContent = json_encode([
             'name' => 'test/non-typo3',
             'require' => ['symfony/console' => '^7.0']
         ]);
         file_put_contents($tempDir . '/composer.json', $composerContent);
-        
+
         try {
             // Test that basic commands work even without TYPO3 project
             $process = new Process([
@@ -145,7 +145,7 @@ final class ExecutableTest extends TestCase
         // Arrange
         $validProjectPath = $this->getFixturePath('valid-typo3-project');
         chdir($this->getFixturePath('non-typo3-project'));
-        
+
         $process = new Process([
             'php',
             $this->getExecutablePath(),
@@ -188,7 +188,7 @@ final class ExecutableTest extends TestCase
     {
         // This test verifies that the executable can find the correct autoloader
         // in different installation scenarios
-        
+
         // Arrange - Test from different working directories
         $testPaths = [
             $this->getFixturePath('valid-typo3-project'),
@@ -209,7 +209,7 @@ final class ExecutableTest extends TestCase
             $process->run();
 
             // Assert
-            $this->assertSame(0, $process->getExitCode(), 
+            $this->assertSame(0, $process->getExitCode(),
                 "Executable should work from {$testPath}"
             );
             $this->assertStringContainsString('1.0.0-dev', $process->getOutput());
@@ -258,14 +258,14 @@ final class ExecutableTest extends TestCase
         // Arrange - Test with invalid project (should return 1)
         $tempDir = sys_get_temp_dir() . '/qt_test_exit_' . uniqid();
         mkdir($tempDir, 0777, true);
-        
+
         // Create non-TYPO3 composer.json
         $composerContent = json_encode([
             'name' => 'test/exit-test',
             'require' => ['symfony/console' => '^7.0']
         ]);
         file_put_contents($tempDir . '/composer.json', $composerContent);
-        
+
         $failProcess = new Process([
             'php',
             $this->getExecutablePath(),

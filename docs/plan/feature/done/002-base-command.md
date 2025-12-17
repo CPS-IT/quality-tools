@@ -1,8 +1,8 @@
 # Feature 002: Base Command
 
-**Status:** Completed  
-**Estimated Time:** 2-3 hours  
-**Layer:** MVP Core  
+**Status:** Completed
+**Estimated Time:** 2-3 hours
+**Layer:** MVP Core
 **Dependencies:** 001-Console Application (Completed)
 
 ## Description
@@ -89,7 +89,7 @@ Safe command execution:
 
 Standard options for all commands:
 - --verbose|-v: Enable verbose output
-- --quiet|-q: Reduce output verbosity  
+- --quiet|-q: Reduce output verbosity
 - --config: Override default configuration file
 - --path: Specify custom target paths (when applicable)
 
@@ -136,7 +136,7 @@ class RectorLintCommand extends BaseCommand
     {
         $configPath = $this->resolveConfigPath('rector.php', $input->getOption('config'));
         $targetPath = $input->getOption('path') ?: $this->getProjectRoot();
-        
+
         return $this->executeProcess([
             $this->getProjectRoot() . '/vendor/bin/rector',
             '-c', $configPath,
@@ -156,7 +156,7 @@ PROJECT_ROOT/vendor/cpsit/quality-tools/config/{tool}.{ext}
 
 Examples:
 - Rector: `config/rector.php`
-- PHPStan: `config/phpstan.neon`  
+- PHPStan: `config/phpstan.neon`
 - PHP CS Fixer: `config/php-cs-fixer.php`
 - Fractor: `config/fractor.php`
 - TypoScript Lint: `config/typoscript-lint.yml`
@@ -190,7 +190,7 @@ Common error scenarios:
 ## Testing Strategy
 
 - Unit tests for configuration path resolution
-- Mock testing for process execution scenarios  
+- Mock testing for process execution scenarios
 - Integration tests with real tool binaries
 - Error handling and edge case testing
 - Option parsing and validation testing

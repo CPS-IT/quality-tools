@@ -15,11 +15,11 @@ final class TestHelper
     public static function createTempDirectory(string $prefix = 'qt_test_'): string
     {
         $tempDir = sys_get_temp_dir() . '/' . $prefix . uniqid();
-        
+
         if (!mkdir($tempDir, 0777, true)) {
             throw new \RuntimeException("Failed to create temp directory: {$tempDir}");
         }
-        
+
         return $tempDir;
     }
 
@@ -57,7 +57,7 @@ final class TestHelper
                 unlink($file->getPathname());
             }
         }
-        
+
         rmdir($directory);
     }
 
@@ -68,11 +68,11 @@ final class TestHelper
     {
         $composerFile = $directory . '/composer.json';
         $jsonContent = json_encode($content, JSON_PRETTY_PRINT);
-        
+
         if (file_put_contents($composerFile, $jsonContent) === false) {
             throw new \RuntimeException("Failed to create composer.json in {$directory}");
         }
-        
+
         return $composerFile;
     }
 
@@ -133,15 +133,15 @@ final class TestHelper
     {
         $paths = [$basePath];
         $currentPath = $basePath;
-        
+
         mkdir($currentPath, 0777, true);
-        
+
         for ($i = 1; $i <= $depth; $i++) {
             $currentPath .= '/level' . $i;
             mkdir($currentPath, 0777, true);
             $paths[] = $currentPath;
         }
-        
+
         return $paths;
     }
 
@@ -181,13 +181,13 @@ final class TestHelper
     public static function withEnvironment(array $variables, callable $callback): mixed
     {
         $originalValues = [];
-        
+
         // Backup original values
         foreach ($variables as $key => $value) {
             $originalValues[$key] = getenv($key);
             putenv($key . '=' . $value);
         }
-        
+
         try {
             return $callback();
         } finally {

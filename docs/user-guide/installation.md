@@ -7,7 +7,7 @@ This guide covers the installation and setup of CPSIT Quality Tools for your TYP
 Before installing CPSIT Quality Tools, ensure your system meets these requirements:
 
 * **PHP**: 8.3 or higher
-* **TYPO3**: 13.4 or higher  
+* **TYPO3**: 13.4 or higher
 * **Composer**: Latest version recommended
 * **Operating System**: Linux, macOS, or Windows with proper PHP CLI support
 
@@ -71,7 +71,7 @@ The tool will be available at different paths depending on your installation met
 Ensure your TYPO3 project has a valid `composer.json` file with TYPO3 dependencies. The tool detects TYPO3 projects by looking for these packages:
 
 * `typo3/cms-core`
-* `typo3/cms`  
+* `typo3/cms`
 * `typo3/minimal`
 
 ### 2. Directory Structure
@@ -102,7 +102,7 @@ chmod +x vendor/bin/qt
 CPSIT Quality Tools automatically installs these tools and their configurations:
 
 * **Rector** - PHP code modernization and automated refactoring
-* **Fractor** - TYPO3 TypoScript modernization  
+* **Fractor** - TYPO3 TypoScript modernization
 * **PHPStan** - Static analysis for PHP code quality
 * **PHP CS Fixer** - Code style fixing based on TYPO3 standards
 * **TypoScript Lint** - Linting for TYPO3 TypoScript files
@@ -127,6 +127,6 @@ To remove CPSIT Quality Tools:
 # Local installation
 composer remove --dev cpsit/quality-tools
 
-# Global installation  
+# Global installation
 composer global remove cpsit/quality-tools
 ```

@@ -15,19 +15,19 @@ final class QualityToolsApplication extends Application
 {
     private const APP_NAME = 'CPSIT Quality Tools';
     private const APP_VERSION = '1.0.0-dev';
-    
+
     private ?string $projectRoot = null;
 
     public function __construct()
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
-        
+
         try {
             $this->projectRoot = $this->findProjectRoot();
         } catch (RuntimeException $e) {
             // Project root detection will be handled per-command if needed
         }
-        
+
         $this->registerCommands();
     }
 
@@ -41,7 +41,7 @@ final class QualityToolsApplication extends Application
         if ($this->projectRoot === null) {
             $this->projectRoot = $this->findProjectRoot();
         }
-        
+
         return $this->projectRoot;
     }
 
@@ -61,22 +61,22 @@ final class QualityToolsApplication extends Application
         // Start from current directory and traverse upward
         $searchDir = $currentDir;
         $maxLevels = 10; // Prevent infinite traversal
-        
+
         for ($i = 0; $i < $maxLevels; $i++) {
             $composerFile = $searchDir . '/composer.json';
-            
+
             if (file_exists($composerFile)) {
                 if ($this->isTypo3Project($composerFile)) {
                     return $searchDir;
                 }
             }
-            
+
             $parentDir = dirname($searchDir);
             if ($parentDir === $searchDir) {
                 // Reached filesystem root
                 break;
             }
-            
+
             $searchDir = $parentDir;
         }
 
@@ -132,7 +132,7 @@ final class QualityToolsApplication extends Application
     private function registerCommands(): void
     {
         $commandDir = __DIR__ . '/Command';
-        
+
         if (!is_dir($commandDir)) {
             return; // No commands directory yet
         }
@@ -165,7 +165,7 @@ final class QualityToolsApplication extends Application
     {
         $pathWithoutExtension = str_replace('.php', '', $relativePath);
         $classPath = str_replace('/', '\\', $pathWithoutExtension);
-        
+
         return 'Cpsit\\QualityTools\\Console\\Command\\' . $classPath;
     }
 
@@ -177,9 +177,9 @@ final class QualityToolsApplication extends Application
 
         try {
             $reflection = new ReflectionClass($className);
-            
-            return $reflection->isSubclassOf(Command::class) && 
-                   !$reflection->isAbstract() && 
+
+            return $reflection->isSubclassOf(Command::class) &&
+                   !$reflection->isAbstract() &&
                    $reflection->isInstantiable();
         } catch (\Throwable $e) {
             return false;

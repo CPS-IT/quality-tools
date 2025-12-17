@@ -1,8 +1,8 @@
 # Feature 003: Tool Commands
 
-**Status:** Not Started  
-**Estimated Time:** 4-6 hours  
-**Layer:** MVP Core  
+**Status:** Completed
+**Estimated Time:** 4-6 hours
+**Layer:** MVP Core
 **Dependencies:** 001-Console Application, 002-Base Command
 
 ## Description
@@ -24,46 +24,46 @@ qt lint:rector
 ## Goals
 
 - Transform all existing tool commands into simple 'qt' equivalents
-- Maintain 100% compatibility with existing tool functionality  
+- Maintain 100% compatibility with existing tool functionality
 - Provide both 'lint' (dry-run) and 'fix' (apply changes) modes where applicable
 - Keep command implementation minimal and focused
 - Ensure consistent behavior across all tool commands
 
 ## Tasks
 
-- [ ] **Rector Commands**
-  - [ ] Create `RectorLintCommand.php` for `qt lint:rector` (dry-run mode)
-  - [ ] Create `RectorFixCommand.php` for `qt fix:rector` (apply changes)
-  - [ ] Support custom path specification and pass-through options
-- [ ] **Fractor Commands**  
-  - [ ] Create `FractorLintCommand.php` for `qt lint:fractor` (dry-run mode)
-  - [ ] Create `FractorFixCommand.php` for `qt fix:fractor` (apply changes)
-  - [ ] Handle TypoScript-specific configuration and paths
-- [ ] **PHPStan Command**
-  - [ ] Create `PhpStanCommand.php` for `qt lint:phpstan` (analysis only)
-  - [ ] Support custom analysis level and path specification
-  - [ ] Handle memory limit and performance options
-- [ ] **PHP CS Fixer Commands**
-  - [ ] Create `PhpCsFixerLintCommand.php` for `qt lint:php-cs-fixer` (dry-run)
-  - [ ] Create `PhpCsFixerFixCommand.php` for `qt fix:php-cs-fixer` (apply fixes)
-  - [ ] Support custom rule sets and path targeting
-- [ ] **TypoScript Lint Command**
-  - [ ] Create `TypoScriptLintCommand.php` for `qt lint:typoscript`
-  - [ ] Handle TypoScript file discovery and validation
-  - [ ] Support custom path specification for TypoScript files
-- [ ] **Composer Commands**
-  - [ ] Create `ComposerLintCommand.php` for `qt lint:composer` (validate)
-  - [ ] Create `ComposerFixCommand.php` for `qt fix:composer` (normalize)
-  - [ ] Handle composer.json validation and normalization
+- [x] **Rector Commands**
+  - [x] Create `RectorLintCommand.php` for `qt lint:rector` (dry-run mode)
+  - [x] Create `RectorFixCommand.php` for `qt fix:rector` (apply changes)
+  - [x] Support custom path specification and pass-through options
+- [x] **Fractor Commands**
+  - [x] Create `FractorLintCommand.php` for `qt lint:fractor` (dry-run mode)
+  - [x] Create `FractorFixCommand.php` for `qt fix:fractor` (apply changes)
+  - [x] Handle TypoScript-specific configuration and paths
+- [x] **PHPStan Command**
+  - [x] Create `PhpStanCommand.php` for `qt lint:phpstan` (analysis only)
+  - [x] Support custom analysis level and path specification
+  - [x] Handle memory limit and performance options
+- [x] **PHP CS Fixer Commands**
+  - [x] Create `PhpCsFixerLintCommand.php` for `qt lint:php-cs-fixer` (dry-run)
+  - [x] Create `PhpCsFixerFixCommand.php` for `qt fix:php-cs-fixer` (apply fixes)
+  - [x] Support custom rule sets and path targeting
+- [x] **TypoScript Lint Command**
+  - [x] Create `TypoScriptLintCommand.php` for `qt lint:typoscript`
+  - [x] Handle TypoScript file discovery and validation
+  - [x] Support custom path specification for TypoScript files
+- [x] **Composer Commands**
+  - [x] Create `ComposerLintCommand.php` for `qt lint:composer` (validate)
+  - [x] Create `ComposerFixCommand.php` for `qt fix:composer` (normalize)
+  - [x] Handle composer.json validation and normalization
 
 ## Success Criteria
 
-- [ ] All 10 tool commands are implemented and working
-- [ ] Commands properly forward options to underlying tools
-- [ ] Configuration file resolution works correctly for each tool
-- [ ] Process execution handles success, failure, and timeout scenarios
-- [ ] Output formatting preserves tool-specific formatting and colors
-- [ ] Exit codes are properly forwarded from underlying tools
+- [x] All 10 tool commands are implemented and working
+- [x] Commands properly forward options to underlying tools
+- [x] Configuration file resolution works correctly for each tool
+- [x] Process execution handles success, failure, and timeout scenarios
+- [x] Output formatting preserves tool-specific formatting and colors
+- [x] Exit codes are properly forwarded from underlying tools
 
 ## Technical Requirements
 
@@ -85,7 +85,7 @@ class ToolCommand extends BaseCommand
     {
         $configPath = $this->resolveConfigPath('config-file.ext', $input->getOption('config'));
         $targetPath = $input->getOption('path') ?: $this->getProjectRoot();
-        
+
         return $this->executeProcess([
             $this->getProjectRoot() . '/vendor/bin/tool-binary',
             '--config=' . $configPath,
@@ -98,14 +98,14 @@ class ToolCommand extends BaseCommand
 ### Tool-Specific Requirements
 
 **Rector Commands:**
-- Binary: `vendor/bin/rector`  
+- Binary: `vendor/bin/rector`
 - Config: `config/rector.php`
 - Lint: Add `--dry-run` flag
 - Fix: No additional flags
 
 **Fractor Commands:**
 - Binary: `vendor/bin/fractor`
-- Config: `config/fractor.php`  
+- Config: `config/fractor.php`
 - Command: `process` subcommand
 - Lint: Add `--dry-run` flag
 - Fix: No additional flags
@@ -128,7 +128,7 @@ class ToolCommand extends BaseCommand
 - Config: `config/typoscript-lint.yml`
 - Default paths: Auto-discover TypoScript files
 
-**Composer Commands:**  
+**Composer Commands:**
 - Binary: `vendor/bin/composer-normalize`
 - No config file required
 - Lint: Add `--dry-run` flag
@@ -140,7 +140,7 @@ class ToolCommand extends BaseCommand
 src/Console/Command/
 ├── BaseCommand.php                   # Base functionality
 ├── RectorLintCommand.php            # qt lint:rector
-├── RectorFixCommand.php             # qt fix:rector  
+├── RectorFixCommand.php             # qt fix:rector
 ├── FractorLintCommand.php           # qt lint:fractor
 ├── FractorFixCommand.php            # qt fix:fractor
 ├── PhpStanCommand.php               # qt lint:phpstan
@@ -163,14 +163,14 @@ src/Console/Command/
 2. Add support for common PHPStan options
 3. Test with existing phpstan configuration
 
-### Step 3: PHP CS Fixer Commands (1 hour)  
+### Step 3: PHP CS Fixer Commands (1 hour)
 1. Implement PhpCsFixerLintCommand with dry-run
 2. Implement PhpCsFixerFixCommand for applying fixes
 3. Test with existing php-cs-fixer configuration
 
 ### Step 4: Fractor Commands (1 hour)
 1. Implement FractorLintCommand with dry-run mode
-2. Implement FractorFixCommand for applying changes  
+2. Implement FractorFixCommand for applying changes
 3. Handle TypoScript-specific requirements
 
 ### Step 5: Remaining Commands (1-2 hours)
@@ -245,7 +245,7 @@ All dependencies inherited from BaseCommand:
 
 - Batch commands: `qt lint:all`, `qt fix:all`
 - Interactive mode for confirmation prompts
-- Progress reporting for long-running operations  
+- Progress reporting for long-running operations
 - Custom tool configuration via project-specific settings
 - Plugin system for additional tool integration
 

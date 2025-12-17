@@ -7,6 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Composer package: `cpsit/quality-tools`
 - Targets PHP 8.3+ and TYPO3 v13.4
 - Collection of preconfigured quality assurance tools for TYPO3 projects
+- **Complete CLI interface implemented** - Use `vendor/bin/qt` commands as shortcuts
+- **Status: Completed MVP** - All 10 tool commands implemented and tested (96.91% coverage)
 
 ## Architecture
 This package provides standardized configurations for:
@@ -28,6 +30,29 @@ All tools are preconfigured in the `config/` directory:
 - `typoscript-lint.yml` - TypoScript linting rules with 2-space indentation
 
 ## Tool Usage Commands
+
+**CLI Commands (Recommended):**
+Use the simple `qt` command shortcuts:
+```bash
+# Lint commands (analysis only)
+vendor/bin/qt lint:rector          # Rector dry-run analysis
+vendor/bin/qt lint:phpstan         # PHPStan static analysis
+vendor/bin/qt lint:php-cs-fixer    # PHP CS Fixer analysis
+vendor/bin/qt lint:fractor         # Fractor TypoScript analysis
+vendor/bin/qt lint:typoscript      # TypoScript Lint validation
+vendor/bin/qt lint:composer        # Composer.json validation
+
+# Fix commands (apply changes)
+vendor/bin/qt fix:rector           # Apply Rector fixes
+vendor/bin/qt fix:php-cs-fixer     # Apply PHP CS Fixer fixes
+vendor/bin/qt fix:fractor          # Apply Fractor fixes
+vendor/bin/qt fix:composer         # Normalize composer.json
+
+# All commands support --help, --config, --path, and --verbose options
+vendor/bin/qt lint:phpstan --help
+```
+
+**Direct Tool Access (Alternative):**
 These commands should be run from the TYPO3 project root (not this package directory):
 
 ### Rector (PHP Code Modernization)
@@ -41,7 +66,7 @@ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php
 
 ### Fractor (TypoScript Modernization)
 ```bash
-# Dry run to see proposed changes  
+# Dry run to see proposed changes
 app/vendor/bin/fractor process --dry-run -c app/vendor/cpsit/quality-tools/config/fractor.php
 
 # Apply changes

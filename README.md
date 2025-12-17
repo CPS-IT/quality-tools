@@ -1,7 +1,13 @@
 CPSIT Quality Tools
 ===================
 
-A collection of preconfigured quality assurance tools for TYPO3 projects, featuring a simple command-line interface that transforms complex tool commands into user-friendly shortcuts.
+A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
+
+## Status: Completed MVP
+
+**Version:** 1.0.0-dev
+**Test Coverage:** 96.91% (227 tests, 720 assertions)
+**All 10 tool commands fully implemented and tested**
 
 ## Installation
 
@@ -23,10 +29,74 @@ composer require --dev cpsit/quality-tools
 | [ssch/typo3-rector][typo3-rector]                 | TYPO3-specific automated code upgrades and refactoring |
 | [typo3/coding-standards][coding-standards]        | TYPO3 coding standards and code style tools            |
 
+## Quick Start
+
+### CLI Commands (Recommended)
+After installation, use the simple `qt` command shortcuts:
+
+```bash
+# Lint commands (analysis only)
+vendor/bin/qt lint:rector          # Rector dry-run analysis
+vendor/bin/qt lint:phpstan         # PHPStan static analysis
+vendor/bin/qt lint:php-cs-fixer    # PHP CS Fixer analysis
+vendor/bin/qt lint:fractor         # Fractor TypoScript analysis
+vendor/bin/qt lint:typoscript      # TypoScript Lint validation
+vendor/bin/qt lint:composer        # Composer.json validation
+
+# Fix commands (apply changes)
+vendor/bin/qt fix:rector           # Apply Rector fixes
+vendor/bin/qt fix:php-cs-fixer     # Apply PHP CS Fixer fixes
+vendor/bin/qt fix:fractor          # Apply Fractor fixes
+vendor/bin/qt fix:composer         # Normalize composer.json
+
+# All commands support --help for options
+vendor/bin/qt lint:phpstan --help
+```
+
+### Direct Tool Access (Alternative)
+You can also run tools directly with full configuration paths:
+
+```bash
+# Rector example
+app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php --dry-run
+
+# PHPStan example
+app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.neon
+```
+
+## Key Features
+
+- **Automatic TYPO3 Project Detection**: Traverses up to 10 directory levels to find your TYPO3 project root
+- **Configuration Path Resolution**: Automatically locates preconfigured tool configurations with custom override support (`--config` option)
+- **Flexible Target Specification**: Specify custom paths for analysis (`--path` option)
+- **Comprehensive Error Handling**: Proper exit codes and detailed error messages
+- **Verbose Debug Output**: `--verbose` flag for troubleshooting
+- **Extensive Testing**: 96.91% line coverage with 227 tests and 720 assertions
+
+## All Available Commands
+
+### Lint Commands (Analysis Only)
+| Command | Tool | Description |
+|---------|------|-------------|
+| `qt lint:rector` | Rector | Analyze code for modernization opportunities |
+| `qt lint:phpstan` | PHPStan | Static analysis with configurable levels (`--level`, `--memory-limit`) |
+| `qt lint:php-cs-fixer` | PHP CS Fixer | Check coding standards compliance |
+| `qt lint:fractor` | Fractor | Analyze TypoScript for modernization |
+| `qt lint:typoscript` | TypoScript Lint | Validate TypoScript syntax and structure |
+| `qt lint:composer` | Composer | Validate composer.json structure |
+
+### Fix Commands (Apply Changes)
+| Command | Tool | Description |
+|---------|------|-------------|
+| `qt fix:rector` | Rector | Apply automated code modernization |
+| `qt fix:php-cs-fixer` | PHP CS Fixer | Fix coding standards violations |
+| `qt fix:fractor` | Fractor | Apply TypoScript modernization |
+| `qt fix:composer` | Composer | Normalize composer.json formatting |
+
 ## Table of Contents
 
 ### User Guide
-- [User Guide](docs/user-guide/) - Complete guide for installing and using the CLI tool
+- [User Guide](docs/user-guide/index.md) - Complete guide for installing and using the CLI tool
 
 ### Tool Configuration
 - [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
@@ -34,9 +104,6 @@ composer require --dev cpsit/quality-tools
 - [PHPStan](docs/Phpstan.md) - Static analysis tool configuration
 - [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
 - [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
-
-### Project Planning
-- [Planning Documentation](docs/plan/) - MVP implementation roadmap and feature breakdown
 
 [typo3-fractor]: https://packagist.org/packages/a9f/typo3-fractor
 [editorconfig-cli]: https://packagist.org/packages/armin/editorconfig-cli

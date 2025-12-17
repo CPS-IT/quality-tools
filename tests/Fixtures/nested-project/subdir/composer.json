@@ -1,8 +1,8 @@
 {
-    "name": "test/nested-project",
-    "description": "Test nested TYPO3 project for traversal testing",
-    "type": "project",
-    "require": {
-        "typo3/cms-core": "^13.4"
-    }
+	"name": "test/nested-project",
+	"description": "Test nested TYPO3 project for traversal testing",
+	"type": "project",
+	"require": {
+		"typo3/cms-core": "^13.4"
+	}
 }

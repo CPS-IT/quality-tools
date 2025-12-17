@@ -20,10 +20,10 @@ final class QualityToolsApplicationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Store original working directory
         $this->originalCwd = getcwd();
-        
+
         // Store original environment variables
         $this->originalEnv = [
             'QT_PROJECT_ROOT' => getenv('QT_PROJECT_ROOT'),
@@ -34,7 +34,7 @@ final class QualityToolsApplicationTest extends TestCase
     {
         // Restore original working directory
         chdir($this->originalCwd);
-        
+
         // Restore environment variables
         foreach ($this->originalEnv as $key => $value) {
             if ($value === false) {
@@ -43,7 +43,7 @@ final class QualityToolsApplicationTest extends TestCase
                 putenv($key . '=' . $value);
             }
         }
-        
+
         parent::tearDown();
     }
 
@@ -89,7 +89,7 @@ final class QualityToolsApplicationTest extends TestCase
 
             // Assert - Constructor should not throw, but getProjectRoot() should
             $this->assertInstanceOf(QualityToolsApplication::class, $application);
-            
+
             $this->expectException(RuntimeException::class);
             $this->expectExceptionMessage('TYPO3 project root not found');
             $application->getProjectRoot();
@@ -116,7 +116,7 @@ final class QualityToolsApplicationTest extends TestCase
     public static function provideValidTypo3Projects(): \Generator
     {
         $basePath = __DIR__ . '/../../Fixtures';
-        
+
         yield 'typo3/cms-core project' => [realpath($basePath . '/valid-typo3-project')];
         yield 'typo3/minimal project' => [realpath($basePath . '/valid-typo3-minimal')];
         yield 'typo3/cms project' => [realpath($basePath . '/valid-typo3-cms')];
@@ -129,7 +129,7 @@ final class QualityToolsApplicationTest extends TestCase
         // Create an isolated non-TYPO3 project in temp directory
         $tempDir = sys_get_temp_dir() . '/qt_test_non_typo3_' . uniqid();
         mkdir($tempDir, 0777, true);
-        
+
         // Create a non-TYPO3 composer.json
         $composerJson = [
             'name' => 'test/non-typo3-isolated',
@@ -137,7 +137,7 @@ final class QualityToolsApplicationTest extends TestCase
             'require' => ['symfony/console' => '^7.0']
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerJson));
-        
+
         try {
             // Arrange
             chdir($tempDir);
@@ -164,10 +164,10 @@ final class QualityToolsApplicationTest extends TestCase
         // Create an isolated directory with invalid JSON
         $tempDir = sys_get_temp_dir() . '/qt_test_invalid_json_' . uniqid();
         mkdir($tempDir, 0777, true);
-        
+
         // Create invalid composer.json
         file_put_contents($tempDir . '/composer.json', '{"invalid": json}');
-        
+
         try {
             // Arrange
             chdir($tempDir);
@@ -191,7 +191,7 @@ final class QualityToolsApplicationTest extends TestCase
         // Arrange
         $projectPath = $this->getFixturePath('valid-typo3-project');
         putenv('QT_PROJECT_ROOT=' . $projectPath);
-        
+
         // Change to a non-TYPO3 directory to ensure env var takes precedence
         chdir($this->getFixturePath('non-typo3-project'));
         $application = new QualityToolsApplication();
@@ -240,7 +240,7 @@ final class QualityToolsApplicationTest extends TestCase
         // Create a simple directory structure that exceeds traversal limit
         $tempDir = sys_get_temp_dir() . '/qt_test_limit_' . uniqid();
         mkdir($tempDir, 0777, true);
-        
+
         try {
             // Start from temp dir which has no TYPO3 project
             chdir($tempDir);
@@ -275,7 +275,7 @@ final class QualityToolsApplicationTest extends TestCase
 
         // Act
         $firstResult = $application->getProjectRoot();
-        
+
         // Change directory to verify caching
         chdir($this->getFixturePath('non-typo3-project'));
         $secondResult = $application->getProjectRoot();
@@ -292,7 +292,7 @@ final class QualityToolsApplicationTest extends TestCase
         if (!is_dir($rootPath)) {
             $this->markTestSkipped('Root filesystem not accessible');
         }
-        
+
         chdir($rootPath);
         $application = new QualityToolsApplication();
 
@@ -390,12 +390,12 @@ final class QualityToolsApplicationTest extends TestCase
     private function createDeepDirectoryStructure(string $basePath, int $depth): void
     {
         $currentPath = $basePath;
-        
+
         // Create all directories in one go
         for ($i = 1; $i <= $depth; $i++) {
             $currentPath .= '/level' . $i;
         }
-        
+
         // Create the entire path recursively
         if (!mkdir($currentPath, 0777, true)) {
             throw new \RuntimeException("Failed to create directory: $currentPath");
@@ -417,7 +417,7 @@ final class QualityToolsApplicationTest extends TestCase
                     unlink($file->getPathname());
                 }
             }
-            
+
             rmdir($basePath);
         }
     }

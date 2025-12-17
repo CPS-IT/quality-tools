@@ -33,11 +33,11 @@ abstract class BaseCommand extends Command
     protected function getProjectRoot(): string
     {
         $application = $this->getApplication();
-        
+
         if (!$application instanceof QualityToolsApplication) {
             throw new \RuntimeException('Command must be run within QualityToolsApplication');
         }
-        
+
         return $application->getProjectRoot();
     }
 
@@ -53,7 +53,7 @@ abstract class BaseCommand extends Command
         }
 
         $defaultConfigPath = $this->getProjectRoot() . '/vendor/cpsit/quality-tools/config/' . $configFile;
-        
+
         if (!file_exists($defaultConfigPath)) {
             throw new \RuntimeException(
                 sprintf(
@@ -72,7 +72,7 @@ abstract class BaseCommand extends Command
         OutputInterface $output
     ): int {
         $process = new Process($command, $this->getProjectRoot());
-        
+
         // Handle verbose mode using Symfony's built-in verbose levels
         if ($output->isVerbose()) {
             $output->writeln(sprintf('<info>Executing: %s</info>', $process->getCommandLine()));
@@ -93,7 +93,7 @@ abstract class BaseCommand extends Command
     protected function getTargetPath(InputInterface $input): string
     {
         $customPath = $input->getOption('path');
-        
+
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
                 throw new \InvalidArgumentException(

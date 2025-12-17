@@ -174,7 +174,7 @@ bash: qt: command not found
 # Use full path
 vendor/bin/qt --version
 
-# Or add to PATH temporarily  
+# Or add to PATH temporarily
 export PATH="$PWD/vendor/bin:$PATH"
 qt --version
 ```
@@ -247,7 +247,7 @@ Use verbose options for more information:
 # Level 1 verbose
 vendor/bin/qt --version -v
 
-# Level 2 verbose  
+# Level 2 verbose
 vendor/bin/qt --version -vv
 
 # Level 3 debug
@@ -354,7 +354,7 @@ uname -a
 php --version
 composer --version
 
-# Project information  
+# Project information
 pwd
 ls -la composer.json
 grep -E "typo3/(cms-core|cms|minimal)" composer.json
@@ -371,7 +371,7 @@ Common patterns in debug output:
 # Successful detection
 Project root detection started
 Environment variable QT_PROJECT_ROOT: not set
-Starting filesystem traversal from: /current/directory  
+Starting filesystem traversal from: /current/directory
 Found composer.json: /path/to/project/composer.json
 TYPO3 dependencies found: typo3/cms-core
 Project root confirmed: /path/to/project

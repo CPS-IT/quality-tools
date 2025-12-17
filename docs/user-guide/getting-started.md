@@ -24,36 +24,79 @@ vendor/bin/qt
 qt
 ```
 
-### Available Commands (Current Version)
+### Available Commands
 
-The current implementation provides these basic commands:
+CPSIT Quality Tools provides a complete set of quality assurance commands:
 
-#### Help Command
-View all available commands and options:
-
+#### Help and Information Commands
 ```bash
+# View all available commands and options
 vendor/bin/qt help
-# or
 vendor/bin/qt --help
-```
 
-#### Version Information
-Check the installed version:
-
-```bash
+# Check the installed version
 vendor/bin/qt --version
+
+# List all available commands
+vendor/bin/qt list
 ```
 
-Expected output:
-```
-CPSIT Quality Tools 1.0.0-dev
-```
-
-#### List Commands
-See all available commands:
+#### Lint Commands (Analysis Only)
+These commands analyze your code without making changes:
 
 ```bash
-vendor/bin/qt list
+# Rector - Analyze code for modernization opportunities
+vendor/bin/qt lint:rector
+
+# PHPStan - Static analysis with configurable options
+vendor/bin/qt lint:phpstan
+vendor/bin/qt lint:phpstan --level=8 --memory-limit=1G
+
+# PHP CS Fixer - Check coding standards compliance
+vendor/bin/qt lint:php-cs-fixer
+
+# Fractor - Analyze TypoScript for modernization
+vendor/bin/qt lint:fractor
+
+# TypoScript Lint - Validate TypoScript syntax
+vendor/bin/qt lint:typoscript
+
+# Composer - Validate composer.json structure
+vendor/bin/qt lint:composer
+```
+
+#### Fix Commands (Apply Changes)
+These commands make actual changes to your codebase:
+
+```bash
+# Rector - Apply automated code modernization
+vendor/bin/qt fix:rector
+
+# PHP CS Fixer - Fix coding standards violations
+vendor/bin/qt fix:php-cs-fixer
+
+# Fractor - Apply TypoScript modernization
+vendor/bin/qt fix:fractor
+
+# Composer - Normalize composer.json formatting
+vendor/bin/qt fix:composer
+```
+
+#### Command Options
+All commands support these common options:
+
+```bash
+# Custom configuration file
+vendor/bin/qt lint:rector --config=/path/to/custom/rector.php
+
+# Custom target path
+vendor/bin/qt lint:phpstan --path=packages/my-extension
+
+# Verbose output for debugging
+vendor/bin/qt lint:rector --verbose
+
+# Get help for specific command
+vendor/bin/qt lint:phpstan --help
 ```
 
 ## Project Detection
@@ -79,7 +122,7 @@ your-project/
 **TYPO3 with Custom Package Structure:**
 ```
 your-project/
-├── composer.json       # Contains typo3/cms dependency  
+├── composer.json       # Contains typo3/cms dependency
 ├── vendor/
 ├── config/
 ├── packages/
@@ -137,28 +180,32 @@ vendor/bin/qt --version --verbose
 vendor/bin/qt --quiet [command]
 ```
 
-## Current Status and Upcoming Features
+## Current Status: Completed MVP
 
-### Currently Available
-* [x] Console application with TYPO3 project detection
-* [x] Help and version commands
-* [x] Automatic project root discovery
+### All Features Implemented
+* [x] Console application with TYPO3 project detection (up to 10 directory levels)
+* [x] Help, version, and list commands
+* [x] Automatic project root discovery with configuration path resolution
 * [x] Environment variable support
-
-### Coming Soon
-* [ ] Rector command for PHP code modernization
-* [ ] PHPStan command for static analysis
-* [ ] Fractor command for TypoScript modernization
-* [ ] PHP CS Fixer command for code style
-* [ ] TypoScript Lint command
-* [ ] Batch processing commands
+* [x] **All 10 tool commands fully implemented and tested:**
+  * [x] Rector commands (`lint:rector`, `fix:rector`)
+  * [x] PHPStan command with configurable options (`lint:phpstan`)
+  * [x] Fractor commands for TypoScript (`lint:fractor`, `fix:fractor`)
+  * [x] PHP CS Fixer commands (`lint:php-cs-fixer`, `fix:php-cs-fixer`)
+  * [x] TypoScript Lint command (`lint:typoscript`)
+  * [x] Composer commands (`lint:composer`, `fix:composer`)
+* [x] Configuration override support (`--config` option)
+* [x] Target path specification (`--path` option)
+* [x] Verbose debugging output (`--verbose` option)
+* [x] Comprehensive error handling with proper exit codes
+* [x] Extensive test coverage (96.91% line coverage, 227 tests)
 
 ## Next Steps
 
 Now that you understand the basics:
 
 1. **Learn about project detection**: Read [Project Detection](project-detection.md) to understand how the tool finds your TYPO3 project
-2. **Configure the tool**: Check [Configuration](configuration.md) for environment variables and customization options  
+2. **Configure the tool**: Check [Configuration](configuration.md) for environment variables and customization options
 3. **Troubleshoot issues**: See [Troubleshooting](troubleshooting.md) for solutions to common problems
 
 ## Tips for Effective Usage
@@ -167,7 +214,8 @@ Now that you understand the basics:
 
 1. **Run from project root**: While the tool can detect projects from subdirectories, running from the root is most reliable
 2. **Use version control**: Always commit your changes before running quality tools that modify code
-3. **Test incrementally**: When quality tools become available, test them on small portions of your codebase first
+3. **Test incrementally**: Start with lint commands to analyze before applying fixes
+4. **Use lint before fix**: Always run lint commands first to see what changes will be made
 
 ### Integration with Development Workflow
 
@@ -177,7 +225,18 @@ Consider integrating CPSIT Quality Tools into your development process:
 # Example development workflow
 git checkout -b feature/new-functionality
 # ... make your changes ...
-vendor/bin/qt [quality-command]  # When available
+
+# Analyze code quality
+vendor/bin/qt lint:rector
+vendor/bin/qt lint:phpstan
+vendor/bin/qt lint:php-cs-fixer
+
+# Apply fixes if needed
+vendor/bin/qt fix:php-cs-fixer
+vendor/bin/qt fix:rector
+
+# Final validation
+vendor/bin/qt lint:phpstan
 git add .
 git commit -m "Your changes with quality improvements"
 ```

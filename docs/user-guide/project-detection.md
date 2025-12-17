@@ -23,7 +23,7 @@ Current Directory: /path/to/your/project/packages/your-extension
 2. Look for composer.json in current directory
    - Found: /path/to/your/project/packages/your-extension/composer.json
    - Check if contains TYPO3 dependencies: NO
-                          ↓  
+                          ↓
 3. Move up one level: /path/to/your/project/packages/
    - Look for composer.json: NOT FOUND
                           ↓
@@ -62,7 +62,7 @@ Or:
 
 ```json
 {
-    "name": "your/typo3-project", 
+    "name": "your/typo3-project",
     "require-dev": {
         "typo3/minimal": "^13.4",
         "dev-dependencies": "..."
@@ -132,7 +132,7 @@ monorepo/
 │   ├── config/
 │   └── packages/
 ├── site-b/
-│   ├── composer.json       # Contains TYPO3 deps  
+│   ├── composer.json       # Contains TYPO3 deps
 │   ├── config/
 │   └── packages/
 └── shared/
@@ -204,7 +204,7 @@ QT_DEBUG=true vendor/bin/qt --version
 
 This will show:
 - Directory traversal steps
-- Composer.json files examined  
+- Composer.json files examined
 - TYPO3 dependency check results
 - Full error stack traces
 
