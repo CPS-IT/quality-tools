@@ -29,7 +29,7 @@ final class ComposerLintCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/composer-normalize',
+                $this->getVendorBinPath() . '/composer-normalize',
                 '--dry-run',
                 '--diff',
                 $targetPath . '/composer.json'

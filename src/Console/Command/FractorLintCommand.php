@@ -30,7 +30,7 @@ final class FractorLintCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/fractor',
+                $this->getVendorBinPath() . '/fractor',
                 'process',
                 '--dry-run',
                 '--config=' . $configPath,

@@ -30,7 +30,7 @@ final class TypoScriptLintCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/typoscript-lint',
+                $this->getVendorBinPath() . '/typoscript-lint',
                 '-c',
                 $configPath,
                 '--path',

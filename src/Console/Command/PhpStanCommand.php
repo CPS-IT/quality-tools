@@ -43,7 +43,7 @@ final class PhpStanCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/phpstan',
+                $this->getVendorBinPath() . '/phpstan',
                 'analyse',
                 '--configuration=' . $configPath
             ];

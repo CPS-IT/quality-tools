@@ -31,7 +31,7 @@ final class PhpCsFixerLintCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/php-cs-fixer',
+                $this->getVendorBinPath() . '/php-cs-fixer',
                 'fix',
                 '--dry-run',
                 '--diff',

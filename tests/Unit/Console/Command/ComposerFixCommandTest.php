@@ -31,14 +31,12 @@ final class ComposerFixCommandTest extends TestCase
         // Create a TYPO3 project structure for proper project root detection
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
 
-        // Create vendor/bin directory structure
-        $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        // Create vendor directory structure with cpsit/quality-tools package
+        $vendorDir = TestHelper::createVendorStructure($this->tempDir);
+        $vendorBinDir = $vendorDir . '/bin';
 
         // Create fake composer-normalize executable
-        $composerNormalizeExecutable = $vendorBinDir . '/composer-normalize';
-        file_put_contents($composerNormalizeExecutable, "#!/bin/bash\necho 'Composer normalize executed successfully'\nexit 0\n");
-        chmod($composerNormalizeExecutable, 0755);
+        TestHelper::createMockExecutables($vendorBinDir, ['composer-normalize']);
 
         // Set up environment to use temp directory as project root and initialize application
         TestHelper::withEnvironment(

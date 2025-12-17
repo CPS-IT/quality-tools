@@ -30,7 +30,7 @@ final class RectorFixCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/rector',
+                $this->getVendorBinPath() . '/rector',
                 '--config=' . $configPath,
                 $targetPath
             ];

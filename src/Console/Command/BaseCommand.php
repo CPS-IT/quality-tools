@@ -52,7 +52,8 @@ abstract class BaseCommand extends Command
             return realpath($customConfigPath);
         }
 
-        $defaultConfigPath = $this->getProjectRoot() . '/vendor/cpsit/quality-tools/config/' . $configFile;
+        $vendorPath = $this->findVendorPath();
+        $defaultConfigPath = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
 
         if (!file_exists($defaultConfigPath)) {
             throw new \RuntimeException(
@@ -64,6 +65,35 @@ abstract class BaseCommand extends Command
         }
 
         return $defaultConfigPath;
+    }
+
+    protected function getVendorBinPath(): string
+    {
+        return $this->findVendorPath() . '/bin';
+    }
+
+    private function findVendorPath(): string
+    {
+        $projectRoot = $this->getProjectRoot();
+        
+        // Try common vendor directory locations
+        $vendorPaths = [
+            $projectRoot . '/app/vendor',  // TYPO3 with app/vendor structure
+            $projectRoot . '/vendor',      // Standard composer structure
+        ];
+
+        foreach ($vendorPaths as $vendorPath) {
+            if (is_dir($vendorPath) && is_dir($vendorPath . '/cpsit/quality-tools')) {
+                return $vendorPath;
+            }
+        }
+
+        throw new \RuntimeException(
+            sprintf(
+                'Could not find vendor directory with cpsit/quality-tools package. Checked: %s',
+                implode(', ', $vendorPaths)
+            )
+        );
     }
 
     protected function executeProcess(

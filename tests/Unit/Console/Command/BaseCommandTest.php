@@ -114,9 +114,9 @@ final class BaseCommandTest extends TestCase
 
     public function testResolveConfigPathWithDefaultPath(): void
     {
-        $projectRoot = $this->tempDir;
-        $configDir = $projectRoot . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0777, true);
+        // Create vendor directory structure with cpsit/quality-tools package
+        $vendorDir = TestHelper::createVendorStructure($this->tempDir);
+        $configDir = $vendorDir . '/cpsit/quality-tools/config';
 
         $defaultConfigFile = $configDir . '/test-config.php';
         file_put_contents($defaultConfigFile, '<?php return [];');
@@ -129,7 +129,7 @@ final class BaseCommandTest extends TestCase
     public function testResolveConfigPathWithDefaultPathThrowsExceptionWhenFileNotFound(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Default configuration file not found: .* Please ensure cpsit\/quality-tools is properly installed\./');
+        $this->expectExceptionMessageMatches('/Could not find vendor directory with cpsit\/quality-tools package\. Checked: .*/');
 
         $this->command->resolveConfigPathPublic('non-existent.php');
     }

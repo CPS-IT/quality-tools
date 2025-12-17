@@ -29,7 +29,7 @@ final class ComposerFixCommand extends BaseCommand
             $targetPath = $this->getTargetPath($input);
 
             $command = [
-                $this->getProjectRoot() . '/vendor/bin/composer-normalize',
+                $this->getVendorBinPath() . '/composer-normalize',
                 $targetPath . '/composer.json'
             ];
 

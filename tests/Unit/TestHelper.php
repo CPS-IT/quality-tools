@@ -201,4 +201,38 @@ final class TestHelper
             }
         }
     }
+
+    /**
+     * Create vendor directory structure with cpsit/quality-tools package
+     * This supports both app/vendor and vendor patterns for dynamic detection
+     */
+    public static function createVendorStructure(string $projectRoot, bool $useAppVendor = false): string
+    {
+        $vendorDir = $useAppVendor ? $projectRoot . '/app/vendor' : $projectRoot . '/vendor';
+        $qualityToolsDir = $vendorDir . '/cpsit/quality-tools';
+        $configDir = $qualityToolsDir . '/config';
+        $binDir = $vendorDir . '/bin';
+
+        // Create directories
+        mkdir($configDir, 0777, true);
+        mkdir($binDir, 0777, true);
+
+        return $vendorDir;
+    }
+
+    /**
+     * Create mock executables in vendor/bin directory
+     */
+    public static function createMockExecutables(string $vendorBinDir, array $executables): void
+    {
+        foreach ($executables as $executable) {
+            $executablePath = $vendorBinDir . '/' . $executable;
+            // Use the specific message format expected by tests
+            $message = $executable === 'composer-normalize' 
+                ? 'Composer normalize executed successfully' 
+                : ucfirst($executable) . ' executed successfully';
+            file_put_contents($executablePath, "#!/bin/bash\necho '{$message}'\nexit 0\n");
+            chmod($executablePath, 0755);
+        }
+    }
 }
