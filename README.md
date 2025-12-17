@@ -1,7 +1,7 @@
-Quality tools
-=============
+CPSIT Quality Tools
+===================
 
-A collection of tools for quality assurance in TYPO3 projects.
+A collection of preconfigured quality assurance tools for TYPO3 projects, featuring a simple command-line interface that transforms complex tool commands into user-friendly shortcuts.
 
 ## Installation
 
@@ -32,6 +32,8 @@ composer require --dev cpsit/quality-tools
 - [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
 - [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
 
+### Project Planning
+- [Planning Documentation](docs/plan/) - MVP implementation roadmap and feature breakdown
 
 [typo3-fractor]: https://packagist.org/packages/a9f/typo3-fractor
 [editorconfig-cli]: https://packagist.org/packages/armin/editorconfig-cli
