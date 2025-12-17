@@ -22,7 +22,6 @@ composer require --dev cpsit/quality-tools
 | [phpunit/php-code-coverage][php-code-coverage]    | Code coverage information for PHP                      |
 | [ssch/typo3-rector][typo3-rector]                 | TYPO3-specific automated code upgrades and refactoring |
 | [typo3/coding-standards][coding-standards]        | TYPO3 coding standards and code style tools            |
-| [typo3/testing-framework][testing-framework]      | Testing framework for TYPO3 extensions                 |
 
 ## Table of Contents
 

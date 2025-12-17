@@ -6,7 +6,6 @@
 /tmp
 /var/
 /.build
-/bin
 
 tests/build/.phpunit.result.cache
 /.php-cs-fixer.cache

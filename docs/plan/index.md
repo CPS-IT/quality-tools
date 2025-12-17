@@ -15,7 +15,7 @@ The following features represent Phase 1 of the simplified MVP implementation:
 - **[001 - Console Application](feature/done/001-console-application.md)** *(2-3 hours)*  
   Main Symfony Console application with basic project root detection
 
-- **[002 - Base Command](feature/002-base-command.md)** *(2-3 hours)*  
+- **[002 - Base Command](feature/done/002-base-command.md)** *(2-3 hours)*  
   Single base command class with shared functionality for all tools
 
 - **[003 - Tool Commands](feature/003-tool-commands.md)** *(4-6 hours)*  
