@@ -26,6 +26,10 @@ composer require --dev cpsit/quality-tools
 
 ## Table of Contents
 
+### User Guide
+- [User Guide](docs/user-guide/) - Complete guide for installing and using the CLI tool
+
+### Tool Configuration
 - [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
 - [PHP CS Fixer](docs/PhpCsFixer.md) - PHP coding standards fixer configuration
 - [PHPStan](docs/Phpstan.md) - Static analysis tool configuration

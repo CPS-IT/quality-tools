@@ -1,8 +1,8 @@
 # Feature 001: Console Application
 
-**Status:** Not Started  
-**Estimated Time:** 2-3 hours  
-**Layer:** MVP Core  
+**Status:** Completed
+**Estimated Time:** 2-3 hours
+**Layer:** MVP Core
 **Dependencies:** None
 
 ## Description
@@ -26,29 +26,29 @@ Users need a simple entry point to access quality tools without remembering comp
 
 ## Tasks
 
-- [ ] **Create Console Application**
-  - [ ] Create `src/Console/QualityToolsApplication.php` extending Symfony Console Application
-  - [ ] Configure application name, version, and description
-  - [ ] Implement automatic command discovery and registration
-- [ ] **Project Root Detection**
-  - [ ] Add method to find nearest composer.json file traversing up directory tree
-  - [ ] Validate that found project contains TYPO3 dependencies
-  - [ ] Provide fallback for when project root cannot be detected
-- [ ] **Executable Setup**
-  - [ ] Create `bin/qt` executable script
-  - [ ] Update `composer.json` with bin configuration
-  - [ ] Set up PSR-4 autoloading for src/ directory
-- [ ] **Basic Error Handling**
-  - [ ] Handle cases where composer.json is not found
-  - [ ] Provide clear error messages for common issues
-  - [ ] Ensure proper exit codes
+- [x] **Create Console Application**
+  - [x] Create `src/Console/QualityToolsApplication.php` extending Symfony Console Application
+  - [x] Configure application name, version, and description
+  - [x] Implement automatic command discovery and registration
+- [x] **Project Root Detection**
+  - [x] Add method to find nearest composer.json file traversing up directory tree
+  - [x] Validate that found project contains TYPO3 dependencies
+  - [x] Provide fallback for when project root cannot be detected
+- [x] **Executable Setup**
+  - [x] Create `bin/qt` executable script
+  - [x] Update `composer.json` with bin configuration
+  - [x] Set up PSR-4 autoloading for src/ directory
+- [x] **Basic Error Handling**
+  - [x] Handle cases where composer.json is not found
+  - [x] Provide clear error messages for common issues
+  - [x] Ensure proper exit codes
 
 ## Success Criteria
 
-- [ ] `qt` command displays application help and version information
-- [ ] Application correctly detects TYPO3 project root in typical setups
-- [ ] Commands are properly registered and discoverable via `qt list`
-- [ ] Error messages are clear and actionable when project detection fails
+- [x] `qt` command displays application help and version information
+- [x] Application correctly detects TYPO3 project root in typical setups
+- [x] Commands are properly registered and discoverable via `qt list`
+- [x] Error messages are clear and actionable when project detection fails
 
 ## Technical Requirements
 
@@ -166,7 +166,7 @@ Common failure modes:
 ## Future Enhancements
 
 - Configuration file support for project-specific settings
-- Plugin system for third-party tool integration  
+- Plugin system for third-party tool integration
 - Interactive project setup wizard
 - Caching of project detection results
 

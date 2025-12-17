@@ -1,0 +1,13 @@
+{
+    "name": "test/typo3-minimal-project",
+    "description": "Test TYPO3 project with typo3/minimal dependency",
+    "type": "project",
+    "require": {
+        "typo3/minimal": "^13.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Test\\MinimalProject\\": "src/"
+        }
+    }
+}

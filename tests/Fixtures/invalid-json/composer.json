@@ -1,0 +1,8 @@
+{
+    "name": "test/invalid-json-project",
+    "description": "Test project with invalid JSON syntax"
+    "type": "project",
+    "require": {
+        "typo3/cms-core": "^13.4"
+    }
+}

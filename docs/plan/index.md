@@ -12,7 +12,7 @@ This directory contains the complete planning and implementation documentation f
 
 The following features represent Phase 1 of the simplified MVP implementation:
 
-- **[001 - Console Application](feature/001-console-application.md)** *(2-3 hours)*  
+- **[001 - Console Application](feature/done/001-console-application.md)** *(2-3 hours)*  
   Main Symfony Console application with basic project root detection
 
 - **[002 - Base Command](feature/002-base-command.md)** *(2-3 hours)*  
