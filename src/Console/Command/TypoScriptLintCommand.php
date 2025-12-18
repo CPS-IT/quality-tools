@@ -27,15 +27,26 @@ final class TypoScriptLintCommand extends BaseCommand
     {
         try {
             $configPath = $this->resolveConfigPath('typoscript-lint.yml', $input->getOption('config'));
-            $targetPath = $this->getTargetPath($input);
 
             $command = [
                 $this->getVendorBinPath() . '/typoscript-lint',
                 '-c',
-                $configPath,
-                '--path',
-                $targetPath
+                $configPath
             ];
+
+            // If user specified a custom path, add it as positional argument
+            $customPath = $input->getOption('path');
+            if ($customPath !== null) {
+                if (!is_dir($customPath)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
+                    );
+                }
+                $command[] = realpath($customPath);
+                $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
+            } else {
+                $output->writeln('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+            }
 
             return $this->executeProcess($command, $input, $output);
 

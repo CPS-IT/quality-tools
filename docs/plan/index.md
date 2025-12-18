@@ -61,16 +61,10 @@ qt lint:rector
 - **Production Testing Phase:** [COMPLETE] Critical issues identified and resolved
 - **Release Phase:** [READY] MVP with dynamic optimization ready for production use
 
-## Remaining Issues
+## Known Issues
 
 **Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md) - Follow-up fixes needed for edge cases
 
-### Issues Requiring Fixes
-
-4. **[Issue 004: TypoScript Lint Path Option](issue/004-typoscript-lint-path-option.md)** - Medium Priority, Low Effort
-   - Command interface mismatch with --path option
-   - Recommended: Intelligent path discovery
-
-5. **[Issue 005: Composer Normalize Missing](issue/005-composer-normalize-missing.md)** - High Priority, Low Effort
+1. **[Issue 005: Composer Normalize Missing](issue/005-composer-normalize-missing.md)** - High Priority, Low Effort
    - Missing dependency in target projects
    - Recommended: Bundle dependency with fallback

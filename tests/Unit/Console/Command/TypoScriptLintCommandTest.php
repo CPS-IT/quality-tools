@@ -110,6 +110,11 @@ final class TypoScriptLintCommandTest extends TestCase
 
         $this->mockOutput
             ->expects($this->once())
+            ->method('writeln')
+            ->with('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+
+        $this->mockOutput
+            ->expects($this->once())
             ->method('write')
             ->with("TypoScript Lint executed successfully\n");
 
@@ -138,6 +143,11 @@ final class TypoScriptLintCommandTest extends TestCase
 
         $this->mockOutput
             ->expects($this->once())
+            ->method('writeln')
+            ->with('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+
+        $this->mockOutput
+            ->expects($this->once())
             ->method('write')
             ->with("TypoScript Lint executed successfully\n");
 
@@ -163,6 +173,11 @@ final class TypoScriptLintCommandTest extends TestCase
             ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
+
+        $this->mockOutput
+            ->expects($this->once())
+            ->method('writeln')
+            ->with(sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
 
         $this->mockOutput
             ->expects($this->once())
@@ -197,6 +212,11 @@ final class TypoScriptLintCommandTest extends TestCase
 
         $this->mockOutput
             ->expects($this->once())
+            ->method('writeln')
+            ->with(sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
+
+        $this->mockOutput
+            ->expects($this->once())
             ->method('write')
             ->with("TypoScript Lint executed successfully\n");
 
@@ -221,9 +241,12 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturn(true);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('writeln')
-            ->with($this->matchesRegularExpression('/Executing:.*typoscript-lint/i'));
+            ->with($this->logicalOr(
+                '<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>',
+                $this->matchesRegularExpression('/Executing:.*typoscript-lint/i')
+            ));
 
         $this->mockOutput
             ->expects($this->once())
