@@ -1,0 +1,16 @@
+{
+	"name": "test/typo3-cms-project",
+	"description": "Test TYPO3 project with typo3/cms dependency",
+	"type": "project",
+	"require": {
+		"typo3/cms": "^13.4"
+	},
+	"require-dev": {
+		"cpsit/quality-tools": "^1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Test\\CmsProject\\": "src/"
+		}
+	}
+}

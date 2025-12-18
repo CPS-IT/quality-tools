@@ -1,0 +1,13 @@
+.DS_Store
+.idea
+
+/public/*
+/vendor/*
+/tmp
+/var/
+/.build
+
+tests/build/.phpunit.result.cache
+/.php-cs-fixer.cache
+.phpunit.cache/
+
