@@ -3,11 +3,13 @@ CPSIT Quality Tools
 
 A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
 
-## Status: Completed MVP
+## Status: MVP Complete with Known Issues
 
 **Version:** 1.0.0-dev
 **Test Coverage:** 96.91% (227 tests, 720 assertions)
 **All 10 tool commands fully implemented and tested**
+
+**WARNING: Production Testing Revealed Critical Issues** - See [Known Issues](#known-issues) below
 
 ## Installation
 
@@ -21,7 +23,6 @@ composer require --dev cpsit/quality-tools
 |---------------------------------------------------|--------------------------------------------------------|
 | [a9f/typo3-fractor][typo3-fractor]                | TYPO3-specific code modernization and refactoring tool |
 | [armin/editorconfig-cli][editorconfig-cli]        | Command line tool for EditorConfig validation          |
-| [codeception/codeception][codeception]            | Full-stack testing PHP framework                       |
 | [ergebnis/composer-normalize][composer-normalize] | Composer plugin to normalize composer.json files       |
 | [helmich/typo3-typoscript-lint][typoscript-lint]  | Linter for TYPO3 TypoScript files                      |
 | [phpstan/phpstan][phpstan]                        | Static analysis tool for PHP                           |
@@ -93,10 +94,52 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 | `qt fix:fractor` | Fractor | Apply TypoScript modernization |
 | `qt fix:composer` | Composer | Normalize composer.json formatting |
 
+## Known Issues
+
+**First production testing revealed 6 critical issues** that need addressing before stable release:
+
+**[Complete Issues Analysis](docs/plan/review/2025-12-18/README.md)** - Detailed post-mortem and analysis
+
+### Critical Issues (5/6 tools failed)
+
+1. **[PHPStan Memory Exhaustion](docs/plan/issue/001-phpstan-memory-exhaustion.md)** - High Priority 
+   - Memory exhaustion on large TYPO3 projects (>435 files)
+   - **Recommended Fix:** Dynamic memory limit based on project analysis
+
+2. **[PHP CS Fixer Memory Exhaustion](docs/plan/issue/002-php-cs-fixer-memory-exhaustion.md)** - High Priority
+   - Similar memory issues with large codebases  
+   - **Recommended Fix:** Automatic memory optimization
+
+3. **[Composer Normalize Missing](docs/plan/issue/005-composer-normalize-missing.md)** - High Priority
+   - Missing dependency in target projects
+   - **Recommended Fix:** Bundle dependency with fallback
+
+4. **[TypoScript Lint Path Option](docs/plan/issue/004-typoscript-lint-path-option.md)** - Medium Priority
+   - Command interface mismatch with --path option
+   - **Recommended Fix:** Intelligent path discovery
+
+5. **[Fractor YAML Parser Crash](docs/plan/issue/003-fractor-yaml-parser-crash.md)** - Medium Priority
+   - TypeError in YAML parsing crashes execution
+   - **Recommended Fix:** Automatic error recovery with validation
+
+6. **[Rector Performance Issues](docs/plan/issue/006-rector-performance-large-projects.md)** - Low Priority
+   - Slow performance on large projects (>30 seconds)
+   - **Recommended Fix:** Automatic performance optimization
+
+**Root Cause:** Over-reliance on mocked testing without real-world integration validation
+
+### Upcoming Fixes
+
+- **[Feature 004: Dynamic Resource Optimization](docs/plan/feature/004-dynamic-resource-optimization.md)** 
+  - Addresses memory and performance issues automatically
+  - Zero-configuration optimization based on project size
+  - Estimated implementation: 8-16 hours
+
 ## Table of Contents
 
 ### User Guide
 - [User Guide](docs/user-guide/index.md) - Complete guide for installing and using the CLI tool
+- [Project Planning](docs/plan/index.md) - Complete planning documentation and known issues
 
 ### Tool Configuration
 - [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage

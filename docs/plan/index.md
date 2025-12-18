@@ -53,6 +53,46 @@ qt lint:rector
 
 ## Implementation Status
 
-- **Planning Phase:** Complete with simplified feature breakdown
-- **Core Implementation Phase:** Ready for implementation (8-12 hours)
-- **Polish Phase:** Testing, documentation, and final release
+- **Planning Phase:** [COMPLETE] Simplified feature breakdown
+- **Core Implementation Phase:** [COMPLETE] Working CLI tool (227 passing tests)
+- **Production Testing Phase:** [FAILED] Revealed critical issues requiring fixes
+- **Polish Phase:** [IN PROGRESS] Addressing production issues
+
+## Known Issues
+
+**Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md) - First real-world testing revealed 6 critical issues
+
+### Critical Issues Requiring Fixes
+
+1. **[Issue 001: PHPStan Memory Exhaustion](issue/001-phpstan-memory-exhaustion.md)** - High Priority, Low Effort
+   - Memory exhaustion on large TYPO3 projects (>435 files)
+   - Recommended: Dynamic memory limit based on project analysis
+
+2. **[Issue 002: PHP CS Fixer Memory Exhaustion](issue/002-php-cs-fixer-memory-exhaustion.md)** - High Priority, Low Effort
+   - Similar memory issues with large codebases
+   - Recommended: Automatic memory optimization
+
+3. **[Issue 003: Fractor YAML Parser Crash](issue/003-fractor-yaml-parser-crash.md)** - Medium Priority, Medium Effort
+   - TypeError in YAML parsing crashes tool execution
+   - Recommended: Automatic error recovery with validation
+
+4. **[Issue 004: TypoScript Lint Path Option](issue/004-typoscript-lint-path-option.md)** - Medium Priority, Low Effort
+   - Command interface mismatch with --path option
+   - Recommended: Intelligent path discovery
+
+5. **[Issue 005: Composer Normalize Missing](issue/005-composer-normalize-missing.md)** - High Priority, Low Effort
+   - Missing dependency in target projects
+   - Recommended: Bundle dependency with fallback
+
+6. **[Issue 006: Rector Performance](issue/006-rector-performance-large-projects.md)** - Low Priority, Medium Effort
+   - Performance issues on large projects (>30 seconds)
+   - Recommended: Automatic performance optimization
+
+**Result:** 5/6 tools failed completely, 1 tool severely degraded on first production use
+
+### Upcoming Features
+
+- **[Feature 004: Dynamic Resource Optimization](feature/004-dynamic-resource-optimization.md)** - Addresses Issues 001, 002, 006
+  - Automatic project analysis and resource optimization
+  - Zero-configuration memory management
+  - Performance optimization based on project size
