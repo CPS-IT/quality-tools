@@ -23,7 +23,7 @@ All quality tools encountered critical issues when analyzing the TYPO3 project:
 Each issue has been analyzed in detail with root cause analysis and solution recommendations:
 
 1. [Issue 001: PHPStan Memory Exhaustion](../issue/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
-2. [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort  
+2. [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
 3. [Issue 003: Fractor YAML Parser Crash](../issue/003-fractor-yaml-parser-crash.md) - Medium Priority, Medium Effort
 4. [Issue 004: TypoScript Lint Path Option](../issue/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
 5. [Issue 005: Composer Normalize Missing](../issue/005-composer-normalize-missing.md) - High Priority, Low Effort

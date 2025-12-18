@@ -36,9 +36,40 @@ final class PhpStanCommand extends BaseCommand
             );
     }
 
+    protected function getTargetPath(InputInterface $input): string
+    {
+        if ($this->cachedTargetPath === null) {
+            // If user specified a custom path, use it
+            $customPath = $input->getOption('path');
+            if ($customPath !== null) {
+                if (!is_dir($customPath)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
+                    );
+                }
+                $this->cachedTargetPath = realpath($customPath);
+            } else {
+                // For PHPStan, default to packages directory if it exists (typical TYPO3 setup)
+                $packagesPath = $this->getProjectRoot() . '/packages';
+                if (is_dir($packagesPath)) {
+                    $this->cachedTargetPath = $packagesPath;
+                } else {
+                    // Fall back to project root
+                    $this->cachedTargetPath = $this->getProjectRoot();
+                }
+            }
+        }
+
+        return $this->cachedTargetPath;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
+            if ($input->getOption('show-optimization')) {
+                $this->showOptimizationDetails($input, $output, 'phpstan');
+            }
+
             $configPath = $this->resolveConfigPath('phpstan.neon', $input->getOption('config'));
             $targetPath = $this->getTargetPath($input);
 
@@ -54,10 +85,13 @@ final class PhpStanCommand extends BaseCommand
                 $command[] = '--level=' . $level;
             }
 
-            // Add memory limit if specified
+            // Add memory limit - use automatic optimization unless manually specified or disabled
             $memoryLimit = $input->getOption('memory-limit');
             if ($memoryLimit !== null) {
                 $command[] = '--memory-limit=' . $memoryLimit;
+            } elseif (!$this->isOptimizationDisabled($input)) {
+                $optimalMemory = $this->getOptimalMemoryLimit($input, $output, 'phpstan');
+                $command[] = '--memory-limit=' . $optimalMemory;
             }
 
             // Add target path

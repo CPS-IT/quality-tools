@@ -9,6 +9,33 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class PhpCsFixerLintCommand extends BaseCommand
 {
+    protected function getTargetPath(InputInterface $input): string
+    {
+        if ($this->cachedTargetPath === null) {
+            // If user specified a custom path, use it
+            $customPath = $input->getOption('path');
+            if ($customPath !== null) {
+                if (!is_dir($customPath)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
+                    );
+                }
+                $this->cachedTargetPath = realpath($customPath);
+            } else {
+                // For PHP CS Fixer, default to packages directory if it exists (typical TYPO3 setup)
+                $packagesPath = $this->getProjectRoot() . '/packages';
+                if (is_dir($packagesPath)) {
+                    $this->cachedTargetPath = $packagesPath;
+                } else {
+                    // Fall back to project root
+                    $this->cachedTargetPath = $this->getProjectRoot();
+                }
+            }
+        }
+
+        return $this->cachedTargetPath;
+    }
+
     protected function configure(): void
     {
         parent::configure();
@@ -27,6 +54,10 @@ final class PhpCsFixerLintCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
+            if ($input->getOption('show-optimization')) {
+                $this->showOptimizationDetails($input, $output, 'php-cs-fixer');
+            }
+
             $configPath = $this->resolveConfigPath('php-cs-fixer.php', $input->getOption('config'));
             $targetPath = $this->getTargetPath($input);
 
@@ -35,11 +66,23 @@ final class PhpCsFixerLintCommand extends BaseCommand
                 'fix',
                 '--dry-run',
                 '--diff',
-                '--config=' . $configPath,
-                $targetPath
+                '--config=' . $configPath
             ];
 
-            return $this->executeProcess($command, $input, $output);
+            // Enable parallel processing if beneficial
+            if ($this->shouldEnableParallelProcessing($input, $output)) {
+                $command[] = '--using-cache=yes';
+            }
+
+            $command[] = $targetPath;
+
+            // Get optimal memory limit only if optimization is enabled
+            $memoryLimit = null;
+            if (!$this->isOptimizationDisabled($input)) {
+                $memoryLimit = $this->getOptimalMemoryLimit($input, $output, 'php-cs-fixer');
+            }
+
+            return $this->executeProcess($command, $input, $output, $memoryLimit);
 
         } catch (\Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
