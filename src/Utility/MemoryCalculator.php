@@ -21,7 +21,7 @@ final class MemoryCalculator
         $memoryMb += $metrics->getPhpFileCount() * self::PHP_FILE_MULTIPLIER;
         $memoryMb += $metrics->getPhpComplexityScore() * self::PHP_COMPLEXITY_MULTIPLIER;
 
-        $otherFileCount = ($metrics->yaml['fileCount'] ?? 0) + ($metrics->json['fileCount'] ?? 0) 
+        $otherFileCount = ($metrics->yaml['fileCount'] ?? 0) + ($metrics->json['fileCount'] ?? 0)
                         + ($metrics->xml['fileCount'] ?? 0) + ($metrics->typoscript['fileCount'] ?? 0);
         $memoryMb += $otherFileCount * self::OTHER_FILE_MULTIPLIER;
 

@@ -252,7 +252,7 @@ The tool validates environment variables at runtime:
 ```bash
 # Valid path
 export QT_PROJECT_ROOT=/valid/typo3/project
-vendor/bin/qt --version  # ✓ Works
+vendor/bin/qt --version  # Works
 
 # Invalid path
 export QT_PROJECT_ROOT=/nonexistent/path

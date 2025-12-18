@@ -48,7 +48,7 @@ final class RectorFixCommandTest extends TestCase
         // Create packages directory for RectorFixCommand default target path
         $packagesDir = $this->tempDir . '/packages';
         mkdir($packagesDir, 0777, true);
-        
+
         // Add a sample PHP file for project analysis
         file_put_contents($packagesDir . '/sample.php', "<?php\nclass SampleClass {}\n");
 

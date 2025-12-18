@@ -2,7 +2,7 @@
 
 **Related Documents:**
 - [Issues Summary](issues.md) - Production issues discovered
-- [Post-Mortem Review](review.md) - Complete root cause analysis  
+- [Post-Mortem Review](review.md) - Complete root cause analysis
 - [Testing Gaps Analysis](testing-gaps-analysis.md) - Analysis of testing infrastructure gaps
 - Individual issue reports: [../issue/](../issue/) directory
 

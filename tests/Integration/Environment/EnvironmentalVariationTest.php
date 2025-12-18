@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Environmental variation tests
- * 
+ *
  * These tests validate that our quality tools work correctly across
  * different project structures, dependency versions, and environments.
  */
@@ -69,14 +69,14 @@ final class EnvironmentalVariationTest extends TestCase
             $this->setupProjectType($projectDir, $config);
 
             $result = $this->testQualityToolsInProject($projectDir, $type);
-            
+
             if ($config['expectedBehavior'] === 'success') {
-                $this->assertEquals(0, $result['exitCode'], 
+                $this->assertEquals(0, $result['exitCode'],
                     "Quality tools should work with {$type} project"
                 );
             } elseif ($config['expectedBehavior'] === 'limited') {
                 // Should not crash, but some features may be limited
-                $this->assertLessThan(128, $result['exitCode'], 
+                $this->assertLessThan(128, $result['exitCode'],
                     "Quality tools should not crash with {$type} project"
                 );
             }
@@ -99,8 +99,8 @@ final class EnvironmentalVariationTest extends TestCase
             $this->setupProjectWithCustomVendorPath($projectDir, $vendorPath);
 
             $result = $this->testToolDiscoveryInProject($projectDir, $vendorPath);
-            
-            $this->assertEquals(0, $result['exitCode'], 
+
+            $this->assertEquals(0, $result['exitCode'],
                 "Quality tools should discover tools in {$vendorPath}"
             );
         }
@@ -123,9 +123,9 @@ final class EnvironmentalVariationTest extends TestCase
 
         foreach ($memoryLimits as $limitName => $limitValue) {
             $env = ['PHP_MEMORY_LIMIT' => $limitValue];
-            
+
             $result = $this->runQualityToolWithEnvironment($projectDir, $env);
-            
+
             if ($limitName === 'low') {
                 // Low memory might fail, but should fail gracefully
                 $this->assertContains($result['exitCode'], [0, 1, 2],
@@ -152,7 +152,7 @@ final class EnvironmentalVariationTest extends TestCase
         chmod($configFile, 0444); // Read-only
 
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Should handle read-only config files'
         );
 
@@ -169,7 +169,7 @@ final class EnvironmentalVariationTest extends TestCase
         chmod($sourceFile, 0444); // Read-only
 
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Should handle read-only source files in dry-run mode'
         );
     }
@@ -201,12 +201,12 @@ final class EnvironmentalVariationTest extends TestCase
 
         // Test that tools can handle different encodings
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Should handle different file encodings'
         );
 
         $result = $this->runQualityTool($projectDir, 'phpstan');
-        $this->assertContains($result['exitCode'], [0, 1], 
+        $this->assertContains($result['exitCode'], [0, 1],
             'PHPStan should process files with different encodings'
         );
     }
@@ -254,7 +254,7 @@ final class EnvironmentalVariationTest extends TestCase
             $this->setupProjectWithAutoloaderConfig($projectDir, $config);
 
             $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-            $this->assertEquals(0, $result['exitCode'], 
+            $this->assertEquals(0, $result['exitCode'],
                 "Should work with {$configName} autoloader configuration"
             );
         }
@@ -287,7 +287,7 @@ final class EnvironmentalVariationTest extends TestCase
             ]);
 
             // Should handle path normalization gracefully
-            $this->assertContains($result['exitCode'], [0, 1], 
+            $this->assertContains($result['exitCode'], [0, 1],
                 "Should handle {$style} paths gracefully"
             );
         }
@@ -299,7 +299,7 @@ final class EnvironmentalVariationTest extends TestCase
     public function testWithManyDependencies(): void
     {
         $projectDir = $this->createTestProject('many_deps');
-        
+
         // Create composer.json with many dependencies
         $manyDependencies = [
             'typo3/cms-core' => '^13.4',
@@ -327,7 +327,7 @@ final class EnvironmentalVariationTest extends TestCase
         $this->createBasicPhpFile($projectDir, 'packages/many_deps/Classes/TestClass.php');
 
         $result = $this->runQualityTool($projectDir, 'phpstan');
-        $this->assertContains($result['exitCode'], [0, 1], 
+        $this->assertContains($result['exitCode'], [0, 1],
             'Should handle projects with many dependencies'
         );
     }
@@ -493,7 +493,7 @@ PHP
     {
         // Test basic list command first
         $process = new Process([
-            'php', 
+            'php',
             'vendor/bin/qt',
             'list'
         ], $projectDir, null, null, 30);
@@ -510,7 +510,7 @@ PHP
     private function testToolDiscoveryInProject(string $projectDir, string $vendorPath): array
     {
         $process = new Process([
-            'php', 
+            'php',
             $vendorPath . '/bin/rector',
             '--help'
         ], $projectDir, null, null, 30);
@@ -544,7 +544,7 @@ PHP
     private function runQualityTool(string $projectDir, string $tool, array $args = []): array
     {
         $command = array_merge(["vendor/bin/{$tool}"], $args);
-        
+
         $process = new Process($command, $projectDir, null, null, 60);
         $process->run();
 

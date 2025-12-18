@@ -25,13 +25,13 @@ final class ProjectMetrics
 
     public function getTotalFileCount(): int
     {
-        return ($this->php['fileCount'] ?? 0) + ($this->yaml['fileCount'] ?? 0) + ($this->json['fileCount'] ?? 0) 
+        return ($this->php['fileCount'] ?? 0) + ($this->yaml['fileCount'] ?? 0) + ($this->json['fileCount'] ?? 0)
             + ($this->xml['fileCount'] ?? 0) + ($this->typoscript['fileCount'] ?? 0) + ($this->other['fileCount'] ?? 0);
     }
 
     public function getTotalLines(): int
     {
-        return ($this->php['totalLines'] ?? 0) + ($this->yaml['totalLines'] ?? 0) + ($this->json['totalLines'] ?? 0) 
+        return ($this->php['totalLines'] ?? 0) + ($this->yaml['totalLines'] ?? 0) + ($this->json['totalLines'] ?? 0)
             + ($this->xml['totalLines'] ?? 0) + ($this->typoscript['totalLines'] ?? 0) + ($this->other['totalLines'] ?? 0);
     }
 

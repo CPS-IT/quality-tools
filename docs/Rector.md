@@ -200,7 +200,7 @@ vendor/bin/qt fix:rector --show-optimization
 The system automatically detects TYPO3 projects and applies specific optimizations:
 
 - **Path Scoping**: Defaults to `/packages` directory instead of entire project
-- **TYPO3 Rules**: Uses TYPO3-specific Rector rules for optimal modernization  
+- **TYPO3 Rules**: Uses TYPO3-specific Rector rules for optimal modernization
 - **Configuration**: Automatically uses TYPO3 13.4 target configuration
 - **Performance**: Optimized for typical TYPO3 project structures
 

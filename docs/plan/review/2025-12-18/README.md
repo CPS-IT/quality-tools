@@ -34,8 +34,7 @@ This directory contains the complete analysis of the first real-world testing of
 Each discovered issue has been analyzed in detail with root cause analysis and solution recommendations:
 
 - [Issue 001: PHPStan Memory Exhaustion](../issue/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
-- [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort  
-- [Issue 003: Fractor YAML Parser Crash](../issue/003-fractor-yaml-parser-crash.md) - Medium Priority, Medium Effort
+- [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
 - [Issue 004: TypoScript Lint Path Option](../issue/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
 - [Issue 005: Composer Normalize Missing](../issue/005-composer-normalize-missing.md) - High Priority, Low Effort
 - [Issue 006: Rector Performance](../issue/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
@@ -48,8 +47,7 @@ Each discovered issue has been analyzed in detail with root cause analysis and s
 
 **Primary Issues**:
 - Memory exhaustion (PHPStan, PHP CS Fixer)
-- Missing dependencies (composer-normalize)  
-- Tool crashes (Fractor YAML parser)
+- Missing dependencies (composer-normalize)
 - Interface mismatches (TypoScript lint)
 - Performance problems (Rector)
 
@@ -69,7 +67,7 @@ Each discovered issue has been analyzed in detail with root cause analysis and s
 
 The analysis provides specific recommendations for:
 - Immediate fixes to address symptoms
-- Architectural improvements to address root causes  
+- Architectural improvements to address root causes
 - Testing strategy overhaul for comprehensive validation
 - Process changes to prevent similar failures
 

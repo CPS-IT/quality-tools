@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Error recovery and state consistency tests
- * 
+ *
  * These tests validate that our quality tools handle failures gracefully
  * and maintain project state consistency even when errors occur.
  */
@@ -103,7 +103,7 @@ class LogicErrorService
         // Using non-existent class
         $instance = new SomeClass();
         $instance->nonExistentMethod();
-        
+
         // Type error
         $this->processArray("not an array");
     }
@@ -166,7 +166,7 @@ class ValidService
         if ($b === 0) {
             throw new \InvalidArgumentException('Division by zero');
         }
-        
+
         return $a / $b;
     }
 }
@@ -194,7 +194,7 @@ class PartialController extends ActionController
             'title' => 'Valid Action',
             'content' => 'This method is perfectly valid'
         ];
-        
+
         $this->view->assign('data', $data);
     }
 
@@ -381,7 +381,7 @@ BASH
         $this->assertEquals(0, $result['exitCode'], 'Rector should work after syntax fix');
 
         $result = $this->runTool('phpstan');
-        $this->assertContains($result['exitCode'], [0, 1], 
+        $this->assertContains($result['exitCode'], [0, 1],
             'PHPStan should run after syntax fix (may find logic errors)'
         );
     }
@@ -424,16 +424,16 @@ BASH
 
         // Run phpstan which should process valid files despite syntax error in one file
         $result = $this->runTool('phpstan', ['packages/error_test/Classes/Service/ValidService.php']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'PHPStan should process valid files individually'
         );
 
         // Test that we can process the partially valid file
         $result = $this->runTool('rector', [
-            '--dry-run', 
+            '--dry-run',
             'packages/error_test/Classes/Controller/PartialController.php'
         ]);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Rector should process files without syntax errors'
         );
     }
@@ -444,16 +444,16 @@ BASH
     public function testErrorMessageQuality(): void
     {
         $result = $this->runTool('phpstan');
-        
-        $this->assertStringContainsString('syntax error', $result['error'], 
+
+        $this->assertStringContainsString('syntax error', $result['error'],
             'Error message should mention syntax error'
         );
-        $this->assertStringContainsString('Fix syntax errors', $result['output'], 
+        $this->assertStringContainsString('Fix syntax errors', $result['output'],
             'Should provide helpful guidance'
         );
 
         // Test that error points to specific file
-        $this->assertStringContainsString('SyntaxErrorController', $result['output'], 
+        $this->assertStringContainsString('SyntaxErrorController', $result['output'],
             'Should identify problematic file'
         );
     }
@@ -480,12 +480,12 @@ BASH
         $this->assertEquals(0, $rectorResult['exitCode'], 'Rector should work after syntax fix');
 
         $phpstanResult = $this->runTool('phpstan');
-        $this->assertContains($phpstanResult['exitCode'], [0, 1], 
+        $this->assertContains($phpstanResult['exitCode'], [0, 1],
             'PHPStan should run (may find remaining issues)'
         );
 
         $fixerResult = $this->runTool('php-cs-fixer');
-        $this->assertEquals(0, $fixerResult['exitCode'], 
+        $this->assertEquals(0, $fixerResult['exitCode'],
             'PHP CS Fixer should work after syntax fix'
         );
     }
@@ -500,7 +500,7 @@ BASH
         file_put_contents($configFile, '<?php invalid syntax here');
 
         $result = $this->runTool('rector', ['--dry-run']);
-        $this->assertNotEquals(0, $result['exitCode'], 
+        $this->assertNotEquals(0, $result['exitCode'],
             'Rector should fail with corrupted configuration'
         );
 
@@ -508,7 +508,7 @@ BASH
         file_put_contents($configFile, '<?php return [];');
 
         $result = $this->runTool('rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Rector should work with restored configuration'
         );
     }
@@ -524,7 +524,7 @@ BASH
 
         $result = $this->runTool('rector', ['--dry-run']);
         // Should handle lock files gracefully (either succeed or fail gracefully)
-        $this->assertLessThan(128, $result['exitCode'], 
+        $this->assertLessThan(128, $result['exitCode'],
             'Should handle lock files gracefully'
         );
 
@@ -533,7 +533,7 @@ BASH
         $this->fixSyntaxError(); // Also fix syntax to ensure success
 
         $result = $this->runTool('rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'], 
+        $this->assertEquals(0, $result['exitCode'],
             'Should work after lock file cleanup'
         );
     }
@@ -541,7 +541,7 @@ BASH
     private function fixSyntaxError(): void
     {
         $file = $this->tempProjectRoot . '/packages/error_test/Classes/Controller/SyntaxErrorController.php';
-        
+
         $fixedContent = <<<'PHP'
 <?php
 namespace ErrorRecovery\Test\Controller;
@@ -557,19 +557,19 @@ class SyntaxErrorController
             'key1' => 'value1',
             'key2' => 'value2'
         );
-        
+
         return $array;
     }
 }
 PHP;
-        
+
         file_put_contents($file, $fixedContent);
     }
 
     private function createAdditionalValidFiles(): void
     {
         $baseDir = $this->tempProjectRoot . '/packages/error_test/Classes';
-        
+
         file_put_contents($baseDir . '/Service/AdditionalService.php', <<<'PHP'
 <?php
 namespace ErrorRecovery\Test\Service;
@@ -607,12 +607,12 @@ PHP
 
     private function assertStatesEqual(array $state1, array $state2, string $message = ''): void
     {
-        $this->assertEquals(array_keys($state1), array_keys($state2), 
+        $this->assertEquals(array_keys($state1), array_keys($state2),
             $message . ' - File list should be the same'
         );
 
         foreach ($state1 as $file => $data) {
-            $this->assertEquals($data['content'], $state2[$file]['content'], 
+            $this->assertEquals($data['content'], $state2[$file]['content'],
                 $message . " - Content should be unchanged for {$file}"
             );
         }
@@ -621,14 +621,14 @@ PHP
     private function assertStateChangedAppropriately(array $before, array $after): void
     {
         $changedFiles = 0;
-        
+
         foreach ($before as $file => $data) {
             if (isset($after[$file]) && $data['content'] !== $after[$file]['content']) {
                 $changedFiles++;
             }
         }
 
-        $this->assertGreaterThan(0, $changedFiles, 
+        $this->assertGreaterThan(0, $changedFiles,
             'Some files should have been modified by successful tool execution'
         );
     }

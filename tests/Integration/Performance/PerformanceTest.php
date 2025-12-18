@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Performance and resource exhaustion tests
- * 
+ *
  * These tests validate that our quality tools can handle realistic
  * project sizes and resource constraints without failing.
  */
@@ -29,7 +29,7 @@ final class PerformanceTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempProjectRoot);
-        
+
         // Log performance metrics for analysis
         if (!empty($this->performanceMetrics)) {
             echo "\nPerformance Metrics:\n";
@@ -62,10 +62,10 @@ final class PerformanceTest extends TestCase
     {
         $extensionDir = $this->tempProjectRoot . '/packages/performance_test';
         $classesDir = $extensionDir . '/Classes';
-        
+
         // Create multiple directories
         $directories = [
-            'Controller', 'Domain/Model', 'Domain/Repository', 
+            'Controller', 'Domain/Model', 'Domain/Repository',
             'Service', 'Utility', 'ViewHelpers', 'Command',
             'EventListener', 'DataProcessing', 'Configuration'
         ];
@@ -85,7 +85,7 @@ final class PerformanceTest extends TestCase
         for ($i = 1; $i <= $count; $i++) {
             $className = "GeneratedClass{$i}";
             $filePath = $baseDir . "/Service/{$className}.php";
-            
+
             $content = $this->generatePhpClassContent($className, $i);
             file_put_contents($filePath, $content);
         }
@@ -143,7 +143,7 @@ PHP;
     {
         // Create methods with varying complexity to stress test tools
         $complexity = ($methodNum + $classIndex) % 4;
-        
+
         switch ($complexity) {
             case 0: // Simple method
                 return <<<PHP
@@ -165,11 +165,11 @@ PHP;
     {
         \$result = array();
         \$items = \$items ?: array_keys(\$this->configuration);
-        
+
         foreach (\$items as \$item) {
             \$result[] = \$this->processItem(\$item);
         }
-        
+
         return \$result;
     }
 
@@ -184,7 +184,7 @@ PHP;
         if (!is_array(\$input)) {
             \$input = array(\$input);
         }
-        
+
         if (isset(\$options['transform'])) {
             if (\$options['transform'] === 'upper') {
                 \$input = array_map('strtoupper', \$input);
@@ -192,7 +192,7 @@ PHP;
                 \$input = array_map('strtolower', \$input);
             }
         }
-        
+
         return \$input;
     }
 
@@ -207,7 +207,7 @@ PHP;
         \$result = array();
         \$defaultSettings = array('enabled' => true, 'type' => 'default');
         \$settings = array_merge(\$defaultSettings, \$settings);
-        
+
         if (\$settings['enabled']) {
             foreach (\$data as \$key => \$value) {
                 if (is_array(\$value)) {
@@ -219,13 +219,13 @@ PHP;
                         }
                     }
                 } else {
-                    \$result[\$key] = \$settings['type'] === 'advanced' 
+                    \$result[\$key] = \$settings['type'] === 'advanced'
                         ? \$this->advancedProcess(\$value)
                         : \$this->simpleProcess(\$value);
                 }
             }
         }
-        
+
         return \$result;
     }
 
@@ -253,7 +253,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
     protected $deepNestedArray = array();
     protected $configuration = array();
     protected $cache = array();
-    
+
     public function __construct()
     {
         parent::__construct();
@@ -267,7 +267,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
     {
         $result = array();
         $processed = 0;
-        
+
         // First level of nesting
         foreach ($input as $level1Key => $level1Value) {
             if (is_array($level1Value)) {
@@ -282,7 +282,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
                                     // Complex processing logic
                                     if ($this->shouldProcess($level4Value, $options)) {
                                         $processedValue = $this->processValue($level4Value, $context);
-                                        
+
                                         if ($processedValue !== null) {
                                             if (!isset($result[$level1Key])) {
                                                 $result[$level1Key] = array();
@@ -293,10 +293,10 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
                                             if (!isset($result[$level1Key][$level2Key][$level3Key])) {
                                                 $result[$level1Key][$level2Key][$level3Key] = array();
                                             }
-                                            
+
                                             $result[$level1Key][$level2Key][$level3Key][$level4Key] = $processedValue;
                                             $processed++;
-                                            
+
                                             // Memory-intensive operation
                                             $this->updateCache($level1Key, $level2Key, $level3Key, $level4Key, $processedValue);
                                         }
@@ -308,7 +308,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
                 }
             }
         }
-        
+
         return array('result' => $result, 'processed' => $processed);
     }
 
@@ -318,7 +318,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
     public function memoryIntensiveMethod($size = 1000)
     {
         $largeArray = array();
-        
+
         // Allocate memory progressively
         for ($i = 0; $i < $size; $i++) {
             $largeArray[$i] = array(
@@ -335,13 +335,13 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
                     'field3' => array_fill(0, 20, 'nested')
                 ))
             );
-            
+
             // Simulate processing
             if ($i % 100 === 0) {
                 $this->processChunk(array_slice($largeArray, max(0, $i - 100), 100));
             }
         }
-        
+
         return count($largeArray);
     }
 
@@ -409,7 +409,7 @@ class ComplexService extends AbstractComplexService implements ComplexServiceInt
     private function processWithoutE($a, $b, $c, $d) { return 'no-e'; }
     private function processAlternativePath($a, $b) { return 'alt'; }
     private function processDefault() { return 'default'; }
-    
+
     private function initializeComplexConfiguration()
     {
         // Create complex configuration structure
@@ -524,7 +524,7 @@ PHP
         $vendorDir = $this->tempProjectRoot . '/vendor';
         $binDir = $vendorDir . '/bin';
         $configDir = $vendorDir . '/cpsit/quality-tools/config';
-        
+
         mkdir($binDir, 0777, true);
         mkdir($configDir, 0777, true);
 
@@ -625,10 +625,10 @@ BASH
         ], $this->tempProjectRoot, null, null, 120); // 2 minute timeout
 
         $process->run();
-        
+
         $endTime = microtime(true);
         $memoryAfter = memory_get_usage(true);
-        
+
         $executionTime = $endTime - $startTime;
         $memoryUsed = ($memoryAfter - $memoryBefore) / 1024 / 1024; // MB
 
@@ -658,7 +658,7 @@ BASH
         ], $this->tempProjectRoot, null, null, 180); // 3 minute timeout
 
         $process->run();
-        
+
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
 
@@ -712,7 +712,7 @@ BASH
         // Both should succeed
         $this->assertEquals(0, $rectorProcess->getExitCode(), 'Rector should succeed in concurrent execution');
         $this->assertEquals(0, $phpstanProcess->getExitCode(), 'PHPStan should succeed in concurrent execution');
-        
+
         // Concurrent execution should be faster than sequential
         $this->assertLessThan(120, $executionTime, 'Concurrent execution should complete reasonably quickly');
     }
@@ -737,12 +737,12 @@ BASH
         $process->run();
 
         // Should either succeed or fail gracefully (not hang or crash)
-        $this->assertContains($process->getExitCode(), [0, 1, 2], 
+        $this->assertContains($process->getExitCode(), [0, 1, 2],
             'Rector should handle limited resources gracefully'
         );
-        
+
         if ($process->getExitCode() !== 0) {
-            $this->assertStringContainsString('memory', 
+            $this->assertStringContainsString('memory',
                 strtolower($process->getErrorOutput()),
                 'Memory-related error should be clearly indicated'
             );
@@ -768,7 +768,7 @@ BASH
         ], $this->tempProjectRoot, null, null, 180);
 
         $process->run();
-        
+
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
 
@@ -816,18 +816,18 @@ PHP;
                 'type' => 'generated'
             )
         );
-        
+
         if (\$param2 !== null) {
             \$data['processed'] = true;
         }
-        
+
         return \$data;
     }
 PHP;
         }
 
         $content .= "\n}\n";
-        
+
         file_put_contents($filePath, $content);
     }
 }

@@ -1,8 +1,8 @@
 # Issue 004: TypoScript Lint Path Option Not Supported
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Low (1-2h)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Low (1-2h)
 **Impact:** Medium
 
 ## Description
@@ -22,7 +22,7 @@ The "--path" option does not exist.
 lint [-c|--config CONFIG] [-f|--format FORMAT] [-o|--output OUTPUT] [-e|--exit-code] [--fail-on-warnings] [--] [<paths>...]
 ```
 
-**Location:** TypoScript lint tool command line interface  
+**Location:** TypoScript lint tool command line interface
 **Trigger:** Running `lint:typoscript` with inherited --path option
 
 ## Impact Analysis

@@ -67,10 +67,6 @@ qt lint:rector
 
 ### Issues Requiring Fixes
 
-3. **[Issue 003: Fractor YAML Parser Crash](issue/003-fractor-yaml-parser-crash.md)** - Medium Priority, Medium Effort
-   - TypeError in YAML parsing crashes tool execution
-   - Recommended: Automatic error recovery with validation
-
 4. **[Issue 004: TypoScript Lint Path Option](issue/004-typoscript-lint-path-option.md)** - Medium Priority, Low Effort
    - Command interface mismatch with --path option
    - Recommended: Intelligent path discovery

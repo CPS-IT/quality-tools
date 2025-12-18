@@ -1,8 +1,8 @@
 # Issue 005: Composer Normalize Executable Missing
 
-**Status:** Open  
-**Priority:** High  
-**Effort:** Low (1-2h)  
+**Status:** Open
+**Priority:** High
+**Effort:** Low (1-2h)
 **Impact:** Medium
 
 ## Description
@@ -21,7 +21,7 @@ sh: /path/to/project/app/vendor/bin/composer-normalize: No such file or director
 sh: line 0: exec: /path/to/project/app/vendor/bin/composer-normalize: cannot execute: No such file or directory
 ```
 
-**Location:** ComposerLintCommand and ComposerFixCommand  
+**Location:** ComposerLintCommand and ComposerFixCommand
 **Trigger:** Running `lint:composer` or `fix:composer` on projects without composer-normalize
 
 ## Impact Analysis
@@ -74,7 +74,7 @@ sh: line 0: exec: /path/to/project/app/vendor/bin/composer-normalize: cannot exe
 ### Solution 5: Bundle Dependency with Automatic Fallback
 - **Description:** Bundle composer-normalize as required dependency and provide intelligent fallback when unavailable
 - **Effort:** Low
-- **Impact:** High  
+- **Impact:** High
 - **Pros:** Zero user configuration, always available, graceful degradation
 - **Cons:** Slightly increased package size
 

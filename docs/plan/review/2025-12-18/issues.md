@@ -24,7 +24,6 @@ Each issue has been analyzed in detail with root cause analysis and solution rec
 
 1. [Issue 001: PHPStan Memory Exhaustion](../issue/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
 2. [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
-3. [Issue 003: Fractor YAML Parser Crash](../issue/003-fractor-yaml-parser-crash.md) - Medium Priority, Medium Effort
 4. [Issue 004: TypoScript Lint Path Option](../issue/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
 5. [Issue 005: Composer Normalize Missing](../issue/005-composer-normalize-missing.md) - High Priority, Low Effort
 6. [Issue 006: Rector Performance](../issue/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
@@ -52,21 +51,14 @@ Each issue has been analyzed in detail with root cause analysis and solution rec
 - **Progress**: Started analysis on 435 files before crashing
 - **Recommendation**: Increase memory limit and add PHP version to composer.json
 
-### 4. lint:fractor [FAILED]
-- **Status**: TypeError crash ([Details](../issue/003-fractor-yaml-parser-crash.md))
-- **Error**: `TypeError: a9f\FractorYaml\SymfonyYamlParser::parse(): Return value must be of type array, string returned`
-- **Location**: `/path/to/project/app/vendor/a9f/fractor-yaml/src/SymfonyYamlParser.php on line 18`
-- **Progress**: Processed 47/3824 files before crash
-- **Recommendation**: Bug in Fractor YAML parser - may need version update or configuration fix
-
-### 5. lint:typoscript [FAILED]
+### 4. lint:typoscript [FAILED]
 - **Status**: Command interface error ([Details](../issue/004-typoscript-lint-path-option.md))
 - **Error**: `The "--path" option does not exist`
 - **Issue**: TypoScript linter doesn't support the --path option that our CLI tries to use
 - **Available options**: `-c|--config`, `-f|--format`, `-o|--output`, `-e|--exit-code`, `--fail-on-warnings`
 - **Recommendation**: Update TypoScriptLintCommand to not use --path option
 
-### 6. lint:composer [FAILED]
+### 5. lint:composer [FAILED]
 - **Status**: Missing executable ([Details](../issue/005-composer-normalize-missing.md))
 - **Error**: `sh: /path/to/project/app/vendor/bin/composer-normalize: No such file or directory`
 - **Issue**: composer-normalize is not installed in the target project

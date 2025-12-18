@@ -82,7 +82,7 @@ final class ProjectAnalyzerTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('is not a directory');
-        
+
         $this->projectAnalyzer->analyzeProject('/non/existent/path');
     }
 
@@ -156,7 +156,7 @@ final class ProjectAnalyzerTest extends TestCase
     {
         $fullPath = $this->tempDir . '/' . $path;
         $directory = dirname($fullPath);
-        
+
         if (!is_dir($directory)) {
             mkdir($directory, 0755, true);
         }

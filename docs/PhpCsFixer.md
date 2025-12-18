@@ -37,7 +37,7 @@ Optimization: Processing files with optimized memory allocation
 
 **Key Benefits:**
 - **Automatic Memory Management**: Dynamically calculates optimal memory limit (460M for medium projects)
-- **Smart Path Scoping**: Analyzes `/packages` directory by default for TYPO3 projects  
+- **Smart Path Scoping**: Analyzes `/packages` directory by default for TYPO3 projects
 - **Memory Issue Resolution**: Prevents memory exhaustion on large codebases
 - **Zero Configuration**: Works optimally without any setup
 

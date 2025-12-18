@@ -37,7 +37,7 @@ After installation, use the simple `qt` command shortcuts with automatic optimiz
 ```bash
 # Lint commands (analysis only)
 vendor/bin/qt lint:rector          # Rector dry-run analysis
-vendor/bin/qt lint:phpstan         # PHPStan static analysis  
+vendor/bin/qt lint:phpstan         # PHPStan static analysis
 vendor/bin/qt lint:php-cs-fixer    # PHP CS Fixer analysis
 vendor/bin/qt lint:fractor         # Fractor TypoScript analysis
 vendor/bin/qt lint:typoscript      # TypoScript Lint validation

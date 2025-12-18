@@ -52,10 +52,10 @@ public function testRealRectorExecutionWithActualPhpCode(): void
 {
     // Create real PHP code with issues rector can fix
     $this->createPhpFileWithKnownIssues();
-    
+
     // Execute actual rector command (not mock)
     $result = $this->executeRealRectorCommand();
-    
+
     // Verify actual code changes occurred
     $this->assertActualCodeWasFixed();
 }
@@ -84,12 +84,12 @@ public function testMemoryUsageWithLargeCodebase(): void
 {
     $this->createLargePhpProject(1000); // 1000 files
     $memoryBefore = memory_get_usage(true);
-    
+
     $this->executeRectorOnLargeProject();
-    
+
     $memoryAfter = memory_get_usage(true);
     $memoryUsed = $memoryAfter - $memoryBefore;
-    
+
     $this->assertLessThan(256 * 1024 * 1024, $memoryUsed); // Max 256MB
 }
 
@@ -97,9 +97,9 @@ public function testExecutionTimeWithComplexCode(): void
 {
     $this->createComplexPhpProject();
     $startTime = microtime(true);
-    
+
     $this->executePhpStanAnalysis();
-    
+
     $executionTime = microtime(true) - $startTime;
     $this->assertLessThan(300, $executionTime); // Max 5 minutes
 }
@@ -127,7 +127,7 @@ public function testExecutionTimeWithComplexCode(): void
 public function testAcrossDifferentTypo3Versions(): void
 {
     $typo3Versions = ['13.4.0', '13.4.5', '14.0.0-dev'];
-    
+
     foreach ($typo3Versions as $version) {
         $this->createProjectWithTypo3Version($version);
         $result = $this->executeAllQualityTools();
@@ -139,9 +139,9 @@ public function testWithReadOnlyConfigurationFiles(): void
 {
     $this->createProject();
     $this->makeConfigurationFilesReadOnly();
-    
+
     $result = $this->executeQualityToolsCommands();
-    
+
     $this->assertHandlesReadOnlyFilesGracefully($result);
 }
 ```
@@ -169,9 +169,9 @@ public function testRecoveryFromPartialToolFailure(): void
 {
     $this->setupProjectWithMultipleTools();
     $this->simulateRectorFailureDuringExecution();
-    
+
     $result = $this->executePhpStanAfterRectorFailure();
-    
+
     $this->assertPhpStanRunsSuccessfully($result);
     $this->assertProjectStateIsConsistent();
 }
@@ -180,9 +180,9 @@ public function testHandlingCorruptedConfigurationFiles(): void
 {
     $this->createProject();
     $this->corruptConfigurationFile('phpstan.neon');
-    
+
     $result = $this->executePhpStanCommand();
-    
+
     $this->assertErrorIsHandledGracefully($result);
     $this->assertFallbackConfigurationIsUsed();
 }
@@ -210,19 +210,19 @@ public function testHandlingCorruptedConfigurationFiles(): void
 public function testCompleteQualityWorkflow(): void
 {
     $this->createProjectWithKnownIssues();
-    
+
     // Step 1: Run Rector to modernize code
     $rectorResult = $this->executeRector();
     $this->assertCodeWasModernized();
-    
+
     // Step 2: Run PHPStan on modernized code
     $phpstanResult = $this->executePhpStan();
     $this->assertNoNewPhpStanErrors();
-    
+
     // Step 3: Run PHP-CS-Fixer to standardize formatting
     $fixerResult = $this->executePhpCsFixer();
     $this->assertCodeFormattingIsStandardized();
-    
+
     // Verify final state
     $this->assertAllToolsWorkTogetherCorrectly();
 }
@@ -231,10 +231,10 @@ public function testWorkflowRollbackOnFailure(): void
 {
     $this->createProject();
     $originalState = $this->captureProjectState();
-    
+
     $this->executeRector();
     $this->simulatePhpStanFailure();
-    
+
     $finalState = $this->captureProjectState();
     $this->assertProjectStateIsConsistent($originalState, $finalState);
 }
@@ -262,9 +262,9 @@ public function testWorkflowRollbackOnFailure(): void
 public function testWithRealTypo3Extension(): void
 {
     $this->cloneRealTypo3Extension('typo3/cms-core');
-    
+
     $result = $this->executeAllQualityTools();
-    
+
     $this->assertToolsHandleRealCodebase($result);
     $this->assertPerformanceIsAcceptable();
 }
@@ -272,9 +272,9 @@ public function testWithRealTypo3Extension(): void
 public function testWithLegacyPhpCode(): void
 {
     $this->createLegacyPhpProject(); // PHP 7.4 style code
-    
+
     $result = $this->executeRectorModernization();
-    
+
     $this->assertLegacyCodeIsModernizedCorrectly($result);
     $this->assertNoCodeIsLost();
 }

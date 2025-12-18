@@ -95,7 +95,7 @@ abstract class BaseCommand extends Command
     private function findVendorPath(): string
     {
         $projectRoot = $this->getProjectRoot();
-        
+
         // Try common vendor directory locations
         $vendorPaths = [
             $projectRoot . '/app/vendor',  // TYPO3 with app/vendor structure
@@ -128,7 +128,7 @@ abstract class BaseCommand extends Command
         if ($memoryLimit !== null) {
             $env = $_SERVER;
             $env['PHP_MEMORY_LIMIT'] = $memoryLimit;
-            
+
             // Prepend php with memory limit to the command if it's a php script
             $executable = basename($command[0]);
             if (str_contains($executable, 'php') || str_ends_with($command[0], '.php') || str_ends_with($command[0], '.phar')) {
@@ -233,32 +233,32 @@ abstract class BaseCommand extends Command
     {
         $targetPath = $this->getTargetPath($input);
         $output->writeln(sprintf('<comment>Analyzing target directory: %s</comment>', $targetPath));
-        
+
         $metrics = $this->getProjectMetrics($input, $output);
         $calculator = $this->getMemoryCalculator();
         $profile = $calculator->getOptimizationProfile($metrics);
 
         $output->writeln('<comment>Project Analysis:</comment>');
-        $output->writeln(sprintf('  Project size: %s (%d files, %d lines)', 
-            $profile['projectSize'], 
-            $metrics->getTotalFileCount(), 
+        $output->writeln(sprintf('  Project size: %s (%d files, %d lines)',
+            $profile['projectSize'],
+            $metrics->getTotalFileCount(),
             $metrics->getTotalLines()
         ));
-        $output->writeln(sprintf('  PHP files: %d (complexity score: %d)', 
-            $metrics->getPhpFileCount(), 
+        $output->writeln(sprintf('  PHP files: %d (complexity score: %d)',
+            $metrics->getPhpFileCount(),
             $metrics->getPhpComplexityScore()
         ));
 
         if (!$this->isOptimizationDisabled($input)) {
             $output->writeln('<comment>Optimization Profile:</comment>');
             $output->writeln(sprintf('  Memory limit: %s', $profile['memoryLimit']));
-            
+
             if ($calculator->supportsParallelProcessing($tool)) {
                 $output->writeln(sprintf('  Parallel processing: %s', $profile['parallelProcessing'] ? 'enabled' : 'disabled'));
             } else {
                 $output->writeln('  Parallel processing: not supported by this tool');
             }
-            
+
             $output->writeln(sprintf('  Progress indicator: %s', $profile['progressIndicator'] ? 'enabled' : 'disabled'));
             $output->writeln(sprintf('  Tool-specific memory: %s', $calculator->calculateOptimalMemoryForTool($metrics, $tool)));
 

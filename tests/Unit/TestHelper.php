@@ -228,8 +228,8 @@ final class TestHelper
         foreach ($executables as $executable) {
             $executablePath = $vendorBinDir . '/' . $executable;
             // Use the specific message format expected by tests
-            $message = $executable === 'composer-normalize' 
-                ? 'Composer normalize executed successfully' 
+            $message = $executable === 'composer-normalize'
+                ? 'Composer normalize executed successfully'
                 : ucfirst($executable) . ' executed successfully';
             file_put_contents($executablePath, "#!/bin/bash\necho '{$message}'\nexit 0\n");
             chmod($executablePath, 0755);

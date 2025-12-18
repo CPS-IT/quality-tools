@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Real-world integration tests that would have caught production issues
- * 
+ *
  * These tests execute actual external tools against real code to validate
  * that our tool integrations work correctly in production scenarios.
  */
@@ -51,7 +51,7 @@ final class RealToolIntegrationTest extends TestCase
 
         // Create packages directory with real TYPO3 extension code
         $this->createRealExtensionCode();
-        
+
         // Install actual dependencies (simplified for testing)
         $this->createVendorStructureWithRealTools();
     }
@@ -105,10 +105,10 @@ class NewsController extends ActionController
 
         // Deprecated GeneralUtility usage
         $config = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ConfigurationManager');
-        
+
         // Missing type hints and return type
         $news = $this->newsRepository->findAll();
-        
+
         // Inefficient loop that could cause memory issues
         $processedNews = array();
         foreach ($news as $newsItem) {
@@ -145,7 +145,7 @@ class NewsController extends ActionController
         $result['teaser'] = $newsItem->getTeaser();
         $result['content'] = $newsItem->getContent();
         $result['date'] = $newsItem->getDatetime();
-        
+
         // Nested conditions that violate complexity rules
         if ($result['content']) {
             if (strlen($result['content']) > 500) {
@@ -154,7 +154,7 @@ class NewsController extends ActionController
                 }
             }
         }
-        
+
         return $result;
     }
 }
@@ -179,7 +179,7 @@ class News extends AbstractEntity
     protected $title = '';
 
     /**
-     * @var string  
+     * @var string
      */
     protected $teaser = '';
 
@@ -249,7 +249,7 @@ PHP
         $vendorDir = $this->tempProjectRoot . '/vendor';
         $binDir = $vendorDir . '/bin';
         $configDir = $vendorDir . '/cpsit/quality-tools/config';
-        
+
         mkdir($binDir, 0777, true);
         mkdir($configDir, 0777, true);
 
@@ -384,7 +384,7 @@ if [[ -d "$TARGET_PATH/packages" ]]; then
     echo "Processing $TARGET_PATH/packages..."
     echo "Found 5 files to analyze"
     echo "Found 12 violations that can be fixed"
-    
+
     if [[ "$DRY_RUN" != "true" ]]; then
         echo "Applied 12 fixes"
         # Actually modify a file to simulate rector changes
@@ -395,7 +395,7 @@ if [[ -d "$TARGET_PATH/packages" ]]; then
     else
         echo "Dry run mode - no changes applied"
     fi
-    
+
     exit 0
 else
     echo "ERROR: No packages directory found in $TARGET_PATH" >&2
@@ -528,10 +528,10 @@ BASH
         $process->run();
 
         // Verify rector can parse our configuration and analyze code
-        $this->assertEquals(0, $process->getExitCode(), 
+        $this->assertEquals(0, $process->getExitCode(),
             "Rector failed with our configuration: " . $process->getErrorOutput()
         );
-        
+
         $output = $process->getOutput();
         $this->assertStringContainsString('Processing', $output);
         $this->assertStringContainsString('Found', $output);
@@ -543,10 +543,10 @@ BASH
     public function testPerformanceWithLargeCodebase(): void
     {
         $this->markTestSkipped('Requires large test data setup');
-        
+
         // This test would create a realistic large TYPO3 project
         // $this->createLargeTypo3Project(500); // 500 PHP files
-        
+
         $memoryBefore = memory_get_usage(true);
         $timeBefore = microtime(true);
 
@@ -648,7 +648,7 @@ BASH
             '--config', 'vendor/cpsit/quality-tools/config/rector.php',
             '.'
         ], $this->tempProjectRoot);
-        
+
         $rectorProcess->run();
         $this->assertEquals(0, $rectorProcess->getExitCode(), 'Rector should succeed');
 
@@ -659,7 +659,7 @@ BASH
             '--config', 'vendor/cpsit/quality-tools/config/phpstan.neon',
             '.'
         ], $this->tempProjectRoot);
-        
+
         $phpstanProcess->run();
         // PHPStan might still find issues but should not crash
         $this->assertStringNotContainsString('Fatal error', $phpstanProcess->getErrorOutput());
@@ -671,7 +671,7 @@ BASH
             '--config', 'vendor/cpsit/quality-tools/config/php-cs-fixer.php',
             '.'
         ], $this->tempProjectRoot);
-        
+
         $fixerProcess->run();
         $this->assertEquals(0, $fixerProcess->getExitCode(), 'PHP CS Fixer should succeed');
 
@@ -731,10 +731,10 @@ BASH
         // Verify no files were corrupted or lost
         foreach (array_keys($before) as $filePath) {
             $this->assertFileExists($filePath, "File was lost during tool execution: {$filePath}");
-            
+
             if (isset($after[$filePath])) {
                 // File should either be unchanged or properly modified
-                $this->assertGreaterThan(0, $after[$filePath]['size'], 
+                $this->assertGreaterThan(0, $after[$filePath]['size'],
                     "File was corrupted (zero size): {$filePath}"
                 );
             }
@@ -748,7 +748,7 @@ BASH
 
         // Verify rector modernized the code
         $this->assertStringNotContainsString('array(', $content, 'Array syntax should be modernized');
-        
+
         // Verify file structure is intact
         $this->assertStringContainsString('class NewsController', $content);
         $this->assertStringContainsString('public function listAction', $content);
@@ -779,7 +779,7 @@ class ComplexUtility
     {
         // Deep nesting that could cause memory issues
         $processed = array();
-        
+
         foreach ($configuration ?: array() as $key => $value) {
             if (is_array($value)) {
                 foreach ($value as $subKey => $subValue) {

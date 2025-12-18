@@ -10,7 +10,7 @@ use Symfony\Component\Process\Process;
 
 /**
  * Complete workflow integration tests
- * 
+ *
  * These tests validate that multiple quality tools work together correctly
  * in realistic end-to-end scenarios with proper tool interdependencies.
  */
@@ -29,7 +29,7 @@ final class CompleteWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempProjectRoot);
-        
+
         if (!empty($this->workflowMetrics)) {
             echo "\nWorkflow Metrics:\n";
             foreach ($this->workflowMetrics as $workflow => $metrics) {
@@ -67,7 +67,7 @@ final class CompleteWorkflowTest extends TestCase
     {
         $extensionDir = $this->tempProjectRoot . '/packages/workflow_extension';
         $classesDir = $extensionDir . '/Classes';
-        
+
         $directories = [
             'Controller', 'Domain/Model', 'Domain/Repository',
             'Service', 'Utility', 'ViewHelpers', 'Configuration',
@@ -127,7 +127,7 @@ class NewsController extends ActionController
 
     /**
      * Inject news service
-     * @param NewsService $newsService  
+     * @param NewsService $newsService
      */
     public function injectNewsService(NewsService $newsService)
     {
@@ -153,7 +153,7 @@ class NewsController extends ActionController
 
         // Missing type validation and error handling
         $news = $this->newsRepository->findBySettings($settings);
-        
+
         // Inefficient processing that could be optimized
         $processedNews = array();
         foreach ($news as $newsItem) {
@@ -488,16 +488,16 @@ class NewsRepository extends Repository
     public function findPopular($limit = 10)
     {
         $query = $this->createQuery();
-        
+
         // Old array syntax
         $orderings = array(
             'views' => QueryInterface::ORDER_DESCENDING,
             'datetime' => QueryInterface::ORDER_DESCENDING
         );
-        
+
         $query->setOrderings($orderings);
         $query->setLimit($limit);
-        
+
         return $query->execute();
     }
 }
@@ -650,10 +650,10 @@ class ArrayUtility
     {
         // Old array syntax
         $result = array();
-        
+
         // Deprecated GeneralUtility usage
         $result = GeneralUtility::array_merge_recursive_overrule($array1, $array2);
-        
+
         return $result;
     }
 
@@ -743,7 +743,7 @@ class NewsEventListener
     {
         // Missing parameter type
         $news = $event->getNews();
-        
+
         // Process news without proper type checking
         if ($news) {
             $this->processNewNews($news);
@@ -751,13 +751,13 @@ class NewsEventListener
     }
 
     /**
-     * Handle news update event  
+     * Handle news update event
      */
     public function onNewsUpdated($event)
     {
         $news = $event->getNews();
         $oldData = $event->getOldData();
-        
+
         // Complex logic without return type
         if ($this->hasSignificantChanges($news, $oldData)) {
             $this->notifySubscribers($news);
@@ -815,13 +815,13 @@ plugin.tx_workflowextension {
             insertAbove = 1
             insertBelow = 1
         }
-        
+
         detail {
             showRelated = 1
             relatedLimit = 5
         }
     }
-    
+
     view {
         templateRootPaths {
             0 = EXT:workflow_extension/Resources/Private/Templates/
@@ -883,7 +883,7 @@ class NewsServiceTest extends TestCase
         // Old-style mock creation
         $news = $this->getMockBuilder('CompleteWorkflow\\Extension\\Domain\\Model\\News')
             ->getMock();
-            
+
         $result = $this->subject->enrichNewsItem($news, array());
         $this->assertIsArray($result);
     }
@@ -903,7 +903,7 @@ PHP
 
         // Create realistic configurations
         $this->createRealisticConfigurations($configDir);
-        
+
         // Create integrated tool executables
         $this->createIntegratedToolExecutables($binDir);
     }
@@ -1014,19 +1014,19 @@ CHANGES_MADE=0
 
 if [[ "$DRY_RUN" != "true" ]]; then
     echo "Applying transformations..."
-    
+
     # Transform array() to []
     find "$TARGET_PATH" -name "*.php" -exec sed -i.rector 's/array(/[/g; s/array (/[/g' {} \;
     find "$TARGET_PATH" -name "*.php" -exec sed -i.rector 's/)]/]/g' {} \;
     CHANGES_MADE=$((CHANGES_MADE + 5))
-    
+
     # Add missing return types (simplified)
     find "$TARGET_PATH" -name "*.php" -exec sed -i.rector 's/public function \([a-zA-Z_][a-zA-Z0-9_]*\)()/public function \1(): mixed/g' {} \;
     CHANGES_MADE=$((CHANGES_MADE + 3))
-    
+
     # Clean up backup files
     find "$TARGET_PATH" -name "*.rector" -delete
-    
+
     echo "Applied $CHANGES_MADE transformations"
 else
     echo "DRY RUN: Would apply $((FILE_COUNT * 2)) transformations"
@@ -1140,19 +1140,19 @@ FIXES_APPLIED=0
 
 if [[ "$DRY_RUN" != "true" ]]; then
     echo "Applying fixes..."
-    
+
     # Fix spacing around operators
     find "$TARGET_PATH" -name "*.php" -exec sed -i.phpcs 's/\([^=!<>]\)=\([^=]\)/\1 = \2/g' {} \;
     find "$TARGET_PATH" -name "*.php" -exec sed -i.phpcs 's/if(/if (/g' {} \;
     find "$TARGET_PATH" -name "*.php" -exec sed -i.phpcs 's/){/) {/g' {} \;
-    
+
     # Fix concatenation spacing
     find "$TARGET_PATH" -name "*.php" -exec sed -i.phpcs 's/\.\([^" ]\)/ . \1/g' {} \;
     find "$TARGET_PATH" -name "*.php" -exec sed -i.phpcs 's/\([^" ]\)\./\1 ./g' {} \;
-    
+
     # Clean up backup files
     find "$TARGET_PATH" -name "*.phpcs" -delete
-    
+
     FIXES_APPLIED=$((FILE_COUNT * 3))
     echo "Fixed $FIXES_APPLIED style violations in $FILE_COUNT files"
 else
@@ -1210,7 +1210,7 @@ BASH
     public function testWorkflowWithToolInterdependencies(): void
     {
         // Test that rector changes help PHPStan analysis
-        
+
         // Initial PHPStan run (expect errors)
         $initialPhpStan = $this->runTool('phpstan');
         $initialErrors = $this->countPhpStanErrors($initialPhpStan['output']);
@@ -1247,7 +1247,7 @@ BASH
     public function testParallelToolWorkflow(): void
     {
         // Test running tools on different parts of the codebase simultaneously
-        
+
         $startTime = microtime(true);
 
         $processes = [
@@ -1256,13 +1256,13 @@ BASH
                 '--dry-run',
                 'packages/workflow_extension/Classes/Domain'
             ], $this->tempProjectRoot),
-            
+
             'phpstan_controllers' => new Process([
                 'vendor/bin/phpstan',
                 'analyse',
                 'packages/workflow_extension/Classes/Controller'
             ], $this->tempProjectRoot),
-            
+
             'fixer_services' => new Process([
                 'vendor/bin/php-cs-fixer',
                 'fix',
@@ -1288,13 +1288,13 @@ BASH
 
         // All should complete successfully or with expected analysis results
         foreach ($results as $tool => $exitCode) {
-            $this->assertContains($exitCode, [0, 1], 
+            $this->assertContains($exitCode, [0, 1],
                 "Tool {$tool} should complete successfully or with analysis findings"
             );
         }
 
         // Parallel execution should be faster than sequential
-        $this->assertLessThan(30, $endTime - $startTime, 
+        $this->assertLessThan(30, $endTime - $startTime,
             'Parallel execution should complete within 30 seconds'
         );
     }
@@ -1305,7 +1305,7 @@ BASH
     public function testIncrementalWorkflow(): void
     {
         // Simulate incremental processing by targeting specific files
-        
+
         $changedFiles = [
             'packages/workflow_extension/Classes/Controller/NewsController.php',
             'packages/workflow_extension/Classes/Service/NewsService.php'
@@ -1313,12 +1313,12 @@ BASH
 
         foreach ($changedFiles as $file) {
             $result = $this->runTool('rector', ['--dry-run', $file]);
-            $this->assertEquals(0, $result['exitCode'], 
+            $this->assertEquals(0, $result['exitCode'],
                 "Rector should process individual file: {$file}"
             );
 
             $result = $this->runTool('phpstan', [$file]);
-            $this->assertContains($result['exitCode'], [0, 1], 
+            $this->assertContains($result['exitCode'], [0, 1],
                 "PHPStan should analyze individual file: {$file}"
             );
         }
@@ -1337,9 +1337,9 @@ BASH
 
         // Run workflow - should detect corruption and handle gracefully
         $rectorResult = $this->runTool('rector', ['--dry-run']);
-        
+
         // Should fail gracefully without corrupting other files
-        $this->assertNotEquals(0, $rectorResult['exitCode'], 
+        $this->assertNotEquals(0, $rectorResult['exitCode'],
             'Should fail on corrupted files'
         );
 
@@ -1351,23 +1351,23 @@ BASH
     private function analyzeCodeQuality(): array
     {
         $issues = 0;
-        
+
         // Count different types of issues in the codebase
         $phpFiles = $this->findPhpFiles();
-        
+
         foreach ($phpFiles as $file) {
             $content = file_get_contents($file);
-            
+
             // Count old array syntax
             if (strpos($content, 'array(') !== false) {
                 $issues++;
             }
-            
+
             // Count missing type hints
             if (preg_match('/public function \w+\([^)]*\$\w+[^)]*\)/', $content)) {
                 $issues++;
             }
-            
+
             // Count style issues
             if (strpos($content, 'if(') !== false || strpos($content, '){') !== false) {
                 $issues++;
@@ -1382,7 +1382,7 @@ BASH
         $this->assertLessThanOrEqual($before['issues'], $after['issues'],
             'Quality issues should not increase'
         );
-        
+
         // Ideally issues should decrease significantly
         $improvement = $before['issues'] - $after['issues'];
         $this->assertGreaterThan(0, $improvement,
