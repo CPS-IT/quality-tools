@@ -52,7 +52,7 @@ final class ComposerFixCommandTest extends TestCase
         $composerScript .= "fi\n";
         $composerScript .= "echo \"Composer executed successfully\"\n";
         $composerScript .= "exit 0\n";
-        
+
         $composerExecutable = $vendorBinDir . '/composer';
         file_put_contents($composerExecutable, $composerScript);
         chmod($composerExecutable, 0755);
@@ -177,7 +177,7 @@ final class ComposerFixCommandTest extends TestCase
     {
         // Use CommandTester instead of mocks for verbose test to avoid complex mock setup
         $commandTester = new CommandTester($this->command);
-        
+
         // Execute with verbose option
         $commandTester->execute([], [
             'verbosity' => OutputInterface::VERBOSITY_VERBOSE,

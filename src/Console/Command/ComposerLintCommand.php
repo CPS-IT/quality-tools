@@ -43,7 +43,7 @@ final class ComposerLintCommand extends BaseCommand
             if (file_exists($vendorComposer)) {
                 $composerExecutable = $vendorComposer;
             }
-            
+
             $command = [
                 $composerExecutable,
                 'normalize',
