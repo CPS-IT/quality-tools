@@ -33,11 +33,11 @@ This directory contains the complete analysis of the first real-world testing of
 
 Each discovered issue has been analyzed in detail with root cause analysis and solution recommendations:
 
-- [Issue 001: PHPStan Memory Exhaustion](../issue/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
-- [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
-- [Issue 004: TypoScript Lint Path Option](../issue/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
-- [Issue 005: Composer Normalize Missing](../issue/005-composer-normalize-missing.md) - High Priority, Low Effort
-- [Issue 006: Rector Performance](../issue/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
+- [Issue 001: PHPStan Memory Exhaustion](../issue/done/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
+- [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/done/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
+- [Issue 004: TypoScript Lint Path Option](../issue/done/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
+- [Issue 005: Composer Normalize Missing](../issue/done/005-composer-normalize-missing.md) - High Priority, Low Effort
+- [Issue 006: Rector Performance](../issue/done/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
 
 ## Key Findings Summary
 

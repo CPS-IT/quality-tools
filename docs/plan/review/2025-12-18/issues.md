@@ -22,11 +22,11 @@ All quality tools encountered critical issues when analyzing the TYPO3 project:
 
 Each issue has been analyzed in detail with root cause analysis and solution recommendations:
 
-1. [Issue 001: PHPStan Memory Exhaustion](../issue/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
-2. [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
-4. [Issue 004: TypoScript Lint Path Option](../issue/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
-5. [Issue 005: Composer Normalize Missing](../issue/005-composer-normalize-missing.md) - High Priority, Low Effort
-6. [Issue 006: Rector Performance](../issue/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
+1. [Issue 001: PHPStan Memory Exhaustion](../issue/done/001-phpstan-memory-exhaustion.md) - High Priority, Low Effort
+2. [Issue 002: PHP CS Fixer Memory Exhaustion](../issue/done/002-php-cs-fixer-memory-exhaustion.md) - High Priority, Low Effort
+4. [Issue 004: TypoScript Lint Path Option](../issue/done/004-typoscript-lint-path-option.md) - Medium Priority, Low Effort
+5. [Issue 005: Composer Normalize Missing](../issue/done/005-composer-normalize-missing.md) - High Priority, Low Effort
+6. [Issue 006: Rector Performance](../issue/done/006-rector-performance-large-projects.md) - Low Priority, Medium Effort
 
 ## Detailed Findings
 
@@ -37,14 +37,14 @@ Each issue has been analyzed in detail with root cause analysis and solution rec
 - **Recommendation**: Consider adding memory limit and timeout configurations
 
 ### 2. lint:phpstan [FAILED]
-- **Status**: Memory exhaustion error ([Details](../issue/001-phpstan-memory-exhaustion.md))
+- **Status**: Memory exhaustion error ([Details](../issue/done/001-phpstan-memory-exhaustion.md))
 - **Error**: `PHP Fatal error: Allowed memory size of 134217728 bytes exhausted`
 - **Location**: `phar:///path/to/project/app/vendor/phpstan/phpstan/phpstan.phar/src/Cache/FileCacheStorage.php on line 73`
 - **Message**: "PHPStan process crashed because it reached configured PHP memory limit: 128M"
 - **Recommendation**: Need to increase memory limit with `--memory-limit` option or in php.ini
 
 ### 3. lint:php-cs-fixer [FAILED]
-- **Status**: Memory exhaustion error ([Details](../issue/002-php-cs-fixer-memory-exhaustion.md))
+- **Status**: Memory exhaustion error ([Details](../issue/done/002-php-cs-fixer-memory-exhaustion.md))
 - **Error**: `PHP Fatal error: Allowed memory size of 134217728 bytes exhausted`
 - **Location**: `/path/to/project/app/vendor/friendsofphp/php-cs-fixer/src/Tokenizer/Tokens.php on line 1149`
 - **Warning**: "No PHP version requirement found in composer.json"
@@ -52,14 +52,14 @@ Each issue has been analyzed in detail with root cause analysis and solution rec
 - **Recommendation**: Increase memory limit and add PHP version to composer.json
 
 ### 4. lint:typoscript [FAILED]
-- **Status**: Command interface error ([Details](../issue/004-typoscript-lint-path-option.md))
+- **Status**: Command interface error ([Details](../issue/done/004-typoscript-lint-path-option.md))
 - **Error**: `The "--path" option does not exist`
 - **Issue**: TypoScript linter doesn't support the --path option that our CLI tries to use
 - **Available options**: `-c|--config`, `-f|--format`, `-o|--output`, `-e|--exit-code`, `--fail-on-warnings`
 - **Recommendation**: Update TypoScriptLintCommand to not use --path option
 
 ### 5. lint:composer [FAILED]
-- **Status**: Missing executable ([Details](../issue/005-composer-normalize-missing.md))
+- **Status**: Missing executable ([Details](../issue/done/005-composer-normalize-missing.md))
 - **Error**: `sh: /path/to/project/app/vendor/bin/composer-normalize: No such file or directory`
 - **Issue**: composer-normalize is not installed in the target project
 - **Recommendation**: Either install composer-normalize in target project or handle gracefully when missing

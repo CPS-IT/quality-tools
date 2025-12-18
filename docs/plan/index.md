@@ -63,8 +63,6 @@ qt lint:rector
 
 ## Known Issues
 
-**Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md) - Follow-up fixes needed for edge cases
+none
 
-1. **[Issue 005: Composer Normalize Missing](issue/005-composer-normalize-missing.md)** - High Priority, Low Effort
-   - Missing dependency in target projects
-   - Recommended: Bundle dependency with fallback
+**Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md)

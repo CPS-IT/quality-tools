@@ -148,7 +148,13 @@ abstract class BaseCommand extends Command
         $process->run(function (string $type, string $buffer) use ($output): void {
             // Forward output from the process (Symfony handles quiet mode automatically)
             if ($type === Process::ERR) {
-                $output->getErrorOutput()->write($buffer);
+                // Check if output supports getErrorOutput() method (ConsoleOutputInterface)
+                if (method_exists($output, 'getErrorOutput')) {
+                    $output->getErrorOutput()->write($buffer);
+                } else {
+                    // For outputs that don't support error output (like StreamOutput), write to main output
+                    $output->write($buffer);
+                }
             } else {
                 $output->write($buffer);
             }

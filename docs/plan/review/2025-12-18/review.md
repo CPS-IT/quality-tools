@@ -19,12 +19,12 @@ The Quality Tools package, despite having 227 passing unit tests and complete MV
 
 | Issue | Tool | Type | Severity | Root Cause Category |
 |-------|------|------|----------|-------------------|
-| [001](../issue/001-phpstan-memory-exhaustion.md) | PHPStan | Memory Exhaustion | High | Resource Planning |
-| [002](../issue/002-php-cs-fixer-memory-exhaustion.md) | PHP CS Fixer | Memory Exhaustion | High | Resource Planning |
-| [003](../issue/003-fractor-yaml-parser-crash.md) | Fractor | Parser Crash | Medium | Error Handling |
-| [004](../issue/004-typoscript-lint-path-option.md) | TypoScript Lint | Interface Mismatch | Medium | Integration Testing |
-| [005](../issue/005-composer-normalize-missing.md) | Composer Normalize | Missing Dependency | High | Dependency Management |
-| [006](../issue/006-rector-performance-large-projects.md) | Rector | Performance | Low | Scale Testing |
+| [001](../issue/done/001-phpstan-memory-exhaustion.md) | PHPStan | Memory Exhaustion | High | Resource Planning |
+| [002](../issue/done/002-php-cs-fixer-memory-exhaustion.md) | PHP CS Fixer | Memory Exhaustion | High | Resource Planning |
+| [003](../issue/done/003-fractor-yaml-parser-crash.md) | Fractor | Parser Crash | Medium | Error Handling |
+| [004](../issue/done/004-typoscript-lint-path-option.md) | TypoScript Lint | Interface Mismatch | Medium | Integration Testing |
+| [005](../issue/done/005-composer-normalize-missing.md) | Composer Normalize | Missing Dependency | High | Dependency Management |
+| [006](../issue/done/006-rector-performance-large-projects.md) | Rector | Performance | Low | Scale Testing |
 
 **Result:** 5/6 tools completely non-functional, 1 tool severely degraded performance
 

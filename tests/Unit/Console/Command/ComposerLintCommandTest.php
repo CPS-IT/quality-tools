@@ -33,10 +33,29 @@ final class ComposerLintCommandTest extends TestCase
 
         // Create vendor directory structure with cpsit/quality-tools package
         $vendorDir = TestHelper::createVendorStructure($this->tempDir);
-        $vendorBinDir = $vendorDir . '/bin';
+        $vendorBinDir = $this->tempDir . '/vendor/bin';
+        if (!is_dir($vendorBinDir)) {
+            mkdir($vendorBinDir, 0777, true);
+        }
 
-        // Create fake composer-normalize executable
-        TestHelper::createMockExecutables($vendorBinDir, ['composer-normalize']);
+        // Create fake composer executable that simulates composer normalize plugin
+        $composerScript = "#!/bin/bash\n";
+        $composerScript .= "# Handle all composer normalize variations\n";
+        $composerScript .= "if [[ \"\$1\" == \"normalize\" ]]; then\n";
+        $composerScript .= "  echo \"Running ergebnis/composer-normalize by Andreas Möller and contributors.\"\n";
+        $composerScript .= "  if [[ \"\$*\" == *\"--dry-run\"* ]]; then\n";
+        $composerScript .= "    echo \"composer.json is already normalized.\"\n";
+        $composerScript .= "  else\n";
+        $composerScript .= "    echo \"composer.json has been normalized.\"\n";
+        $composerScript .= "  fi\n";
+        $composerScript .= "  exit 0\n";
+        $composerScript .= "fi\n";
+        $composerScript .= "echo \"Composer executed successfully\"\n";
+        $composerScript .= "exit 0\n";
+        
+        $composerExecutable = $vendorBinDir . '/composer';
+        file_put_contents($composerExecutable, $composerScript);
+        chmod($composerExecutable, 0755);
 
         // Set up environment to use temp directory as project root and initialize application
         TestHelper::withEnvironment(
@@ -100,9 +119,13 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturn(false);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
+            ->method('writeln');
+
+        $this->mockOutput
+            ->expects($this->atLeastOnce())
             ->method('write')
-            ->with("Composer normalize executed successfully\n");
+            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -118,10 +141,14 @@ final class ComposerLintCommandTest extends TestCase
         file_put_contents($customTargetDir . '/composer.json', '{}');
 
         $this->mockInput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getOption')
-            ->with('path')
-            ->willReturn($customTargetDir);
+            ->willReturnMap([
+                ['path', $customTargetDir],
+                ['config', null],
+                ['show-optimization', false],
+                ['no-optimization', false]
+            ]);
 
         $this->mockOutput
             ->expects($this->once())
@@ -129,9 +156,13 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturn(false);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
+            ->method('writeln');
+
+        $this->mockOutput
+            ->expects($this->atLeastOnce())
             ->method('write')
-            ->with("Composer normalize executed successfully\n");
+            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -140,30 +171,21 @@ final class ComposerLintCommandTest extends TestCase
 
     public function testExecuteWithVerboseOutput(): void
     {
-        $this->mockInput
-            ->expects($this->once())
-            ->method('getOption')
-            ->with('path')
-            ->willReturn(null);
+        // Use CommandTester instead of mocks for verbose test to avoid complex mock setup
+        $commandTester = new CommandTester($this->command);
+        
+        // Execute with verbose option
+        $commandTester->execute([], [
+            'verbosity' => OutputInterface::VERBOSITY_VERBOSE,
+        ]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(true);
+        // Command should execute successfully
+        $this->assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with($this->matchesRegularExpression('/Executing:.*composer-normalize.*--dry-run/i'));
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("Composer normalize executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        // Output should contain composer normalize execution result and verbose info
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
+        $this->assertStringContainsString('Executing:', $output); // Verbose execution info
     }
 
     public function testExecuteHandlesTargetPathException(): void
@@ -198,7 +220,7 @@ final class ComposerLintCommandTest extends TestCase
 
         // Output should contain composer-normalize execution result
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Composer normalize executed successfully', $output);
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
@@ -221,14 +243,13 @@ final class ComposerLintCommandTest extends TestCase
 
         // Output should contain composer-normalize execution result
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Composer normalize executed successfully', $output);
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 
-    public function testCommandHandlesMissingExecutable(): void
+    public function testCommandHandlesMissingComposerJson(): void
     {
-        // Remove composer-normalize executable to simulate missing dependency
-        $composerNormalizeExecutable = $this->tempDir . '/vendor/bin/composer-normalize';
-        unlink($composerNormalizeExecutable);
+        // Remove composer.json file to test file validation
+        unlink($this->tempDir . '/composer.json');
 
         $this->mockInput
             ->expects($this->once())
@@ -236,12 +257,15 @@ final class ComposerLintCommandTest extends TestCase
             ->with('path')
             ->willReturn(null);
 
-        // Since the executable doesn't exist, this will fail at the process level
-        // and the executeProcess method will return a non-zero exit code
+        $this->mockOutput
+            ->expects($this->once())
+            ->method('writeln')
+            ->with($this->matchesRegularExpression('/<error>Error:.*composer.json file not found.*<\/error>/'));
+
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        // Command should return non-zero exit code due to missing executable
-        $this->assertNotEquals(0, $result);
+        // Command should return error code due to missing composer.json
+        $this->assertEquals(1, $result);
     }
 
     public function testCommandDoesNotUseConfigOption(): void
@@ -260,9 +284,13 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturn(false);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
+            ->method('writeln');
+
+        $this->mockOutput
+            ->expects($this->atLeastOnce())
             ->method('write')
-            ->with("Composer normalize executed successfully\n");
+            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -289,6 +317,6 @@ final class ComposerLintCommandTest extends TestCase
 
         // Output should contain composer-normalize execution result
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Composer normalize executed successfully', $output);
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 }

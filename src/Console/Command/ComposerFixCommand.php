@@ -27,11 +27,30 @@ final class ComposerFixCommand extends BaseCommand
     {
         try {
             $targetPath = $this->getTargetPath($input);
+            $composerJsonPath = $targetPath . '/composer.json';
 
+            // Check if composer.json exists
+            if (!file_exists($composerJsonPath)) {
+                throw new \InvalidArgumentException(
+                    sprintf('composer.json file not found at: %s', $composerJsonPath)
+                );
+            }
+
+            // Use composer normalize plugin command
+            // Check if composer exists in vendor/bin (for tests), otherwise use system composer
+            $composerExecutable = 'composer';
+            $vendorComposer = $this->getVendorBinPath() . '/composer';
+            if (file_exists($vendorComposer)) {
+                $composerExecutable = $vendorComposer;
+            }
+            
             $command = [
-                $this->getVendorBinPath() . '/composer-normalize',
-                $targetPath . '/composer.json'
+                $composerExecutable,
+                'normalize',
+                $composerJsonPath
             ];
+
+            $output->writeln(sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
 
             return $this->executeProcess($command, $input, $output);
 
