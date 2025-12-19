@@ -1,9 +1,9 @@
-# Feature: Vendor Folder Derivation
+# Feature 014: Vendor Folder Derivation
 
-**Status:** Not Started  
-**Estimated Time:** 4-6 hours  
-**Layer:** MVP  
-**Dependencies:** unified-configuration-system (Not Started)
+**Status:** Not Started
+**Estimated Time:** 4-6 hours
+**Layer:** MVP
+**Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
 
@@ -91,34 +91,6 @@ Current implementation assumes standard vendor folder locations, causing issues 
 3. Implement comprehensive error handling
 4. Create debugging and introspection tools
 
-## Configuration Schema
-
-```yaml
-vendor_detection:
-  # Detection preferences
-  methods:
-    - "composer_installed_packages"  # Preferred method
-    - "composer_json_parsing"
-    - "environment_detection"
-    - "standard_locations"
-  
-  # Caching options
-  cache:
-    enabled: true
-    ttl: 300  # 5 minutes
-  
-  # Override options
-  override:
-    path: null  # Manual override if needed
-    validate: true
-  
-  # Fallback options
-  fallbacks:
-    - "vendor"
-    - "../vendor"
-    - "../../vendor"
-```
-
 ## Technical Implementation
 
 ```php
@@ -135,7 +107,7 @@ class VendorDirectoryDetector
                 return $vendorDir;
             }
         }
-        
+
         // Method 2: Parse composer.json
         $composerFile = $projectRoot . '/composer.json';
         if (file_exists($composerFile)) {
@@ -147,7 +119,7 @@ class VendorDirectoryDetector
                 }
             }
         }
-        
+
         // Method 3: Standard fallbacks
         $fallbacks = ['vendor', '../vendor', '../../vendor'];
         foreach ($fallbacks as $fallback) {
@@ -156,7 +128,7 @@ class VendorDirectoryDetector
                 return realpath($vendorDir);
             }
         }
-        
+
         throw new VendorDirectoryNotFoundException('Could not detect vendor directory');
     }
 }

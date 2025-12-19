@@ -1,9 +1,9 @@
-# Feature: Single Package Scanning
+# Feature 017: Single Package Scanning
 
 **Status:** Not Started  
 **Estimated Time:** 8-12 hours  
 **Layer:** MVP  
-**Dependencies:** unified-configuration-system (Not Started)
+**Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
 
@@ -106,34 +106,38 @@ Currently, quality tools are designed to scan entire TYPO3 projects, which creat
 
 ## Configuration Schema
 
+Extends unified YAML configuration from Feature 010:
+
 ```yaml
 # Example: Package-specific configuration
-package:
-  # When running in package mode
-  mode: "package"
-  root: "vendor/cpsit/zug-sitepackage"
-  
-  # Package-specific overrides
-  paths:
-    scan:
-      - "Classes/"
-      - "Configuration/"
-      - "Resources/"
-    exclude:
-      - "Tests/"
-      - "Documentation/"
-  
-  # Tool-specific package configuration
-  tools:
-    rector:
-      # Only apply specific rules in package context
-      rules:
-        - "TYPO3\\CodingStandards\\CGL\\Rector\\*"
-    phpstan:
-      # Package-specific PHPStan level
-      level: 6
-      paths:
+quality-tools:
+  # Package mode configuration
+  package:
+    mode: "package"  # Enable package-specific scanning
+    root: "vendor/cpsit/zug-sitepackage"  # Package root directory
+    
+    # Package-specific path overrides
+    paths:
+      scan:
         - "Classes/"
+        - "Configuration/"
+        - "Resources/"
+      exclude:
+        - "Tests/"
+        - "Documentation/"
+    
+    # Package-specific tool configuration
+    tools:
+      rector:
+        # Only apply specific rules in package context
+        level: "typo3-13"
+        skip:
+          - "Some\\Specific\\Rector\\Rule"
+      phpstan:
+        # Package-specific PHPStan level
+        level: 6
+        paths:
+          - "Classes/"
 ```
 
 ## File Structure
@@ -178,6 +182,7 @@ vendor/cpsit/zug-sitepackage/     # Package being analyzed
 
 ## Dependencies
 
+- **Feature 010 (Unified YAML Configuration System)**: Provides configuration foundation and inheritance for package-specific settings
 - composer/composer: For package information and dependency resolution
 - symfony/finder: For efficient file scanning within package boundaries
 
@@ -209,3 +214,4 @@ vendor/cpsit/zug-sitepackage/     # Package being analyzed
 - Consider monorepo and multi-package project scenarios
 - Document clear guidelines for when to use package vs project mode
 - Plan for integration with popular CI/CD platforms (GitHub Actions, GitLab CI, etc.)
+- Maintain consistency with Feature 010 YAML configuration structure

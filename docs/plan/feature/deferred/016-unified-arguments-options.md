@@ -1,9 +1,9 @@
-# Feature: Unified Arguments/Options
+# Feature 016: Unified Arguments/Options
 
 **Status:** Not Started  
 **Estimated Time:** 6-10 hours  
 **Layer:** MVP  
-**Dependencies:** unified-configuration-system (Not Started)
+**Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
 
@@ -109,26 +109,36 @@ This creates a poor user experience and makes it difficult to create unified com
 
 ## Configuration Schema
 
+Extends unified YAML configuration from Feature 010:
+
 ```yaml
-# Example: Unified option mapping
-unified_options:
-  dry_run:
-    rector: "--dry-run"
-    fractor: "--dry-run"
-    php_cs_fixer: "--dry-run"
-    phpstan: null  # PHPStan doesn't modify files
-  
-  verbosity:
-    level_1:
-      rector: "-v"
-      fractor: "-v"
-      php_cs_fixer: "-v"
-      phpstan: "-v"
-    level_2:
-      rector: "-vv"
-      fractor: "-vv"
-      php_cs_fixer: "-vv"
-      phpstan: "-vv"
+# Unified option mapping configuration
+quality-tools:
+  # Option mapping for unified interface
+  option_mapping:
+    dry_run:
+      rector: "--dry-run"
+      fractor: "--dry-run"
+      php_cs_fixer: "--dry-run"
+      phpstan: null  # PHPStan doesn't modify files
+    
+    verbosity:
+      level_1:
+        rector: "-v"
+        fractor: "-v"
+        php_cs_fixer: "-v"
+        phpstan: "-v"
+      level_2:
+        rector: "-vv"
+        fractor: "-vv"
+        php_cs_fixer: "-vv"
+        phpstan: "-vv"
+    
+    config:
+      rector: "--config"
+      fractor: "--config"
+      php_cs_fixer: "--config"
+      phpstan: "--configuration"
 ```
 
 ## Backward Compatibility
@@ -145,6 +155,12 @@ unified_options:
 - Compatibility tests for existing command patterns
 - End-to-end tests for unified commands
 - Documentation examples validation
+
+## Dependencies
+
+- **Feature 010 (Unified YAML Configuration System)**: Provides configuration foundation for option mapping
+- Command-line argument parsing libraries
+- Option validation and translation infrastructure
 
 ## Risk Assessment
 
@@ -174,3 +190,4 @@ unified_options:
 - Consider shell scripting and CI/CD usage patterns
 - Document option precedence and inheritance clearly
 - Plan for future tool additions without breaking existing patterns
+- Maintain consistency with Feature 010 YAML configuration structure

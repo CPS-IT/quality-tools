@@ -256,15 +256,15 @@ vendor/bin/qt --version  # Works
 
 # Invalid path
 export QT_PROJECT_ROOT=/nonexistent/path
-vendor/bin/qt --version  # ✗ Error: Directory doesn't exist
+vendor/bin/qt --version  # Error: Directory doesn't exist
 
 # Not a directory
 export QT_PROJECT_ROOT=/path/to/file.txt
-vendor/bin/qt --version  # ✗ Error: Not a directory
+vendor/bin/qt --version  # Error: Not a directory
 
 # No TYPO3 project
 export QT_PROJECT_ROOT=/valid/but/not/typo3
-vendor/bin/qt --version  # ✗ Error: No TYPO3 project found
+vendor/bin/qt --version  # Error: No TYPO3 project found
 ```
 
 ### Debug Configuration Validation

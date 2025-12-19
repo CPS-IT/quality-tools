@@ -1,9 +1,9 @@
-# Feature: Configuration Overwrites
+# Feature 015: Configuration Overwrites
 
 **Status:** Not Started  
 **Estimated Time:** 6-8 hours  
 **Layer:** MVP  
-**Dependencies:** unified-configuration-system (Not Started)
+**Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
 
@@ -87,27 +87,29 @@ Projects need the ability to customize quality tool configurations for their spe
 
 ## Configuration Schema
 
+Extends unified YAML configuration from Feature 010:
+
 ```yaml
 # Example: project-root/quality-tools.yaml
-overrides:
-  rector:
-    # Override specific Rector rules
-    paths:
-      - "packages/custom-extension/"
-    skip:
-      - "Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddVoidReturnTypeWhereNoReturnRector"
-  
-  phpstan:
-    # Override PHPStan level for specific paths
-    level: 5
-    paths:
-      - "packages/legacy-extension/"
+quality-tools:
+  # Override specific tool settings
+  tools:
+    rector:
+      # Override specific Rector rules
+      level: "typo3-12"  # Override from default typo3-13
+      skip:
+        - "Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddVoidReturnTypeWhereNoReturnRector"
     
+    phpstan:
+      # Override PHPStan level for this project
+      level: 5  # Override from default 6
+    
+  # Override global path configuration
   paths:
-    # Override global path configuration
     exclude:
       - "packages/third-party/"
       - "var/cache/"
+      - "packages/legacy-extension/"
 ```
 
 ## File Structure
@@ -146,6 +148,12 @@ project-root/
 - Performance tests for large configuration hierarchies
 - Backward compatibility tests with existing projects
 
+## Dependencies
+
+- **Feature 010 (Unified YAML Configuration System)**: Provides base configuration schema and loading infrastructure
+- Configuration merging algorithms and validation
+- File system discovery and caching mechanisms
+
 ## Risk Assessment
 
 **Low:**
@@ -173,3 +181,4 @@ project-root/
 - Consider performance impact of multiple configuration files
 - Ensure debugging tools make precedence clear to users
 - Plan for future extension without breaking changes
+- Maintain consistency with Feature 010 YAML schema structure

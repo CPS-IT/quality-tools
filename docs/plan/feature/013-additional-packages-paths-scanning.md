@@ -1,9 +1,9 @@
-# Feature: Additional Packages/Paths Scanning
+# Feature 013: Additional Packages/Paths Scanning
 
 **Status:** Not Started  
 **Estimated Time:** 4-6 hours  
 **Layer:** MVP  
-**Dependencies:** unified-configuration-system (Not Started)
+**Dependencies:** 010-unified-yaml-configuration-system (Not Started), 014-vendor-folder-derivation (Not Started)
 
 ## Description
 
@@ -90,15 +90,25 @@ Support multiple path specification formats:
 
 ## Configuration Schema
 
+Extends unified YAML configuration from Feature 010:
+
 ```yaml
+# Extends quality-tools.yaml from Feature 010
 quality-tools:
+  # Standard paths configuration (from Feature 010)
   paths:
-    # Standard paths (existing)
+    # Standard directories to analyze
     scan:
-      - "packages/"
-      - "config/system/"
+      - "packages/"         # Custom extensions
+      - "config/system/"    # System configuration
     
-    # Additional custom paths
+    # Standard directories to exclude  
+    exclude:
+      - "var/"             # Runtime cache and logs
+      - "vendor/"          # Third-party packages
+      - "node_modules/"    # Frontend dependencies
+    
+    # Advanced path configuration (Feature 013)
     additional:
       - "src/**/*.php"                    # Custom source directory
       - "app/Classes/**/*.php"            # Alternative class directory
@@ -106,20 +116,23 @@ quality-tools:
       - "vendor/fr/*/Classes/**/*.php"    # Another vendor pattern
       - "custom-extensions/*/Classes/"    # Custom extension location
     
-    # Exclusion patterns
-    exclude:
+    # Advanced exclusion patterns
+    exclude_patterns:
       - "packages/legacy/*"               # Exclude legacy packages
       - "vendor/*/Tests/"                 # Exclude vendor tests
       - "*.min.js"                       # Exclude minified files
     
-    # Tool-specific overrides
-    tools:
+    # Tool-specific path overrides
+    tool_overrides:
       rector:
         additional:
           - "config/custom/*.php"         # Tool-specific additional paths
       fractor:
         additional:
           - "config/sites/*/setup.typoscript"
+      phpstan:
+        exclude:
+          - "packages/experimental/*"     # Tool-specific exclusions
 ```
 
 ## Performance Considerations
@@ -158,6 +171,13 @@ quality-tools:
 - Fallback to standard paths if additional paths fail
 - Clear documentation for path pattern syntax
 
+## Dependencies
+
+- **Feature 010 (Unified YAML Configuration System)**: Provides YAML configuration foundation and schema validation
+- Glob pattern matching libraries for path resolution
+- File system access for path validation and scanning
+- Configuration inheritance and merging from Feature 010
+
 ## Future Enhancements
 
 - Interactive path configuration tool
@@ -172,3 +192,4 @@ quality-tools:
 - Ensure path patterns are intuitive and well-documented
 - Consider security implications of arbitrary path scanning
 - Plan for cross-platform path handling differences
+- Maintain consistency with Feature 010 YAML schema structure
