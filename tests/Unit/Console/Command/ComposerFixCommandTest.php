@@ -107,6 +107,9 @@ final class ComposerFixCommandTest extends TestCase
 
     public function testExecuteWithDefaultOptions(): void
     {
+        // Create composer.json in project root for the command to normalize
+        file_put_contents($this->tempDir . '/composer.json', '{}');
+
         $this->mockInput
             ->expects($this->atLeastOnce())
             ->method('getOption')

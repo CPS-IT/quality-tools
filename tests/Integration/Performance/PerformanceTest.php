@@ -29,14 +29,6 @@ final class PerformanceTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempProjectRoot);
-
-        // Log performance metrics for analysis
-        if (!empty($this->performanceMetrics)) {
-            echo "\nPerformance Metrics:\n";
-            foreach ($this->performanceMetrics as $test => $metrics) {
-                echo "  {$test}: {$metrics['time']}s, {$metrics['memory']}MB\n";
-            }
-        }
     }
 
     private function setupPerformanceTestProject(): void

@@ -63,7 +63,7 @@ final class RectorFixCommand extends BaseCommand
             $command = [
                 $this->getVendorBinPath() . '/rector',
                 'process',
-                '--config=' . $configPath
+                '--config=' . $configPath,
             ];
 
             // Note: Rector does not support parallel processing via command line

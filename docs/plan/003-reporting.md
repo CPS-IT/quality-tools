@@ -122,8 +122,8 @@ This iteration implements a unified report generation system that provides stand
 
 ```
 005 (Standards) 
-└── 006 (Foundation) → depends on 005
-    └── 007 (JSON) → depends on 006
+└── 006 (Foundation) -> depends on 005
+    └── 007 (JSON) -> depends on 006
 ```
 
 ## Technical Requirements

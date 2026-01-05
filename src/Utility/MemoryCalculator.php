@@ -27,13 +27,13 @@ final class MemoryCalculator
 
         $adjustedMemory = max(self::MIN_MEMORY_MB, min($memoryMb, self::MAX_MEMORY_MB));
 
-        return (int) round($adjustedMemory) . 'M';
+        return (int)round($adjustedMemory) . 'M';
     }
 
     public function calculateOptimalMemoryForTool(ProjectMetrics $metrics, string $tool): string
     {
         $baseMemory = $this->calculateOptimalMemory($metrics);
-        $memoryMb = (int) str_replace('M', '', $baseMemory);
+        $memoryMb = (int)str_replace('M', '', $baseMemory);
 
         switch ($tool) {
             case 'phpstan':
@@ -55,7 +55,7 @@ final class MemoryCalculator
 
         $adjustedMemory = max(self::MIN_MEMORY_MB, min($memoryMb * $toolMultiplier, self::MAX_MEMORY_MB));
 
-        return (int) round($adjustedMemory) . 'M';
+        return (int)round($adjustedMemory) . 'M';
     }
 
     public function shouldEnableParallelProcessing(ProjectMetrics $metrics): bool
@@ -90,7 +90,7 @@ final class MemoryCalculator
             'parallelProcessing' => $parallelProcessing,
             'progressIndicator' => $progressIndicator,
             'optimization' => $this->getOptimizationDescription($projectSize),
-            'recommendations' => $this->getOptimizationRecommendations($metrics)
+            'recommendations' => $this->getOptimizationRecommendations($metrics),
         ];
     }
 

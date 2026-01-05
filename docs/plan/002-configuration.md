@@ -127,9 +127,9 @@ This iteration focuses on implementing a comprehensive configuration system that
 
 ```
 010 (YAML Config)
-├── 014 (Vendor Detection) → depends on 010
-├── 013 (Package Paths) → depends on 010, 014
-└── 015 (Overwrites) → depends on 010, 014, 013
+├── 014 (Vendor Detection) -> depends on 010
+├── 013 (Package Paths) -> depends on 010, 014
+└── 015 (Overwrites) -> depends on 010, 014, 013
 ```
 
 **Rationale**: Vendor folder detection must come before additional package path scanning because package paths are defined relative to the established vendor location in a Composer-managed project.

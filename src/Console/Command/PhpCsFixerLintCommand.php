@@ -66,7 +66,7 @@ final class PhpCsFixerLintCommand extends BaseCommand
                 'fix',
                 '--dry-run',
                 '--diff',
-                '--config=' . $configPath
+                '--config=' . $configPath,
             ];
 
             // Enable parallel processing if beneficial

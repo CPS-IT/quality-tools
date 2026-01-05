@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionClass;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -137,8 +134,8 @@ final class QualityToolsApplication extends Application
             return; // No commands directory yet
         }
 
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($commandDir, RecursiveDirectoryIterator::SKIP_DOTS)
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($commandDir, \RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $file) {
@@ -176,7 +173,7 @@ final class QualityToolsApplication extends Application
         }
 
         try {
-            $reflection = new ReflectionClass($className);
+            $reflection = new \ReflectionClass($className);
 
             return $reflection->isSubclassOf(Command::class) &&
                    !$reflection->isAbstract() &&

@@ -31,7 +31,7 @@ final class TypoScriptLintCommand extends BaseCommand
             $command = [
                 $this->getVendorBinPath() . '/typoscript-lint',
                 '-c',
-                $configPath
+                $configPath,
             ];
 
             // If user specified a custom path, add it as positional argument

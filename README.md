@@ -31,8 +31,40 @@ composer require --dev cpsit/quality-tools
 
 ## Quick Start
 
-### CLI Commands (Recommended)
-After installation, use the simple `qt` command shortcuts with automatic optimization:
+### Unified YAML Configuration (Recommended)
+Create a centralized configuration file for all quality tools:
+
+```bash
+# Initialize configuration with templates
+vendor/bin/qt config:init --template=typo3-site-package
+
+# Validate your configuration
+vendor/bin/qt config:validate
+
+# View resolved configuration
+vendor/bin/qt config:show
+```
+
+Example `.quality-tools.yaml`:
+```yaml
+quality-tools:
+  project:
+    name: "my-typo3-project"
+    php_version: "8.3"
+    typo3_version: "13.4"
+
+  tools:
+    rector:
+      enabled: true
+      level: "typo3-13"
+    phpstan:
+      enabled: true
+      level: 6
+      memory_limit: "1G"
+```
+
+### CLI Commands
+After configuration, use the simple `qt` command shortcuts with automatic optimization:
 
 ```bash
 # Lint commands (analysis only)
@@ -98,7 +130,22 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 | `qt fix:fractor` | Fractor | Apply TypoScript modernization |
 | `qt fix:composer` | Composer | Normalize composer.json formatting |
 
+### Configuration Commands
+| Command | Description |
+|---------|-------------|
+| `qt config:init` | Initialize YAML configuration with project templates |
+| `qt config:validate` | Validate YAML configuration against schema |
+| `qt config:show` | Display resolved configuration from all sources |
+
 ## Key Features
+
+### Unified YAML Configuration System
+- **Centralized Configuration**: Single `.quality-tools.yaml` file for all tools
+- **Configuration Hierarchy**: Package defaults -> global user config -> project config -> CLI overrides
+- **Environment Variables**: Support for `${VAR:-default}` syntax with type-safe interpolation
+- **JSON Schema Validation**: Built-in validation with helpful error messages
+- **Project Templates**: Ready-made configurations for different TYPO3 project types
+- **Backward Compatibility**: Existing tool-specific configurations continue to work
 
 ### Dynamic Resource Optimization (Zero Configuration)
 - **Automatic Project Analysis**: Analyzes your project size, complexity, and file types to determine optimal settings
@@ -153,6 +200,13 @@ vendor/bin/qt lint:phpstan --memory-limit=1024M
 ### User Guide
 - [User Guide](docs/user-guide/index.md) - Complete guide for installing and using the CLI tool
 - [Project Planning](docs/plan/index.md) - Complete planning documentation and known issues
+
+### Configuration Guide
+- [YAML Configuration Guide](docs/configuration/yaml-configuration.md) - Complete guide for unified YAML configuration
+- [Configuration Reference](docs/configuration/reference.md) - Complete reference of all configuration options
+- [Migration Guide](docs/configuration/migration.md) - Migrating from tool-specific to unified configuration
+- [Environment Variables](docs/configuration/environment-variables.md) - Using environment variables in configuration
+- [Templates](docs/configuration/templates.md) - Project templates and customization
 
 ### Tool Configuration
 - [Dynamic Resource Optimization](docs/user-guide/optimization.md) - How automatic optimization works

@@ -47,7 +47,7 @@ final class ComposerFixCommand extends BaseCommand
             $command = [
                 $composerExecutable,
                 'normalize',
-                $composerJsonPath
+                $composerJsonPath,
             ];
 
             $output->writeln(sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));

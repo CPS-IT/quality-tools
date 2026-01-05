@@ -56,9 +56,11 @@ final class ProjectMetrics
 
         if ($totalFiles < 100) {
             return 'small';
-        } elseif ($totalFiles < 1000) {
+        }
+        if ($totalFiles < 1000) {
             return 'medium';
-        } elseif ($totalFiles < 5000) {
+        }
+        if ($totalFiles < 5000) {
             return 'large';
         }
 
@@ -80,8 +82,8 @@ final class ProjectMetrics
                 'projectSize' => $this->getProjectSize(),
                 'phpFiles' => $this->getPhpFileCount(),
                 'phpLines' => $this->getPhpLines(),
-                'complexityScore' => $this->getPhpComplexityScore()
-            ]
+                'complexityScore' => $this->getPhpComplexityScore(),
+            ],
         ];
     }
 }

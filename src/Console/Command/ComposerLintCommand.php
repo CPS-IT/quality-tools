@@ -49,7 +49,7 @@ final class ComposerLintCommand extends BaseCommand
                 'normalize',
                 '--dry-run',
                 '--diff',
-                $composerJsonPath
+                $composerJsonPath,
             ];
 
             $output->writeln(sprintf('<comment>Checking composer.json normalization: %s</comment>', $composerJsonPath));

@@ -82,7 +82,7 @@ final class YamlValidator
             'file' => $filePath,
             'valid' => false,
             'error' => null,
-            'type' => 'unknown'
+            'type' => 'unknown',
         ];
 
         if (!file_exists($filePath) || !is_readable($filePath)) {

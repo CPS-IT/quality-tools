@@ -29,13 +29,6 @@ final class CompleteWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempProjectRoot);
-
-        if (!empty($this->workflowMetrics)) {
-            echo "\nWorkflow Metrics:\n";
-            foreach ($this->workflowMetrics as $workflow => $metrics) {
-                echo "  {$workflow}: {$metrics}\n";
-            }
-        }
     }
 
     private function setupComplexTestProject(): void

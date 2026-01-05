@@ -65,7 +65,7 @@ final class FractorLintCommand extends BaseCommand
                 'process',
                 '--dry-run',
                 '--config=' . $configPath,
-                $targetPath
+                $targetPath,
             ];
 
             // Get optimal memory limit for automatic optimization

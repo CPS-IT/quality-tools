@@ -64,7 +64,7 @@ final class FractorFixCommand extends BaseCommand
                 $this->getVendorBinPath() . '/fractor',
                 'process',
                 '--config=' . $configPath,
-                $targetPath
+                $targetPath,
             ];
 
             // Get optimal memory limit for automatic optimization

@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Utility;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
-
 final class ProjectAnalyzer
 {
     private const DEFAULT_EXCLUDE_PATTERNS = [
@@ -24,7 +20,7 @@ final class ProjectAnalyzer
         'logs/',
         'log/',
         '.cache/',
-        '.tmp/'
+        '.tmp/',
     ];
 
     public function analyzeProject(string $projectPath): ProjectMetrics
@@ -33,9 +29,9 @@ final class ProjectAnalyzer
             throw new \InvalidArgumentException(sprintf('Project path "%s" is not a directory', $projectPath));
         }
 
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($projectPath, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::LEAVES_ONLY
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($projectPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
         );
 
         $phpFiles = [];
@@ -46,7 +42,7 @@ final class ProjectAnalyzer
         $otherFiles = [];
 
         foreach ($iterator as $file) {
-            if (!$file instanceof SplFileInfo || !$file->isFile()) {
+            if (!$file instanceof \SplFileInfo || !$file->isFile()) {
                 continue;
             }
 
@@ -60,7 +56,7 @@ final class ProjectAnalyzer
             $fileInfo = [
                 'path' => $relativePath,
                 'size' => $file->getSize(),
-                'lines' => $this->countLines($file->getPathname())
+                'lines' => $this->countLines($file->getPathname()),
             ];
 
             switch ($extension) {
@@ -99,7 +95,7 @@ final class ProjectAnalyzer
             'json' => $this->aggregateFileMetrics($jsonFiles),
             'xml' => $this->aggregateFileMetrics($xmlFiles),
             'typoscript' => $this->aggregateFileMetrics($typoscriptFiles),
-            'other' => $this->aggregateFileMetrics($otherFiles)
+            'other' => $this->aggregateFileMetrics($otherFiles),
         ]);
     }
 
@@ -145,7 +141,7 @@ final class ProjectAnalyzer
 
         $complexityKeywords = [
             'if', 'else', 'elseif', 'while', 'for', 'foreach',
-            'switch', 'case', 'catch', 'throw', '?', '&&', '||'
+            'switch', 'case', 'catch', 'throw', '?', '&&', '||',
         ];
 
         foreach ($complexityKeywords as $keyword) {
@@ -178,7 +174,7 @@ final class ProjectAnalyzer
             'TYPO3\CMS\\',
             'includeLibs',
             'includeCSS',
-            'includeJS'
+            'includeJS',
         ];
 
         foreach ($typoscriptPatterns as $pattern) {
@@ -198,7 +194,7 @@ final class ProjectAnalyzer
                 'totalLines' => 0,
                 'totalSize' => 0,
                 'avgComplexity' => 0,
-                'maxComplexity' => 0
+                'maxComplexity' => 0,
             ];
         }
 
@@ -207,7 +203,7 @@ final class ProjectAnalyzer
         $totalSize = array_sum(array_column($files, 'size'));
 
         $complexities = array_filter(array_column($files, 'complexity'));
-        $avgComplexity = empty($complexities) ? 0 : (int) round(array_sum($complexities) / count($complexities));
+        $avgComplexity = empty($complexities) ? 0 : (int)round(array_sum($complexities) / count($complexities));
         $maxComplexity = empty($complexities) ? 0 : max($complexities);
 
         return [
@@ -215,7 +211,7 @@ final class ProjectAnalyzer
             'totalLines' => $totalLines,
             'totalSize' => $totalSize,
             'avgComplexity' => $avgComplexity,
-            'maxComplexity' => $maxComplexity
+            'maxComplexity' => $maxComplexity,
         ];
     }
 }

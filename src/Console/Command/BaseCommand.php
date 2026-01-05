@@ -245,12 +245,14 @@ abstract class BaseCommand extends Command
         $profile = $calculator->getOptimizationProfile($metrics);
 
         $output->writeln('<comment>Project Analysis:</comment>');
-        $output->writeln(sprintf('  Project size: %s (%d files, %d lines)',
+        $output->writeln(sprintf(
+            '  Project size: %s (%d files, %d lines)',
             $profile['projectSize'],
             $metrics->getTotalFileCount(),
             $metrics->getTotalLines()
         ));
-        $output->writeln(sprintf('  PHP files: %d (complexity score: %d)',
+        $output->writeln(sprintf(
+            '  PHP files: %d (complexity score: %d)',
             $metrics->getPhpFileCount(),
             $metrics->getPhpComplexityScore()
         ));

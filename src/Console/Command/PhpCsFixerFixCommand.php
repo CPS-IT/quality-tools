@@ -36,7 +36,7 @@ final class PhpCsFixerFixCommand extends BaseCommand
             $command = [
                 $this->getVendorBinPath() . '/php-cs-fixer',
                 'fix',
-                '--config=' . $configPath
+                '--config=' . $configPath,
             ];
 
             // Enable parallel processing if beneficial

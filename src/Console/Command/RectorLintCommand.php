@@ -64,7 +64,7 @@ final class RectorLintCommand extends BaseCommand
                 $this->getVendorBinPath() . '/rector',
                 'process',
                 '--dry-run',
-                '--config=' . $configPath
+                '--config=' . $configPath,
             ];
 
             // Note: Rector does not support parallel processing via command line

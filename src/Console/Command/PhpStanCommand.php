@@ -76,7 +76,7 @@ final class PhpStanCommand extends BaseCommand
             $command = [
                 $this->getVendorBinPath() . '/phpstan',
                 'analyse',
-                '--configuration=' . $configPath
+                '--configuration=' . $configPath,
             ];
 
             // Add custom analysis level if specified

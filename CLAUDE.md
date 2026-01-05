@@ -116,6 +116,34 @@ The configurations automatically detect the TYPO3 project root and scan:
 - Indentation: 2 spaces for TypoScript, follows TYPO3 standards for PHP
 - Code style: TYPO3 coding standards via php-cs-fixer
 
+## Code Quality Standards
+- **String Constants**: Replace repeated string literals with typed class constants
+  - Use `private const string KEY_NAME = 'value'` for string constants
+  - Use `private const int KEY_NAME = 123` for integer constants
+  - Use `private const array KEY_NAME = [...]` for array constants
+  - Group related constants logically within classes
+  - Always use descriptive, SCREAMING_SNAKE_CASE names for constants
+
+## Implementation Completion Standards
+
+**CRITICAL:** Implementation of features and bug fixing is **NOT** finished before any failing tests and linting issues are fixed.
+
+**Definition of Done:**
+- all tasks in the current feature specification are completed
+- all success criteria are met
+- All unit tests must pass
+- All integration tests must pass
+- All linting checks must pass without errors
+- Code coverage requirements must be met
+- Documentation must be updated and accurate
+
+**Quality Gate Requirements:**
+- No failing test suites
+- No linting errors
+- Proper error handling and edge case coverage
+
+This ensures code quality, maintainability, and reliability before any feature is considered complete.
+
 ## Communication Guidelines
 
 **Tone and Language:**
