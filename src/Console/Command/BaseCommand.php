@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -95,25 +97,44 @@ abstract class BaseCommand extends Command
     private function findVendorPath(): string
     {
         $projectRoot = $this->getProjectRoot();
+        $detector = new VendorDirectoryDetector();
 
-        // Try common vendor directory locations
-        $vendorPaths = [
-            $projectRoot . '/app/vendor',  // TYPO3 with app/vendor structure
-            $projectRoot . '/vendor',      // Standard composer structure
-        ];
-
-        foreach ($vendorPaths as $vendorPath) {
-            if (is_dir($vendorPath) && is_dir($vendorPath . '/cpsit/quality-tools')) {
-                return $vendorPath;
+        try {
+            $vendorPath = $detector->detectVendorPath($projectRoot);
+            
+            // Validate that cpsit/quality-tools is installed in detected vendor directory
+            if (!is_dir($vendorPath . '/cpsit/quality-tools')) {
+                throw new \RuntimeException(
+                    sprintf(
+                        'cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.',
+                        $vendorPath
+                    )
+                );
             }
-        }
+            
+            return $vendorPath;
+            
+        } catch (VendorDirectoryNotFoundException $e) {
+            // Fallback to old hardcoded detection for backward compatibility
+            $vendorPaths = [
+                $projectRoot . '/app/vendor',  // TYPO3 with app/vendor structure
+                $projectRoot . '/vendor',      // Standard composer structure
+            ];
 
-        throw new \RuntimeException(
-            sprintf(
-                'Could not find vendor directory with cpsit/quality-tools package. Checked: %s',
-                implode(', ', $vendorPaths)
-            )
-        );
+            foreach ($vendorPaths as $vendorPath) {
+                if (is_dir($vendorPath) && is_dir($vendorPath . '/cpsit/quality-tools')) {
+                    return $vendorPath;
+                }
+            }
+
+            throw new \RuntimeException(
+                sprintf(
+                    'Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s',
+                    $e->getMessage(),
+                    implode(', ', $vendorPaths)
+                )
+            );
+        }
     }
 
     protected function executeProcess(

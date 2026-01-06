@@ -129,7 +129,7 @@ final class BaseCommandTest extends TestCase
     public function testResolveConfigPathWithDefaultPathThrowsExceptionWhenFileNotFound(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Could not find vendor directory with cpsit\/quality-tools package\. Checked: .*/');
+        $this->expectExceptionMessageMatches('/Could not detect vendor directory\. Automatic detection failed: .*/');
 
         $this->command->resolveConfigPathPublic('non-existent.php');
     }

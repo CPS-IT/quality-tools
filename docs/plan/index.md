@@ -76,14 +76,14 @@ none
 The MVP is complete. The following features are organized into implementation iterations:
 
 ### Iteration 2: Configuration System Features
-- **[010 - Unified YAML Configuration System](feature/done/010-unified-yaml-configuration-system.md)** *(6-8 hours)*
+- [x] **[010 - Unified YAML Configuration System](feature/done/010-unified-yaml-configuration-system.md)** *(6-8 hours)*
   Developer-focused YAML configuration with comments and human-readable format
 
-- **[013 - Additional Packages Paths Scanning](feature/013-additional-packages-paths-scanning.md)** *(4-6 hours)*
+- [ ] **[013 - Additional Packages Paths Scanning](feature/013-additional-packages-paths-scanning.md)** *(4-6 hours)*
   Flexible path configuration extending unified YAML system
-- **[014 - Vendor Folder Derivation](feature/014-vendor-folder-derivation.md)** *(4-6 hours)*
+- [x] **[014 - Vendor Folder Derivation](feature/done/014-vendor-folder-derivation.md)** *(4-6 hours)*
   Automatic vendor path detection for non-standard project structures
-- **[015 - Configuration Overwrites](feature/015-configuration-overwrites.md)** *(6-8 hours)*
+- [ ]**[015 - Configuration Overwrites](feature/015-configuration-overwrites.md)** *(6-8 hours)*
   Hierarchical configuration override system for project customization
 
 ### Iteration 3: Report Generation Features

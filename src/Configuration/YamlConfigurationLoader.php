@@ -24,7 +24,9 @@ final class YamlConfigurationLoader
     public function load(string $projectRoot): Configuration
     {
         $configData = $this->loadConfigurationHierarchy($projectRoot);
-        return new Configuration($configData);
+        $configuration = new Configuration($configData);
+        $configuration->setProjectRoot($projectRoot);
+        return $configuration;
     }
 
     private function loadConfigurationHierarchy(string $projectRoot): array

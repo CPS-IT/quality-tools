@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+
 final class Configuration
 {
     private array $data;
@@ -12,6 +15,9 @@ final class Configuration
     private array $toolsConfig;
     private array $outputConfig;
     private array $performanceConfig;
+    private ?string $projectRoot = null;
+    private ?string $vendorPath = null;
+    private ?VendorDirectoryDetector $vendorDetector = null;
 
     public function __construct(array $data = [])
     {
@@ -140,6 +146,62 @@ final class Configuration
     public function isCacheEnabled(): bool
     {
         return $this->performanceConfig['cache_enabled'] ?? true;
+    }
+
+    public function setProjectRoot(string $projectRoot): void
+    {
+        $this->projectRoot = $projectRoot;
+        $this->vendorPath = null; // Reset vendor path cache
+    }
+
+    public function getProjectRoot(): ?string
+    {
+        return $this->projectRoot;
+    }
+
+    public function getVendorPath(): ?string
+    {
+        if ($this->vendorPath === null && $this->projectRoot !== null) {
+            try {
+                $detector = $this->getVendorDetector();
+                $this->vendorPath = $detector->detectVendorPath($this->projectRoot);
+            } catch (VendorDirectoryNotFoundException) {
+                // Return null if detection fails - calling code can handle this
+                return null;
+            }
+        }
+
+        return $this->vendorPath;
+    }
+
+    public function getVendorBinPath(): ?string
+    {
+        $vendorPath = $this->getVendorPath();
+        return $vendorPath !== null ? $vendorPath . '/bin' : null;
+    }
+
+    public function hasVendorDirectory(): bool
+    {
+        return $this->getVendorPath() !== null;
+    }
+
+    public function getVendorDetectionDebugInfo(): array
+    {
+        if ($this->projectRoot === null) {
+            return ['error' => 'Project root not set'];
+        }
+
+        $detector = $this->getVendorDetector();
+        return $detector->getDetectionDebugInfo($this->projectRoot);
+    }
+
+    private function getVendorDetector(): VendorDirectoryDetector
+    {
+        if ($this->vendorDetector === null) {
+            $this->vendorDetector = new VendorDirectoryDetector();
+        }
+
+        return $this->vendorDetector;
     }
 
     public function toArray(): array
