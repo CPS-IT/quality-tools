@@ -2,7 +2,7 @@
 
 **Status:** Completed
 **Actual Time:** ~5 hours
-**Layer:** MVP
+**Layer:** 002 Configuration
 **Dependencies:** 010-unified-yaml-configuration-system (Completed)
 
 ## Implementation Summary

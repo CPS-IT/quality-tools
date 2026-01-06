@@ -76,7 +76,7 @@ final class ConfigurationValidator
                                     'items' => [
                                         'type' => 'string',
                                     ],
-                                    'description' => 'Directories to analyze',
+                                    'description' => 'Directories and patterns to analyze (supports glob patterns and vendor namespaces)',
                                     'default' => ['packages/', 'config/system/'],
                                 ],
                                 'exclude' => [
@@ -84,8 +84,8 @@ final class ConfigurationValidator
                                     'items' => [
                                         'type' => 'string',
                                     ],
-                                    'description' => 'Directories to exclude from analysis',
-                                    'default' => ['var/', 'vendor/', 'node_modules/'],
+                                    'description' => 'Directories and patterns to exclude from analysis (supports glob patterns and vendor namespaces)',
+                                    'default' => ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'],
                                 ],
                             ],
                             'additionalProperties' => false,
@@ -113,6 +113,26 @@ final class ConfigurationValidator
                                             'type' => 'boolean',
                                             'default' => false,
                                         ],
+                                        'paths' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'scan' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional scan paths specific to this tool',
+                                                ],
+                                                'exclude' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional exclusion patterns specific to this tool',
+                                                ],
+                                            ],
+                                            'additionalProperties' => false,
+                                        ],
                                     ],
                                     'additionalProperties' => false,
                                 ],
@@ -129,11 +149,25 @@ final class ConfigurationValidator
                                             'maximum' => 8,
                                             'default' => 2,
                                         ],
-                                        'skip_files' => [
-                                            'type' => 'array',
-                                            'items' => [
-                                                'type' => 'string',
+                                        'paths' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'scan' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional scan paths specific to this tool',
+                                                ],
+                                                'exclude' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional exclusion patterns specific to this tool',
+                                                ],
                                             ],
+                                            'additionalProperties' => false,
                                         ],
                                     ],
                                     'additionalProperties' => false,
@@ -157,10 +191,24 @@ final class ConfigurationValidator
                                             'default' => '1G',
                                         ],
                                         'paths' => [
-                                            'type' => 'array',
-                                            'items' => [
-                                                'type' => 'string',
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'scan' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional scan paths specific to this tool',
+                                                ],
+                                                'exclude' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional exclusion patterns specific to this tool',
+                                                ],
                                             ],
+                                            'additionalProperties' => false,
                                         ],
                                     ],
                                     'additionalProperties' => false,
@@ -181,6 +229,26 @@ final class ConfigurationValidator
                                             'type' => 'boolean',
                                             'default' => true,
                                         ],
+                                        'paths' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'scan' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional scan paths specific to this tool',
+                                                ],
+                                                'exclude' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional exclusion patterns specific to this tool',
+                                                ],
+                                            ],
+                                            'additionalProperties' => false,
+                                        ],
                                     ],
                                     'additionalProperties' => false,
                                 ],
@@ -197,11 +265,25 @@ final class ConfigurationValidator
                                             'maximum' => 8,
                                             'default' => 2,
                                         ],
-                                        'ignore_patterns' => [
-                                            'type' => 'array',
-                                            'items' => [
-                                                'type' => 'string',
+                                        'paths' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'scan' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional scan paths specific to this tool',
+                                                ],
+                                                'exclude' => [
+                                                    'type' => 'array',
+                                                    'items' => [
+                                                        'type' => 'string',
+                                                    ],
+                                                    'description' => 'Additional exclusion patterns specific to this tool',
+                                                ],
                                             ],
+                                            'additionalProperties' => false,
                                         ],
                                     ],
                                     'additionalProperties' => false,

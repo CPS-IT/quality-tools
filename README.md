@@ -53,6 +53,19 @@ quality-tools:
     php_version: "8.3"
     typo3_version: "13.4"
 
+  # Path configuration for flexible scanning
+  paths:
+    scan:
+      - "packages/"
+      - "config/system/"
+    additional:
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
+      - "vendor/fr/*/Classes"             # Scan other vendor packages
+    exclude_patterns:
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude vendor tests
+
   tools:
     rector:
       enabled: true
@@ -146,6 +159,14 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 - **JSON Schema Validation**: Built-in validation with helpful error messages
 - **Project Templates**: Ready-made configurations for different TYPO3 project types
 - **Backward Compatibility**: Existing tool-specific configurations continue to work
+
+### Flexible Path Configuration (Feature 013)
+- **Additional Paths**: Configure custom paths beyond standard TYPO3 structure
+- **Vendor Namespace Patterns**: Scan vendor packages with patterns like "cpsit/*", "fr/*"
+- **Glob Pattern Support**: Use powerful glob patterns for path matching
+- **Exclusion Patterns**: Exclude specific paths using flexible patterns
+- **Tool-Specific Overrides**: Per-tool path configuration for specialized needs
+- **Performance Optimized**: Intelligent caching and path resolution
 
 ### Dynamic Resource Optimization (Zero Configuration)
 - **Automatic Project Analysis**: Analyzes your project size, complexity, and file types to determine optimal settings

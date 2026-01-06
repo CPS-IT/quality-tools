@@ -318,12 +318,14 @@ quality-tools:
       level: 5
       memory_limit: "1G"
       paths:
-        - "default-path/"
+        scan:
+          - "default-path/"
     fractor:
       enabled: true
       indentation: 2
-      skip_files:
-        - "global-skip.ts"
+      paths:
+        exclude:
+          - "global-skip.ts"
     php-cs-fixer:
       enabled: true
       preset: "psr12"
@@ -331,8 +333,9 @@ quality-tools:
     typoscript-lint:
       enabled: true
       indentation: 2
-      ignore_patterns:
-        - "global-ignore.ts"
+      paths:
+        exclude:
+          - "global-ignore.ts"
 YAML;
         file_put_contents($homeDir . '/.quality-tools.yaml', $globalConfig);
         
@@ -347,21 +350,24 @@ quality-tools:
     phpstan:
       level: 8
       paths:
-        - "src/"
-        - "packages/"
+        scan:
+          - "src/"
+          - "packages/"
       # enabled and memory_limit should remain from global
     fractor:
       indentation: 4
-      skip_files:
-        - "project-skip.ts"
-        - "another-skip.ts"
+      paths:
+        exclude:
+          - "project-skip.ts"
+          - "another-skip.ts"
       # enabled should remain from global
     php-cs-fixer:
       preset: "typo3"
       # enabled and cache should remain from global
     typoscript-lint:
-      ignore_patterns:
-        - "project-ignore.ts"
+      paths:
+        exclude:
+          - "project-ignore.ts"
       # enabled and indentation should remain from global
 YAML;
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $projectConfig);
@@ -383,13 +389,18 @@ YAML;
         self::assertTrue($phpStanConfig['enabled']); // from global
         self::assertSame(8, $phpStanConfig['level']); // project override
         self::assertSame('1G', $phpStanConfig['memory_limit']); // from global
-        self::assertSame(['src/', 'packages/'], $phpStanConfig['paths']); // project override
+        // Test PHPStan path overrides
+        $phpStanPaths = $config->getToolPaths('phpstan');
+        self::assertSame(['src/', 'packages/'], $phpStanPaths['scan'] ?? []); // project override
         
         // Test Fractor merging
         $fractorConfig = $config->getFractorConfig();
         self::assertTrue($fractorConfig['enabled']); // from global
         self::assertSame(4, $fractorConfig['indentation']); // project override
-        self::assertSame(['project-skip.ts', 'another-skip.ts'], $fractorConfig['skip_files']); // project override
+        
+        // Test Fractor path overrides
+        $fractorPaths = $config->getToolPaths('fractor');
+        self::assertSame(['project-skip.ts', 'another-skip.ts'], $fractorPaths['exclude'] ?? []); // project override
         
         // Test PHP CS Fixer merging
         $phpCsFixerConfig = $config->getPhpCsFixerConfig();
@@ -401,7 +412,10 @@ YAML;
         $typoscriptLintConfig = $config->getTypoScriptLintConfig();
         self::assertTrue($typoscriptLintConfig['enabled']); // from global
         self::assertSame(2, $typoscriptLintConfig['indentation']); // from global
-        self::assertSame(['project-ignore.ts'], $typoscriptLintConfig['ignore_patterns']); // project override
+        
+        // Test TypoScript Lint path overrides
+        $typoscriptLintPaths = $config->getToolPaths('typoscript-lint');
+        self::assertSame(['project-ignore.ts'], $typoscriptLintPaths['exclude'] ?? []); // project override
     }
     
     public function testArrayMergingBehavior(): void

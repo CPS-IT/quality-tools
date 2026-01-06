@@ -104,10 +104,53 @@ vendor/bin/typoscript-lint -c vendor/cpsit/quality-tools/config/typoscript-lint.
 ```
 
 ## Path Configuration
+
+### Standard Path Detection
 The configurations automatically detect the TYPO3 project root and scan:
 - `config/system/` - System configuration files
 - `packages/` - Custom packages and extensions
 - `config/sites/` - Site configuration (Fractor only)
+
+### Advanced Path Configuration (Feature 013)
+The system now supports flexible path configuration for complex project structures:
+
+**Additional Path Patterns:**
+- **Glob Patterns**: `src/**/*.php`, `packages/*/Classes/**/*.php`
+- **Vendor Namespaces**: `cpsit/*`, `fr/*/Classes`, `mycompany/*/src`
+- **Direct Paths**: `custom-extensions/`, `legacy/Classes/`
+- **Exclusion Patterns**: `packages/legacy/*`, `vendor/*/Tests/`, `*.backup`
+
+**Tool-Specific Path Overrides:**
+```yaml
+# Example .quality-tools.yaml with advanced path configuration
+quality-tools:
+  paths:
+    additional:
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
+      - "vendor/fr/*/Classes"             # Scan FR vendor packages
+    
+    exclude_patterns:
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude vendor tests
+    
+    tool_overrides:
+      rector:
+        additional:
+          - "config/custom/*.php"         # Rector-specific configs
+      fractor:
+        additional:
+          - "config/sites/*/setup.typoscript"
+      phpstan:
+        exclude:
+          - "packages/experimental/*"     # Exclude unstable code
+```
+
+**Use Cases:**
+- **Monorepos**: Scan multiple apps and libraries with patterns like `apps/*/src/**/*.php`
+- **Custom Vendor Packages**: Include company packages with `vendor/company/*`
+- **Legacy Projects**: Include legacy code with `legacy/**/*.php` while excluding deprecated parts
+- **Non-Standard Structures**: Adapt to any project layout with flexible patterns
 
 ## Quality Standards
 - PHP version: 8.3+ (configured in Rector)

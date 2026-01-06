@@ -57,13 +57,17 @@ final class ConfigurationValidatorTest extends TestCase
                     'fractor' => [
                         'enabled' => true,
                         'indentation' => 2,
-                        'skip_files' => ['test.ts']
+                        'paths' => [
+                            'exclude' => ['test.ts']
+                        ]
                     ],
                     'phpstan' => [
                         'enabled' => true,
                         'level' => 6,
                         'memory_limit' => '1G',
-                        'paths' => ['src/']
+                        'paths' => [
+                            'scan' => ['src/']
+                        ]
                     ],
                     'php-cs-fixer' => [
                         'enabled' => true,
@@ -73,7 +77,9 @@ final class ConfigurationValidatorTest extends TestCase
                     'typoscript-lint' => [
                         'enabled' => true,
                         'indentation' => 2,
-                        'ignore_patterns' => ['*.tmp.ts']
+                        'paths' => [
+                            'exclude' => ['*.tmp.ts']
+                        ]
                     ]
                 ],
                 'output' => [

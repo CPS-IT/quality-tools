@@ -31,10 +31,10 @@ quality-tools:
 
   # Path Configuration
   paths:
-    scan:                           # Directories to analyze
-      - string                      # Path relative to project root
-    exclude:                        # Directories to exclude
-      - string                      # Path relative to project root
+    scan:                           # Directories and patterns to analyze
+      - string                      # Paths, glob patterns, or vendor namespaces
+    exclude:                        # Directories and patterns to exclude
+      - string                      # Paths, glob patterns, or vendor namespaces
 
   # Tool Configuration
   tools:
@@ -43,30 +43,53 @@ quality-tools:
       level: string                 # Rector level: "typo3-13", "typo3-12", "typo3-11"
       php_version: string           # Override project PHP version
       dry_run: boolean              # Always run in dry-run mode
+      paths:                        # Tool-specific path overrides
+        scan:                       # Additional scan paths for this tool
+          - string                  # Path patterns specific to this tool
+        exclude:                    # Additional exclusions for this tool
+          - string                  # Exclusion patterns specific to this tool
 
     fractor:
       enabled: boolean              # Enable/disable Fractor
       indentation: integer          # Indentation spaces (1-8)
       skip_files:                   # Files to skip
         - string                    # File pattern
+      paths:                        # Tool-specific path overrides
+        scan:                       # Additional scan paths for this tool
+          - string                  # Path patterns specific to this tool
+        exclude:                    # Additional exclusions for this tool
+          - string                  # Exclusion patterns specific to this tool
 
     phpstan:
       enabled: boolean              # Enable/disable PHPStan
       level: integer                # Analysis level (0-9)
       memory_limit: string          # Memory limit (e.g., "1G", "512M")
-      paths:                        # Custom paths to analyze
-        - string                    # Path relative to project root
+      paths:                        # Tool-specific path overrides
+        scan:                       # Additional scan paths for this tool
+          - string                  # Path patterns specific to this tool
+        exclude:                    # Additional exclusions for this tool
+          - string                  # Exclusion patterns specific to this tool
 
     php-cs-fixer:
       enabled: boolean              # Enable/disable PHP CS Fixer
       preset: string                # Preset: "typo3", "psr12", "symfony"
       cache: boolean                # Enable caching
+      paths:                        # Tool-specific path overrides
+        scan:                       # Additional scan paths for this tool
+          - string                  # Path patterns specific to this tool
+        exclude:                    # Additional exclusions for this tool
+          - string                  # Exclusion patterns specific to this tool
 
     typoscript-lint:
       enabled: boolean              # Enable/disable TypoScript Lint
       indentation: integer          # Indentation spaces (1-8)
       ignore_patterns:              # Patterns to ignore
         - string                    # Pattern
+      paths:                        # Tool-specific path overrides
+        scan:                       # Additional scan paths for this tool
+          - string                  # Path patterns specific to this tool
+        exclude:                    # Additional exclusions for this tool
+          - string                  # Exclusion patterns specific to this tool
 
   # Output Configuration
   output:
@@ -104,12 +127,12 @@ quality-tools:
 
 ### Paths Section
 
-The `paths` section defines which directories to scan and exclude during analysis.
+The `paths` section defines which directories to scan and exclude during analysis. All path patterns support glob patterns and vendor namespaces for flexible configuration.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `scan` | array | ["packages/", "config/system/"] | Directories to analyze |
-| `exclude` | array | ["var/", "vendor/", "node_modules/"] | Directories to exclude |
+| `scan` | array | ["packages/", "config/system/"] | Directories and patterns to analyze (supports glob patterns and vendor namespaces) |
+| `exclude` | array | ["var/", "vendor/", "public/", "_assets/", "fileadmin/", "typo3/", "Tests/", "tests/", "typo3conf/"] | Directories and patterns to exclude (supports glob patterns and vendor namespaces) |
 
 **Default Scan Paths for Different Project Types:**
 
@@ -117,19 +140,74 @@ The `paths` section defines which directories to scan and exclude during analysi
 - **Site Package**: `["packages/", "config/"]`
 - **Distribution**: `["packages/", "config/system/", "config/sites/"]`
 
-**Example:**
+**Path Pattern Types:**
+
+1. **Direct Paths**: Simple directory paths (e.g., `"src/"`, `"app/Classes/"`)
+2. **Glob Patterns**: Wildcard patterns (e.g., `"src/**/*.php"`, `"packages/*/Classes"`)
+3. **Vendor Namespaces**: Vendor package patterns (e.g., `"cpsit/*"`, `"fr/*/Classes"`)
+4. **Exclusion Patterns**: Patterns to exclude (e.g., `"packages/legacy/*"`, `"*/Tests/"`)
+
+**Basic Example:**
 ```yaml
 quality-tools:
   paths:
     scan:
       - "packages/"
       - "config/system/"
-      - "config/sites/"
     exclude:
       - "var/"
       - "vendor/"
       - "public/"
-      - ".build/"
+```
+
+**Advanced Example with Glob Patterns and Vendor Namespaces:**
+```yaml
+quality-tools:
+  paths:
+    scan:
+      - "packages/"                       # Standard packages directory
+      - "config/system/"                  # System configuration
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*"                  # CPSIT vendor packages
+      - "vendor/fr/*"                     # FR vendor packages
+      - "custom-extensions/*/Classes/"    # Custom extension location
+    exclude:
+      - "var/"                            # Cache and temporary files
+      - "vendor/"                         # Most vendor packages
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude all vendor tests
+      - "*.backup"                        # Exclude backup files
+```
+
+**Tool-Specific Path Overrides:**
+```yaml
+quality-tools:
+  paths:
+    scan:
+      - "packages/"
+      - "config/system/"
+    exclude:
+      - "var/"
+      - "vendor/"
+  
+  tools:
+    rector:
+      paths:
+        scan:
+          - "config/rector/*.php"         # Rector-specific configs
+          - "scripts/**/*.php"            # Include scripts for Rector
+    
+    fractor:
+      paths:
+        scan:
+          - "config/sites/*/setup.typoscript"
+    
+    phpstan:
+      paths:
+        scan:
+          - "Tests/**/*.php"              # Include tests in PHPStan
+        exclude:
+          - "packages/experimental/*"     # Exclude experimental code
 ```
 
 ### Tools Section
@@ -144,6 +222,7 @@ Each tool can be individually configured with its specific options.
 | `level` | string | "typo3-13" | Rector level (typo3-13, typo3-12, typo3-11) |
 | `php_version` | string | project.php_version | Override PHP version for rules |
 | `dry_run` | boolean | false | Always run in dry-run mode |
+| `paths` | object | {} | Tool-specific path overrides |
 
 **Example:**
 ```yaml
@@ -154,6 +233,11 @@ quality-tools:
       level: "typo3-13"
       php_version: "8.4"
       dry_run: false
+      paths:
+        scan:
+          - "scripts/**/*.php"           # Include scripts for Rector
+        exclude:
+          - "packages/legacy/*"          # Exclude legacy code
 ```
 
 #### Fractor Configuration
@@ -162,7 +246,7 @@ quality-tools:
 |--------|------|---------|-------------|
 | `enabled` | boolean | true | Enable/disable Fractor |
 | `indentation` | integer | 2 | Number of spaces for indentation (1-8) |
-| `skip_files` | array | [] | File patterns to skip |
+| `paths` | object | {} | Tool-specific path overrides |
 
 **Example:**
 ```yaml
@@ -171,9 +255,12 @@ quality-tools:
     fractor:
       enabled: true
       indentation: 2
-      skip_files:
-        - "*/Legacy/*"
-        - "Configuration/TCA/Overrides/*"
+      paths:
+        scan:
+          - "config/sites/*/setup.typoscript"  # Include site TypoScript
+        exclude:
+          - "packages/legacy/*"                # Exclude legacy packages
+          - "Configuration/TCA/Overrides/*"    # Exclude TCA overrides
 ```
 
 #### PHPStan Configuration
@@ -183,7 +270,7 @@ quality-tools:
 | `enabled` | boolean | true | Enable/disable PHPStan |
 | `level` | integer | 6 | Analysis level (0-9, higher = stricter) |
 | `memory_limit` | string | "1G" | Memory limit (e.g., "512M", "2G") |
-| `paths` | array | paths.scan | Custom paths to analyze |
+| `paths` | object | {} | Tool-specific path overrides |
 
 **Example:**
 ```yaml
@@ -194,8 +281,11 @@ quality-tools:
       level: 8
       memory_limit: "2G"
       paths:
-        - "packages/"
-        - "Tests/"
+        scan:
+          - "packages/"
+          - "Tests/"
+        exclude:
+          - "packages/experimental/*"
 ```
 
 #### PHP CS Fixer Configuration
@@ -205,6 +295,7 @@ quality-tools:
 | `enabled` | boolean | true | Enable/disable PHP CS Fixer |
 | `preset` | string | "typo3" | Code style preset (typo3, psr12, symfony) |
 | `cache` | boolean | true | Enable result caching |
+| `paths` | object | {} | Tool-specific path overrides |
 
 **Example:**
 ```yaml
@@ -214,6 +305,11 @@ quality-tools:
       enabled: true
       preset: "typo3"
       cache: true
+      paths:
+        scan:
+          - "scripts/**/*.php"               # Include scripts
+        exclude:
+          - "packages/experimental/*"        # Exclude experimental code
 ```
 
 #### TypoScript Lint Configuration
@@ -222,7 +318,7 @@ quality-tools:
 |--------|------|---------|-------------|
 | `enabled` | boolean | true | Enable/disable TypoScript Lint |
 | `indentation` | integer | 2 | Number of spaces for indentation (1-8) |
-| `ignore_patterns` | array | [] | File patterns to ignore |
+| `paths` | object | {} | Tool-specific path overrides |
 
 **Example:**
 ```yaml
@@ -231,9 +327,12 @@ quality-tools:
     typoscript-lint:
       enabled: true
       indentation: 2
-      ignore_patterns:
-        - "*.backup"
-        - "*/Legacy/*"
+      paths:
+        scan:
+          - "config/sites/*/*.typoscript"     # Include all site configs
+        exclude:
+          - "*.backup"                        # Exclude backup files
+          - "packages/legacy/*"               # Exclude legacy packages
 ```
 
 ### Output Section

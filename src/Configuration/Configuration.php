@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Configuration;
 
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+use Cpsit\QualityTools\Utility\PathScanner;
 
 final class Configuration
 {
@@ -18,6 +19,7 @@ final class Configuration
     private ?string $projectRoot = null;
     private ?string $vendorPath = null;
     private ?VendorDirectoryDetector $vendorDetector = null;
+    private ?PathScanner $pathScanner = null;
 
     public function __construct(array $data = [])
     {
@@ -58,7 +60,12 @@ final class Configuration
 
     public function getExcludePaths(): array
     {
-        return $this->pathsConfig['exclude'] ?? ['var/', 'vendor/', 'node_modules/'];
+        return $this->pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
+    }
+
+    public function getToolPaths(string $tool): array
+    {
+        return $this->toolsConfig[$tool]['paths'] ?? [];
     }
 
     public function isToolEnabled(string $tool): bool
@@ -152,6 +159,7 @@ final class Configuration
     {
         $this->projectRoot = $projectRoot;
         $this->vendorPath = null; // Reset vendor path cache
+        $this->pathScanner = null; // Reset path scanner
     }
 
     public function getProjectRoot(): ?string
@@ -204,6 +212,90 @@ final class Configuration
         return $this->vendorDetector;
     }
 
+    private function getPathScanner(): PathScanner
+    {
+        if ($this->pathScanner === null) {
+            if ($this->projectRoot === null) {
+                throw new \RuntimeException('Project root must be set before using path scanner');
+            }
+            
+            $this->pathScanner = new PathScanner($this->projectRoot);
+            $this->pathScanner->setVendorPath($this->getVendorPath());
+        }
+
+        return $this->pathScanner;
+    }
+
+    /**
+     * Get all resolved paths for a specific tool (global scan paths + tool-specific paths - exclusions)
+     */
+    public function getResolvedPathsForTool(string $tool): array
+    {
+        if ($this->projectRoot === null) {
+            return $this->getScanPaths(); // Fallback to standard paths
+        }
+
+        $scanner = $this->getPathScanner();
+        
+        // Start with global scan paths
+        $globalScanPaths = $this->getScanPaths();
+        
+        // Get tool-specific paths
+        $toolPaths = $this->getToolPaths($tool);
+        $toolScanPaths = $toolPaths['scan'] ?? [];
+        
+        // Combine all scan patterns
+        $allScanPatterns = array_merge($globalScanPaths, $toolScanPaths);
+        
+        // Resolve all scan patterns
+        $resolvedPaths = $scanner->resolvePaths($allScanPatterns);
+        
+        // Get exclusion patterns
+        $globalExcludePaths = $this->getExcludePaths();
+        $toolExcludePaths = $toolPaths['exclude'] ?? [];
+        $allExcludePatterns = array_merge($globalExcludePaths, $toolExcludePaths);
+        
+        // Apply exclusions if any
+        if (!empty($allExcludePatterns)) {
+            $exclusionPatterns = array_map(fn($pattern) => '!' . $pattern, $allExcludePatterns);
+            $resolvedPaths = $scanner->resolvePaths(array_merge($resolvedPaths, $exclusionPatterns));
+        }
+
+        // Remove duplicates and sort
+        $resolvedPaths = array_unique($resolvedPaths);
+        sort($resolvedPaths);
+        
+        return $resolvedPaths;
+    }
+
+    /**
+     * Get path scanning debug information
+     */
+    public function getPathScanningDebugInfo(string $tool): array
+    {
+        if ($this->projectRoot === null) {
+            return ['error' => 'Project root not set'];
+        }
+
+        $scanner = $this->getPathScanner();
+        $globalScanPaths = $this->getScanPaths();
+        $globalExcludePaths = $this->getExcludePaths();
+        $toolPaths = $this->getToolPaths($tool);
+        
+        return [
+            'tool' => $tool,
+            'project_root' => $this->projectRoot,
+            'vendor_path' => $this->getVendorPath(),
+            'global_scan_paths' => $globalScanPaths,
+            'global_exclude_paths' => $globalExcludePaths,
+            'tool_paths' => $toolPaths,
+            'resolved_paths' => $this->getResolvedPathsForTool($tool),
+            'path_scanner_debug' => $scanner->getPathResolutionDebugInfo(
+                array_merge($globalScanPaths, $toolPaths['scan'] ?? [])
+            )
+        ];
+    }
+
     public function toArray(): array
     {
         return $this->data;
@@ -225,7 +317,7 @@ final class Configuration
                 ],
                 'paths' => [
                     'scan' => ['packages/', 'config/system/'],
-                    'exclude' => ['var/', 'vendor/', 'node_modules/'],
+                    'exclude' => ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'],
                 ],
                 'tools' => [
                     'rector' => [

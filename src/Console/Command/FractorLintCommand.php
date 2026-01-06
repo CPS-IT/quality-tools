@@ -12,27 +12,7 @@ final class FractorLintCommand extends BaseCommand
 {
     protected function getTargetPath(InputInterface $input): string
     {
-        // If user specified a custom path, use it
-        $customPath = $input->getOption('path');
-        if ($customPath !== null) {
-            if (!is_dir($customPath)) {
-                throw new \InvalidArgumentException(
-                    sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                );
-            }
-            return realpath($customPath);
-        }
-
-        // For Fractor, scan both packages and site configuration directories
-        $projectRoot = $this->getProjectRoot();
-        $packagesPath = $projectRoot . '/packages';
-
-        if (is_dir($packagesPath)) {
-            return $packagesPath;
-        }
-
-        // Fall back to project root
-        return $projectRoot;
+        return $this->getTargetPathForTool($input, 'fractor');
     }
 
     protected function configure(): void

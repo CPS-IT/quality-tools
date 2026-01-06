@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
@@ -22,6 +24,7 @@ abstract class BaseCommand extends Command
     protected ?MemoryCalculator $memoryCalculator = null;
     protected ?string $cachedTargetPath = null;
     protected ?bool $cachedNoOptimization = null;
+    protected ?Configuration $configuration = null;
 
     protected function configure(): void
     {
@@ -302,5 +305,50 @@ abstract class BaseCommand extends Command
         }
 
         $output->writeln('');
+    }
+
+    protected function getTargetPathForTool(InputInterface $input, string $tool): string
+    {
+        if ($this->cachedTargetPath === null) {
+            $customPath = $input->getOption('path');
+            if ($customPath !== null) {
+                if (!is_dir($customPath)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
+                    );
+                }
+                $this->cachedTargetPath = realpath($customPath);
+            } else {
+                // Use configuration-based path resolution
+                $configuration = $this->getConfiguration($input);
+                $resolvedPaths = $configuration->getResolvedPathsForTool($tool);
+                
+                if (!empty($resolvedPaths)) {
+                    // Use the first resolved path as the target
+                    $this->cachedTargetPath = $resolvedPaths[0];
+                } else {
+                    // Fall back to project root
+                    $this->cachedTargetPath = $this->getProjectRoot();
+                }
+            }
+        }
+        return $this->cachedTargetPath;
+    }
+
+    protected function getConfiguration(InputInterface $input): Configuration
+    {
+        if ($this->configuration === null) {
+            $projectRoot = $this->getProjectRoot();
+            $loader = new YamlConfigurationLoader();
+            $this->configuration = $loader->load($projectRoot);
+            
+            // Override with custom config path if provided
+            $customConfigPath = $input->getOption('config');
+            if ($customConfigPath && file_exists($customConfigPath)) {
+                // For now, we'll use the loaded configuration
+                // TODO: Implement config override logic if needed
+            }
+        }
+        return $this->configuration;
     }
 }

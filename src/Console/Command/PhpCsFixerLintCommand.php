@@ -11,29 +11,7 @@ final class PhpCsFixerLintCommand extends BaseCommand
 {
     protected function getTargetPath(InputInterface $input): string
     {
-        if ($this->cachedTargetPath === null) {
-            // If user specified a custom path, use it
-            $customPath = $input->getOption('path');
-            if ($customPath !== null) {
-                if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
-                }
-                $this->cachedTargetPath = realpath($customPath);
-            } else {
-                // For PHP CS Fixer, default to packages directory if it exists (typical TYPO3 setup)
-                $packagesPath = $this->getProjectRoot() . '/packages';
-                if (is_dir($packagesPath)) {
-                    $this->cachedTargetPath = $packagesPath;
-                } else {
-                    // Fall back to project root
-                    $this->cachedTargetPath = $this->getProjectRoot();
-                }
-            }
-        }
-
-        return $this->cachedTargetPath;
+        return $this->getTargetPathForTool($input, 'php-cs-fixer');
     }
 
     protected function configure(): void

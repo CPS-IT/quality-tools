@@ -55,6 +55,30 @@ quality-tools:
       - "var/"
       - "vendor/"
       - "node_modules/"
+    
+    # Additional path scanning (Feature 013)
+    additional:
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
+      - "vendor/fr/*/Classes"             # Scan other vendor packages
+      - "custom-extensions/*/Classes/"    # Custom extension location
+    
+    # Advanced exclusion patterns
+    exclude_patterns:
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude vendor tests
+    
+    # Tool-specific path overrides
+    tool_overrides:
+      rector:
+        additional:
+          - "config/custom/*.php"         # Tool-specific additional paths
+      fractor:
+        additional:
+          - "config/sites/*/setup.typoscript"
+      phpstan:
+        exclude:
+          - "packages/experimental/*"     # Tool-specific exclusions
 
   # Configure individual tools
   tools:
@@ -168,6 +192,196 @@ quality-tools:
     rector:
       enabled: false  # Skip Rector for this project
 ```
+
+## Advanced Path Configuration
+
+The flexible path configuration system (Feature 013) allows you to scan custom paths beyond the standard TYPO3 structure. This is essential for monorepos, custom vendor packages, or non-standard project layouts.
+
+### Path Pattern Types
+
+The system supports several types of path patterns:
+
+#### 1. Direct Paths
+Simple directory or file paths relative to the project root:
+```yaml
+quality-tools:
+  paths:
+    additional:
+      - "src/"                          # Directory path
+      - "app/Classes/"                  # Nested directory
+      - "custom-extensions/"            # Custom extension location
+```
+
+#### 2. Glob Patterns
+Use wildcards for flexible path matching:
+```yaml
+quality-tools:
+  paths:
+    additional:
+      - "src/**/*.php"                  # All PHP files in src/
+      - "packages/*/Classes/**/*.php"   # PHP files in package Classes/
+      - "config/**/*.yaml"              # All YAML files in config/
+      - "*.php"                         # PHP files in project root
+```
+
+#### 3. Vendor Namespace Patterns
+Scan specific vendor namespaces automatically:
+```yaml
+quality-tools:
+  paths:
+    additional:
+      - "cpsit/*"                       # All CPSIT vendor packages
+      - "cpsit/*/Classes"               # Only Classes/ in CPSIT packages
+      - "fr/*/Classes"                  # Classes/ in FR vendor namespace
+      - "mycompany/*/src"               # Custom vendor namespace
+```
+
+**How Vendor Patterns Work:**
+- `cpsit/*` resolves to all packages under `vendor/cpsit/`
+- `cpsit/*/Classes` resolves to `vendor/cpsit/package1/Classes`, `vendor/cpsit/package2/Classes`, etc.
+- Only existing directories are included in the final path list
+
+#### 4. Exclusion Patterns
+Use `exclude_patterns` for advanced exclusions:
+```yaml
+quality-tools:
+  paths:
+    exclude_patterns:
+      - "packages/legacy/*"             # Exclude legacy packages
+      - "vendor/*/Tests/"               # Exclude all vendor tests
+      - "*.backup"                      # Exclude backup files
+      - "packages/experimental/*"       # Exclude experimental code
+```
+
+### Tool-Specific Path Configuration
+
+Override paths for specific tools when they have different requirements:
+
+```yaml
+quality-tools:
+  paths:
+    # Global additional paths
+    additional:
+      - "src/**/*.php"
+      - "vendor/cpsit/*/Classes"
+    
+    # Tool-specific overrides
+    tool_overrides:
+      rector:
+        additional:
+          - "config/rector/*.php"       # Rector-specific config files
+          - "scripts/**/*.php"          # Include scripts for Rector
+      
+      fractor:
+        additional:
+          - "config/sites/*/setup.typoscript"
+          - "fileadmin/templates/*.typoscript"
+      
+      phpstan:
+        additional:
+          - "Tests/**/*.php"            # Include tests for PHPStan
+        exclude:
+          - "packages/experimental/*"   # Exclude unstable code from PHPStan
+      
+      typoscript-lint:
+        additional:
+          - "fileadmin/**/*.typoscript"
+          - "uploads/**/*.ts"
+```
+
+### Real-World Examples
+
+#### Example 1: Monorepo with Multiple Packages
+```yaml
+quality-tools:
+  project:
+    name: "enterprise-monorepo"
+  
+  paths:
+    additional:
+      - "apps/*/src/**/*.php"           # Multiple apps
+      - "libs/*/Classes/**/*.php"       # Shared libraries
+      - "packages/*/Classes/**/*.php"   # Custom packages
+      - "vendor/company/*/Classes"      # Company-specific packages
+    
+    exclude_patterns:
+      - "apps/*/Tests/"                 # Exclude app tests
+      - "libs/legacy/*"                 # Exclude legacy libraries
+      - "packages/deprecated/*"         # Exclude deprecated packages
+```
+
+#### Example 2: Custom Vendor Package Analysis
+```yaml
+quality-tools:
+  project:
+    name: "vendor-package-analysis"
+  
+  paths:
+    additional:
+      - "cpsit/*"                       # All CPSIT packages
+      - "typo3/cms-*"                   # TYPO3 core packages
+      - "symfony/*/src"                 # Symfony package sources
+    
+    exclude_patterns:
+      - "*/Tests/"                      # Exclude all tests
+      - "*/Documentation/"              # Exclude documentation
+```
+
+#### Example 3: Legacy Project Migration
+```yaml
+quality-tools:
+  project:
+    name: "legacy-migration"
+  
+  paths:
+    additional:
+      - "legacy/Classes/**/*.php"       # Legacy code to modernize
+      - "migration/src/**/*.php"        # Migration utilities
+    
+    exclude_patterns:
+      - "legacy/deprecated/*"           # Skip deprecated legacy code
+    
+    tool_overrides:
+      rector:
+        additional:
+          - "legacy/**/*.php"           # Rector analyzes all legacy code
+      phpstan:
+        exclude:
+          - "legacy/broken/*"           # PHPStan skips broken legacy code
+```
+
+### Performance Optimization
+
+The path scanning system includes several optimizations:
+
+- **Caching**: Resolved paths are cached to avoid repeated filesystem operations
+- **Lazy Evaluation**: Paths are only resolved when needed
+- **Smart Deduplication**: Duplicate paths are automatically removed
+- **Existence Checking**: Non-existent paths are filtered out automatically
+
+### Path Resolution Debugging
+
+Use the configuration debugging tools to understand path resolution:
+
+```bash
+# Show resolved paths for all tools
+vendor/bin/qt config:show --verbose
+
+# Debug path resolution for specific tools
+vendor/bin/qt lint:rector --show-optimization
+
+# Validate path configuration
+vendor/bin/qt config:validate
+```
+
+### Best Practices
+
+1. **Start Simple**: Begin with basic paths and add complexity as needed
+2. **Use Vendor Patterns**: Prefer vendor namespace patterns over explicit paths
+3. **Exclude Unnecessary Code**: Use exclusions to improve performance
+4. **Tool-Specific Optimization**: Configure tools individually for their specific needs
+5. **Test Path Resolution**: Use debug commands to verify path resolution
+6. **Monitor Performance**: Watch for impact on scan times with large path sets
 
 ## Working with Environment Variables
 

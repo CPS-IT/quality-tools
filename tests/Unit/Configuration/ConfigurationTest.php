@@ -23,7 +23,7 @@ final class ConfigurationTest extends TestCase
         
         // Test default paths
         self::assertSame(['packages/', 'config/system/'], $config->getScanPaths());
-        self::assertSame(['var/', 'vendor/', 'node_modules/'], $config->getExcludePaths());
+        self::assertSame(['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'], $config->getExcludePaths());
         
         // Test tool enablement defaults
         self::assertTrue($config->isToolEnabled('rector'));
@@ -334,7 +334,7 @@ final class ConfigurationTest extends TestCase
         self::assertSame('13.4', $config->getProjectTypo3Version());
         self::assertTrue($config->isToolEnabled('rector'));
         self::assertSame(['packages/', 'config/system/'], $config->getScanPaths());
-        self::assertSame(['var/', 'vendor/', 'node_modules/'], $config->getExcludePaths());
+        self::assertSame(['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'], $config->getExcludePaths());
         
         // Verify the structure contains expected defaults
         $data = $config->toArray();
