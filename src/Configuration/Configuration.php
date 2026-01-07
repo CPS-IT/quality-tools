@@ -8,7 +8,7 @@ use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use Cpsit\QualityTools\Utility\PathScanner;
 
-final class Configuration
+class Configuration
 {
     private array $data;
     private array $projectConfig;
@@ -247,19 +247,19 @@ final class Configuration
         // Combine all scan patterns
         $allScanPatterns = array_merge($globalScanPaths, $toolScanPaths);
         
-        // Resolve all scan patterns
-        $resolvedPaths = $scanner->resolvePaths($allScanPatterns);
-        
-        // Get exclusion patterns
+        // Get exclusion patterns and add them to scan patterns
         $globalExcludePaths = $this->getExcludePaths();
         $toolExcludePaths = $toolPaths['exclude'] ?? [];
         $allExcludePatterns = array_merge($globalExcludePaths, $toolExcludePaths);
         
-        // Apply exclusions if any
+        // Add exclusion patterns with '!' prefix to scan patterns
         if (!empty($allExcludePatterns)) {
             $exclusionPatterns = array_map(fn($pattern) => '!' . $pattern, $allExcludePatterns);
-            $resolvedPaths = $scanner->resolvePaths(array_merge($resolvedPaths, $exclusionPatterns));
+            $allScanPatterns = array_merge($allScanPatterns, $exclusionPatterns);
         }
+        
+        // Resolve all patterns (including exclusions) in one call
+        $resolvedPaths = $scanner->resolvePaths($allScanPatterns);
 
         // Remove duplicates and sort
         $resolvedPaths = array_unique($resolvedPaths);

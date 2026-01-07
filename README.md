@@ -5,10 +5,10 @@ A complete command-line interface for TYPO3 quality assurance tools. This packag
 
 ## Status: MVP Complete with Dynamic Optimization
 
-**Version:** 1.0.0-dev
+**Version:** 0.1.0
 **Test Coverage:** 97.9% (283 tests, 810 assertions)
 **All 10 tool commands fully implemented and tested**
-**Dynamic Resource Optimization: ACTIVE** - Automatic memory and performance optimization for all tools
+**Dynamic Resource Optimization:** - Automatic memory and performance optimization for all tools
 
 ## Installation
 
@@ -182,7 +182,7 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 - **Comprehensive Error Handling**: Proper exit codes and detailed error messages
 
 ### Advanced Features
-- **Optimization Diagnostics**: View project analysis and optimization decisions with `--show-optimization` flag
+- **Optimization Diagnostics**: View project analysis and optimization decisions (shown by default)
 - **Manual Override Options**: Disable optimization with `--no-optimization` for edge cases
 - **Extensive Testing**: 97.9% line coverage with 283 tests and 810 assertions
 - **Performance Monitoring**: Built-in metrics show optimization effectiveness
@@ -205,11 +205,8 @@ Optimization: Enabling parallel processing and caching for performance
 
 **Override Options for Advanced Users:**
 ```bash
-# Disable automatic optimization
+# Disable automatic optimization (also hides optimization details)
 vendor/bin/qt lint:phpstan --no-optimization
-
-# View optimization decisions
-vendor/bin/qt lint:phpstan --show-optimization
 
 # Manual memory limit (overrides automatic calculation)
 vendor/bin/qt lint:phpstan --memory-limit=1024M

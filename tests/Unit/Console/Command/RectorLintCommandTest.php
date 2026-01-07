@@ -100,12 +100,11 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -127,12 +126,11 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $customConfigPath],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -154,12 +152,11 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', $customTargetDir],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -178,12 +175,11 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -207,8 +203,7 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', $nonExistentTargetDir],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -228,8 +223,7 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $nonExistentConfigPath],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -306,8 +300,7 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         // Since the executable doesn't exist, this will fail at the process level

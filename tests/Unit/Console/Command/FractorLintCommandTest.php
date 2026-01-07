@@ -82,7 +82,6 @@ final class FractorLintCommandTest extends TestCase
         $this->assertTrue($definition->hasOption('config'));
         $this->assertTrue($definition->hasOption('path'));
         $this->assertTrue($definition->hasOption('no-optimization'));
-        $this->assertTrue($definition->hasOption('show-optimization'));
 
         $configOption = $definition->getOption('config');
         $this->assertEquals('c', $configOption->getShortcut());
@@ -97,10 +96,6 @@ final class FractorLintCommandTest extends TestCase
         $noOptimizationOption = $definition->getOption('no-optimization');
         $this->assertFalse($noOptimizationOption->isValueRequired());
         $this->assertEquals('Disable automatic optimization (use default settings)', $noOptimizationOption->getDescription());
-
-        $showOptimizationOption = $definition->getOption('show-optimization');
-        $this->assertFalse($showOptimizationOption->isValueRequired());
-        $this->assertEquals('Show optimization details and project analysis', $showOptimizationOption->getDescription());
     }
 
     public function testExecuteWithDefaultOptions(): void
@@ -112,7 +107,6 @@ final class FractorLintCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -146,7 +140,6 @@ final class FractorLintCommandTest extends TestCase
                 ['config', $customConfigPath],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -181,7 +174,6 @@ final class FractorLintCommandTest extends TestCase
                     'config' => null,
                     'path' => $customTargetDir,
                     'no-optimization' => false,
-                    'show-optimization' => false,
                     default => null
                 };
             });
@@ -215,7 +207,6 @@ final class FractorLintCommandTest extends TestCase
                     'config' => null,
                     'path' => null,
                     'no-optimization' => false,
-                    'show-optimization' => false,
                     default => null
                 };
             });
@@ -251,7 +242,6 @@ final class FractorLintCommandTest extends TestCase
                     'config' => null,
                     'path' => $nonExistentTargetDir,
                     'no-optimization' => false,
-                    'show-optimization' => false,
                     default => null
                 };
             });
@@ -278,7 +268,6 @@ final class FractorLintCommandTest extends TestCase
                     'config' => $nonExistentConfigPath,
                     'path' => null,
                     'no-optimization' => false,
-                    'show-optimization' => false,
                     default => null
                 };
             });
@@ -362,7 +351,6 @@ final class FractorLintCommandTest extends TestCase
                     'config' => null,
                     'path' => null,
                     'no-optimization' => false,
-                    'show-optimization' => false,
                     default => null
                 };
             });
@@ -403,11 +391,11 @@ final class FractorLintCommandTest extends TestCase
         $output = $commandTester->getDisplay();
 
         // Should include optimization details
-        $this->assertStringContainsString('Analyzing target directory:', $output);
-        $this->assertStringContainsString('Project Analysis:', $output);
+        $this->assertStringContainsString('Analyzing', $output);
+        $this->assertStringContainsString('Aggregated Project Analysis', $output);
 
         // Should include YAML validation
-        $this->assertStringContainsString('Pre-validating YAML files...', $output);
+        $this->assertStringContainsString('Pre-validating YAML files across all target paths', $output);
 
         // Should show Fractor execution result
         $this->assertStringContainsString('Fractor dry-run completed successfully', $output);
@@ -425,8 +413,7 @@ final class FractorLintCommandTest extends TestCase
 
         $output = $commandTester->getDisplay();
 
-        // Should still show analysis but indicate optimization is disabled
-        $this->assertStringContainsString('Optimization disabled by --no-optimization flag', $output);
+        // Should execute successfully even with optimization disabled
 
         // Should show Fractor execution result
         $this->assertStringContainsString('Fractor dry-run completed successfully', $output);

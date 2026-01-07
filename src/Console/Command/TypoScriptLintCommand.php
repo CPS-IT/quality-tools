@@ -34,7 +34,7 @@ final class TypoScriptLintCommand extends BaseCommand
                 $configPath,
             ];
 
-            // If user specified a custom path, add it as positional argument
+            // Handle path arguments - get option only once
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
@@ -45,7 +45,18 @@ final class TypoScriptLintCommand extends BaseCommand
                 $command[] = realpath($customPath);
                 $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
             } else {
-                $output->writeln('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+                // Use resolved paths from configuration - pass customPath to avoid re-querying the option
+                $configuration = $this->getConfiguration($input);
+                $resolvedPaths = $configuration->getResolvedPathsForTool('typoscript-lint');
+                
+                if (!empty($resolvedPaths)) {
+                    foreach ($resolvedPaths as $path) {
+                        $command[] = $path;
+                    }
+                    $output->writeln(sprintf('<comment>Analyzing resolved paths: %s</comment>', implode(', ', $resolvedPaths)));
+                } else {
+                    $output->writeln('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+                }
             }
 
             return $this->executeProcess($command, $input, $output);

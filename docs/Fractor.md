@@ -59,8 +59,8 @@ vendor/bin/qt fix:fractor --memory-limit=768M
 # Disable automatic optimization
 vendor/bin/qt lint:fractor --no-optimization
 
-# View optimization decisions
-vendor/bin/qt lint:fractor --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 ```
 
 ## Direct Tool Usage (Alternative)
@@ -134,7 +134,7 @@ If you still encounter memory issues with automatic optimization:
 vendor/bin/qt fix:fractor --memory-limit=1024M
 
 # Check optimization decisions
-vendor/bin/qt fix:fractor --show-optimization
+vendor/bin/qt fix:fractor
 
 # Disable optimization if needed
 vendor/bin/qt fix:fractor --no-optimization
@@ -144,7 +144,7 @@ vendor/bin/qt fix:fractor --no-optimization
 
 ```shell
 # Verify optimization is working
-vendor/bin/qt lint:fractor --show-optimization
+vendor/bin/qt lint:fractor
 
 # Should show project analysis and optimization decisions
 # If not optimizing, check TYPO3 project detection
@@ -154,7 +154,7 @@ vendor/bin/qt lint:fractor --show-optimization
 
 ```shell
 # Check if TypoScript files are being found
-vendor/bin/qt lint:fractor --show-optimization
+vendor/bin/qt lint:fractor
 
 # Should show "Found X TypoScript files" in analysis
 # If not finding files, check file extensions and locations
@@ -165,7 +165,7 @@ vendor/bin/qt lint:fractor --show-optimization
 **"No TypoScript files found" (Path Issues):**
 ```
 # Check if you're in the right directory
-vendor/bin/qt lint:fractor --show-optimization
+vendor/bin/qt lint:fractor
 
 # Or specify custom path
 vendor/bin/qt lint:fractor --path=./Configuration/TypoScript

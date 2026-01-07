@@ -55,19 +55,27 @@ final class PathScanner
             }
         }
 
-        // Resolve all inclusion patterns
+        // Resolve all inclusion patterns and track explicit vendor paths
         $resolvedPaths = [];
+        $explicitVendorPaths = [];
+        
         foreach ($includePatterns as $pattern) {
             $paths = $this->resolvePattern($pattern);
             $resolvedPaths = array_merge($resolvedPaths, $paths);
+            
+            // Track paths that came from vendor namespace patterns or explicit vendor patterns
+            if ($this->isVendorNamespacePattern($pattern) || $this->isExplicitVendorPattern($pattern)) {
+                $explicitVendorPaths = array_merge($explicitVendorPaths, $paths);
+            }
         }
 
         // Remove duplicates
         $resolvedPaths = array_unique($resolvedPaths);
+        $explicitVendorPaths = array_unique($explicitVendorPaths);
 
         // Apply exclusion patterns
         if (!empty($excludePatterns)) {
-            $resolvedPaths = $this->applyExclusions($resolvedPaths, $excludePatterns);
+            $resolvedPaths = $this->applyExclusions($resolvedPaths, $excludePatterns, $explicitVendorPaths);
         }
 
         // Sort paths for consistent ordering
@@ -122,6 +130,20 @@ final class PathScanner
         // Check if this namespace actually exists in vendor directory
         $vendorNamespaceDir = $this->vendorPath . '/' . $namespace;
         return is_dir($vendorNamespaceDir);
+    }
+
+    /**
+     * Check if pattern is an explicit vendor path pattern (vendor/namespace/*)
+     */
+    private function isExplicitVendorPattern(string $pattern): bool
+    {
+        // Pattern must start with vendor/
+        if (!str_starts_with($pattern, 'vendor/')) {
+            return false;
+        }
+        
+        // Must be a glob pattern with vendor paths
+        return $this->containsGlobCharacters($pattern);
     }
 
     /**
@@ -271,9 +293,24 @@ final class PathScanner
     /**
      * Apply exclusion patterns to resolved paths
      */
-    private function applyExclusions(array $paths, array $excludePatterns): array
+    private function applyExclusions(array $paths, array $excludePatterns, array $explicitVendorPaths = []): array
     {
-        return array_filter($paths, function ($path) use ($excludePatterns) {
+        return array_filter($paths, function ($path) use ($excludePatterns, $explicitVendorPaths) {
+            // Explicit vendor paths are exempt from vendor/ exclusions
+            if (in_array($path, $explicitVendorPaths)) {
+                foreach ($excludePatterns as $excludePattern) {
+                    // Skip vendor/ exclusion for explicit vendor paths
+                    if ($excludePattern === 'vendor/' || $excludePattern === 'vendor') {
+                        continue;
+                    }
+                    if ($this->matchesExclusionPattern($path, $excludePattern)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            // Apply all exclusions for regular paths
             foreach ($excludePatterns as $excludePattern) {
                 if ($this->matchesExclusionPattern($path, $excludePattern)) {
                     return false;

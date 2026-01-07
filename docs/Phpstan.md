@@ -44,8 +44,8 @@ vendor/bin/qt lint:phpstan --path=./custom/extension
 # Disable automatic optimization
 vendor/bin/qt lint:phpstan --no-optimization
 
-# View optimization decisions
-vendor/bin/qt lint:phpstan --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 ```
 
 ## Direct Tool Usage (Alternative)
@@ -127,8 +127,8 @@ If you still encounter memory issues with automatic optimization:
 # Increase memory manually
 vendor/bin/qt lint:phpstan --memory-limit=2048M
 
-# Check optimization decisions
-vendor/bin/qt lint:phpstan --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 
 # Disable optimization if needed
 vendor/bin/qt lint:phpstan --no-optimization
@@ -137,8 +137,8 @@ vendor/bin/qt lint:phpstan --no-optimization
 ### Performance Issues
 
 ```shell
-# Verify optimization is working
-vendor/bin/qt lint:phpstan --show-optimization
+# Verify optimization is working (details shown by default)
+vendor/bin/qt lint:phpstan
 
 # Should show project analysis and optimization decisions
 # If not optimizing, check TYPO3 project detection

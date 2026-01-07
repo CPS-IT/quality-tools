@@ -53,7 +53,7 @@ Current quality tools fail on large projects due to:
 - [x] User Experience
   - [x] Add informational output showing optimization decisions (project analysis display)
   - [x] Implement fallback to manual configuration for edge cases (--no-optimization flag)
-  - [x] Create diagnostic mode showing project analysis details (--show-optimization flag)
+  - [x] Create diagnostic mode showing project analysis details (shown by default, can disable with --no-optimization)
   - [x] Add configuration override options for advanced users (manual config options preserved)
   - [ ] Update documentation with automatic optimization information (pending)
 

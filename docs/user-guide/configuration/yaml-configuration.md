@@ -367,8 +367,8 @@ Use the configuration debugging tools to understand path resolution:
 # Show resolved paths for all tools
 vendor/bin/qt config:show --verbose
 
-# Debug path resolution for specific tools
-vendor/bin/qt lint:rector --show-optimization
+# Debug path resolution for specific tools (details shown by default)
+vendor/bin/qt lint:rector
 
 # Validate path configuration
 vendor/bin/qt config:validate

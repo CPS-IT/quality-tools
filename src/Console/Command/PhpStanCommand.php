@@ -44,12 +44,22 @@ final class PhpStanCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            if ($input->getOption('show-optimization')) {
+            // Show optimization details by default unless disabled
+            if (!$this->isOptimizationDisabled($input)) {
                 $this->showOptimizationDetails($input, $output, 'phpstan');
             }
 
             $configPath = $this->resolveConfigPath('phpstan.neon', $input->getOption('config'));
-            $targetPath = $this->getTargetPath($input);
+
+            // Handle dynamic path resolution for PHPStan
+            $customPath = $input->getOption('path');
+            if ($customPath === null) {
+                $resolvedPaths = $this->getResolvedPathsForTool($input, 'phpstan');
+                if (count($resolvedPaths) > 1) {
+                    // Create a temporary configuration file with dynamic paths
+                    $configPath = $this->createTemporaryPhpStanConfig($configPath, $resolvedPaths);
+                }
+            }
 
             $command = [
                 $this->getVendorBinPath() . '/phpstan',
@@ -72,8 +82,16 @@ final class PhpStanCommand extends BaseCommand
                 $command[] = '--memory-limit=' . $optimalMemory;
             }
 
-            // Add target path
-            $command[] = $targetPath;
+            // Only add target path if user provided a custom path via --path option
+            // Otherwise, let PHPStan use paths from configuration file (which includes resolved paths for multi-path scenarios)
+            if ($customPath !== null) {
+                if (!is_dir($customPath)) {
+                    throw new \InvalidArgumentException(
+                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
+                    );
+                }
+                $command[] = realpath($customPath);
+            }
 
             return $this->executeProcess($command, $input, $output);
 
@@ -81,5 +99,30 @@ final class PhpStanCommand extends BaseCommand
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
             return 1;
         }
+    }
+
+    private function createTemporaryPhpStanConfig(string $baseConfigPath, array $paths): string
+    {
+        // Read the base configuration
+        $baseConfig = file_get_contents($baseConfigPath);
+        if ($baseConfig === false) {
+            throw new \RuntimeException(sprintf('Could not read base config file: %s', $baseConfigPath));
+        }
+
+        // Create dynamic paths section
+        $pathsSection = "parameters:\n\tlevel: 6\n\tpaths:\n";
+        foreach ($paths as $path) {
+            $pathsSection .= "\t\t- " . $path . "\n";
+        }
+
+        // Create temporary file
+        $tempDir = sys_get_temp_dir();
+        $tempFile = tempnam($tempDir, 'phpstan_') . '.neon';
+        
+        if (file_put_contents($tempFile, $pathsSection) === false) {
+            throw new \RuntimeException(sprintf('Could not write temporary config file: %s', $tempFile));
+        }
+
+        return $tempFile;
     }
 }

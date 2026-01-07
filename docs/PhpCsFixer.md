@@ -59,8 +59,8 @@ vendor/bin/qt fix:php-cs-fixer --memory-limit=768M
 # Disable automatic optimization
 vendor/bin/qt lint:php-cs-fixer --no-optimization
 
-# View optimization decisions
-vendor/bin/qt lint:php-cs-fixer --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 ```
 
 ## Direct Tool Usage (Alternative)
@@ -133,8 +133,8 @@ If you still encounter memory issues with automatic optimization:
 # Increase memory manually
 vendor/bin/qt fix:php-cs-fixer --memory-limit=1024M
 
-# Check optimization decisions
-vendor/bin/qt fix:php-cs-fixer --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 
 # Disable optimization if needed
 vendor/bin/qt fix:php-cs-fixer --no-optimization
@@ -143,8 +143,8 @@ vendor/bin/qt fix:php-cs-fixer --no-optimization
 ### Performance Issues
 
 ```shell
-# Verify optimization is working
-vendor/bin/qt lint:php-cs-fixer --show-optimization
+# Verify optimization is working (details shown by default)
+vendor/bin/qt lint:php-cs-fixer
 
 # Should show project analysis and optimization decisions
 # If not optimizing, check TYPO3 project detection
@@ -171,8 +171,8 @@ vendor/bin/qt fix:php-cs-fixer --memory-limit=1024M
 
 **"No files found to fix" (Path Issues):**
 ```
-# Check if you're in the right directory
-vendor/bin/qt lint:php-cs-fixer --show-optimization
+# Check if you're in the right directory (details shown by default)
+vendor/bin/qt lint:php-cs-fixer
 
 # Or specify custom path
 vendor/bin/qt lint:php-cs-fixer --path=./src

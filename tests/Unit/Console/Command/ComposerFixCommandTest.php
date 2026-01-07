@@ -116,7 +116,6 @@ final class ComposerFixCommandTest extends TestCase
             ->willReturnMap([
                 ['path', null],
                 ['config', null],
-                ['show-optimization', false],
                 ['no-optimization', false]
             ]);
 
@@ -153,7 +152,6 @@ final class ComposerFixCommandTest extends TestCase
             ->willReturnMap([
                 ['path', $customTargetDir],
                 ['config', null],
-                ['show-optimization', false],
                 ['no-optimization', false]
             ]);
 
@@ -264,14 +262,13 @@ final class ComposerFixCommandTest extends TestCase
             ->willReturnMap([
                 ['path', null],
                 ['config', null],
-                ['show-optimization', false],
                 ['no-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*composer.json file not found.*<\/error>/'));
+            ->with($this->stringContains('No composer.json files found in any of the configured paths'));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -289,7 +286,6 @@ final class ComposerFixCommandTest extends TestCase
             ->willReturnMap([
                 ['path', null],
                 ['config', null],
-                ['show-optimization', false],
                 ['no-optimization', false]
             ]);
 

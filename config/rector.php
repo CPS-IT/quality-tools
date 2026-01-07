@@ -24,11 +24,14 @@ if (count($installedProjects) === 1) {
     $installPath = \Composer\InstalledVersions::getInstallPath($projectName);
 }
 
+// Default scan paths for TYPO3 v13
+$scanPaths = [
+    $installPath . '/config/system',
+    $installPath . '/packages',
+];
+
 return RectorConfig::configure()
-    ->withPaths([
-        $installPath . '/config/system',
-        $installPath . '/packages',
-    ])
+    ->withPaths($scanPaths)
     ->withPhpVersion(PhpVersion::PHP_83)
     ->withSets([
         Typo3SetList::CODE_QUALITY,

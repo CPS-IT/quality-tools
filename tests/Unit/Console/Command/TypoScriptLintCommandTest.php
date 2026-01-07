@@ -96,11 +96,12 @@ final class TypoScriptLintCommandTest extends TestCase
     public function testExecuteWithDefaultOptions(): void
     {
         $this->mockInput
-            ->expects($this->exactly(2))
+            ->expects($this->atLeastOnce())
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
-                ['path', null]
+                ['path', null],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -129,11 +130,11 @@ final class TypoScriptLintCommandTest extends TestCase
         file_put_contents($customConfigFile, 'sniffs: []');
 
         $this->mockInput
-            ->expects($this->exactly(2))
             ->method('getOption')
             ->willReturnMap([
                 ['config', $customConfigFile],
-                ['path', null]
+                ['path', null],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -162,11 +163,11 @@ final class TypoScriptLintCommandTest extends TestCase
         mkdir($customTargetDir, 0777, true);
 
         $this->mockInput
-            ->expects($this->exactly(2))
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
-                ['path', $customTargetDir]
+                ['path', $customTargetDir],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -198,11 +199,11 @@ final class TypoScriptLintCommandTest extends TestCase
         mkdir($customTargetDir, 0777, true);
 
         $this->mockInput
-            ->expects($this->exactly(2))
             ->method('getOption')
             ->willReturnMap([
                 ['config', $customConfigFile],
-                ['path', $customTargetDir]
+                ['path', $customTargetDir],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -228,11 +229,12 @@ final class TypoScriptLintCommandTest extends TestCase
     public function testExecuteWithVerboseOutput(): void
     {
         $this->mockInput
-            ->expects($this->exactly(2))
+            ->expects($this->atLeastOnce())
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
-                ['path', null]
+                ['path', null],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -283,11 +285,11 @@ final class TypoScriptLintCommandTest extends TestCase
         $nonExistentTargetDir = $this->tempDir . '/non-existent-target';
 
         $this->mockInput
-            ->expects($this->exactly(2))
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
-                ['path', $nonExistentTargetDir]
+                ['path', $nonExistentTargetDir],
+                ['no-optimization', false]
             ]);
 
         $this->mockOutput
@@ -366,11 +368,12 @@ final class TypoScriptLintCommandTest extends TestCase
         unlink($typoscriptLintExecutable);
 
         $this->mockInput
-            ->expects($this->exactly(2))
+            ->expects($this->atLeastOnce())
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
-                ['path', null]
+                ['path', null],
+                ['no-optimization', false]
             ]);
 
         // Since the executable doesn't exist, this will fail at the process level

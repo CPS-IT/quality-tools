@@ -37,13 +37,15 @@ final class PathScanningIntegrationTest extends TestCase
         mkdir($this->tempProjectRoot . '/src/Custom', 0777, true);
         mkdir($this->tempProjectRoot . '/app/Classes', 0777, true);
 
-        // Create YAML configuration with additional paths
+        // Create YAML configuration with additional scan paths
         $configContent = <<<YAML
 quality-tools:
   project:
     name: "path-scanning-test"
   paths:
-    additional:
+    scan:
+      - "packages/"
+      - "config/system/"
       - "src/**"
       - "app/Classes"
 YAML;
@@ -53,8 +55,10 @@ YAML;
         $config = $this->loader->load($this->tempProjectRoot);
 
         // Test additional paths are configured
-        self::assertNotEmpty($config->getAdditionalPaths());
-        self::assertEquals(['src/**', 'app/Classes'], $config->getAdditionalPaths());
+        // Check that custom scan paths are configured
+        $scanPaths = $config->getScanPaths();
+        self::assertContains('src/**', $scanPaths);
+        self::assertContains('app/Classes', $scanPaths);
 
         // Test resolved paths include additional paths
         $rectorPaths = $config->getResolvedPathsForTool('rector');
@@ -92,7 +96,8 @@ quality-tools:
   project:
     name: "vendor-namespace-test"
   paths:
-    additional:
+    scan:
+      - "packages/"
       - "cpsit/*/Classes"
       - "fr/*/Classes"
 YAML;
@@ -123,9 +128,12 @@ quality-tools:
   project:
     name: "exclusion-test"
   paths:
-    additional:
+    scan:
       - "packages/*"
-    exclude_patterns:
+    exclude:
+      - "var/"
+      - "vendor/"
+      - "public/"
       - "packages/legacy"
       - "packages/experimental"
 YAML;
@@ -153,18 +161,21 @@ YAML;
         mkdir($this->tempProjectRoot . '/config/custom', 0777, true);
         mkdir($this->tempProjectRoot . '/config/sites', 0777, true);
 
-        // Create configuration with tool overrides
+        // Create configuration with tool-specific paths
         $configContent = <<<YAML
 quality-tools:
   project:
     name: "tool-override-test"
-  paths:
-    tool_overrides:
-      rector:
-        additional:
+  tools:
+    rector:
+      enabled: true
+      paths:
+        scan:
           - "config/custom"
-      fractor:
-        additional:
+    fractor:
+      enabled: true
+      paths:
+        scan:
           - "config/sites"
 YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
@@ -195,7 +206,9 @@ quality-tools:
   project:
     name: "builder-test"
   paths:
-    additional:
+    scan:
+      - "packages/"
+      - "config/system/"
       - "src"
 YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
@@ -225,7 +238,9 @@ quality-tools:
   project:
     name: "debug-test"
   paths:
-    additional:
+    scan:
+      - "packages/"
+      - "config/system/"
       - "src/**"
       - "cpsit/*"
 YAML;
@@ -240,13 +255,11 @@ YAML;
         self::assertIsArray($debugInfo);
         self::assertArrayHasKey('tool', $debugInfo);
         self::assertArrayHasKey('project_root', $debugInfo);
-        self::assertArrayHasKey('additional_patterns', $debugInfo);
         self::assertArrayHasKey('resolved_paths', $debugInfo);
         self::assertArrayHasKey('path_scanner_debug', $debugInfo);
 
         self::assertEquals('rector', $debugInfo['tool']);
         self::assertEquals($this->tempProjectRoot, $debugInfo['project_root']);
-        self::assertEquals(['src/**', 'cpsit/*'], $debugInfo['additional_patterns']);
     }
 
     public function testConfigurationWithoutAdditionalPaths(): void
@@ -266,10 +279,10 @@ YAML;
         // Load configuration
         $config = $this->loader->load($this->tempProjectRoot);
 
-        // Should have empty additional paths
-        self::assertEmpty($config->getAdditionalPaths());
-        self::assertEmpty($config->getExcludePatterns());
-        self::assertEmpty($config->getToolPathOverrides('rector'));
+        // Should use default paths configuration
+        self::assertEquals(['packages/', 'config/system/'], $config->getScanPaths());
+        self::assertNotEmpty($config->getExcludePaths()); // Has default excludes
+        self::assertEmpty($config->getToolPaths('rector')); // No tool-specific paths
 
         // Should still resolve standard paths
         $paths = $config->getResolvedPathsForTool('rector');

@@ -108,10 +108,16 @@ final class ComposerLintCommandTest extends TestCase
     public function testExecuteWithDefaultOptions(): void
     {
         $this->mockInput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('getOption')
-            ->with('path')
-            ->willReturn(null);
+            ->willReturnCallback(function($option) {
+                return match($option) {
+                    'path' => null,
+                    'config' => null,
+                    'no-optimization' => false,
+                    default => null
+                };
+            });
 
         $this->mockOutput
             ->expects($this->once())
@@ -146,7 +152,6 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturnMap([
                 ['path', $customTargetDir],
                 ['config', null],
-                ['show-optimization', false],
                 ['no-optimization', false]
             ]);
 
@@ -252,15 +257,18 @@ final class ComposerLintCommandTest extends TestCase
         unlink($this->tempDir . '/composer.json');
 
         $this->mockInput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getOption')
-            ->with('path')
-            ->willReturn(null);
+            ->willReturnMap([
+                ['path', null],
+                ['config', null],
+                ['no-optimization', false]
+            ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*composer.json file not found.*<\/error>/'));
+            ->with($this->stringContains('No composer.json files found in any of the configured paths'));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -273,10 +281,13 @@ final class ComposerLintCommandTest extends TestCase
         // ComposerLintCommand doesn't use the config option since composer-normalize
         // doesn't use external config files, but it still inherits it from BaseCommand
         $this->mockInput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('getOption')
-            ->with('path')
-            ->willReturn(null);
+            ->willReturnMap([
+                ['path', null],
+                ['config', null],
+                ['no-optimization', false]
+            ]);
 
         $this->mockOutput
             ->expects($this->once())

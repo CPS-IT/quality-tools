@@ -60,8 +60,8 @@ vendor/bin/qt fix:rector --memory-limit=1024M
 # Disable automatic optimization
 vendor/bin/qt lint:rector --no-optimization
 
-# View optimization decisions
-vendor/bin/qt lint:rector --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 ```
 
 ## Direct Tool Usage (Alternative)
@@ -137,8 +137,8 @@ If you still encounter memory issues with automatic optimization:
 # Increase memory manually
 vendor/bin/qt fix:rector --memory-limit=2048M
 
-# Check optimization decisions
-vendor/bin/qt fix:rector --show-optimization
+# Optimization details shown by default
+# (use --no-optimization to disable)
 
 # Disable optimization if needed
 vendor/bin/qt fix:rector --no-optimization
@@ -147,8 +147,8 @@ vendor/bin/qt fix:rector --no-optimization
 ### Performance Issues
 
 ```shell
-# Verify optimization is working
-vendor/bin/qt lint:rector --show-optimization
+# Verify optimization is working (details shown by default)
+vendor/bin/qt lint:rector
 
 # Should show project analysis and optimization decisions
 # If not optimizing, check TYPO3 project detection
@@ -178,8 +178,8 @@ vendor/bin/qt fix:rector --memory-limit=2048M
 
 **"No files found to process" (Path Issues):**
 ```
-# Check if you're in the right directory
-vendor/bin/qt lint:rector --show-optimization
+# Check if you're in the right directory (details shown by default)
+vendor/bin/qt lint:rector
 
 # Or specify custom path
 vendor/bin/qt lint:rector --path=./src
@@ -187,8 +187,8 @@ vendor/bin/qt lint:rector --path=./src
 
 **Slow Performance on Large Projects:**
 ```
-# Verify caching and parallel processing are enabled
-vendor/bin/qt fix:rector --show-optimization
+# Verify caching and parallel processing are enabled (details shown by default)
+vendor/bin/qt fix:rector
 
 # Should show "Enabling parallel processing and caching"
 ```

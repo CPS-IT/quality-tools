@@ -102,11 +102,10 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -132,11 +131,10 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', $customConfigPath],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -162,11 +160,10 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', null],
                 ['path', $customTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -189,11 +186,10 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -218,7 +214,6 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', null],
                 ['path', $nonExistentTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -239,7 +234,6 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', $nonExistentConfigPath],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -317,7 +311,6 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput

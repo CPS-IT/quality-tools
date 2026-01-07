@@ -101,11 +101,10 @@ final class FractorFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -131,11 +130,10 @@ final class FractorFixCommandTest extends TestCase
                 ['config', $customConfigFile],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -161,11 +159,10 @@ final class FractorFixCommandTest extends TestCase
                 ['config', null],
                 ['path', $customTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -194,11 +191,10 @@ final class FractorFixCommandTest extends TestCase
                 ['config', $customConfigFile],
                 ['path', $customTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
@@ -220,11 +216,10 @@ final class FractorFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -249,7 +244,6 @@ final class FractorFixCommandTest extends TestCase
                 ['config', $nonExistentConfigFile],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -270,7 +264,6 @@ final class FractorFixCommandTest extends TestCase
                 ['config', null],
                 ['path', $nonExistentTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -354,7 +347,6 @@ final class FractorFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         // Since the executable doesn't exist, this will fail at the process level

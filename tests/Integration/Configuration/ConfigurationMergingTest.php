@@ -82,8 +82,9 @@ quality-tools:
     phpstan:
       level: 8
       paths:
-        - "src/"
-        - "packages/"
+        scan:
+          - "src/"
+          - "packages/"
     php-cs-fixer:
       enabled: true
       preset: "typo3"
@@ -126,7 +127,9 @@ YAML;
         self::assertTrue($phpStanConfig['enabled']); // from global
         self::assertSame(8, $phpStanConfig['level']); // project override
         self::assertSame('512M', $phpStanConfig['memory_limit']); // from global
-        self::assertSame(['src/', 'packages/'], $phpStanConfig['paths']); // from project
+        // Test PHPStan path overrides
+        $phpStanPaths = $config->getToolPaths('phpstan');
+        self::assertSame(['src/', 'packages/'], $phpStanPaths['scan'] ?? []); // from project
         
         $phpCsFixerConfig = $config->getPhpCsFixerConfig();
         self::assertTrue($phpCsFixerConfig['enabled']); // from project
@@ -436,8 +439,9 @@ quality-tools:
   tools:
     phpstan:
       paths:
-        - "global-phpstan1/"
-        - "global-phpstan2/"
+        scan:
+          - "global-phpstan1/"
+          - "global-phpstan2/"
 YAML;
         file_put_contents($homeDir . '/.quality-tools.yaml', $globalConfig);
         
@@ -454,7 +458,8 @@ quality-tools:
   tools:
     phpstan:
       paths:
-        - "project-phpstan/"
+        scan:
+          - "project-phpstan/"
 YAML;
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $projectConfig);
         
@@ -470,8 +475,8 @@ YAML;
             $config->getExcludePaths()
         );
         
-        $phpStanConfig = $config->getPhpStanConfig();
-        self::assertSame(['project-phpstan/'], $phpStanConfig['paths']);
+        $phpStanPaths = $config->getToolPaths('phpstan');
+        self::assertSame(['project-phpstan/'], $phpStanPaths['scan'] ?? []);
     }
     
     public function testConfigurationWithoutGlobalFile(): void

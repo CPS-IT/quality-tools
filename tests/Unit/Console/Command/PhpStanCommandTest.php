@@ -121,7 +121,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -153,7 +152,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -184,7 +182,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -212,7 +209,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', '8'],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -240,7 +236,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', '1G'],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -274,7 +269,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', '9'],
                 ['memory-limit', '512M'],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -302,7 +296,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -333,7 +326,6 @@ final class PhpStanCommandTest extends TestCase
                 ['config', null],
                 ['path', $nonExistentTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -353,7 +345,6 @@ final class PhpStanCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $nonExistentConfigPath],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -419,7 +410,6 @@ final class PhpStanCommandTest extends TestCase
                 ['level', null],
                 ['memory-limit', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         // Since the executable doesn't exist, this will fail at the process level

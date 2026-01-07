@@ -22,7 +22,7 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
   * [x] Dynamic memory limit calculation (552M PHPStan, 460M PHP CS Fixer, 690M Rector)
   * [x] Smart path scoping (defaults to `/packages` directory for TYPO3 projects)
   * [x] Performance optimization (50%+ improvement on large projects)
-  * [x] Zero configuration with manual override options (`--no-optimization`, `--show-optimization`)
+  * [x] Zero configuration with manual override options (`--no-optimization`)
 * [x] **All 10 tool commands fully implemented:**
   * [x] `qt lint:rector` - Rector dry-run analysis (with automatic optimization)
   * [x] `qt fix:rector` - Apply Rector fixes (with automatic optimization)
