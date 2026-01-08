@@ -73,7 +73,7 @@ The following issues have been identified and prioritized for improvement:
 
 **Critical Priority:**
 - [x] [007 - PathScanner Exclusion Logic Refactoring](issue/done/007-pathscanner-exclusion-logic-refactoring.md)
-- [ ] [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md)
+- [x] [008 - Resource Cleanup Temporary Files](issue/done/008-resource-cleanup-temporary-files.md)
 - [ ] [009 - Security Hardening Environment Variables](issue/009-security-hardening-environment-variables.md)
 
 **High Priority:**
