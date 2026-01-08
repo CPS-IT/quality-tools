@@ -81,7 +81,7 @@ final class FractorLintCommand extends BaseCommand
 
             // Get optimal memory limit for automatic optimization
             if (!$this->isOptimizationDisabled($input)) {
-                $optimalMemory = $this->getOptimalMemoryLimit($input, $output, 'fractor');
+                $optimalMemory = $this->getOptimalMemoryLimit($input, 'fractor');
                 $exitCode = $this->executeProcess($command, $input, $output, $optimalMemory, 'fractor');
             } else {
                 $exitCode = $this->executeProcess($command, $input, $output, null, 'fractor');
@@ -118,10 +118,10 @@ final class FractorLintCommand extends BaseCommand
             if (!is_dir($targetPath)) {
                 continue;
             }
-            
+
             $output->writeln(sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
             $results = $validator->validateYamlFiles($targetPath);
-            
+
             // Merge results
             $combinedResults['valid'] = array_merge($combinedResults['valid'], $results['valid']);
             $combinedResults['invalid'] = array_merge($combinedResults['invalid'], $results['invalid']);

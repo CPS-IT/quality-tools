@@ -8,15 +8,19 @@ use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
+use Cpsit\QualityTools\Service\CommandBuilder;
+use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
+use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 
 abstract class BaseCommand extends Command
 {
@@ -55,7 +59,7 @@ abstract class BaseCommand extends Command
         $application = $this->getApplication();
 
         if (!$application instanceof QualityToolsApplication) {
-            throw new \RuntimeException('Command must be run within QualityToolsApplication');
+            throw new RuntimeException('Command must be run within QualityToolsApplication');
         }
 
         return $application->getProjectRoot();
@@ -65,7 +69,7 @@ abstract class BaseCommand extends Command
     {
         if ($customConfigPath !== null) {
             if (!file_exists($customConfigPath)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf('Custom configuration file not found: %s', $customConfigPath)
                 );
             }
@@ -76,7 +80,7 @@ abstract class BaseCommand extends Command
         $defaultConfigPath = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
 
         if (!file_exists($defaultConfigPath)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf(
                     'Default configuration file not found: %s. Please ensure cpsit/quality-tools is properly installed.',
                     $defaultConfigPath
@@ -102,7 +106,7 @@ abstract class BaseCommand extends Command
 
             // Validate that cpsit/quality-tools is installed in detected vendor directory
             if (!is_dir($vendorPath . '/cpsit/quality-tools')) {
-                throw new \RuntimeException(
+                throw new RuntimeException(
                     sprintf(
                         'cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.',
                         $vendorPath
@@ -125,7 +129,7 @@ abstract class BaseCommand extends Command
                 }
             }
 
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 sprintf(
                     'Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s',
                     $e->getMessage(),
@@ -135,6 +139,9 @@ abstract class BaseCommand extends Command
         }
     }
 
+    /**
+     * @throws \JsonException
+     */
     protected function executeProcess(
         array $command,
         InputInterface $input,
@@ -142,53 +149,21 @@ abstract class BaseCommand extends Command
         ?string $memoryLimit = null,
         ?string $tool = null
     ): int {
-        $process = new Process($command, $this->getProjectRoot());
+        $resolvedPaths = $tool !== null ? $this->getResolvedPathsForTool($input, $tool) : null;
 
-        // Prepare environment variables
-        $env = $_SERVER;
+        $environmentPreparer = new ProcessEnvironmentPreparer();
+        $commandBuilder = new CommandBuilder();
+        $processExecutor = new ProcessExecutor();
 
-        // Set memory limit if specified
-        if ($memoryLimit !== null) {
-            $env['PHP_MEMORY_LIMIT'] = $memoryLimit;
+        $environment = $environmentPreparer->prepareEnvironment($input, $memoryLimit, $tool, $resolvedPaths);
+        $preparedCommand = $commandBuilder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
-            // Prepend php with memory limit to the command if it's a php script
-            $executable = basename($command[0]);
-            if (str_contains($executable, 'php') || str_ends_with($command[0], '.php') || str_ends_with($command[0], '.phar')) {
-                $originalCommand = $command;
-                $command = array_merge(['php', '-d', 'memory_limit=' . $memoryLimit], $originalCommand);
-            }
-        }
-
-        // Set dynamic paths environment variable for configuration-based tools like Fractor
-        // Other tools (Rector, PHP-CS-Fixer) receive paths as direct command arguments
-        if ($tool === 'fractor' && !$input->hasParameterOption('--path')) {
-            $resolvedPaths = $this->getResolvedPathsForTool($input, $tool);
-            $env['QT_DYNAMIC_PATHS'] = json_encode($resolvedPaths);
-        }
-
-        $process = new Process($command, $this->getProjectRoot(), $env);
-
-        // Handle verbose mode using Symfony's built-in verbose levels
-        if ($output->isVerbose()) {
-            $output->writeln(sprintf('<info>Executing: %s</info>', $process->getCommandLine()));
-        }
-
-        $process->run(function (string $type, string $buffer) use ($output): void {
-            // Forward output from the process (Symfony handles quiet mode automatically)
-            if ($type === Process::ERR) {
-                // Check if output supports getErrorOutput() method (ConsoleOutputInterface)
-                if (method_exists($output, 'getErrorOutput')) {
-                    $output->getErrorOutput()->write($buffer);
-                } else {
-                    // For outputs that don't support error output (like StreamOutput), write to main output
-                    $output->write($buffer);
-                }
-            } else {
-                $output->write($buffer);
-            }
-        });
-
-        return $process->getExitCode() ?? 1;
+        return $processExecutor->executeProcess(
+            $preparedCommand,
+            $this->getProjectRoot(),
+            $environment,
+            $output
+        );
     }
 
     protected function getTargetPath(InputInterface $input): string
@@ -198,7 +173,7 @@ abstract class BaseCommand extends Command
 
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         sprintf('Target path does not exist or is not a directory: %s', $customPath)
                     );
                 }
@@ -220,7 +195,7 @@ abstract class BaseCommand extends Command
         return $this->cachedNoOptimization;
     }
 
-    protected function getProjectMetrics(InputInterface $input, OutputInterface $output): ProjectMetrics
+    protected function getProjectMetrics(InputInterface $input): ProjectMetrics
     {
         if ($this->projectMetrics === null) {
             $analyzer = new ProjectAnalyzer();
@@ -233,35 +208,35 @@ abstract class BaseCommand extends Command
     /**
      * Get aggregated project metrics across all resolved paths for a tool
      */
-    protected function getAggregatedProjectMetrics(InputInterface $input, OutputInterface $output, string $tool): ProjectMetrics
+    protected function getAggregatedProjectMetrics(InputInterface $input, string $tool): ProjectMetrics
     {
         $resolvedPaths = $this->getResolvedPathsForTool($input, $tool);
-        
+
         if (empty($resolvedPaths)) {
             // Fall back to single path metrics
-            return $this->getProjectMetrics($input, $output);
+            return $this->getProjectMetrics($input);
         }
 
         $analyzer = new ProjectAnalyzer();
         $aggregatedMetrics = null;
-        
+
         foreach ($resolvedPaths as $path) {
             if (!is_dir($path)) {
                 continue;
             }
-            
+
             $pathMetrics = $analyzer->analyzeProject($path);
-            
+
             if ($aggregatedMetrics === null) {
-                // First path becomes the base
+                // The first path becomes the base
                 $aggregatedMetrics = $pathMetrics;
             } else {
                 // Aggregate metrics from subsequent paths
                 $aggregatedMetrics = $this->mergeProjectMetrics($aggregatedMetrics, $pathMetrics);
             }
         }
-        
-        return $aggregatedMetrics ?? $this->getProjectMetrics($input, $output);
+
+        return $aggregatedMetrics ?? $this->getProjectMetrics($input);
     }
 
     /**
@@ -317,10 +292,10 @@ abstract class BaseCommand extends Command
                 'maxComplexity' => 0,
             ],
         ];
-        
+
         return new ProjectMetrics($mergedMetrics);
     }
-    
+
     /**
      * Calculate weighted average complexity across two metrics sets
      */
@@ -330,7 +305,7 @@ abstract class BaseCommand extends Command
         if ($totalCount === 0) {
             return 0;
         }
-        
+
         return (int) round(($avg1 * $count1 + $avg2 * $count2) / $totalCount);
     }
 
@@ -343,30 +318,26 @@ abstract class BaseCommand extends Command
         return $this->memoryCalculator;
     }
 
-    protected function getOptimalMemoryLimit(InputInterface $input, OutputInterface $output, string $tool = 'default'): string
+    protected function getOptimalMemoryLimit(InputInterface $input, string $tool = 'default'): string
     {
         if ($this->isOptimizationDisabled($input)) {
             return '128M';
         }
 
         // Use aggregated metrics for accurate memory calculation across all paths
-        $metrics = $this->getAggregatedProjectMetrics($input, $output, $tool);
-        $calculator = $this->getMemoryCalculator();
-
-        return $calculator->calculateOptimalMemoryForTool($metrics, $tool);
+        $metrics = $this->getAggregatedProjectMetrics($input, $tool);
+        return $this->getMemoryCalculator()->calculateOptimalMemoryForTool($metrics, $tool);
     }
 
-    protected function shouldEnableParallelProcessing(InputInterface $input, OutputInterface $output, string $tool = 'default'): bool
+    protected function shouldEnableParallelProcessing(InputInterface $input, string $tool = 'default'): bool
     {
         if ($this->isOptimizationDisabled($input)) {
             return false;
         }
 
         // Use aggregated metrics for parallel processing decision across all paths
-        $metrics = $this->getAggregatedProjectMetrics($input, $output, $tool);
-        $calculator = $this->getMemoryCalculator();
-
-        return $calculator->shouldEnableParallelProcessing($metrics);
+        $metrics = $this->getAggregatedProjectMetrics($input, $tool);
+        return $this->getMemoryCalculator()->shouldEnableParallelProcessing($metrics);
     }
 
     protected function showOptimizationDetails(InputInterface $input, OutputInterface $output, string $tool = 'default'): void
@@ -384,7 +355,7 @@ abstract class BaseCommand extends Command
         }
 
         // Use aggregated metrics across all paths for accurate optimization
-        $metrics = $this->getAggregatedProjectMetrics($input, $output, $tool);
+        $metrics = $this->getAggregatedProjectMetrics($input, $tool);
         $calculator = $this->getMemoryCalculator();
         $profile = $calculator->getOptimizationProfile($metrics);
 
@@ -433,7 +404,7 @@ abstract class BaseCommand extends Command
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         sprintf('Target path does not exist or is not a directory: %s', $customPath)
                     );
                 }
@@ -447,7 +418,7 @@ abstract class BaseCommand extends Command
                     // Use the first resolved path as the target for compatibility
                     $this->cachedTargetPath = $resolvedPaths[0];
                 } else {
-                    // Fall back to project root
+                    // Fall back to the project root
                     $this->cachedTargetPath = $this->getProjectRoot();
                 }
             }
@@ -463,7 +434,7 @@ abstract class BaseCommand extends Command
         $customPath = $input->getOption('path');
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf('Target path does not exist or is not a directory: %s', $customPath)
                 );
             }
@@ -478,7 +449,7 @@ abstract class BaseCommand extends Command
             return $resolvedPaths;
         }
 
-        // Fall back to project root
+        // Fall back to the project root
         return [$this->getProjectRoot()];
     }
 
@@ -489,7 +460,7 @@ abstract class BaseCommand extends Command
             $loader = new YamlConfigurationLoader();
             $this->configuration = $loader->load($projectRoot);
 
-            // Override with custom config path if provided
+            // Override with a custom config path if provided
             $customConfigPath = $input->getOption('config');
             if ($customConfigPath && file_exists($customConfigPath)) {
                 // For now, we'll use the loaded configuration

@@ -78,7 +78,7 @@ final class PhpStanCommand extends BaseCommand
             if ($memoryLimit !== null) {
                 $command[] = '--memory-limit=' . $memoryLimit;
             } elseif (!$this->isOptimizationDisabled($input)) {
-                $optimalMemory = $this->getOptimalMemoryLimit($input, $output, 'phpstan');
+                $optimalMemory = $this->getOptimalMemoryLimit($input, 'phpstan');
                 $command[] = '--memory-limit=' . $optimalMemory;
             }
 
@@ -118,7 +118,7 @@ final class PhpStanCommand extends BaseCommand
         // Create temporary file
         $tempDir = sys_get_temp_dir();
         $tempFile = tempnam($tempDir, 'phpstan_') . '.neon';
-        
+
         if (file_put_contents($tempFile, $pathsSection) === false) {
             throw new \RuntimeException(sprintf('Could not write temporary config file: %s', $tempFile));
         }

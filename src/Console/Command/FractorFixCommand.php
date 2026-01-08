@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Utility\YamlValidator;
+use Exception;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -43,7 +45,7 @@ final class FractorFixCommand extends BaseCommand
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
+                    throw new InvalidArgumentException(
                         sprintf('Target path does not exist or is not a directory: %s', $customPath)
                     );
                 }
@@ -65,22 +67,20 @@ final class FractorFixCommand extends BaseCommand
                 '--config=' . $configPath,
             ];
 
-            // Only add target path if user provided a custom path via --path option
-            // Otherwise, let Fractor use paths from configuration file (which will use resolved paths via environment variable)
+            // Only add a target path if the user provided a custom path via --path option
+            // Otherwise, let Fractor use paths from the configuration file (which will use resolved paths via environment variable)
             if ($customPath !== null) {
                 $command[] = $targetPaths[0]; // Use the resolved custom path
                 if ($output->isVerbose()) {
                     $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
                 }
-            } else {
-                if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<comment>Analyzing resolved paths via configuration: %s</comment>', implode(', ', $targetPaths)));
-                }
+            } else if ($output->isVerbose()) {
+                $output->writeln(sprintf('<comment>Analyzing resolved paths via configuration: %s</comment>', implode(', ', $targetPaths)));
             }
 
             // Get optimal memory limit for automatic optimization
             if (!$this->isOptimizationDisabled($input)) {
-                $optimalMemory = $this->getOptimalMemoryLimit($input, $output, 'fractor');
+                $optimalMemory = $this->getOptimalMemoryLimit($input, 'fractor');
                 $exitCode = $this->executeProcess($command, $input, $output, $optimalMemory, 'fractor');
             } else {
                 $exitCode = $this->executeProcess($command, $input, $output, null, 'fractor');
@@ -93,7 +93,7 @@ final class FractorFixCommand extends BaseCommand
 
             return $exitCode;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
             return 1;
         }
@@ -117,10 +117,10 @@ final class FractorFixCommand extends BaseCommand
             if (!is_dir($targetPath)) {
                 continue;
             }
-            
+
             $output->writeln(sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
             $results = $validator->validateYamlFiles($targetPath);
-            
+
             // Merge results
             $combinedResults['valid'] = array_merge($combinedResults['valid'], $results['valid']);
             $combinedResults['invalid'] = array_merge($combinedResults['invalid'], $results['invalid']);
@@ -144,7 +144,7 @@ final class FractorFixCommand extends BaseCommand
     }
 
     /**
-     * Show summary of YAML validation issues.
+     * Show a summary of YAML validation issues.
      */
     private function showYamlValidationSummary(OutputInterface $output, array $validationResults): void
     {

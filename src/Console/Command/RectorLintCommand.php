@@ -60,7 +60,7 @@ class RectorLintCommand extends BaseCommand
             } else {
                 // Use resolved paths from configuration - pass all paths to rector
                 $resolvedPaths = $this->getResolvedPathsForTool($input, 'rector');
-                
+
                 if (!empty($resolvedPaths)) {
                     foreach ($resolvedPaths as $path) {
                         $command[] = $path;
@@ -78,7 +78,7 @@ class RectorLintCommand extends BaseCommand
             // Get optimal memory limit only if optimization is enabled
             $memoryLimit = null;
             if (!$this->isOptimizationDisabled($input)) {
-                $memoryLimit = $this->getOptimalMemoryLimit($input, $output, 'rector');
+                $memoryLimit = $this->getOptimalMemoryLimit($input, 'rector');
                 if ($output->isVerbose()) {
                     $output->writeln(sprintf('<info>Using automatic memory limit: %s</info>', $memoryLimit));
                 }

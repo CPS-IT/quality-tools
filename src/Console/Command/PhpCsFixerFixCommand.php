@@ -45,7 +45,7 @@ final class PhpCsFixerFixCommand extends BaseCommand
             ];
 
             // Enable parallel processing if beneficial
-            if ($this->shouldEnableParallelProcessing($input, $output, 'php-cs-fixer')) {
+            if ($this->shouldEnableParallelProcessing($input, 'php-cs-fixer')) {
                 $command[] = '--using-cache=yes';
             }
 
@@ -64,7 +64,7 @@ final class PhpCsFixerFixCommand extends BaseCommand
             } else {
                 // Use resolved paths from configuration - pass all paths to php-cs-fixer
                 $resolvedPaths = $this->getResolvedPathsForTool($input, 'php-cs-fixer');
-                
+
                 if (!empty($resolvedPaths)) {
                     foreach ($resolvedPaths as $path) {
                         $command[] = $path;
@@ -82,7 +82,7 @@ final class PhpCsFixerFixCommand extends BaseCommand
             // Get optimal memory limit only if optimization is enabled
             $memoryLimit = null;
             if (!$this->isOptimizationDisabled($input)) {
-                $memoryLimit = $this->getOptimalMemoryLimit($input, $output, 'php-cs-fixer');
+                $memoryLimit = $this->getOptimalMemoryLimit($input, 'php-cs-fixer');
             }
 
             return $this->executeProcess($command, $input, $output, $memoryLimit);
