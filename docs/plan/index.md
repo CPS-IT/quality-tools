@@ -73,7 +73,7 @@ The following issues have been identified and prioritized for improvement:
 
 **Critical Priority:**
 - [007 - PathScanner Exclusion Logic Refactoring](issue/007-pathscanner-exclusion-logic-refactoring.md)
-- [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md) 
+- [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md)
 - [009 - Security Hardening Environment Variables](issue/009-security-hardening-environment-variables.md)
 
 **High Priority:**
@@ -103,8 +103,10 @@ The MVP is complete. The following features are organized into implementation it
   Flexible path configuration extending unified YAML system
 - [x] **[014 - Vendor Folder Derivation](feature/done/014-vendor-folder-derivation.md)** *(4–6 hours)*
   Automatic vendor path detection for non-standard project structures
-- [ ]**[015 - Configuration Overwrites](feature/015-configuration-overwrites.md)** *(6–8 hours)*
+- [ ] **[015 - Configuration Overwrites](feature/015-configuration-overwrites.md)** *(6–8 hours)*
   Hierarchical configuration override system for project customization
+- [ ] **[016 - Fail on Warnings Configuration](feature/016-fail-on-warnings-configuration.md)** *(4–6 hours)*
+  Configurable exit code behavior for linting tools to ensure CI/CD reliability
 
 ### Iteration 3: Report Generation Features
 - **[005 - Report Format Research and Standards](feature/005-report-format-research-and-standards.md)** *(3–4 hours)*

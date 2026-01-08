@@ -3,7 +3,7 @@
 ## Status: Work in Progress
 
 **Implementation Status:** Ready for development
-**Estimated Timeline:** 20–28 hours total
+**Estimated Timeline:** 24–34 hours total
 **Dependencies:** MVP (001) must be completed
 
 ## Overview
@@ -71,6 +71,14 @@ This iteration focuses on implementing a comprehensive configuration system that
 - Configuration hierarchy resolution
 - Project-specific override support
 - Environment variable integration
+
+### Feature 016: Fail on Warnings Configuration (4-6 hours)
+**Goal**: Configurable exit code behavior for linting tools to ensure CI/CD reliability
+**Dependencies**: Feature 010 (YAML configuration)
+**Deliverables**:
+- `failOnWarnings` configuration option for all tools
+- Global and tool-specific warning detection settings
+- CI/CD-compatible exit code management
 
 ## Implementation Strategy
 
