@@ -40,7 +40,7 @@ This iteration focuses on implementing a comprehensive configuration system that
 
 ## Features in This Iteration
 
-### Feature 010: Unified YAML Configuration System (6-8 hours)
+### Feature 010: Unified YAML Configuration System (6–8 hours)
 **Goal**: Replace hard-coded configurations with flexible YAML-based system
 **Dependencies**: None (builds on MVP)
 **Deliverables**:
@@ -56,7 +56,7 @@ This iteration focuses on implementing a comprehensive configuration system that
 - Support for custom vendor locations
 - Fallback mechanisms for edge cases
 
-### Feature 013: Additional Packages Paths Scanning (4-6 hours)
+### Feature 013: Additional Packages Paths Scanning (4–6 hours)
 **Goal**: Support custom package locations beyond standard `packages/` directory
 **Dependencies**: Features 010 (YAML configuration), 014 (vendor folder detection)
 **Deliverables**:
@@ -64,7 +64,7 @@ This iteration focuses on implementing a comprehensive configuration system that
 - Support for multiple package directories relative to project and vendor locations
 - Path validation and error handling
 
-### Feature 015: Configuration Overwrites (6-8 hours)
+### Feature 015: Configuration Overwrites (6–8 hours)
 **Goal**: Hierarchical configuration system with project and environment overrides
 **Dependencies**: Features 010, 013, 014 (complete configuration system)
 **Deliverables**:
@@ -72,13 +72,58 @@ This iteration focuses on implementing a comprehensive configuration system that
 - Project-specific override support
 - Environment variable integration
 
-### Feature 016: Fail on Warnings Configuration (4-6 hours)
+### Feature 016: Fail on Warnings Configuration (4–6 hours)
 **Goal**: Configurable exit code behavior for linting tools to ensure CI/CD reliability
 **Dependencies**: Feature 010 (YAML configuration)
 **Deliverables**:
 - `failOnWarnings` configuration option for all tools
 - Global and tool-specific warning detection settings
 - CI/CD-compatible exit code management
+
+## Critical Issues and Refactoring Decision
+
+### Code Quality Review Impact (2026-01-07)
+
+Based on comprehensive architectural and implementation analysis, **iteration 002 will address critical code quality issues before implementing Feature 015 (Configuration Overwrites)**. This decision ensures architectural stability and reduces implementation risk for the configuration hierarchy system.
+
+### Critical Issues Requiring Immediate Attention
+
+**Issue 007: PathScanner Exclusion Logic Refactoring (3–4 hours)**
+- **Problem**: High cyclomatic complexity in `PathScanner::applyExclusions()` with nested conditions
+- **Impact**: Affects Feature 015 implementation as configuration resolution depends on PathScanner logic
+- **Priority**: Critical - Feature 015 directly depends on reliable path resolution
+
+**Issue 008: Resource Cleanup Temporary Files (2–3 hours)**
+- **Problem**: PHPStan command creates temporary files without cleanup, test isolation issues
+- **Impact**: Configuration hierarchy testing requires clean test environment
+- **Priority**: Critical - Affects testing reliability for Feature 015 validation
+
+**Issue 009: Security Hardening Environment Variables (2–3 hours)**
+- **Problem**: Configuration supports environment variable substitution without proper sanitization
+- **Impact**: Feature 015 extends environment variable integration in configuration hierarchy
+- **Priority**: Critical - Security foundation required before configuration expansion
+
+**Issue 018: BaseCommand executeProcess Method Refactoring (2–3 hours)**
+- **Problem**: 54-line method with multiple responsibilities in core command execution
+- **Impact**: Feature 015 adds configuration resolution complexity to already complex method
+- **Priority**: High - Simplifies Feature 015 integration and improves maintainability
+
+### Revised Implementation Timeline
+
+**Phase 3: Critical Refactoring (8–12 hours)**
+1. PathScanner exclusion logic refactoring (3–4 hours)
+2. Resource cleanup implementation (2-3 hours)
+3. Security hardening for environment variables (2–3 hours)
+4. BaseCommand executeProcess method refactoring (2–3 hours)
+
+**Total Revised Timeline: 32–46 hours** (8–12 hours additional for refactoring)
+
+### Benefits of Refactoring-First Approach
+
+**Reduced Implementation Risk**: Feature 015 complexity reduced from high to medium with clean foundation
+**Improved Testing Reliability**: Configuration hierarchy validation on stable test infrastructure
+**Security Foundation**: Environment variable handling secured before Feature 015 integration
+**Maintainable Architecture**: Clean separation of concerns simplifies future enhancements
 
 ## Implementation Strategy
 
@@ -117,7 +162,31 @@ This iteration focuses on implementing a comprehensive configuration system that
    - Path validation relative to project root and vendor location
    - Integration with vendor folder detection
 
-### Phase 3: Configuration Hierarchy (Feature 015)
+### Phase 3: Critical Issues Resolution
+**Objective**: Establish stable architectural foundation for configuration hierarchy
+
+#### Tasks
+1. **PathScanner Refactoring**
+    - Extract exclusion logic into `PathExclusionFilter` strategy class
+    - Implement early returns to flatten nested conditions
+    - Add comprehensive unit tests for edge cases
+
+2. **Resource Cleanup Implementation**
+    - Add temporary file cleanup in PHPStan command using disposable pattern
+    - Fix test cleanup issues with proper test isolation
+    - Implement resource management for all temporary assets
+
+3. **Security Hardening**
+    - Sanitize environment variable inputs in configuration parsing
+    - Use secure temporary file creation with proper permissions
+    - Implement input validation for configuration values
+
+4. **BaseCommand Refactoring**
+    - Extract command preparation, execution, and output handling into separate methods
+    - Reduce method complexity to under 35 lines with single responsibility
+    - Improve error handling with structured responses
+
+### Phase 4: Configuration Hierarchy (Feature 015)
 **Objective**: Complete hierarchical configuration system
 
 #### Tasks
