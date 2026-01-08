@@ -72,7 +72,7 @@ qt lint:rector
 The following issues have been identified and prioritized for improvement:
 
 **Critical Priority:**
-- [007 - PathScanner Exclusion Logic Refactoring](issue/007-pathscanner-exclusion-logic-refactoring.md)
+- [007 - PathScanner Exclusion Logic Refactoring](issue/done/007-pathscanner-exclusion-logic-refactoring.md) [COMPLETED]
 - [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md)
 - [009 - Security Hardening Environment Variables](issue/009-security-hardening-environment-variables.md)
 

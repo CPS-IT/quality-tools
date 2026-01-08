@@ -110,11 +110,11 @@ quality-tools:
 
 The `project` section defines basic project information that affects tool behavior.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | string | null | Project name for identification |
-| `php_version` | string | "8.3" | Target PHP version (affects Rector rules) |
-| `typo3_version` | string | "13.4" | Target TYPO3 version (affects tool rules) |
+| Option          | Type   | Default | Description                               |
+|-----------------|--------|---------|-------------------------------------------|
+| `name`          | string | null    | Project name for identification           |
+| `php_version`   | string | "8.3"   | Target PHP version (affects Rector rules) |
+| `typo3_version` | string | "13.4"  | Target TYPO3 version (affects tool rules) |
 
 **Example:**
 ```yaml
@@ -129,9 +129,9 @@ quality-tools:
 
 The `paths` section defines which directories to scan and exclude during analysis. All path patterns support glob patterns and vendor namespaces for flexible configuration.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `scan` | array | ["packages/", "config/system/"] | Directories and patterns to analyze (supports glob patterns and vendor namespaces) |
+| Option    | Type  | Default                                                                                              | Description                                                                        |
+|-----------|-------|------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| `scan`    | array | ["packages/", "config/system/"]                                                                      | Directories and patterns to analyze (supports glob patterns and vendor namespaces) |
 | `exclude` | array | ["var/", "vendor/", "public/", "_assets/", "fileadmin/", "typo3/", "Tests/", "tests/", "typo3conf/"] | Directories and patterns to exclude (supports glob patterns and vendor namespaces) |
 
 **Default Scan Paths for Different Project Types:**
@@ -189,19 +189,19 @@ quality-tools:
     exclude:
       - "var/"
       - "vendor/"
-  
+
   tools:
     rector:
       paths:
         scan:
           - "config/rector/*.php"         # Rector-specific configs
           - "scripts/**/*.php"            # Include scripts for Rector
-    
+
     fractor:
       paths:
         scan:
           - "config/sites/*/setup.typoscript"
-    
+
     phpstan:
       paths:
         scan:
@@ -216,13 +216,13 @@ Each tool can be individually configured with its specific options.
 
 #### Rector Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | true | Enable/disable Rector |
-| `level` | string | "typo3-13" | Rector level (typo3-13, typo3-12, typo3-11) |
-| `php_version` | string | project.php_version | Override PHP version for rules |
-| `dry_run` | boolean | false | Always run in dry-run mode |
-| `paths` | object | {} | Tool-specific path overrides |
+| Option        | Type    | Default             | Description                                 |
+|---------------|---------|---------------------|---------------------------------------------|
+| `enabled`     | boolean | true                | Enable/disable Rector                       |
+| `level`       | string  | "typo3-13"          | Rector level (typo3-13, typo3-12, typo3-11) |
+| `php_version` | string  | project.php_version | Override PHP version for rules              |
+| `dry_run`     | boolean | false               | Always run in dry-run mode                  |
+| `paths`       | object  | {}                  | Tool-specific path overrides                |
 
 **Example:**
 ```yaml
@@ -242,11 +242,11 @@ quality-tools:
 
 #### Fractor Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | true | Enable/disable Fractor |
-| `indentation` | integer | 2 | Number of spaces for indentation (1-8) |
-| `paths` | object | {} | Tool-specific path overrides |
+| Option        | Type    | Default | Description                            |
+|---------------|---------|---------|----------------------------------------|
+| `enabled`     | boolean | true    | Enable/disable Fractor                 |
+| `indentation` | integer | 2       | Number of spaces for indentation (1-8) |
+| `paths`       | object  | {}      | Tool-specific path overrides           |
 
 **Example:**
 ```yaml
@@ -265,12 +265,12 @@ quality-tools:
 
 #### PHPStan Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | true | Enable/disable PHPStan |
-| `level` | integer | 6 | Analysis level (0-9, higher = stricter) |
-| `memory_limit` | string | "1G" | Memory limit (e.g., "512M", "2G") |
-| `paths` | object | {} | Tool-specific path overrides |
+| Option         | Type    | Default | Description                             |
+|----------------|---------|---------|-----------------------------------------|
+| `enabled`      | boolean | true    | Enable/disable PHPStan                  |
+| `level`        | integer | 6       | Analysis level (0-9, higher = stricter) |
+| `memory_limit` | string  | "1G"    | Memory limit (e.g., "512M", "2G")       |
+| `paths`        | object  | {}      | Tool-specific path overrides            |
 
 **Example:**
 ```yaml
@@ -290,12 +290,12 @@ quality-tools:
 
 #### PHP CS Fixer Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | true | Enable/disable PHP CS Fixer |
-| `preset` | string | "typo3" | Code style preset (typo3, psr12, symfony) |
-| `cache` | boolean | true | Enable result caching |
-| `paths` | object | {} | Tool-specific path overrides |
+| Option    | Type    | Default | Description                               |
+|-----------|---------|---------|-------------------------------------------|
+| `enabled` | boolean | true    | Enable/disable PHP CS Fixer               |
+| `preset`  | string  | "typo3" | Code style preset (typo3, psr12, symfony) |
+| `cache`   | boolean | true    | Enable result caching                     |
+| `paths`   | object  | {}      | Tool-specific path overrides              |
 
 **Example:**
 ```yaml
@@ -314,11 +314,11 @@ quality-tools:
 
 #### TypoScript Lint Configuration
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enabled` | boolean | true | Enable/disable TypoScript Lint |
-| `indentation` | integer | 2 | Number of spaces for indentation (1-8) |
-| `paths` | object | {} | Tool-specific path overrides |
+| Option        | Type    | Default | Description                            |
+|---------------|---------|---------|----------------------------------------|
+| `enabled`     | boolean | true    | Enable/disable TypoScript Lint         |
+| `indentation` | integer | 2       | Number of spaces for indentation (1-8) |
+| `paths`       | object  | {}      | Tool-specific path overrides           |
 
 **Example:**
 ```yaml
@@ -339,11 +339,11 @@ quality-tools:
 
 Control the output behavior of all tools.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `verbosity` | string | "normal" | Output verbosity (quiet, normal, verbose, debug) |
-| `colors` | boolean | true | Enable colored output |
-| `progress` | boolean | true | Show progress indicators |
+| Option      | Type    | Default  | Description                                      |
+|-------------|---------|----------|--------------------------------------------------|
+| `verbosity` | string  | "normal" | Output verbosity (quiet, normal, verbose, debug) |
+| `colors`    | boolean | true     | Enable colored output                            |
+| `progress`  | boolean | true     | Show progress indicators                         |
 
 **Example:**
 ```yaml
@@ -358,11 +358,11 @@ quality-tools:
 
 Configure performance-related settings.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `parallel` | boolean | true | Enable parallel processing |
-| `max_processes` | integer | 4 | Maximum parallel processes (1-16) |
-| `cache_enabled` | boolean | true | Enable result caching |
+| Option          | Type    | Default | Description                       |
+|-----------------|---------|---------|-----------------------------------|
+| `parallel`      | boolean | true    | Enable parallel processing        |
+| `max_processes` | integer | 4       | Maximum parallel processes (1-16) |
+| `cache_enabled` | boolean | true    | Enable result caching             |
 
 **Example:**
 ```yaml
@@ -382,7 +382,7 @@ quality-tools:
   project:
     name: "${PROJECT_NAME:-my-project}"
     php_version: "${PHP_VERSION:-8.3}"
-  
+
   tools:
     phpstan:
       level: "${PHPSTAN_LEVEL:-6}"
@@ -401,7 +401,7 @@ Environment variables are automatically converted to the correct type:
 
 - Strings remain as strings
 - Integers are converted from string to int
-- Booleans accept: "true"/"false", "1"/"0", "yes"/"no"
+- Booleans do accept: "true"/"false," "1"/"0," "yes"/"no"
 
 ## Validation
 
@@ -445,7 +445,7 @@ quality-tools:
     phpstan:
       level: 8
       memory_limit: "512M"
-    
+
   performance:
     parallel: false
 ```

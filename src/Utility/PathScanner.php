@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Utility;
 
-use Cpsit\QualityTools\Exception\PathScannerException;
-
 /**
  * Scans and resolves additional package paths based on various patterns
- * 
+ *
  * This utility supports multiple path specification formats:
  * - Glob patterns: packages/*\/Classes/**\/*.php
  * - Vendor namespaces: cpsit/*, fr/*
@@ -29,7 +27,7 @@ final class PathScanner
     public function setVendorPath(?string $vendorPath): void
     {
         $this->vendorPath = $vendorPath;
-        $this->resolvedPathsCache = []; // Clear cache when vendor path changes
+        $this->resolvedPathsCache = []; // Clear cache when a vendor path changes
     }
 
     /**
@@ -38,14 +36,14 @@ final class PathScanner
     public function resolvePaths(array $pathPatterns): array
     {
         $cacheKey = md5(serialize($pathPatterns) . ($this->vendorPath ?? ''));
-        
+
         if (isset($this->resolvedPathsCache[$cacheKey])) {
             return $this->resolvedPathsCache[$cacheKey];
         }
 
         $includePatterns = [];
         $excludePatterns = [];
-        
+
         // Separate inclusion and exclusion patterns
         foreach ($pathPatterns as $pattern) {
             if (str_starts_with($pattern, '!')) {
@@ -58,11 +56,11 @@ final class PathScanner
         // Resolve all inclusion patterns and track explicit vendor paths
         $resolvedPaths = [];
         $explicitVendorPaths = [];
-        
+
         foreach ($includePatterns as $pattern) {
             $paths = $this->resolvePattern($pattern);
             $resolvedPaths = array_merge($resolvedPaths, $paths);
-            
+
             // Track paths that came from vendor namespace patterns or explicit vendor patterns
             if ($this->isVendorNamespacePattern($pattern) || $this->isExplicitVendorPattern($pattern)) {
                 $explicitVendorPaths = array_merge($explicitVendorPaths, $paths);
@@ -82,7 +80,7 @@ final class PathScanner
         sort($resolvedPaths);
 
         $this->resolvedPathsCache[$cacheKey] = $resolvedPaths;
-        
+
         return $resolvedPaths;
     }
 
@@ -106,34 +104,34 @@ final class PathScanner
     }
 
     /**
-     * Check if pattern is a vendor namespace pattern (vendor/namespace/*)
+     * Check if a pattern is a vendor namespace pattern (vendor/namespace/*)
      */
     private function isVendorNamespacePattern(string $pattern): bool
     {
-        // Must have vendor path set and pattern must not start with vendor/
+        // Must have a vendor path set, and the pattern must not start with vendor/
         if ($this->vendorPath === null) {
             return false;
         }
-        
+
         // Pattern like "cpsit/*" or "cpsit/*/Classes" but NOT "vendor/cpsit/*"
         if (str_starts_with($pattern, 'vendor/')) {
             return false;
         }
-        
-        // Must match vendor namespace pattern
+
+        // Must match the vendor namespace pattern
         if (preg_match('/^([a-zA-Z0-9_-]+)\/\*(?:\/.*)?$/', $pattern, $matches) !== 1) {
             return false;
         }
-        
+
         $namespace = $matches[1];
-        
-        // Check if this namespace actually exists in vendor directory
+
+        // Check if this namespace actually exists in the vendor directory
         $vendorNamespaceDir = $this->vendorPath . '/' . $namespace;
         return is_dir($vendorNamespaceDir);
     }
 
     /**
-     * Check if pattern is an explicit vendor path pattern (vendor/namespace/*)
+     * Check if a pattern is an explicit vendor path pattern (vendor/namespace/*)
      */
     private function isExplicitVendorPattern(string $pattern): bool
     {
@@ -141,7 +139,7 @@ final class PathScanner
         if (!str_starts_with($pattern, 'vendor/')) {
             return false;
         }
-        
+
         // Must be a glob pattern with vendor paths
         return $this->containsGlobCharacters($pattern);
     }
@@ -155,13 +153,13 @@ final class PathScanner
             return [];
         }
 
-        // Extract namespace and subpath from pattern like "cpsit/*" or "cpsit/*/Classes"
+        // Extract namespace and subpath from a pattern like "cpsit/*" or "cpsit/*/Classes"
         $parts = explode('/', $pattern);
         $namespace = $parts[0];
-        
+
         // Find matching vendor packages
         $vendorNamespaceDir = $this->vendorPath . '/' . $namespace;
-        
+
         if (!is_dir($vendorNamespaceDir)) {
             return [];
         }
@@ -173,13 +171,13 @@ final class PathScanner
 
         $resolvedPaths = [];
         foreach ($packages as $package) {
-            // Build the complete path by replacing * with actual package name
+            // Build the complete path by replacing * with the actual package name
             $packageName = basename($package);
             $resolvedPattern = str_replace('*', $packageName, $pattern);
-            
+
             // For vendor namespace patterns, we need to prepend the vendor path directly
             $absolutePath = $this->vendorPath . '/' . $resolvedPattern;
-            
+
             if ($this->pathExists($absolutePath)) {
                 $normalizedPath = realpath($absolutePath);
                 if ($normalizedPath !== false) {
@@ -192,13 +190,13 @@ final class PathScanner
     }
 
     /**
-     * Check if pattern contains glob characters
+     * Check if a pattern contains glob characters
      */
     private function containsGlobCharacters(string $pattern): bool
     {
-        return strpos($pattern, '*') !== false || 
-               strpos($pattern, '?') !== false || 
-               strpos($pattern, '[') !== false;
+        return str_contains($pattern, '*') ||
+            str_contains($pattern, '?') ||
+            str_contains($pattern, '[');
     }
 
     /**
@@ -208,7 +206,7 @@ final class PathScanner
     {
         $absolutePattern = $this->buildAbsolutePattern($pattern);
         $matches = glob($absolutePattern, GLOB_BRACE);
-        
+
         if ($matches === false) {
             return [];
         }
@@ -223,17 +221,17 @@ final class PathScanner
                 }
             }
         }
-        
+
         return $normalizedPaths;
     }
 
     /**
-     * Resolve simple directory path
+     * Resolve a simple directory path
      */
     private function resolveDirectoryPath(string $pattern): array
     {
         $absolutePath = $this->toAbsolutePath($pattern);
-        
+
         if ($this->pathExists($absolutePath)) {
             $normalizedPath = realpath($absolutePath);
             if ($normalizedPath !== false) {
@@ -255,7 +253,7 @@ final class PathScanner
         }
 
         // Handle vendor/ prefix for vendor namespace resolution
-        if (str_starts_with($pattern, 'vendor/') && $this->vendorPath !== null) {
+        if ($this->vendorPath !== null && str_starts_with($pattern, 'vendor/')) {
             return $this->vendorPath . '/' . substr($pattern, 7);
         }
 
@@ -263,7 +261,7 @@ final class PathScanner
     }
 
     /**
-     * Convert relative path to absolute based on project root
+     * Convert a relative path to absolute based on the project root
      */
     private function toAbsolutePath(string $path): string
     {
@@ -273,7 +271,7 @@ final class PathScanner
         }
 
         // Handle vendor/ prefix for vendor namespace resolution
-        if (str_starts_with($path, 'vendor/') && $this->vendorPath !== null) {
+        if ($this->vendorPath !== null && str_starts_with($path, 'vendor/')) {
             $fullPath = $this->vendorPath . '/' . substr($path, 7);
             return realpath($fullPath) ?: $fullPath;
         }
@@ -283,7 +281,7 @@ final class PathScanner
     }
 
     /**
-     * Check if path exists (directory or file)
+     * Check if a path exists (directory or file)
      */
     private function pathExists(string $path): bool
     {
@@ -295,84 +293,16 @@ final class PathScanner
      */
     private function applyExclusions(array $paths, array $excludePatterns, array $explicitVendorPaths = []): array
     {
-        return array_filter($paths, function ($path) use ($excludePatterns, $explicitVendorPaths) {
-            // Explicit vendor paths are exempt from vendor/ exclusions
-            if (in_array($path, $explicitVendorPaths)) {
-                foreach ($excludePatterns as $excludePattern) {
-                    // Skip vendor/ exclusion for explicit vendor paths
-                    if ($excludePattern === 'vendor/' || $excludePattern === 'vendor') {
-                        continue;
-                    }
-                    if ($this->matchesExclusionPattern($path, $excludePattern)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            
-            // Apply all exclusions for regular paths
-            foreach ($excludePatterns as $excludePattern) {
-                if ($this->matchesExclusionPattern($path, $excludePattern)) {
-                    return false;
-                }
-            }
-            return true;
-        });
+        $pathFilter = new PathExclusionFilter(
+            $this->projectRoot,
+            $this->vendorPath,
+            $excludePatterns,
+            $explicitVendorPaths
+        );
+
+        return $pathFilter->filter($paths);
     }
 
-    /**
-     * Check if path matches exclusion pattern
-     */
-    private function matchesExclusionPattern(string $path, string $excludePattern): bool
-    {
-        $absoluteExcludePattern = $this->buildAbsolutePattern($excludePattern);
-        
-        // Handle wildcard patterns
-        if (str_ends_with($excludePattern, '*')) {
-            $prefix = rtrim($absoluteExcludePattern, '*');
-            // If the prefix directory exists, normalize it
-            $prefixDir = dirname($prefix);
-            if (is_dir($prefixDir)) {
-                $normalizedPrefixDir = realpath($prefixDir);
-                if ($normalizedPrefixDir !== false) {
-                    $normalizedPrefix = $normalizedPrefixDir . '/' . basename($prefix);
-                    return str_starts_with($path, $normalizedPrefix);
-                }
-            }
-            return str_starts_with($path, $prefix);
-        }
-        
-        // Directory exclusions
-        if (str_ends_with($excludePattern, '/')) {
-            $prefix = rtrim($absoluteExcludePattern, '/');
-            if (is_dir($prefix)) {
-                $normalizedPrefix = realpath($prefix);
-                if ($normalizedPrefix !== false) {
-                    return str_starts_with($path, $normalizedPrefix);
-                }
-            }
-            return str_starts_with($path, $prefix);
-        }
-
-        // Exact match - normalize exclude pattern if it exists
-        if (is_dir($absoluteExcludePattern) || is_file($absoluteExcludePattern)) {
-            $normalizedExcludePattern = realpath($absoluteExcludePattern);
-            if ($normalizedExcludePattern !== false) {
-                return $path === $normalizedExcludePattern;
-            }
-        }
-        
-        if ($path === $absoluteExcludePattern) {
-            return true;
-        }
-
-        // Glob pattern match
-        if ($this->containsGlobCharacters($excludePattern)) {
-            return fnmatch($absoluteExcludePattern, $path);
-        }
-
-        return false;
-    }
 
     /**
      * Validate that paths exist and are accessible
@@ -419,7 +349,7 @@ final class PathScanner
                     'pattern' => $pattern,
                     'type' => $this->getPatternType($pattern),
                     'is_exclusion' => str_starts_with($pattern, '!'),
-                    'absolute_pattern' => str_starts_with($pattern, '!') 
+                    'absolute_pattern' => str_starts_with($pattern, '!')
                         ? $this->getAbsolutePatternForDebug(substr($pattern, 1))
                         : $this->getAbsolutePatternForDebug($pattern)
                 ];
@@ -433,15 +363,15 @@ final class PathScanner
     private function getPatternType(string $pattern): string
     {
         $cleanPattern = str_starts_with($pattern, '!') ? substr($pattern, 1) : $pattern;
-        
+
         if ($this->isVendorNamespacePattern($cleanPattern)) {
             return 'vendor_namespace';
         }
-        
+
         if ($this->containsGlobCharacters($cleanPattern)) {
             return 'glob';
         }
-        
+
         return 'direct_path';
     }
 
@@ -453,7 +383,7 @@ final class PathScanner
         if ($this->isVendorNamespacePattern($pattern)) {
             return $this->vendorPath . '/' . $pattern;
         }
-        
+
         return $this->buildAbsolutePattern($pattern);
     }
 
