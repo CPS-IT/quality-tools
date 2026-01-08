@@ -73,14 +73,14 @@ The following issues have been identified and prioritized for improvement:
 
 **Critical Priority:**
 - [x] [007 - PathScanner Exclusion Logic Refactoring](issue/done/007-pathscanner-exclusion-logic-refactoring.md)
-- [x] [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md)
+- [ ] [008 - Resource Cleanup Temporary Files](issue/008-resource-cleanup-temporary-files.md)
 - [ ] [009 - Security Hardening Environment Variables](issue/009-security-hardening-environment-variables.md)
 
 **High Priority:**
 - [ ] [010 - Command Execution Template Pattern](issue/010-command-execution-template-pattern.md)
 - [ ] [011 - Performance Optimization Cache Lazy Loading](issue/011-performance-optimization-cache-lazy-loading.md)
 - [ ] [012 - Enhanced Error Handling Structured Responses](issue/012-enhanced-error-handling-structured-responses.md)
-- [ ] [018 - BaseCommand executeProcess Method Refactoring](issue/done/018-basecommand-executeprocess-method-refactoring.md)
+- [x] [018 - BaseCommand executeProcess Method Refactoring](issue/done/018-basecommand-executeprocess-method-refactoring.md)
 
 **Medium Priority:**
 - [ ] [013 - Dependency Injection Container Architecture](issue/013-dependency-injection-container-architecture.md)
