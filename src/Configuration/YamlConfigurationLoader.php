@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Service\SecurityService;
 use Symfony\Component\Yaml\Yaml;
 
 final class YamlConfigurationLoader
 {
-    private const CONFIG_FILES = [
+    private const array CONFIG_FILES = [
         '.quality-tools.yaml',
         'quality-tools.yaml',
         'quality-tools.yml',
     ];
 
     private ConfigurationValidator $validator;
+    private SecurityService $securityService;
 
-    public function __construct(?ConfigurationValidator $validator = null)
+    public function __construct(?ConfigurationValidator $validator = null, ?SecurityService $securityService = null)
     {
         $this->validator = $validator ?? new ConfigurationValidator();
+        $this->securityService = $securityService ?? new SecurityService();
     }
 
     public function load(string $projectRoot): Configuration
@@ -134,19 +137,15 @@ final class YamlConfigurationLoader
                     $default = substr($default, 1);
                 }
 
-                $value = $_ENV[$envVar] ?? $_SERVER[$envVar] ?? getenv($envVar);
-
-                if ($value === false) {
+                // Use security service for safe environment variable access
+                try {
+                    return $this->securityService->getEnvironmentVariable($envVar, $default);
+                } catch (\RuntimeException $e) {
                     if ($default !== '') {
                         return $default;
                     }
-                    throw new \RuntimeException(sprintf(
-                        'Environment variable "%s" is not set and no default value provided',
-                        $envVar
-                    ));
+                    throw $e;
                 }
-
-                return (string)$value;
             },
             $content
         );

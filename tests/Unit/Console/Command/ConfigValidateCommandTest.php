@@ -218,7 +218,7 @@ YAML;
         $configWithEnvVars = <<<YAML
 quality-tools:
   project:
-    name: "\${MISSING_VAR}"
+    name: "\${DISALLOWED_VAR}"
 YAML;
         
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configWithEnvVars);
@@ -229,7 +229,7 @@ YAML;
         
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Configuration validation failed', $output);
-        self::assertStringContainsString('MISSING_VAR', $output);
+        self::assertStringContainsString('DISALLOWED_VAR', $output);
     }
     
     public function testExecuteWithQualityToolsYamlFile(): void

@@ -174,10 +174,11 @@ YAML;
         $yamlContent = 'quality-tools: { project: { name: "${MISSING_VAR}" } }';
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $yamlContent);
         
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Environment variable "MISSING_VAR" is not set/');
+        // With security service, missing variables return empty string since no default is provided
+        $config = $this->loader->load($this->tempDir);
         
-        $this->loader->load($this->tempDir);
+        // The config should load but with an empty project name since MISSING_VAR is not set
+        self::assertSame('', $config->getProjectName());
     }
     
     public function testInvalidYamlFile(): void

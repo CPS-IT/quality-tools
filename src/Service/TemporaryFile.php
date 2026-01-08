@@ -8,9 +8,12 @@ final class TemporaryFile
 {
     private string $filePath;
     private bool $isDeleted = false;
+    private SecurityService $securityService;
 
-    public function __construct(string $prefix = 'qt_temp_', string $suffix = '')
+    public function __construct(string $prefix = 'qt_temp_', string $suffix = '', ?SecurityService $securityService = null)
     {
+        $this->securityService = $securityService ?? new SecurityService();
+        
         $tempDir = sys_get_temp_dir();
         $tempFile = tempnam($tempDir, $prefix);
         
@@ -29,9 +32,18 @@ final class TemporaryFile
             $this->filePath = $tempFile;
         }
 
+        // Set secure file permissions (readable/writable by owner only)
+        try {
+            $this->securityService->setSecureFilePermissions($this->filePath);
+        } catch (\RuntimeException $e) {
+            // If we can't set secure permissions, clean up and fail
+            unlink($this->filePath);
+            throw new \RuntimeException('Failed to set secure permissions on temporary file: ' . $e->getMessage());
+        }
+
         // Log temporary file creation for debugging
         if (getenv('QT_DEBUG_TEMP_FILES') === '1') {
-            error_log(sprintf('[QT] Created temporary file: %s', $this->filePath));
+            error_log(sprintf('[QT] Created temporary file with secure permissions: %s', $this->filePath));
         }
 
         // Register cleanup on process shutdown as fallback
