@@ -6,6 +6,8 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Exception\ConfigurationException;
+use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -106,8 +108,8 @@ final class BaseCommandTest extends TestCase
     {
         $nonExistentFile = $this->tempDir . '/non-existent.php';
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Custom configuration file not found: {$nonExistentFile}");
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage("Configuration file not found: {$nonExistentFile}");
 
         $this->command->resolveConfigPathPublic('default.php', $nonExistentFile);
     }
@@ -247,8 +249,8 @@ final class BaseCommandTest extends TestCase
             ->with('path')
             ->willReturn($nonExistentPath);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Target path does not exist or is not a directory: {$nonExistentPath}");
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessage("Directory not found: {$nonExistentPath}");
 
         $this->command->getTargetPathPublic($this->mockInput);
     }
@@ -277,8 +279,8 @@ final class BaseCommandTest extends TestCase
             ->with('path')
             ->willReturn($filePath);
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Target path does not exist or is not a directory: {$filePath}");
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessage("Directory not found: {$filePath}");
 
         $this->command->getTargetPathPublic($this->mockInput);
     }

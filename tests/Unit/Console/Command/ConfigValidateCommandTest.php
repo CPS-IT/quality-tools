@@ -143,8 +143,8 @@ YAML;
         self::assertSame(Command::FAILURE, $exitCode);
         
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
+        self::assertStringContainsString('Malformed inline YAML', $output);
     }
     
     public function testExecuteWithInvalidConfigurationSchema(): void
@@ -165,7 +165,7 @@ YAML;
         self::assertSame(Command::FAILURE, $exitCode);
         
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
         self::assertStringContainsString('Invalid configuration', $output);
     }
     
@@ -184,7 +184,7 @@ YAML;
         self::assertSame(Command::FAILURE, $exitCode);
         
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
         // The verbose mode doesn't show 'Full error:' for validation errors, just the detailed error
         self::assertStringContainsString('quality-tools.project.php_version', $output);
     }
@@ -228,7 +228,7 @@ YAML;
         self::assertSame(Command::FAILURE, $exitCode);
         
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
         self::assertStringContainsString('DISALLOWED_VAR', $output);
     }
     
@@ -370,7 +370,7 @@ YAML;
         self::assertSame(Command::FAILURE, $exitCode);
         
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
         
         // Restore permissions for cleanup
         chmod($configFile, 0644);

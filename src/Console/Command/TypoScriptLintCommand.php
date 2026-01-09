@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class TypoScriptLintCommand extends BaseCommand
 {
+    private ?ErrorHandler $errorHandler = null;
     protected function configure(): void
     {
         parent::configure();
@@ -61,9 +63,17 @@ final class TypoScriptLintCommand extends BaseCommand
 
             return $this->executeProcess($command, $input, $output);
 
-        } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
-            return 1;
+        } catch (\Throwable $e) {
+            return $this->getErrorHandler()->handleException($e, $output, $output->isVerbose());
         }
+    }
+
+    private function getErrorHandler(): ErrorHandler
+    {
+        if ($this->errorHandler === null) {
+            $this->errorHandler = new ErrorHandler();
+        }
+
+        return $this->errorHandler;
     }
 }

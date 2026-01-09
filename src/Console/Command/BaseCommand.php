@@ -9,6 +9,7 @@ use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Service\CommandBuilder;
+use Cpsit\QualityTools\Service\ErrorFactory;
 use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
@@ -69,9 +70,7 @@ abstract class BaseCommand extends Command
     {
         if ($customConfigPath !== null) {
             if (!file_exists($customConfigPath)) {
-                throw new InvalidArgumentException(
-                    sprintf('Custom configuration file not found: %s', $customConfigPath)
-                );
+                throw ErrorFactory::configFileNotFound($customConfigPath, $customConfigPath);
             }
             return realpath($customConfigPath);
         }
@@ -80,12 +79,7 @@ abstract class BaseCommand extends Command
         $defaultConfigPath = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
 
         if (!file_exists($defaultConfigPath)) {
-            throw new RuntimeException(
-                sprintf(
-                    'Default configuration file not found: %s. Please ensure cpsit/quality-tools is properly installed.',
-                    $defaultConfigPath
-                )
-            );
+            throw ErrorFactory::configFileNotFound($defaultConfigPath);
         }
 
         return $defaultConfigPath;
@@ -173,9 +167,7 @@ abstract class BaseCommand extends Command
 
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
+                    throw ErrorFactory::directoryNotFound($customPath);
                 }
                 $this->cachedTargetPath = realpath($customPath);
             } else {
@@ -404,9 +396,7 @@ abstract class BaseCommand extends Command
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
+                    throw ErrorFactory::directoryNotFound($customPath);
                 }
                 $this->cachedTargetPath = realpath($customPath);
             } else {

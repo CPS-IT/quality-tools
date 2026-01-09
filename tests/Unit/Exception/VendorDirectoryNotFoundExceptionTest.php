@@ -18,7 +18,7 @@ final class VendorDirectoryNotFoundExceptionTest extends TestCase
         
         self::assertInstanceOf(\RuntimeException::class, $exception);
         self::assertEquals('', $exception->getMessage());
-        self::assertEquals(0, $exception->getCode());
+        self::assertEquals(VendorDirectoryNotFoundException::ERROR_VENDOR_DIRECTORY_NOT_FOUND, $exception->getCode());
         self::assertNull($exception->getPrevious());
     }
     
@@ -28,7 +28,7 @@ final class VendorDirectoryNotFoundExceptionTest extends TestCase
         $exception = new VendorDirectoryNotFoundException($message);
         
         self::assertEquals($message, $exception->getMessage());
-        self::assertEquals(0, $exception->getCode());
+        self::assertEquals(VendorDirectoryNotFoundException::ERROR_VENDOR_DIRECTORY_NOT_FOUND, $exception->getCode());
         self::assertNull($exception->getPrevious());
     }
     

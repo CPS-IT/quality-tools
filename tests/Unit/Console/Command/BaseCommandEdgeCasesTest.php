@@ -6,6 +6,8 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command\BaseCommandEdgeCasesTest
 
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Exception\ConfigurationException;
+use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -60,8 +62,8 @@ final class BaseCommandEdgeCasesTest extends TestCase
         file_put_contents($defaultConfigFile, '<?php return [];');
 
         // Empty string is treated as a file path and will fail - this tests error handling
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Custom configuration file not found: ');
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Configuration file not found: ');
 
         $this->command->testResolveConfigPath('test.php', '');
     }
@@ -191,8 +193,8 @@ final class BaseCommandEdgeCasesTest extends TestCase
             ->willReturn('');
 
         // Empty string is treated as a path and will fail since it's not a directory
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Target path does not exist or is not a directory: ');
+        $this->expectException(FileSystemException::class);
+        $this->expectExceptionMessage('Directory not found: ');
 
         $this->command->testGetTargetPath($this->mockInput);
     }

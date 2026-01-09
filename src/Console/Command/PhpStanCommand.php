@@ -126,7 +126,7 @@ final class PhpStanCommand extends AbstractToolCommand
         $this->cleanupTemporaryConfig();
     }
 
-    protected function handleExecutionException(\Exception $exception, InputInterface $input, OutputInterface $output): void
+    protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
     {
         // Clean up temporary file on error
         $this->cleanupTemporaryConfig();

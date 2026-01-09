@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Service\ErrorFactory;
+use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractToolCommand extends BaseCommand
 {
+    private ?ErrorHandler $errorHandler = null;
     /**
      * Template method that defines the common execution flow for all tool commands.
      * This method provides a consistent structure while allowing tool-specific customization.
@@ -47,11 +50,12 @@ abstract class AbstractToolCommand extends BaseCommand
 
             return $exitCode;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Handle cleanup on exception
             $this->handleExecutionException($e, $input, $output);
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
-            return 1;
+            
+            // Use enhanced error handling
+            return $this->getErrorHandler()->handleException($e, $output, $output->isVerbose());
         }
     }
 
@@ -92,9 +96,7 @@ abstract class AbstractToolCommand extends BaseCommand
         
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                throw new \InvalidArgumentException(
-                    sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                );
+                throw ErrorFactory::directoryNotFound($customPath);
             }
             
             $resolvedPath = realpath($customPath);
@@ -159,9 +161,21 @@ abstract class AbstractToolCommand extends BaseCommand
     /**
      * Handle cleanup when an exception occurs (optional override)
      */
-    protected function handleExecutionException(\Exception $exception, InputInterface $input, OutputInterface $output): void
+    protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
     {
         // Default: no special cleanup
+    }
+
+    /**
+     * Get error handler instance
+     */
+    protected function getErrorHandler(): ErrorHandler
+    {
+        if ($this->errorHandler === null) {
+            $this->errorHandler = new ErrorHandler();
+        }
+
+        return $this->errorHandler;
     }
 
     /**

@@ -238,7 +238,7 @@ final class RectorFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(2, $result); // ConfigurationException returns exit code 2
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void

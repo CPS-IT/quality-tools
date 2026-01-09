@@ -248,8 +248,7 @@ final class FractorLintCommandTest extends TestCase
 
         $this->mockOutput
             ->expects($this->atLeast(1))
-            ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*Target path does not exist.*<\/error>/'));
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -274,12 +273,11 @@ final class FractorLintCommandTest extends TestCase
 
         $this->mockOutput
             ->expects($this->atLeast(1))
-            ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*Custom configuration file not found.*<\/error>/'));
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(2, $result);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void

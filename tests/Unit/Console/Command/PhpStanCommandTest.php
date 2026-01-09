@@ -287,7 +287,7 @@ final class PhpStanCommandTest extends TestCase
 
         try {
             $result = $this->command->run($this->mockInput, $this->mockOutput);
-            $this->assertEquals(1, $result);
+            $this->assertEquals(2, $result); // ConfigurationException returns exit code 2
         } catch (ExceptionInterface $e) {
             // Expected for invalid config path scenarios
             $this->assertStringContainsString('config', strtolower($e->getMessage()));

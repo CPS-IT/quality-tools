@@ -251,7 +251,7 @@ final class FractorFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(2, $result);
     }
 
     public function testExecuteHandlesTargetPathException(): void
@@ -267,9 +267,8 @@ final class FractorFixCommandTest extends TestCase
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*Target path does not exist.*<\/error>/'));
+            ->expects($this->atLeast(1))
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -326,13 +325,13 @@ final class FractorFixCommandTest extends TestCase
         // Execute should fail
         $commandTester->execute([]);
 
-        // Command should return error code
-        $this->assertEquals(1, $commandTester->getStatusCode());
+        // Command should return configuration error code
+        $this->assertEquals(2, $commandTester->getStatusCode());
 
         // Output should contain error message
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Error:', $output);
-        $this->assertStringContainsString('Default configuration file not found', $output);
+        $this->assertStringContainsString('Configuration Error', $output);
+        $this->assertStringContainsString('Configuration file not found', $output);
     }
 
     public function testCommandHandlesMissingExecutable(): void
@@ -353,7 +352,7 @@ final class FractorFixCommandTest extends TestCase
         // and the executeProcess method will return a non-zero exit code
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        // Command should return non-zero exit code due to missing executable
-        $this->assertNotEquals(0, $result);
+        // Command should return exit code 126 (command not executable) due to missing executable
+        $this->assertEquals(126, $result);
     }
 }

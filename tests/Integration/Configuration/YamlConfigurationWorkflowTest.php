@@ -213,7 +213,7 @@ YAML;
         self::assertSame(Command::FAILURE, $this->appTester->getStatusCode());
         
         $output = $this->appTester->getDisplay();
-        self::assertStringContainsString('Configuration validation failed', $output);
+        self::assertStringContainsString('Unexpected Error:', $output);
         
         // Show command should also fail
         $this->appTester->run(['command' => 'config:show']);

@@ -1,8 +1,8 @@
 # Issue 012: Enhanced Error Handling with Structured Responses
 
-**Status:** Open  
-**Priority:** High  
-**Effort:** Medium (3-8h)  
+**Status:** done
+**Priority:** High
+**Effort:** Medium (3-8h)
 **Impact:** Medium
 
 ## Description
@@ -24,7 +24,7 @@ The error handling pattern across command classes is overly simplistic:
 Generic error handling pattern: catch (\Exception $e) with minimal context
 ```
 
-**Location:** Multiple command classes in src/Command/  
+**Location:** Multiple command classes in src/Command/
 **Trigger:** Any tool execution error (configuration, process execution, file system issues)
 
 ## Impact Analysis
@@ -76,11 +76,11 @@ Provides both better user experience and improved reliability for appropriate sc
 
 ## Validation Plan
 
-- [ ] Specific error types are thrown for different failure scenarios
-- [ ] Error messages include actionable troubleshooting guidance
-- [ ] Retry mechanisms work for appropriate transient failures
-- [ ] Exit codes are consistent and documented
-- [ ] Error handling doesn't mask underlying issues
+- [x] Specific error types are thrown for different failure scenarios
+- [x] Error messages include actionable troubleshooting guidance
+- [x] Retry mechanisms work for appropriate transient failures
+- [x] Exit codes are consistent and documented
+- [x] Error handling doesn't mask underlying issues
 
 ## Dependencies
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -12,6 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class ConfigValidateCommand extends BaseCommand
 {
+    private ?ErrorHandler $errorHandler = null;
     protected function configure(): void
     {
         $this
@@ -55,18 +57,18 @@ final class ConfigValidateCommand extends BaseCommand
 
             return self::SUCCESS;
 
-        } catch (\Exception $e) {
-            $io->error([
-                'Configuration validation failed:',
-                $e->getMessage(),
-            ]);
-
-            if ($output->isVerbose()) {
-                $io->note('Full error: ' . $e->getTraceAsString());
-            }
-
-            return self::FAILURE;
+        } catch (\Throwable $e) {
+            return $this->getErrorHandler()->handleException($e, $output, $output->isVerbose());
         }
+    }
+
+    private function getErrorHandler(): ErrorHandler
+    {
+        if ($this->errorHandler === null) {
+            $this->errorHandler = new ErrorHandler();
+        }
+
+        return $this->errorHandler;
     }
 
     private function showConfigurationSummary(SymfonyStyle $io, array $config): void
