@@ -31,11 +31,20 @@ final class PathScanner
     }
 
     /**
+     * Generate optimized cache key for path patterns and vendor path
+     */
+    private function generateCacheKey(array $pathPatterns, string $vendorPath): string
+    {
+        $data = implode('|', $pathPatterns) . '|' . $vendorPath;
+        return md5($data);
+    }
+
+    /**
      * Resolve an array of path patterns to actual filesystem paths
      */
     public function resolvePaths(array $pathPatterns): array
     {
-        $cacheKey = md5(serialize($pathPatterns) . ($this->vendorPath ?? ''));
+        $cacheKey = $this->generateCacheKey($pathPatterns, $this->vendorPath ?? '');
 
         if (isset($this->resolvedPathsCache[$cacheKey])) {
             return $this->resolvedPathsCache[$cacheKey];

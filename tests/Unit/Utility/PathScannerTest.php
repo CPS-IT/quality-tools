@@ -275,4 +275,35 @@ final class PathScannerTest extends TestCase
         self::assertContains(realpath($vendorDir1 . '/cpsit/package1'), $result1);
         self::assertContains(realpath($vendorDir2 . '/cpsit/package2'), $result2);
     }
+
+    public function testCacheKeyUniqueness(): void
+    {
+        // Create test directories
+        mkdir($this->tempDir . '/test1', 0777, true);
+        mkdir($this->tempDir . '/test2', 0777, true);
+
+        // Test that different patterns generate different cache entries
+        $result1 = $this->scanner->resolvePaths(['test1']);
+        $result2 = $this->scanner->resolvePaths(['test2']);
+        $result3 = $this->scanner->resolvePaths(['test1', 'test2']);
+
+        // Results should be different
+        self::assertNotEquals($result1, $result2);
+        self::assertNotEquals($result1, $result3);
+        self::assertNotEquals($result2, $result3);
+
+        // Test caching works - same patterns should return same results without re-scanning
+        $cachedResult1 = $this->scanner->resolvePaths(['test1']);
+        self::assertEquals($result1, $cachedResult1);
+
+        // Test vendor path affects cache key
+        $vendorDir = $this->tempDir . '/vendor';
+        mkdir($vendorDir, 0777, true);
+        
+        $this->scanner->setVendorPath($vendorDir);
+        $resultWithVendor = $this->scanner->resolvePaths(['test1']);
+        
+        // Should be same paths but cache should be cleared due to vendor path change
+        self::assertEquals($result1, $resultWithVendor);
+    }
 }
