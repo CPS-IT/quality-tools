@@ -110,7 +110,7 @@ reports:
   output:
     formats:
       - json  # Enable JSON format
-  
+
   # Format-specific configuration for JSON
   format_options:
     json:
@@ -118,13 +118,13 @@ reports:
       schema_version: "1.0"
       validate_output: true
       strict_compliance: true
-      
+
       # Output formatting
       pretty_print: true
       indent_size: 2
       sort_keys: false
       compact_mode: false
-      
+
       # Performance options
       compress_large_reports: true
       compression_threshold_mb: 10
@@ -231,62 +231,62 @@ Leverages unified architecture from Feature 006:
 // Extends StructuredFormatWriter from Feature 006
 class JsonFormatWriter extends StructuredFormatWriter
 {
-    public function getSupportedFormat(): string 
-    { 
-        return 'json'; 
+    public function getSupportedFormat(): string
+    {
+        return 'json';
     }
-    
-    public function supportsTemplating(): bool 
-    { 
-        return false; 
+
+    public function supportsTemplating(): bool
+    {
+        return false;
     }
-    
+
     // Uses ReportDataModel from Feature 006 - direct data generation only
     protected function generateFromData(ReportDataModel $data): string
     {
         $jsonData = $this->prepareJsonData($data);
         $flags = $this->getJsonFlags();
-        
+
         return json_encode($jsonData, $flags);
     }
-    
+
     private function prepareJsonData(ReportDataModel $data): array
     {
         // Transform unified data model to JSON-specific format
         $jsonData = $data->toArray();
-        
+
         // Apply JSON-specific transformations if needed
         return $this->sanitizeJsonData($jsonData);
     }
-    
+
     private function getJsonFlags(): int
     {
         $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
-        
+
         if ($this->config->isJsonPrettyPrintEnabled()) {
             $flags |= JSON_PRETTY_PRINT;
         }
-        
+
         return $flags;
     }
-    
+
     private function sanitizeJsonData(array $data): array
     {
         // Ensure all data is JSON-serializable
         // Remove or convert non-serializable values
         return array_map([$this, 'sanitizeValue'], $data);
     }
-    
+
     private function sanitizeValue($value)
     {
         if (is_resource($value)) {
             return null;
         }
-        
+
         if (is_object($value) && !$value instanceof JsonSerializable) {
             return (array) $value;
         }
-        
+
         return $value;
     }
 }

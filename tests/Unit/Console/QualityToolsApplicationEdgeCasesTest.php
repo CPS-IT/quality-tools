@@ -62,14 +62,14 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
             // Use environment variable to force detection of our specific project
             TestHelper::withEnvironment(
                 ['QT_PROJECT_ROOT' => $projectDir],
-                function () use ($projectDir) {
+                function () use ($projectDir): void {
                     chdir($projectDir);
                     $application = new QualityToolsApplication();
 
                     // Should work with environment variable override
                     $result = $application->getProjectRoot();
                     $this->assertSame(realpath($projectDir), $result);
-                }
+                },
             );
         } finally {
             TestHelper::removeDirectory($tempDir);
@@ -79,7 +79,7 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
     #[Test]
     public function getProjectRootHandlesSymbolicLinks(): void
     {
-        if (!function_exists('symlink')) {
+        if (!\function_exists('symlink')) {
             $this->markTestSkipped('Symbolic links not supported on this system');
         }
 
@@ -120,7 +120,7 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
             TestHelper::createComposerJson($outerProject, TestHelper::getComposerContent('typo3-core'));
 
             $innerProject = $outerProject . '/packages/custom-ext';
-            mkdir($innerProject, 0777, true);
+            mkdir($innerProject, 0o777, true);
             TestHelper::createComposerJson($innerProject, TestHelper::getComposerContent('typo3-minimal'));
 
             // Start from inner project
@@ -204,7 +204,7 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
             TestHelper::createComposerJson($unreadableDir, TestHelper::getComposerContent('typo3-core'));
 
             // Make file unreadable (if possible)
-            if (chmod($composerFile, 0000)) {
+            if (chmod($composerFile, 0o000)) {
                 // Create valid project above it
                 TestHelper::createComposerJson($tempDir, TestHelper::getComposerContent('typo3-core'));
 
@@ -218,7 +218,7 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
                 $this->assertSame(realpath($tempDir), $result);
 
                 // Restore permissions for cleanup
-                chmod($composerFile, 0644);
+                chmod($composerFile, 0o644);
             } else {
                 $this->markTestSkipped('Cannot modify file permissions on this system');
             }
@@ -235,9 +235,9 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
         try {
             // Create a very long path structure
             $longPath = $tempDir;
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 0; $i < 5; ++$i) {
                 $longPath .= '/very-long-directory-name-that-exceeds-normal-limits-' . str_repeat('x', 50);
-                mkdir($longPath, 0777, true);
+                mkdir($longPath, 0o777, true);
             }
 
             // Create valid project at the end
@@ -265,16 +265,16 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
             // Test various edge cases for TYPO3 dependency detection
             $testCases = [
                 'mixed-case' => [
-                    'require' => ['TYPO3/cms-core' => '^13.4'] // Should not match due to case
+                    'require' => ['TYPO3/cms-core' => '^13.4'], // Should not match due to case
                 ],
                 'similar-name' => [
-                    'require' => ['typo3/cms-core-extended' => '^13.4'] // Should not match
+                    'require' => ['typo3/cms-core-extended' => '^13.4'], // Should not match
                 ],
                 'partial-match' => [
-                    'require' => ['mycompany/typo3-cms-core' => '^13.4'] // Should not match
+                    'require' => ['mycompany/typo3-cms-core' => '^13.4'], // Should not match
                 ],
                 'version-constraints' => [
-                    'require' => ['typo3/cms-core' => 'dev-main'] // Should match with any version
+                    'require' => ['typo3/cms-core' => 'dev-main'], // Should match with any version
                 ],
             ];
 
@@ -316,7 +316,7 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
 
             // Create multiple application instances
             $applications = [];
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 0; $i < 5; ++$i) {
                 $applications[] = new QualityToolsApplication();
             }
 
@@ -346,17 +346,17 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
 
             // Set environment variable with relative path
             $relativePath = basename($tempDir);
-            $parentDir = dirname($tempDir);
+            $parentDir = \dirname($tempDir);
 
             TestHelper::withEnvironment(
                 ['QT_PROJECT_ROOT' => $parentDir . '/./' . $relativePath],
-                function () use ($tempDir) {
+                function () use ($tempDir): void {
                     chdir('/tmp'); // Change to different directory
                     $application = new QualityToolsApplication();
 
                     $result = $application->getProjectRoot();
                     $this->assertSame(realpath($tempDir), $result);
-                }
+                },
             );
         } finally {
             TestHelper::removeDirectory($tempDir);

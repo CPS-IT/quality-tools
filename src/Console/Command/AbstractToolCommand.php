@@ -12,6 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AbstractToolCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
+
     /**
      * Template method that defines the common execution flow for all tool commands.
      * This method provides a consistent structure while allowing tool-specific customization.
@@ -49,38 +50,37 @@ abstract class AbstractToolCommand extends BaseCommand
             $this->executePostProcessingHooks($input, $output, $exitCode);
 
             return $exitCode;
-
         } catch (\Throwable $e) {
             // Handle cleanup on exception
             $this->handleExecutionException($e, $input, $output);
-            
+
             // Use enhanced error handling
             return $this->getErrorHandler()->handleException($e, $output, $output->isVerbose());
         }
     }
 
     /**
-     * Get the name of the tool (e.g., 'rector', 'fractor', 'phpstan')
+     * Get the name of the tool (e.g., 'rector', 'fractor', 'phpstan').
      */
     abstract protected function getToolName(): string;
 
     /**
-     * Get the default configuration file name for the tool
+     * Get the default configuration file name for the tool.
      */
     abstract protected function getDefaultConfigFileName(): string;
 
     /**
-     * Build the command array for the specific tool
+     * Build the command array for the specific tool.
      */
     abstract protected function buildToolCommand(
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array;
 
     /**
-     * Validate tool-specific configuration (optional override)
+     * Validate tool-specific configuration (optional override).
      */
     protected function validateToolConfig(InputInterface $input, OutputInterface $output, string $configPath): void
     {
@@ -88,22 +88,22 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Resolve target paths for the tool
+     * Resolve target paths for the tool.
      */
     protected function resolveTargetPaths(InputInterface $input, OutputInterface $output): array
     {
         $customPath = $input->getOption('path');
-        
+
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
                 throw ErrorFactory::directoryNotFound($customPath);
             }
-            
+
             $resolvedPath = realpath($customPath);
             if ($output->isVerbose()) {
-                $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
+                $output->writeln(\sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
             }
-            
+
             return [$resolvedPath];
         }
 
@@ -112,9 +112,9 @@ abstract class AbstractToolCommand extends BaseCommand
 
         if ($output->isVerbose()) {
             if (!empty($resolvedPaths)) {
-                $output->writeln(sprintf(
+                $output->writeln(\sprintf(
                     '<comment>Analyzing resolved paths: %s</comment>',
-                    implode(', ', $resolvedPaths)
+                    implode(', ', $resolvedPaths),
                 ));
             } else {
                 $output->writeln('<comment>Using default path discovery</comment>');
@@ -125,7 +125,7 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Get memory limit for the tool
+     * Get memory limit for the tool.
      */
     protected function getToolMemoryLimit(InputInterface $input, OutputInterface $output): ?string
     {
@@ -134,16 +134,16 @@ abstract class AbstractToolCommand extends BaseCommand
         }
 
         $memoryLimit = $this->getOptimalMemoryLimit($input, $this->getToolName());
-        
+
         if ($output->isVerbose()) {
-            $output->writeln(sprintf('<info>Using automatic memory limit: %s</info>', $memoryLimit));
+            $output->writeln(\sprintf('<info>Using automatic memory limit: %s</info>', $memoryLimit));
         }
 
         return $memoryLimit;
     }
 
     /**
-     * Execute pre-processing hooks (optional override)
+     * Execute pre-processing hooks (optional override).
      */
     protected function executePreProcessingHooks(InputInterface $input, OutputInterface $output, array $targetPaths): void
     {
@@ -151,7 +151,7 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Execute post-processing hooks (optional override)
+     * Execute post-processing hooks (optional override).
      */
     protected function executePostProcessingHooks(InputInterface $input, OutputInterface $output, int $exitCode): void
     {
@@ -159,7 +159,7 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Handle cleanup when an exception occurs (optional override)
+     * Handle cleanup when an exception occurs (optional override).
      */
     protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
     {
@@ -167,7 +167,7 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Get error handler instance
+     * Get error handler instance.
      */
     protected function getErrorHandler(): ErrorHandler
     {
@@ -179,8 +179,9 @@ abstract class AbstractToolCommand extends BaseCommand
     }
 
     /**
-     * Get target path for tool compatibility
+     * Get target path for tool compatibility.
      */
+    #[\Override]
     protected function getTargetPath(InputInterface $input): string
     {
         return $this->getTargetPathForTool($input, $this->getToolName());

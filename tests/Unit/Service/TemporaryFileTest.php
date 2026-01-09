@@ -95,19 +95,19 @@ final class TemporaryFileTest extends TestCase
     {
         $tempFile = new TemporaryFile();
         $path = $tempFile->getPath();
-        
+
         self::assertFileExists($path);
-        
+
         // Manually trigger destructor by unsetting
         unset($tempFile);
-        
+
         // File may still exist due to shutdown handler, but should be cleaned up eventually
         // The important thing is that the isDeleted flag would be set if we could access it
         // For this test, we just ensure the file exists and cleanup works manually
         if (file_exists($path)) {
             unlink($path); // Manual cleanup for test
         }
-        
+
         self::assertFileDoesNotExist($path);
     }
 

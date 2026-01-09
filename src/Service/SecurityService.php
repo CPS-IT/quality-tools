@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
-use RuntimeException;
-
 class SecurityService
 {
     /**
      * Allowlist of environment variables that are safe to use in configuration
-     * Only these variables can be accessed via ${VAR} syntax in YAML config files
+     * Only these variables can be accessed via ${VAR} syntax in YAML config files.
      */
     private const array ALLOWED_ENV_VARS = [
         // Home directory and user information
@@ -47,7 +45,7 @@ class SecurityService
         'RECTOR_CONFIG_PATH',
         'PHP_CS_FIXER_CONFIG_PATH',
         'FRACTOR_CONFIG_PATH',
-        
+
         // Test-specific variables (for unit tests)
         'PROJECT_NAME',
         'PHPSTAN_MEMORY',
@@ -67,7 +65,7 @@ class SecurityService
         'PHP_CS_FIXER_ENABLED',
         'PHP_CS_FIXER_PRESET',
         'PHP_CS_FIXER_CACHE',
-        
+
         // Additional test variables for integration tests
         'RECTOR_ENABLED_STRING',
         'RECTOR_DRY_RUN_STRING',
@@ -89,9 +87,10 @@ class SecurityService
     ];
 
     /**
-     * Validates and sanitizes environment variable access
+     * Validates and sanitizes environment variable access.
      *
      * @param string $variableName The environment variable name to validate
+     *
      * @return bool True if the variable is allowed to be accessed
      */
     public function isEnvironmentVariableAllowed(string $variableName): bool
@@ -101,25 +100,23 @@ class SecurityService
             return false;
         }
 
-        return in_array($variableName, self::ALLOWED_ENV_VARS, true);
+        return \in_array($variableName, self::ALLOWED_ENV_VARS, true);
     }
 
     /**
-     * Safely retrieves environment variable value with validation
+     * Safely retrieves environment variable value with validation.
      *
      * @param string $variableName The environment variable name
      * @param string $defaultValue Default value if the variable is not set
+     *
+     * @throws \RuntimeException If a variable is not allowed or contains unsafe content
+     *
      * @return string The sanitized environment variable value
-     * @throws RuntimeException If a variable is not allowed or contains unsafe content
      */
     public function getEnvironmentVariable(string $variableName, string $defaultValue = ''): string
     {
         if (!$this->isEnvironmentVariableAllowed($variableName)) {
-            throw new RuntimeException(sprintf(
-                'Access to environment variable "%s" is not allowed for security reasons. ' .
-                'Only allowlisted variables can be used in configuration.',
-                $variableName
-            ));
+            throw new \RuntimeException(\sprintf('Access to environment variable "%s" is not allowed for security reasons. Only allowlisted variables can be used in configuration.', $variableName));
         }
 
         $value = $_ENV[$variableName] ?? $_SERVER[$variableName] ?? getenv($variableName);
@@ -128,23 +125,21 @@ class SecurityService
             return $defaultValue;
         }
 
-        $stringValue = (string)$value;
+        $stringValue = (string) $value;
 
         // Validate that the value doesn't contain potentially dangerous content
         if (!$this->isEnvironmentValueSafe($stringValue)) {
-            throw new RuntimeException(sprintf(
-                'Environment variable "%s" contains potentially unsafe content',
-                $variableName
-            ));
+            throw new \RuntimeException(\sprintf('Environment variable "%s" contains potentially unsafe content', $variableName));
         }
 
         return $stringValue;
     }
 
     /**
-     * Validates that an environment variable value is safe to use
+     * Validates that an environment variable value is safe to use.
      *
      * @param string $value The value to validate
+     *
      * @return bool True if the value is considered safe
      */
     private function isEnvironmentValueSafe(string $value): bool
@@ -179,7 +174,7 @@ class SecurityService
     }
 
     /**
-     * Gets the allowlist of permitted environment variables
+     * Gets the allowlist of permitted environment variables.
      *
      * @return array List of allowed environment variable names
      */
@@ -189,9 +184,10 @@ class SecurityService
     }
 
     /**
-     * Validates file permissions are secure
+     * Validates file permissions are secure.
      *
      * @param string $filePath Path to the file to check
+     *
      * @return bool True if the file has secure permissions
      */
     public function hasSecureFilePermissions(string $filePath): bool
@@ -201,29 +197,30 @@ class SecurityService
         }
 
         $permissions = fileperms($filePath);
-        $mode = $permissions & 0777;
+        $mode = $permissions & 0o777;
 
         // File should be readable/writable by owner only (0600 or stricter)
         // Allow read for a group in some cases (0640) but not world-readable (0604, 0644, etc.)
-        $securePermissions = [0600, 0640];
+        $securePermissions = [0o600, 0o640];
 
-        return in_array($mode, $securePermissions, true);
+        return \in_array($mode, $securePermissions, true);
     }
 
     /**
-     * Sets secure permissions on a file
+     * Sets secure permissions on a file.
      *
      * @param string $filePath Path to the file
+     *
      * @throws \RuntimeException If permissions cannot be set
      */
     public function setSecureFilePermissions(string $filePath): void
     {
         if (!file_exists($filePath)) {
-            throw new RuntimeException(sprintf('File does not exist: %s', $filePath));
+            throw new \RuntimeException(\sprintf('File does not exist: %s', $filePath));
         }
 
-        if (!chmod($filePath, 0600)) {
-            throw new RuntimeException(sprintf('Failed to set secure permissions on file: %s', $filePath));
+        if (!chmod($filePath, 0o600)) {
+            throw new \RuntimeException(\sprintf('Failed to set secure permissions on file: %s', $filePath));
         }
     }
 }

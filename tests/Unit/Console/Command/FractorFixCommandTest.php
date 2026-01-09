@@ -11,7 +11,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -33,16 +32,16 @@ final class FractorFixCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake fractor executable
         $fractorExecutable = $vendorBinDir . '/fractor';
         file_put_contents($fractorExecutable, "#!/bin/bash\necho 'Fractor executed successfully'\nexit 0\n");
-        chmod($fractorExecutable, 0755);
+        chmod($fractorExecutable, 0o755);
 
         // Create default config directory and file
         $configDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0777, true);
+        mkdir($configDir, 0o777, true);
         file_put_contents($configDir . '/fractor.php', '<?php return [];');
 
         // Set up environment to use temp directory as project root and initialize application
@@ -52,7 +51,7 @@ final class FractorFixCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new FractorFixCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -151,7 +150,7 @@ final class FractorFixCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
@@ -183,7 +182,7 @@ final class FractorFixCommandTest extends TestCase
         file_put_contents($customConfigFile, '<?php return [];');
 
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
@@ -296,14 +295,14 @@ final class FractorFixCommandTest extends TestCase
         file_put_contents($customConfigFile, '<?php return [];');
 
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom options
         $commandTester->execute([
             '--config' => $customConfigFile,
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully

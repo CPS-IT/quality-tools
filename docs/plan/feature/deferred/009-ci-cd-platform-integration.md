@@ -154,7 +154,7 @@ ci_cd:
       max_warnings: 10
       max_info: 50
       min_quality_score: 8.0
-      
+
     # Notification configuration
     notifications:
       slack:
@@ -163,7 +163,7 @@ ci_cd:
       email:
         recipients: ["team@example.com"]
         on_failure_only: true
-        
+
   # Platform-specific settings
   platforms:
     github:
@@ -171,19 +171,19 @@ ci_cd:
       check_runs: true
       artifacts: true
       cache_dependencies: true
-      
+
     gitlab:
       merge_request_notes: true
       pages_publish: true
       badges: true
       quality_reports: true
-      
+
     azure:
       test_results: true
       work_items: true
       dashboards: true
       artifacts: true
-      
+
     jenkins:
       trend_analysis: true
       blue_ocean: true
@@ -204,40 +204,40 @@ on:
     branches: [main, develop]
   push:
     branches: [main]
-    
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           coverage: xdebug
-          
+
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          
+
       - name: Install dependencies
         run: composer install --no-dev --optimize-autoloader
-        
+
       - name: Run quality analysis
         run: |
           vendor/bin/qt lint --format=json,junit
           vendor/bin/qt fix --dry-run
-          
+
       - name: Upload test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: quality-reports
           path: reports/
-          
+
       - name: Publish test results
         uses: dorny/test-reporter@v1
         if: always()
@@ -245,7 +245,7 @@ jobs:
           name: Quality Analysis Results
           path: reports/junit-results.xml
           reporter: java-junit
-          
+
       - name: Quality Gate Check
         uses: cpsit/quality-gate-action@v1
         with:
@@ -312,25 +312,25 @@ class QualityGate
         private array $thresholds,
         private NotificationService $notifications
     ) {}
-    
+
     public function evaluate(QualityReport $report): GateResult
     {
         $violations = [];
-        
+
         if ($report->getErrorCount() > $this->thresholds['max_errors']) {
             $violations[] = new Violation('errors', $report->getErrorCount(), $this->thresholds['max_errors']);
         }
-        
+
         if ($report->getWarningCount() > $this->thresholds['max_warnings']) {
             $violations[] = new Violation('warnings', $report->getWarningCount(), $this->thresholds['max_warnings']);
         }
-        
+
         $result = new GateResult(empty($violations), $violations);
-        
+
         if (!$result->passed()) {
             $this->notifications->sendFailureNotification($result);
         }
-        
+
         return $result;
     }
 }

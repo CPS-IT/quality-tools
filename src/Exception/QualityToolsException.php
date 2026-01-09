@@ -5,27 +5,22 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Base exception for all Quality Tools exceptions with structured error information
+ * Base exception for all Quality Tools exceptions with structured error information.
  */
 abstract class QualityToolsException extends \RuntimeException
 {
-    private readonly array $troubleshootingSteps;
-    private readonly array $context;
-
     public function __construct(
         string $message = '',
         int $code = 0,
         ?\Throwable $previous = null,
-        array $troubleshootingSteps = [],
-        array $context = []
+        private readonly array $troubleshootingSteps = [],
+        private readonly array $context = [],
     ) {
         parent::__construct($message, $code, $previous);
-        $this->troubleshootingSteps = $troubleshootingSteps;
-        $this->context = $context;
     }
 
     /**
-     * Get structured error information
+     * Get structured error information.
      */
     public function getErrorInfo(): array
     {
@@ -40,17 +35,18 @@ abstract class QualityToolsException extends \RuntimeException
     }
 
     /**
-     * Get error type based on class name
+     * Get error type based on class name.
      */
     public function getErrorType(): string
     {
         $className = static::class;
         $shortName = substr($className, strrpos($className, '\\') + 1);
+
         return strtolower(str_replace('Exception', '', $shortName));
     }
 
     /**
-     * Get troubleshooting steps
+     * Get troubleshooting steps.
      */
     public function getTroubleshootingSteps(): array
     {
@@ -58,7 +54,7 @@ abstract class QualityToolsException extends \RuntimeException
     }
 
     /**
-     * Get error context
+     * Get error context.
      */
     public function getContext(): array
     {
@@ -66,7 +62,7 @@ abstract class QualityToolsException extends \RuntimeException
     }
 
     /**
-     * Check if this exception represents a retryable error
+     * Check if this exception represents a retryable error.
      */
     public function isRetryable(): bool
     {
@@ -74,7 +70,7 @@ abstract class QualityToolsException extends \RuntimeException
     }
 
     /**
-     * Get suggested exit code for this exception type
+     * Get suggested exit code for this exception type.
      */
     public function getSuggestedExitCode(): int
     {

@@ -102,7 +102,7 @@ Popular CI/CD platforms and IDEs require specific XML formats for integration:
 
 1. Create JunitXmlFormatWriter extending AbstractFormatWriter from Feature 006
 2. Implement generateFromData() and generateFromTemplate() methods using ReportDataModel
-3. Create default JUnit XML template (report.junit.xml.twig) 
+3. Create default JUnit XML template (report.junit.xml.twig)
 4. Register format writer with FormatWriterRegistry from unified foundation
 5. Add JUnit-specific template helpers for test case mapping
 
@@ -134,7 +134,7 @@ reports:
       - junit   # Enable JUnit XML format
       - xml     # Enable generic XML format
       - sarif   # Enable SARIF format
-  
+
   # Format-specific configuration for XML formats
   format_options:
     junit:
@@ -144,14 +144,14 @@ reports:
       package_grouping: true
       include_skipped: true
       failure_threshold: "warning"
-      
+
     xml:
       # Template options (uses unified template engine from Feature 006)
       template: "report.xml.twig"  # Optional custom template
       root_element: "quality-report"
       namespace: "https://schema.quality-tools.example.com/v1"
       include_metadata: true
-      
+
     sarif:
       # Template options (uses unified template engine from Feature 006)
       template: "report.sarif.json.twig"  # Optional custom template
@@ -172,7 +172,7 @@ reports:
     <property name="quality-tools-version" value="2.0.0"/>
     <property name="project-name" value="example-project"/>
   </properties>
-  
+
   <testsuite name="rector" tests="12" failures="10" errors="2" time="5.2" package="modernization">
     <testcase name="TypedPropertyRector" classname="src.Example" time="0.1">
       <failure type="warning" message="Add typed property declaration">
@@ -183,7 +183,7 @@ reports:
     </testcase>
     <testcase name="ValidCodeExample" classname="src.Valid" time="0.05"/>
   </testsuite>
-  
+
   <testsuite name="phpstan" tests="18" failures="15" errors="3" time="8.1" package="static-analysis">
     <!-- test cases for PHPStan issues -->
   </testsuite>
@@ -194,14 +194,14 @@ reports:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<quality-report xmlns="https://schema.quality-tools.example.com/v1" 
+<quality-report xmlns="https://schema.quality-tools.example.com/v1"
                 version="1.0" generated="2024-01-20T14:30:00Z">
   <metadata>
     <project name="example-project" version="1.2.3"/>
     <environment php-version="8.3.1" os="Linux"/>
     <execution total-time="15.7" files-analyzed="156"/>
   </metadata>
-  
+
   <tools>
     <tool name="rector" version="0.18.0" execution-time="5.2">
       <issues count="12">
@@ -214,7 +214,7 @@ reports:
       </issues>
     </tool>
   </tools>
-  
+
   <summary total-issues="42" total-tools="5"/>
 </quality-report>
 ```
@@ -286,14 +286,14 @@ class JunitXmlFormatWriter extends AbstractFormatWriter
 {
     public function getSupportedFormat(): string { return 'junit'; }
     public function supportsTemplating(): bool { return true; }
-    
+
     // Uses ReportDataModel from Feature 006
     protected function generateFromData(ReportDataModel $data): string
     {
         // Direct JUnit XML generation using unified data model
         return $this->buildJunitXmlFromData($data->toArray());
     }
-    
+
     // Uses template engine from Feature 006
     protected function generateFromTemplate(ReportDataModel $data): string
     {
@@ -301,17 +301,17 @@ class JunitXmlFormatWriter extends AbstractFormatWriter
     }
 }
 
-// Generic XML Format Writer  
+// Generic XML Format Writer
 class XmlFormatWriter extends AbstractFormatWriter
 {
     public function getSupportedFormat(): string { return 'xml'; }
     public function supportsTemplating(): bool { return true; }
-    
+
     protected function generateFromData(ReportDataModel $data): string
     {
         return $this->buildGenericXmlFromData($data->toArray());
     }
-    
+
     protected function generateFromTemplate(ReportDataModel $data): string
     {
         return $this->templateEngine->render('report.xml.twig', $data->toArray());
@@ -319,17 +319,17 @@ class XmlFormatWriter extends AbstractFormatWriter
 }
 
 // SARIF Format Writer
-class SarifFormatWriter extends AbstractFormatWriter  
+class SarifFormatWriter extends AbstractFormatWriter
 {
     public function getSupportedFormat(): string { return 'sarif'; }
     public function supportsTemplating(): bool { return true; }
-    
+
     protected function generateFromData(ReportDataModel $data): string
     {
         $sarifData = $this->transformToSarifFormat($data->toArray());
         return json_encode($sarifData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
-    
+
     protected function generateFromTemplate(ReportDataModel $data): string
     {
         return $this->templateEngine->render('report.sarif.json.twig', $data->toArray());

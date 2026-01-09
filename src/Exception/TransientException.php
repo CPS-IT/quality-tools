@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown for transient failures that may succeed on retry
+ * Exception thrown for transient failures that may succeed on retry.
  */
 class TransientException extends QualityToolsException
 {
@@ -21,7 +21,7 @@ class TransientException extends QualityToolsException
         ?\Throwable $previous = null,
         private readonly array $troubleshootingSteps = [],
         private readonly array $context = [],
-        private readonly int $retryAfter = 1
+        private readonly int $retryAfter = 1,
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);
     }
@@ -31,6 +31,7 @@ class TransientException extends QualityToolsException
         return $this->retryAfter;
     }
 
+    #[\Override]
     public function isRetryable(): bool
     {
         return true;

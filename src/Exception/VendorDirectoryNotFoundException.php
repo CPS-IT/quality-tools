@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown when vendor directory cannot be detected or located
- * 
+ * Exception thrown when vendor directory cannot be detected or located.
+ *
  * This exception is thrown by VendorDirectoryDetector when all detection
  * methods fail to locate a valid vendor directory for the project.
  */
 final class VendorDirectoryNotFoundException extends QualityToolsException
 {
-    public const ERROR_VENDOR_DIRECTORY_NOT_FOUND = 7001;
-    public const ERROR_VENDOR_DIRECTORY_INVALID = 7002;
+    public const int ERROR_VENDOR_DIRECTORY_NOT_FOUND = 7001;
+    public const int ERROR_VENDOR_DIRECTORY_INVALID = 7002;
 
     public function __construct(
         string $message = '',
         int $code = self::ERROR_VENDOR_DIRECTORY_NOT_FOUND,
         ?\Throwable $previous = null,
         array $troubleshootingSteps = [],
-        array $context = []
+        array $context = [],
     ) {
         if (empty($troubleshootingSteps)) {
             $troubleshootingSteps = [

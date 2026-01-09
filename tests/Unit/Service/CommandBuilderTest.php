@@ -25,7 +25,7 @@ final class CommandBuilderTest extends TestCase
     public function prepareCommandWithMemoryLimitReturnsOriginalCommandWhenNoMemoryLimit(): void
     {
         $command = ['rector', 'process', '--dry-run'];
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command);
 
         self::assertSame($command, $result);
@@ -38,7 +38,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['php', 'rector.phar', 'process'];
         $memoryLimit = '512M';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         $expected = ['php', '-d', 'memory_limit=512M', 'php', 'rector.phar', 'process'];
@@ -52,7 +52,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['/path/to/script.php', 'arg1', 'arg2'];
         $memoryLimit = '1G';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         $expected = ['php', '-d', 'memory_limit=1G', '/path/to/script.php', 'arg1', 'arg2'];
@@ -66,7 +66,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['/path/to/tool.phar', '--config', 'config.yaml'];
         $memoryLimit = '256M';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         $expected = ['php', '-d', 'memory_limit=256M', '/path/to/tool.phar', '--config', 'config.yaml'];
@@ -80,7 +80,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['npm', 'run', 'build'];
         $memoryLimit = '512M';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         self::assertSame($command, $result);
@@ -93,7 +93,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['/usr/local/bin/php8.3', 'script.php'];
         $memoryLimit = '512M';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         $expected = ['php', '-d', 'memory_limit=512M', '/usr/local/bin/php8.3', 'script.php'];
@@ -107,7 +107,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = [];
         $memoryLimit = '512M';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         self::assertSame([], $result);
@@ -120,7 +120,7 @@ final class CommandBuilderTest extends TestCase
     {
         $command = ['phpunit', '--coverage-text', '--bootstrap', 'vendor/autoload.php'];
         $memoryLimit = '2G';
-        
+
         $result = $this->builder->prepareCommandWithMemoryLimit($command, $memoryLimit);
 
         $expected = ['php', '-d', 'memory_limit=2G', 'phpunit', '--coverage-text', '--bootstrap', 'vendor/autoload.php'];

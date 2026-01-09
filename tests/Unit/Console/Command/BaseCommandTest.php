@@ -13,7 +13,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
@@ -42,7 +41,7 @@ final class BaseCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new TestableBaseCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -226,7 +225,7 @@ final class BaseCommandTest extends TestCase
     public function testGetTargetPathWithCustomPath(): void
     {
         $customPath = $this->tempDir . '/custom-target';
-        mkdir($customPath, 0777, true);
+        mkdir($customPath, 0o777, true);
 
         $this->mockInput
             ->expects($this->once())
@@ -287,7 +286,7 @@ final class BaseCommandTest extends TestCase
 }
 
 /**
- * Testable concrete implementation of BaseCommand for testing purposes
+ * Testable concrete implementation of BaseCommand for testing purposes.
  */
 final class TestableBaseCommand extends BaseCommand
 {
@@ -314,7 +313,7 @@ final class TestableBaseCommand extends BaseCommand
     public function executeProcessPublic(
         array $command,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): int {
         return $this->executeProcess($command, $input, $output);
     }

@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
 /**
- * Real-world integration tests that would have caught production issues
+ * Real-world integration tests that would have caught production issues.
  *
  * These tests execute actual external tools against real code to validate
  * that our tool integrations work correctly in production scenarios.
@@ -40,13 +40,13 @@ final class RealToolIntegrationTest extends TestCase
                 'typo3/cms-frontend' => '^13.4',
             ],
             'require-dev' => [
-                'cpsit/quality-tools' => '*'
+                'cpsit/quality-tools' => '*',
             ],
             'autoload' => [
                 'psr-4' => [
-                    'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/'
-                ]
-            ]
+                    'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/',
+                ],
+            ],
         ]);
 
         // Create packages directory with real TYPO3 extension code
@@ -60,187 +60,191 @@ final class RealToolIntegrationTest extends TestCase
     {
         $extensionDir = $this->tempProjectRoot . '/packages/my_extension';
         $classesDir = $extensionDir . '/Classes';
-        mkdir($classesDir . '/Controller', 0777, true);
-        mkdir($classesDir . '/Domain/Model', 0777, true);
-        mkdir($classesDir . '/Domain/Repository', 0777, true);
+        mkdir($classesDir . '/Controller', 0o777, true);
+        mkdir($classesDir . '/Domain/Model', 0o777, true);
+        mkdir($classesDir . '/Domain/Repository', 0o777, true);
 
         // Create realistic controller with common TYPO3 patterns and issues
-        file_put_contents($classesDir . '/Controller/NewsController.php', <<<'PHP'
-<?php
-namespace MyVendor\MyExtension\Controller;
+        file_put_contents(
+            $classesDir . '/Controller/NewsController.php',
+            <<<'PHP'
+                <?php
+                namespace MyVendor\MyExtension\Controller;
 
-use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use MyVendor\MyExtension\Domain\Repository\NewsRepository;
+                use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+                use TYPO3\CMS\Core\Utility\GeneralUtility;
+                use MyVendor\MyExtension\Domain\Repository\NewsRepository;
 
-/**
- * News controller with various code quality issues
- */
-class NewsController extends ActionController
-{
-    /**
-     * @var NewsRepository
-     */
-    protected $newsRepository;
+                /**
+                 * News controller with various code quality issues
+                 */
+                class NewsController extends ActionController
+                {
+                    /**
+                     * @var NewsRepository
+                     */
+                    protected $newsRepository;
 
-    /**
-     * Inject news repository
-     * @param NewsRepository $newsRepository
-     */
-    public function injectNewsRepository(NewsRepository $newsRepository)
-    {
-        $this->newsRepository = $newsRepository;
-    }
+                    /**
+                     * Inject news repository
+                     * @param NewsRepository $newsRepository
+                     */
+                    public function injectNewsRepository(NewsRepository $newsRepository)
+                    {
+                        $this->newsRepository = $newsRepository;
+                    }
 
-    /**
-     * List action with performance and style issues
-     */
-    public function listAction()
-    {
-        // Old-style array syntax (rector should fix)
-        $settings = array(
-            'limit' => 10,
-            'orderBy' => 'crdate'
-        );
+                    /**
+                     * List action with performance and style issues
+                     */
+                    public function listAction()
+                    {
+                        // Old-style array syntax (rector should fix)
+                        $settings = array(
+                            'limit' => 10,
+                            'orderBy' => 'crdate'
+                        );
 
-        // Deprecated GeneralUtility usage
-        $config = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ConfigurationManager');
+                        // Deprecated GeneralUtility usage
+                        $config = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ConfigurationManager');
 
-        // Missing type hints and return type
-        $news = $this->newsRepository->findAll();
+                        // Missing type hints and return type
+                        $news = $this->newsRepository->findAll();
 
-        // Inefficient loop that could cause memory issues
-        $processedNews = array();
-        foreach ($news as $newsItem) {
-            $processedNews[] = $this->processNewsItem($newsItem);
-        }
+                        // Inefficient loop that could cause memory issues
+                        $processedNews = array();
+                        foreach ($news as $newsItem) {
+                            $processedNews[] = $this->processNewsItem($newsItem);
+                        }
 
-        $this->view->assign('news', $processedNews);
-        $this->view->assign('settings', $settings);
-    }
+                        $this->view->assign('news', $processedNews);
+                        $this->view->assign('settings', $settings);
+                    }
 
-    /**
-     * Detail action with potential security issues
-     */
-    public function showAction($news = null)
-    {
-        // Missing type hints and validation
-        if (!$news) {
-            $newsUid = $this->request->getArgument('news');
-            $news = $this->newsRepository->findByUid($newsUid);
-        }
+                    /**
+                     * Detail action with potential security issues
+                     */
+                    public function showAction($news = null)
+                    {
+                        // Missing type hints and validation
+                        if (!$news) {
+                            $newsUid = $this->request->getArgument('news');
+                            $news = $this->newsRepository->findByUid($newsUid);
+                        }
 
-        // Potential XSS vulnerability (missing escaping)
-        $this->view->assign('news', $news);
-    }
+                        // Potential XSS vulnerability (missing escaping)
+                        $this->view->assign('news', $news);
+                    }
 
-    /**
-     * Helper method with various style issues
-     */
-    private function processNewsItem($newsItem)
-    {
-        // Long method that should be refactored
-        $result = array();
-        $result['title'] = $newsItem->getTitle();
-        $result['teaser'] = $newsItem->getTeaser();
-        $result['content'] = $newsItem->getContent();
-        $result['date'] = $newsItem->getDatetime();
+                    /**
+                     * Helper method with various style issues
+                     */
+                    private function processNewsItem($newsItem)
+                    {
+                        // Long method that should be refactored
+                        $result = array();
+                        $result['title'] = $newsItem->getTitle();
+                        $result['teaser'] = $newsItem->getTeaser();
+                        $result['content'] = $newsItem->getContent();
+                        $result['date'] = $newsItem->getDatetime();
 
-        // Nested conditions that violate complexity rules
-        if ($result['content']) {
-            if (strlen($result['content']) > 500) {
-                if (strpos($result['content'], '<p>') !== false) {
-                    $result['content'] = substr($result['content'], 0, 500) . '...';
+                        // Nested conditions that violate complexity rules
+                        if ($result['content']) {
+                            if (strlen($result['content']) > 500) {
+                                if (strpos($result['content'], '<p>') !== false) {
+                                    $result['content'] = substr($result['content'], 0, 500) . '...';
+                                }
+                            }
+                        }
+
+                        return $result;
+                    }
                 }
-            }
-        }
-
-        return $result;
-    }
-}
-PHP
+                PHP
         );
 
         // Create model with issues
-        file_put_contents($classesDir . '/Domain/Model/News.php', <<<'PHP'
-<?php
-namespace MyVendor\MyExtension\Domain\Model;
+        file_put_contents(
+            $classesDir . '/Domain/Model/News.php',
+            <<<'PHP'
+                <?php
+                namespace MyVendor\MyExtension\Domain\Model;
 
-use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+                use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
-/**
- * News model with legacy patterns
- */
-class News extends AbstractEntity
-{
-    /**
-     * @var string
-     */
-    protected $title = '';
+                /**
+                 * News model with legacy patterns
+                 */
+                class News extends AbstractEntity
+                {
+                    /**
+                     * @var string
+                     */
+                    protected $title = '';
 
-    /**
-     * @var string
-     */
-    protected $teaser = '';
+                    /**
+                     * @var string
+                     */
+                    protected $teaser = '';
 
-    /**
-     * @var string
-     */
-    protected $content = '';
+                    /**
+                     * @var string
+                     */
+                    protected $content = '';
 
-    /**
-     * @var \DateTime
-     */
-    protected $datetime;
+                    /**
+                     * @var \DateTime
+                     */
+                    protected $datetime;
 
-    // Missing constructor type hints and property initialization
-    public function __construct()
-    {
-        $this->datetime = new \DateTime();
-    }
+                    // Missing constructor type hints and property initialization
+                    public function __construct()
+                    {
+                        $this->datetime = new \DateTime();
+                    }
 
-    // Old-style getter/setter without type hints
-    public function getTitle()
-    {
-        return $this->title;
-    }
+                    // Old-style getter/setter without type hints
+                    public function getTitle()
+                    {
+                        return $this->title;
+                    }
 
-    public function setTitle($title)
-    {
-        $this->title = $title;
-    }
+                    public function setTitle($title)
+                    {
+                        $this->title = $title;
+                    }
 
-    public function getTeaser()
-    {
-        return $this->teaser;
-    }
+                    public function getTeaser()
+                    {
+                        return $this->teaser;
+                    }
 
-    public function setTeaser($teaser)
-    {
-        $this->teaser = $teaser;
-    }
+                    public function setTeaser($teaser)
+                    {
+                        $this->teaser = $teaser;
+                    }
 
-    public function getContent()
-    {
-        return $this->content;
-    }
+                    public function getContent()
+                    {
+                        return $this->content;
+                    }
 
-    public function setContent($content)
-    {
-        $this->content = $content;
-    }
+                    public function setContent($content)
+                    {
+                        $this->content = $content;
+                    }
 
-    public function getDatetime()
-    {
-        return $this->datetime;
-    }
+                    public function getDatetime()
+                    {
+                        return $this->datetime;
+                    }
 
-    public function setDatetime($datetime)
-    {
-        $this->datetime = $datetime;
-    }
-}
-PHP
+                    public function setDatetime($datetime)
+                    {
+                        $this->datetime = $datetime;
+                    }
+                }
+                PHP
         );
     }
 
@@ -250,8 +254,8 @@ PHP
         $binDir = $vendorDir . '/bin';
         $configDir = $vendorDir . '/cpsit/quality-tools/config';
 
-        mkdir($binDir, 0777, true);
-        mkdir($configDir, 0777, true);
+        mkdir($binDir, 0o777, true);
+        mkdir($configDir, 0o777, true);
 
         // Create real configuration files (not just empty placeholders)
         $this->createRealRectorConfig($configDir);
@@ -264,257 +268,269 @@ PHP
 
     private function createRealRectorConfig(string $configDir): void
     {
-        file_put_contents($configDir . '/rector.php', <<<'PHP'
-<?php
+        file_put_contents(
+            $configDir . '/rector.php',
+            <<<'PHP_WRAP'
+                <?php
 
-declare(strict_types=1);
+                declare(strict_types=1);
 
-use Rector\Config\RectorConfig;
-use Rector\Set\ValueObject\LevelSetList;
-use Rector\Set\ValueObject\SetList;
+                use Rector\Config\RectorConfig;
+                use Rector\Set\ValueObject\LevelSetList;
+                use Rector\Set\ValueObject\SetList;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/../../../packages',
-        __DIR__ . '/../../../config/system',
-    ])
-    ->withSets([
-        LevelSetList::UP_TO_PHP_83,
-        SetList::CODE_QUALITY,
-        SetList::TYPE_DECLARATION,
-        SetList::EARLY_RETURN,
-    ])
-    ->withPhpSets(php83: true);
-PHP
+                return RectorConfig::configure()
+                    ->withPaths([
+                        __DIR__ . '/../../../packages',
+                        __DIR__ . '/../../../config/system',
+                    ])
+                    ->withSets([
+                        LevelSetList::UP_TO_PHP_83,
+                        SetList::CODE_QUALITY,
+                        SetList::TYPE_DECLARATION,
+                        SetList::EARLY_RETURN,
+                    ])
+                    ->withPhpSets(php83: true);
+                PHP_WRAP
         );
     }
 
     private function createRealPhpStanConfig(string $configDir): void
     {
-        file_put_contents($configDir . '/phpstan.neon', <<<'NEON'
-parameters:
-    level: 6
-    paths:
-        - %currentWorkingDirectory%/packages
-        - %currentWorkingDirectory%/config/system
-    excludePaths:
-        - %currentWorkingDirectory%/packages/*/Tests/*
-        - %currentWorkingDirectory%/packages/*/tests/*
-    ignoreErrors:
-        - '#Call to an undefined method TYPO3\\CMS\\#'
-    universalObjectCratesClasses:
-        - TYPO3\CMS\Core\Utility\GeneralUtility
-NEON
+        file_put_contents(
+            $configDir . '/phpstan.neon',
+            <<<'NEON'
+                parameters:
+                    level: 6
+                    paths:
+                        - %currentWorkingDirectory%/packages
+                        - %currentWorkingDirectory%/config/system
+                    excludePaths:
+                        - %currentWorkingDirectory%/packages/*/Tests/*
+                        - %currentWorkingDirectory%/packages/*/tests/*
+                    ignoreErrors:
+                        - '#Call to an undefined method TYPO3\\CMS\\#'
+                    universalObjectCratesClasses:
+                        - TYPO3\CMS\Core\Utility\GeneralUtility
+                NEON
         );
     }
 
     private function createRealPhpCsFixerConfig(string $configDir): void
     {
-        file_put_contents($configDir . '/php-cs-fixer.php', <<<'PHP'
-<?php
+        file_put_contents(
+            $configDir . '/php-cs-fixer.php',
+            <<<'PHP'
+                <?php
 
-declare(strict_types=1);
+                declare(strict_types=1);
 
-$finder = PhpCsFixer\Finder::create()
-    ->in([
-        __DIR__ . '/../../../packages',
-        __DIR__ . '/../../../config/system',
-    ])
-    ->name('*.php')
-    ->ignoreDotFiles(true)
-    ->ignoreVCS(true);
+                $finder = PhpCsFixer\Finder::create()
+                    ->in([
+                        __DIR__ . '/../../../packages',
+                        __DIR__ . '/../../../config/system',
+                    ])
+                    ->name('*.php')
+                    ->ignoreDotFiles(true)
+                    ->ignoreVCS(true);
 
-return (new PhpCsFixer\Config())
-    ->setFinder($finder)
-    ->setRules([
-        '@PSR12' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'binary_operator_spaces' => true,
-        'blank_line_after_namespace' => true,
-        'blank_line_after_opening_tag' => true,
-        'concat_space' => ['spacing' => 'one'],
-        'declare_strict_types' => true,
-        'function_typehint_space' => true,
-        'single_quote' => true,
-        'ternary_operator_spaces' => true,
-        'trailing_comma_in_multiline' => true,
-    ]);
-PHP
+                return (new PhpCsFixer\Config())
+                    ->setFinder($finder)
+                    ->setRules([
+                        '@PSR12' => true,
+                        'array_syntax' => ['syntax' => 'short'],
+                        'binary_operator_spaces' => true,
+                        'blank_line_after_namespace' => true,
+                        'blank_line_after_opening_tag' => true,
+                        'concat_space' => ['spacing' => 'one'],
+                        'declare_strict_types' => true,
+                        'function_typehint_space' => true,
+                        'single_quote' => true,
+                        'ternary_operator_spaces' => true,
+                        'trailing_comma_in_multiline' => true,
+                    ]);
+                PHP
         );
     }
 
     private function createControllableExecutables(string $binDir): void
     {
         // Create rector executable that performs actual analysis
-        file_put_contents($binDir . '/rector', <<<'BASH'
-#!/bin/bash
+        file_put_contents(
+            $binDir . '/rector',
+            <<<'BASH'
+                #!/bin/bash
 
-# Simulate rector analysis with controllable output
-CONFIG_FILE=""
-TARGET_PATH=""
-DRY_RUN=""
+                # Simulate rector analysis with controllable output
+                CONFIG_FILE=""
+                TARGET_PATH=""
+                DRY_RUN=""
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    -c|--config)
-      CONFIG_FILE="$2"
-      shift 2
-      ;;
-    --dry-run)
-      DRY_RUN="true"
-      shift
-      ;;
-    *)
-      if [[ -d "$1" ]]; then
-        TARGET_PATH="$1"
-      fi
-      shift
-      ;;
-  esac
-done
+                while [[ $# -gt 0 ]]; do
+                  case $1 in
+                    -c|--config)
+                      CONFIG_FILE="$2"
+                      shift 2
+                      ;;
+                    --dry-run)
+                      DRY_RUN="true"
+                      shift
+                      ;;
+                    *)
+                      if [[ -d "$1" ]]; then
+                        TARGET_PATH="$1"
+                      fi
+                      shift
+                      ;;
+                  esac
+                done
 
-# Validate config file exists
-if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
-    echo "ERROR: Configuration file not found: $CONFIG_FILE" >&2
-    exit 1
-fi
+                # Validate config file exists
+                if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
+                    echo "ERROR: Configuration file not found: $CONFIG_FILE" >&2
+                    exit 1
+                fi
 
-# Simulate finding issues in the code
-if [[ -d "$TARGET_PATH/packages" ]]; then
-    echo "Processing $TARGET_PATH/packages..."
-    echo "Found 5 files to analyze"
-    echo "Found 12 violations that can be fixed"
+                # Simulate finding issues in the code
+                if [[ -d "$TARGET_PATH/packages" ]]; then
+                    echo "Processing $TARGET_PATH/packages..."
+                    echo "Found 5 files to analyze"
+                    echo "Found 12 violations that can be fixed"
 
-    if [[ "$DRY_RUN" != "true" ]]; then
-        echo "Applied 12 fixes"
-        # Actually modify a file to simulate rector changes
-        if [[ -f "$TARGET_PATH/packages/my_extension/Classes/Controller/NewsController.php" ]]; then
-            # Simple transformation: array() -> []
-            sed -i.bak 's/array(/[/g; s/)]/]/g' "$TARGET_PATH/packages/my_extension/Classes/Controller/NewsController.php" 2>/dev/null || true
-        fi
-    else
-        echo "Dry run mode - no changes applied"
-    fi
+                    if [[ "$DRY_RUN" != "true" ]]; then
+                        echo "Applied 12 fixes"
+                        # Actually modify a file to simulate rector changes
+                        if [[ -f "$TARGET_PATH/packages/my_extension/Classes/Controller/NewsController.php" ]]; then
+                            # Simple transformation: array() -> []
+                            sed -i.bak 's/array(/[/g; s/)]/]/g' "$TARGET_PATH/packages/my_extension/Classes/Controller/NewsController.php" 2>/dev/null || true
+                        fi
+                    else
+                        echo "Dry run mode - no changes applied"
+                    fi
 
-    exit 0
-else
-    echo "ERROR: No packages directory found in $TARGET_PATH" >&2
-    exit 1
-fi
-BASH
+                    exit 0
+                else
+                    echo "ERROR: No packages directory found in $TARGET_PATH" >&2
+                    exit 1
+                fi
+                BASH
         );
 
         // Create phpstan executable
-        file_put_contents($binDir . '/phpstan', <<<'BASH'
-#!/bin/bash
+        file_put_contents(
+            $binDir . '/phpstan',
+            <<<'BASH'
+                #!/bin/bash
 
-CONFIG_FILE=""
-TARGET_PATH=""
-LEVEL=""
+                CONFIG_FILE=""
+                TARGET_PATH=""
+                LEVEL=""
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    -c|--config)
-      CONFIG_FILE="$2"
-      shift 2
-      ;;
-    -l|--level)
-      LEVEL="$2"
-      shift 2
-      ;;
-    analyse|analyze)
-      shift
-      ;;
-    *)
-      if [[ -d "$1" ]]; then
-        TARGET_PATH="$1"
-      fi
-      shift
-      ;;
-  esac
-done
+                while [[ $# -gt 0 ]]; do
+                  case $1 in
+                    -c|--config)
+                      CONFIG_FILE="$2"
+                      shift 2
+                      ;;
+                    -l|--level)
+                      LEVEL="$2"
+                      shift 2
+                      ;;
+                    analyse|analyze)
+                      shift
+                      ;;
+                    *)
+                      if [[ -d "$1" ]]; then
+                        TARGET_PATH="$1"
+                      fi
+                      shift
+                      ;;
+                  esac
+                done
 
-# Validate config file
-if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
-    echo "Configuration file not found: $CONFIG_FILE" >&2
-    exit 1
-fi
+                # Validate config file
+                if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
+                    echo "Configuration file not found: $CONFIG_FILE" >&2
+                    exit 1
+                fi
 
-# Simulate PHPStan analysis
-echo "PHPStan - PHP Static Analysis Tool"
-echo "Analysing..."
+                # Simulate PHPStan analysis
+                echo "PHPStan - PHP Static Analysis Tool"
+                echo "Analysing..."
 
-if [[ -d "$TARGET_PATH" || -f "$TARGET_PATH" ]]; then
-    echo "Found 3 files to analyse"
-    echo "Line 25: Missing return type declaration"
-    echo "Line 47: Parameter \$news has no type hint"
-    echo "Line 62: Method processNewsItem() should return array but no type specified"
-    echo ""
-    echo "[ERROR] Found 3 errors"
-    exit 1
-else
-    echo "No files found to analyze"
-    exit 0
-fi
-BASH
+                if [[ -d "$TARGET_PATH" || -f "$TARGET_PATH" ]]; then
+                    echo "Found 3 files to analyse"
+                    echo "Line 25: Missing return type declaration"
+                    echo "Line 47: Parameter \$news has no type hint"
+                    echo "Line 62: Method processNewsItem() should return array but no type specified"
+                    echo ""
+                    echo "[ERROR] Found 3 errors"
+                    exit 1
+                else
+                    echo "No files found to analyze"
+                    exit 0
+                fi
+                BASH
         );
 
         // Create php-cs-fixer executable
-        file_put_contents($binDir . '/php-cs-fixer', <<<'BASH'
-#!/bin/bash
+        file_put_contents(
+            $binDir . '/php-cs-fixer',
+            <<<'BASH'
+                #!/bin/bash
 
-CONFIG_FILE=""
-DRY_RUN=""
-TARGET_PATH=""
+                CONFIG_FILE=""
+                DRY_RUN=""
+                TARGET_PATH=""
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --config)
-      CONFIG_FILE="$2"
-      shift 2
-      ;;
-    --dry-run)
-      DRY_RUN="true"
-      shift
-      ;;
-    fix)
-      shift
-      ;;
-    *)
-      if [[ -d "$1" || -f "$1" ]]; then
-        TARGET_PATH="$1"
-      fi
-      shift
-      ;;
-  esac
-done
+                while [[ $# -gt 0 ]]; do
+                  case $1 in
+                    --config)
+                      CONFIG_FILE="$2"
+                      shift 2
+                      ;;
+                    --dry-run)
+                      DRY_RUN="true"
+                      shift
+                      ;;
+                    fix)
+                      shift
+                      ;;
+                    *)
+                      if [[ -d "$1" || -f "$1" ]]; then
+                        TARGET_PATH="$1"
+                      fi
+                      shift
+                      ;;
+                  esac
+                done
 
-echo "PHP CS Fixer 3.x by Fabien Potencier and Dariusz Rumiński"
+                echo "PHP CS Fixer 3.x by Fabien Potencier and Dariusz Rumiński"
 
-if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
-    echo "ERROR: Configuration file not found: $CONFIG_FILE" >&2
-    exit 1
-fi
+                if [[ -n "$CONFIG_FILE" && ! -f "$CONFIG_FILE" ]]; then
+                    echo "ERROR: Configuration file not found: $CONFIG_FILE" >&2
+                    exit 1
+                fi
 
-if [[ "$DRY_RUN" == "true" ]]; then
-    echo "Running in dry-run mode..."
-    echo "Found 2 files with style violations"
-    echo "Would fix: array syntax, spacing, quotes"
-else
-    echo "Fixed 2 files with style violations"
-fi
+                if [[ "$DRY_RUN" == "true" ]]; then
+                    echo "Running in dry-run mode..."
+                    echo "Found 2 files with style violations"
+                    echo "Would fix: array syntax, spacing, quotes"
+                else
+                    echo "Fixed 2 files with style violations"
+                fi
 
-exit 0
-BASH
+                exit 0
+                BASH
         );
 
-        chmod($binDir . '/rector', 0755);
-        chmod($binDir . '/phpstan', 0755);
-        chmod($binDir . '/php-cs-fixer', 0755);
+        chmod($binDir . '/rector', 0o755);
+        chmod($binDir . '/phpstan', 0o755);
+        chmod($binDir . '/php-cs-fixer', 0o755);
     }
 
     /**
-     * Test that would have caught Issue #1: Real tool configuration compatibility
+     * Test that would have caught Issue #1: Real tool configuration compatibility.
      */
     public function testRealRectorExecutionWithGeneratedConfiguration(): void
     {
@@ -522,14 +538,16 @@ BASH
             'vendor/bin/rector',
             '--config', 'vendor/cpsit/quality-tools/config/rector.php',
             '--dry-run',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $process->run();
 
         // Verify rector can parse our configuration and analyze code
-        $this->assertEquals(0, $process->getExitCode(),
-            "Rector failed with our configuration: " . $process->getErrorOutput()
+        $this->assertEquals(
+            0,
+            $process->getExitCode(),
+            'Rector failed with our configuration: ' . $process->getErrorOutput(),
         );
 
         $output = $process->getOutput();
@@ -538,7 +556,7 @@ BASH
     }
 
     /**
-     * Test that would have caught Issue #2: Performance with large codebases
+     * Test that would have caught Issue #2: Performance with large codebases.
      */
     public function testPerformanceWithLargeCodebase(): void
     {
@@ -554,7 +572,7 @@ BASH
             'vendor/bin/phpstan',
             'analyse',
             '--config', 'vendor/cpsit/quality-tools/config/phpstan.neon',
-            '.'
+            '.',
         ], $this->tempProjectRoot, null, null, 300); // 5 minute timeout
 
         $process->run();
@@ -571,7 +589,7 @@ BASH
     }
 
     /**
-     * Test that would have caught Issue #3: Environmental compatibility
+     * Test that would have caught Issue #3: Environmental compatibility.
      */
     public function testAcrossDifferentPhpVersionConfigurations(): void
     {
@@ -592,19 +610,21 @@ BASH
                 'vendor/bin/rector',
                 '--config', 'vendor/cpsit/quality-tools/config/rector.php',
                 '--dry-run',
-                '.'
+                '.',
             ], $this->tempProjectRoot, $env);
 
             $process->run();
 
-            $this->assertEquals(0, $process->getExitCode(),
-                "Failed with config: " . json_encode($config) . "\nError: " . $process->getErrorOutput()
+            $this->assertEquals(
+                0,
+                $process->getExitCode(),
+                'Failed with config: ' . json_encode($config) . "\nError: " . $process->getErrorOutput(),
             );
         }
     }
 
     /**
-     * Test that would have caught Issue #4: Error recovery and state consistency
+     * Test that would have caught Issue #4: Error recovery and state consistency.
      */
     public function testErrorRecoveryAfterToolFailure(): void
     {
@@ -616,7 +636,7 @@ BASH
             'vendor/bin/phpstan',
             'analyse',
             '--config', 'vendor/cpsit/quality-tools/config/phpstan.neon',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $phpstanProcess->run();
@@ -626,7 +646,7 @@ BASH
         $rectorProcess = new Process([
             'vendor/bin/rector',
             '--config', 'vendor/cpsit/quality-tools/config/rector.php',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $rectorProcess->run();
@@ -638,7 +658,7 @@ BASH
     }
 
     /**
-     * Test that would have caught Issue #5: Complex workflow interdependencies
+     * Test that would have caught Issue #5: Complex workflow interdependencies.
      */
     public function testCompleteQualityWorkflowIntegration(): void
     {
@@ -646,7 +666,7 @@ BASH
         $rectorProcess = new Process([
             'vendor/bin/rector',
             '--config', 'vendor/cpsit/quality-tools/config/rector.php',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $rectorProcess->run();
@@ -657,7 +677,7 @@ BASH
             'vendor/bin/phpstan',
             'analyse',
             '--config', 'vendor/cpsit/quality-tools/config/phpstan.neon',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $phpstanProcess->run();
@@ -669,7 +689,7 @@ BASH
             'vendor/bin/php-cs-fixer',
             'fix',
             '--config', 'vendor/cpsit/quality-tools/config/php-cs-fixer.php',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $fixerProcess->run();
@@ -680,7 +700,7 @@ BASH
     }
 
     /**
-     * Test that would have caught Issue #6: Real-world code pattern handling
+     * Test that would have caught Issue #6: Real-world code pattern handling.
      */
     public function testWithComplexRealWorldCode(): void
     {
@@ -692,13 +712,15 @@ BASH
             'vendor/bin/rector',
             '--config', 'vendor/cpsit/quality-tools/config/rector.php',
             '--dry-run',
-            '.'
+            '.',
         ], $this->tempProjectRoot);
 
         $process->run();
 
-        $this->assertEquals(0, $process->getExitCode(),
-            "Rector failed on complex TYPO3 code: " . $process->getErrorOutput()
+        $this->assertEquals(
+            0,
+            $process->getExitCode(),
+            'Rector failed on complex TYPO3 code: ' . $process->getErrorOutput(),
         );
 
         $output = $process->getOutput();
@@ -710,7 +732,7 @@ BASH
     {
         $states = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($this->tempProjectRoot . '/packages')
+            new \RecursiveDirectoryIterator($this->tempProjectRoot . '/packages'),
         );
 
         foreach ($iterator as $file) {
@@ -734,8 +756,10 @@ BASH
 
             if (isset($after[$filePath])) {
                 // File should either be unchanged or properly modified
-                $this->assertGreaterThan(0, $after[$filePath]['size'],
-                    "File was corrupted (zero size): {$filePath}"
+                $this->assertGreaterThan(
+                    0,
+                    $after[$filePath]['size'],
+                    "File was corrupted (zero size): {$filePath}",
                 );
             }
         }
@@ -758,74 +782,76 @@ BASH
     {
         // Create additional complex TYPO3 code patterns
         $utilityDir = $this->tempProjectRoot . '/packages/my_extension/Classes/Utility';
-        mkdir($utilityDir, 0777, true);
+        mkdir($utilityDir, 0o777, true);
 
-        file_put_contents($utilityDir . '/ComplexUtility.php', <<<'PHP'
-<?php
-namespace MyVendor\MyExtension\Utility;
+        file_put_contents(
+            $utilityDir . '/ComplexUtility.php',
+            <<<'PHP'
+                <?php
+                namespace MyVendor\MyExtension\Utility;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Configuration\ConfigurationManager;
+                use TYPO3\CMS\Core\Utility\GeneralUtility;
+                use TYPO3\CMS\Core\Configuration\ConfigurationManager;
 
-/**
- * Complex utility with many TYPO3-specific patterns that can cause issues
- */
-class ComplexUtility
-{
-    /**
-     * Complex method with nested GeneralUtility calls and legacy patterns
-     */
-    public function processConfiguration(array $configuration = null)
-    {
-        // Deep nesting that could cause memory issues
-        $processed = array();
+                /**
+                 * Complex utility with many TYPO3-specific patterns that can cause issues
+                 */
+                class ComplexUtility
+                {
+                    /**
+                     * Complex method with nested GeneralUtility calls and legacy patterns
+                     */
+                    public function processConfiguration(array $configuration = null)
+                    {
+                        // Deep nesting that could cause memory issues
+                        $processed = array();
 
-        foreach ($configuration ?: array() as $key => $value) {
-            if (is_array($value)) {
-                foreach ($value as $subKey => $subValue) {
-                    if (is_array($subValue)) {
-                        foreach ($subValue as $deepKey => $deepValue) {
-                            // Memory-intensive processing
-                            $processed[$key][$subKey][$deepKey] = $this->transform($deepValue);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Legacy GeneralUtility usage patterns
-        $configManager = GeneralUtility::makeInstance(ConfigurationManager::class);
-        $typoScript = $configManager->getConfiguration(
-            ConfigurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT
-        );
-
-        // Complex condition that violates complexity metrics
-        if (isset($typoScript['plugin.']['tx_myextension.']['settings.'])) {
-            if (is_array($typoScript['plugin.']['tx_myextension.']['settings.'])) {
-                if (count($typoScript['plugin.']['tx_myextension.']['settings.']) > 0) {
-                    foreach ($typoScript['plugin.']['tx_myextension.']['settings.'] as $setting => $value) {
-                        if (strpos($setting, '.') !== false) {
-                            $cleanSetting = rtrim($setting, '.');
-                            if (!isset($processed['settings'])) {
-                                $processed['settings'] = array();
+                        foreach ($configuration ?: array() as $key => $value) {
+                            if (is_array($value)) {
+                                foreach ($value as $subKey => $subValue) {
+                                    if (is_array($subValue)) {
+                                        foreach ($subValue as $deepKey => $deepValue) {
+                                            // Memory-intensive processing
+                                            $processed[$key][$subKey][$deepKey] = $this->transform($deepValue);
+                                        }
+                                    }
+                                }
                             }
-                            $processed['settings'][$cleanSetting] = $value;
                         }
+
+                        // Legacy GeneralUtility usage patterns
+                        $configManager = GeneralUtility::makeInstance(ConfigurationManager::class);
+                        $typoScript = $configManager->getConfiguration(
+                            ConfigurationManager::CONFIGURATION_TYPE_FULL_TYPOSCRIPT
+                        );
+
+                        // Complex condition that violates complexity metrics
+                        if (isset($typoScript['plugin.']['tx_myextension.']['settings.'])) {
+                            if (is_array($typoScript['plugin.']['tx_myextension.']['settings.'])) {
+                                if (count($typoScript['plugin.']['tx_myextension.']['settings.']) > 0) {
+                                    foreach ($typoScript['plugin.']['tx_myextension.']['settings.'] as $setting => $value) {
+                                        if (strpos($setting, '.') !== false) {
+                                            $cleanSetting = rtrim($setting, '.');
+                                            if (!isset($processed['settings'])) {
+                                                $processed['settings'] = array();
+                                            }
+                                            $processed['settings'][$cleanSetting] = $value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return $processed;
+                    }
+
+                    private function transform($value)
+                    {
+                        // Simulate expensive transformation
+                        return is_string($value) ? strtoupper($value) : $value;
                     }
                 }
-            }
-        }
-
-        return $processed;
-    }
-
-    private function transform($value)
-    {
-        // Simulate expensive transformation
-        return is_string($value) ? strtoupper($value) : $value;
-    }
-}
-PHP
+                PHP
         );
     }
 }

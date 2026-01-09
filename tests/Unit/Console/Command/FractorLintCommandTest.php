@@ -33,16 +33,16 @@ final class FractorLintCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake fractor executable
         $fractorExecutable = $vendorBinDir . '/fractor';
         file_put_contents($fractorExecutable, "#!/bin/bash\necho 'Fractor dry-run completed successfully'\nexit 0\n");
-        chmod($fractorExecutable, 0755);
+        chmod($fractorExecutable, 0o755);
 
         // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/fractor.php', "<?php\nreturn [];\n");
 
         // Set up environment to use temp directory as project root and initialize application
@@ -52,7 +52,7 @@ final class FractorLintCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new FractorLintCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -164,18 +164,16 @@ final class FractorLintCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) use ($customTargetDir) {
-                return match($option) {
-                    'config' => null,
-                    'path' => $customTargetDir,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'config' => null,
+                'path' => $customTargetDir,
+                'no-optimization' => false,
+                default => null
             });
 
         $this->mockOutput
@@ -202,13 +200,11 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) {
-                return match($option) {
-                    'config' => null,
-                    'path' => null,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'config' => null,
+                'path' => null,
+                'no-optimization' => false,
+                default => null
             });
 
         $this->mockOutput
@@ -237,13 +233,11 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) use ($nonExistentTargetDir) {
-                return match($option) {
-                    'config' => null,
-                    'path' => $nonExistentTargetDir,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'config' => null,
+                'path' => $nonExistentTargetDir,
+                'no-optimization' => false,
+                default => null
             });
 
         $this->mockOutput
@@ -262,13 +256,11 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) use ($nonExistentConfigPath) {
-                return match($option) {
-                    'config' => $nonExistentConfigPath,
-                    'path' => null,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'config' => $nonExistentConfigPath,
+                'path' => null,
+                'no-optimization' => false,
+                default => null
             });
 
         $this->mockOutput
@@ -304,7 +296,7 @@ final class FractorLintCommandTest extends TestCase
 
         // Execute with custom config option
         $commandTester->execute([
-            '--config' => $customConfigPath
+            '--config' => $customConfigPath,
         ]);
 
         // Command should execute successfully
@@ -318,13 +310,13 @@ final class FractorLintCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -344,13 +336,11 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) {
-                return match($option) {
-                    'config' => null,
-                    'path' => null,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'config' => null,
+                'path' => null,
+                'no-optimization' => false,
+                default => null
             });
 
         // Since the executable doesn't exist, this will fail at the process level

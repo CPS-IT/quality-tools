@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown when path scanning operations fail
+ * Exception thrown when path scanning operations fail.
  */
 class PathScannerException extends QualityToolsException
 {
@@ -18,7 +18,7 @@ class PathScannerException extends QualityToolsException
         int $code = self::ERROR_PATH_RESOLUTION_FAILED,
         ?\Throwable $previous = null,
         array $troubleshootingSteps = [],
-        array $context = []
+        array $context = [],
     ) {
         if (empty($troubleshootingSteps)) {
             $troubleshootingSteps = [

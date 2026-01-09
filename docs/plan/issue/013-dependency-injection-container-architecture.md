@@ -1,8 +1,8 @@
 # Issue 013: Dependency Injection Container for Architecture Improvements
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Very High (1w+)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Very High (1w+)
 **Impact:** Medium
 
 ## Description
@@ -24,7 +24,7 @@ The codebase relies on direct instantiation and static dependencies:
 Tight coupling between classes without dependency injection container
 ```
 
-**Location:** Throughout the codebase, particularly in command classes and utility services  
+**Location:** Throughout the codebase, particularly in command classes and utility services
 **Trigger:** Attempting to test components in isolation or extend functionality
 
 ## Impact Analysis

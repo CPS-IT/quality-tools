@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
-use Cpsit\QualityTools\Configuration\Configuration;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Unit test to verify BaseCommand path resolution with multiple paths
+ * Unit test to verify BaseCommand path resolution with multiple paths.
  *
  * @covers \Cpsit\QualityTools\Console\Command\BaseCommand
  */
@@ -22,8 +21,8 @@ final class BaseCommandPathResolutionTest extends TestCase
 {
     /**
      * Test that getTargetPathForTool still returns first path for backward compatibility
-     * while getResolvedPathsForTool returns all paths
-     * 
+     * while getResolvedPathsForTool returns all paths.
+     *
      * @test
      */
     public function getTargetPathForToolReturnsFirstPathWhileResolvedPathsReturnsAll(): void
@@ -34,28 +33,28 @@ final class BaseCommandPathResolutionTest extends TestCase
             {
                 return $this->getTargetPathForTool($input, $tool);
             }
-            
+
             public function publicGetResolvedPathsForTool($input, string $tool): array
             {
                 return $this->getResolvedPathsForTool($input, $tool);
             }
-            
+
             public function setMockConfiguration(Configuration $config): void
             {
                 $this->configuration = $config;
             }
-            
+
             public function publicConfigure(): void
             {
                 $this->configure();
             }
-            
+
             protected function configure(): void
             {
                 parent::configure();
                 $this->setName('test:command');
             }
-            
+
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 return 0;
@@ -69,9 +68,9 @@ final class BaseCommandPathResolutionTest extends TestCase
             ->willReturn([
                 '/project/packages',
                 '/project/vendor/company1/package1',
-                '/project/vendor/company1/package2', 
+                '/project/vendor/company1/package2',
                 '/project/vendor/company2/package3',
-                '/project/custom-dir'
+                '/project/custom-dir',
             ]);
 
         // Set the mock configuration and configure the command properly
@@ -79,22 +78,22 @@ final class BaseCommandPathResolutionTest extends TestCase
         $command->setMockConfiguration($mockConfig);
 
         $input = new ArrayInput([], $command->getDefinition());
-        
+
         // Get all resolved paths - this should return all 5 paths
         $resolvedPaths = $command->publicGetResolvedPathsForTool($input, 'rector');
         $this->assertCount(5, $resolvedPaths, 'All resolved paths should be returned');
         $this->assertSame('/project/packages', $resolvedPaths[0]);
         $this->assertSame('/project/vendor/company1/package1', $resolvedPaths[1]);
-        
+
         // Get single target path for backward compatibility - should return first path
         $targetPath = $command->publicGetTargetPathForTool($input, 'rector');
         $this->assertSame('/project/packages', $targetPath, 'Single target path should return first resolved path for backward compatibility');
     }
 
     /**
-     * Test that user-provided --path option still works (should override config)
-     * 
-     * @test 
+     * Test that user-provided --path option still works (should override config).
+     *
+     * @test
      */
     public function userProvidedPathOptionOverridesConfiguration(): void
     {
@@ -103,12 +102,12 @@ final class BaseCommandPathResolutionTest extends TestCase
             {
                 return $this->getTargetPathForTool($input, $tool);
             }
-            
+
             public function publicConfigure(): void
             {
                 $this->configure();
             }
-            
+
             protected function configure(): void
             {
                 parent::configure();
@@ -118,17 +117,16 @@ final class BaseCommandPathResolutionTest extends TestCase
 
         // Create a temporary directory for testing
         $tempDir = sys_get_temp_dir() . '/qt-test-' . uniqid();
-        mkdir($tempDir, 0777, true);
-        
+        mkdir($tempDir, 0o777, true);
+
         try {
             $command->publicConfigure();
             $input = new ArrayInput(['--path' => $tempDir], $command->getDefinition());
-            
+
             $targetPath = $command->publicGetTargetPathForTool($input, 'rector');
-            
+
             // User-provided path should override configuration
             $this->assertSame(realpath($tempDir), $targetPath);
-            
         } finally {
             if (is_dir($tempDir)) {
                 rmdir($tempDir);
@@ -137,8 +135,8 @@ final class BaseCommandPathResolutionTest extends TestCase
     }
 
     /**
-     * Test that the fix properly handles multiple paths through direct command arguments
-     * 
+     * Test that the fix properly handles multiple paths through direct command arguments.
+     *
      * @test
      */
     public function commandsNowPassAllResolvedPathsAsArguments(): void
@@ -146,57 +144,57 @@ final class BaseCommandPathResolutionTest extends TestCase
         // This test verifies that the new approach works:
         // Instead of relying on environment variables or single paths,
         // commands now pass all resolved paths directly as arguments
-        
+
         $mockConfig = $this->createMock(Configuration::class);
         $mockConfig->method('getResolvedPathsForTool')
             ->willReturn([
                 '/project/packages',
                 '/project/vendor/company1/package1',
-                '/project/vendor/company2/package2'
+                '/project/vendor/company2/package2',
             ]);
 
         $command = new class extends BaseCommand {
-            private Configuration $mockConfig;
-            
+            private readonly Configuration $mockConfig;
+
             public function setMockConfiguration(Configuration $config): void
             {
                 $this->configuration = $config;
             }
-            
+
             public function publicGetResolvedPathsForTool($input, string $tool): array
             {
                 return $this->getResolvedPathsForTool($input, $tool);
             }
-            
+
             public function publicConfigure(): void
             {
                 $this->configure();
             }
-            
+
             protected function configure(): void
             {
                 parent::configure();
                 $this->setName('test:command2');
             }
-            
+
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 return 0;
             }
         };
-        
+
         $command->publicConfigure();
         $command->setMockConfiguration($mockConfig);
 
         $input = new ArrayInput([], $command->getDefinition());
-        
+
         // Verify that getResolvedPathsForTool returns all paths
         $paths = $command->publicGetResolvedPathsForTool($input, 'rector');
         $this->assertCount(3, $paths);
         $this->assertContains('/project/packages', $paths);
         $this->assertContains('/project/vendor/company1/package1', $paths);
         $this->assertContains('/project/vendor/company2/package2', $paths);
-        
+
         // The actual command execution now iterates through these paths
         // and passes them as arguments instead of using environment variables
         $this->assertTrue(true, 'Multi-path scanning is now implemented through direct command arguments');

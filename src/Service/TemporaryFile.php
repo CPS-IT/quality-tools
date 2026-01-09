@@ -8,15 +8,15 @@ final class TemporaryFile
 {
     private string $filePath;
     private bool $isDeleted = false;
-    private SecurityService $securityService;
+    private readonly SecurityService $securityService;
 
     public function __construct(string $prefix = 'qt_temp_', string $suffix = '', ?SecurityService $securityService = null)
     {
         $this->securityService = $securityService ?? new SecurityService();
-        
+
         $tempDir = sys_get_temp_dir();
         $tempFile = tempnam($tempDir, $prefix);
-        
+
         if ($tempFile === false) {
             throw new \RuntimeException('Failed to create temporary file');
         }
@@ -43,7 +43,7 @@ final class TemporaryFile
 
         // Log temporary file creation for debugging
         if (getenv('QT_DEBUG_TEMP_FILES') === '1') {
-            error_log(sprintf('[QT] Created temporary file with secure permissions: %s', $this->filePath));
+            error_log(\sprintf('[QT] Created temporary file with secure permissions: %s', $this->filePath));
         }
 
         // Register cleanup on process shutdown as fallback
@@ -67,7 +67,7 @@ final class TemporaryFile
         }
 
         if (file_put_contents($this->filePath, $content) === false) {
-            throw new \RuntimeException(sprintf('Could not write to temporary file: %s', $this->filePath));
+            throw new \RuntimeException(\sprintf('Could not write to temporary file: %s', $this->filePath));
         }
     }
 
@@ -76,9 +76,9 @@ final class TemporaryFile
         if (!$this->isDeleted && file_exists($this->filePath)) {
             // Log temporary file cleanup for debugging
             if (getenv('QT_DEBUG_TEMP_FILES') === '1') {
-                error_log(sprintf('[QT] Cleaning up temporary file: %s', $this->filePath));
+                error_log(\sprintf('[QT] Cleaning up temporary file: %s', $this->filePath));
             }
-            
+
             unlink($this->filePath);
             $this->isDeleted = true;
         }

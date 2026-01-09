@@ -59,7 +59,7 @@ final class QualityToolsApplicationTest extends TestCase
         $this->assertSame('1.0.0-dev', $application->getVersion());
         $this->assertSame(
             'Simple command-line interface for TYPO3 quality assurance tools',
-            $application->getHelp()
+            $application->getHelp(),
         );
     }
 
@@ -128,13 +128,13 @@ final class QualityToolsApplicationTest extends TestCase
     {
         // Create an isolated non-TYPO3 project in temp directory
         $tempDir = sys_get_temp_dir() . '/qt_test_non_typo3_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir, 0o777, true);
 
         // Create a non-TYPO3 composer.json
         $composerJson = [
             'name' => 'test/non-typo3-isolated',
             'type' => 'project',
-            'require' => ['symfony/console' => '^7.0']
+            'require' => ['symfony/console' => '^7.0'],
         ];
         file_put_contents($tempDir . '/composer.json', json_encode($composerJson));
 
@@ -147,7 +147,7 @@ final class QualityToolsApplicationTest extends TestCase
             $this->expectException(RuntimeException::class);
             $this->expectExceptionMessage(
                 'TYPO3 project root not found. Please run this command from within a TYPO3 project directory, ' .
-                'or set the QT_PROJECT_ROOT environment variable.'
+                'or set the QT_PROJECT_ROOT environment variable.',
             );
 
             // Act
@@ -163,7 +163,7 @@ final class QualityToolsApplicationTest extends TestCase
     {
         // Create an isolated directory with invalid JSON
         $tempDir = sys_get_temp_dir() . '/qt_test_invalid_json_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir, 0o777, true);
 
         // Create invalid composer.json
         file_put_contents($tempDir . '/composer.json', '{"invalid": json}');
@@ -239,7 +239,7 @@ final class QualityToolsApplicationTest extends TestCase
     {
         // Create a simple directory structure that exceeds traversal limit
         $tempDir = sys_get_temp_dir() . '/qt_test_limit_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir, 0o777, true);
 
         try {
             // Start from temp dir which has no TYPO3 project
@@ -317,7 +317,6 @@ final class QualityToolsApplicationTest extends TestCase
             $application = new QualityToolsApplication();
             $reflection = new \ReflectionClass($application);
             $method = $reflection->getMethod('isTypo3Project');
-            $method->setAccessible(true);
 
             // Act
             $result = $method->invoke($application, $tempFile);
@@ -333,52 +332,52 @@ final class QualityToolsApplicationTest extends TestCase
     {
         yield 'typo3/cms-core in require' => [
             '{"require":{"typo3/cms-core":"^13.4"}}',
-            true
+            true,
         ];
 
         yield 'typo3/cms in require' => [
             '{"require":{"typo3/cms":"^13.4"}}',
-            true
+            true,
         ];
 
         yield 'typo3/minimal in require' => [
             '{"require":{"typo3/minimal":"^13.4"}}',
-            true
+            true,
         ];
 
         yield 'typo3/cms-core in require-dev' => [
             '{"require-dev":{"typo3/cms-core":"^13.4"}}',
-            true
+            true,
         ];
 
         yield 'mixed dependencies with TYPO3' => [
             '{"require":{"symfony/console":"^7.0"},"require-dev":{"typo3/cms-core":"^13.4"}}',
-            true
+            true,
         ];
 
         yield 'no TYPO3 dependencies' => [
             '{"require":{"symfony/console":"^7.0"}}',
-            false
+            false,
         ];
 
         yield 'empty composer.json' => [
             '{}',
-            false
+            false,
         ];
 
         yield 'only TYPO3-related but not core packages' => [
             '{"require":{"typo3/cms-backend":"^13.4"}}',
-            false
+            false,
         ];
 
         yield 'invalid JSON' => [
             '{"invalid": json}',
-            false
+            false,
         ];
 
         yield 'file read failure' => [
             '', // Empty content to simulate file_get_contents failure
-            false
+            false,
         ];
     }
 
@@ -392,12 +391,12 @@ final class QualityToolsApplicationTest extends TestCase
         $currentPath = $basePath;
 
         // Create all directories in one go
-        for ($i = 1; $i <= $depth; $i++) {
+        for ($i = 1; $i <= $depth; ++$i) {
             $currentPath .= '/level' . $i;
         }
 
         // Create the entire path recursively
-        if (!mkdir($currentPath, 0777, true)) {
+        if (!mkdir($currentPath, 0o777, true)) {
             throw new \RuntimeException("Failed to create directory: $currentPath");
         }
     }
@@ -407,7 +406,7 @@ final class QualityToolsApplicationTest extends TestCase
         if (is_dir($basePath)) {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::CHILD_FIRST
+                \RecursiveIteratorIterator::CHILD_FIRST,
             );
 
             foreach ($iterator as $file) {

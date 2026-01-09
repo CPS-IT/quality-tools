@@ -121,7 +121,7 @@ This iteration implements a unified report generation system that provides stand
 ## Dependencies Between Features
 
 ```
-005 (Standards) 
+005 (Standards)
 └── 006 (Foundation) -> depends on 005
     └── 007 (JSON) -> depends on 006
 ```

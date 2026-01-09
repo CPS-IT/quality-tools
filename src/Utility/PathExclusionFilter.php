@@ -5,40 +5,34 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Utility;
 
 /**
- * Strategy class for filtering paths based on exclusion patterns
+ * Strategy class for filtering paths based on exclusion patterns.
  *
  * This class handles the complex logic for applying exclusion patterns to resolved paths,
  * with special handling for explicit vendor paths that should be exempt from vendor/ exclusions.
  */
-final class PathExclusionFilter
+final readonly class PathExclusionFilter
 {
     private string $projectRoot;
-    private ?string $vendorPath;
-    private array $excludePatterns;
-    private array $explicitVendorPaths;
 
     public function __construct(
         string $projectRoot,
-        ?string $vendorPath,
-        array $excludePatterns,
-        array $explicitVendorPaths = []
+        private ?string $vendorPath,
+        private array $excludePatterns,
+        private array $explicitVendorPaths = [],
     ) {
         $this->projectRoot = rtrim($projectRoot, '/');
-        $this->vendorPath = $vendorPath;
-        $this->excludePatterns = $excludePatterns;
-        $this->explicitVendorPaths = $explicitVendorPaths;
     }
 
     /**
-     * Filter paths by applying exclusion patterns
+     * Filter paths by applying exclusion patterns.
      */
     public function filter(array $paths): array
     {
-        return array_filter($paths, fn(string $path) => $this->shouldIncludePath($path));
+        return array_filter($paths, $this->shouldIncludePath(...));
     }
 
     /**
-     * Determine if a path should be included based on exclusion rules
+     * Determine if a path should be included based on exclusion rules.
      */
     private function shouldIncludePath(string $path): bool
     {
@@ -50,15 +44,15 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check if a path is an explicit vendor path (exempt from vendor/ exclusions)
+     * Check if a path is an explicit vendor path (exempt from vendor/ exclusions).
      */
     private function isExplicitVendorPath(string $path): bool
     {
-        return in_array($path, $this->explicitVendorPaths, true);
+        return \in_array($path, $this->explicitVendorPaths, true);
     }
 
     /**
-     * Apply non-vendor exclusions to explicit vendor paths
+     * Apply non-vendor exclusions to explicit vendor paths.
      */
     private function applyNonVendorExclusions(string $path): bool
     {
@@ -76,7 +70,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Apply all exclusion patterns to regular paths
+     * Apply all exclusion patterns to regular paths.
      */
     private function applyAllExclusions(string $path): bool
     {
@@ -90,7 +84,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check if an exclusion pattern targets vendor paths
+     * Check if an exclusion pattern targets vendor paths.
      */
     private function isVendorExclusion(string $excludePattern): bool
     {
@@ -98,7 +92,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check if a path matches an exclusion pattern
+     * Check if a path matches an exclusion pattern.
      */
     private function matchesExclusionPattern(string $path, string $excludePattern): bool
     {
@@ -133,18 +127,19 @@ final class PathExclusionFilter
     }
 
     /**
-     * Match wildcard patterns (ending with *)
+     * Match wildcard patterns (ending with *).
      */
     private function matchesWildcardPattern(string $path, string $absoluteExcludePattern): bool
     {
         $prefix = rtrim($absoluteExcludePattern, '*');
 
         // Try to normalize the prefix if its directory exists
-        $prefixDir = dirname($prefix);
+        $prefixDir = \dirname($prefix);
         if (is_dir($prefixDir)) {
             $normalizedPrefixDir = realpath($prefixDir);
             if ($normalizedPrefixDir !== false) {
                 $normalizedPrefix = $normalizedPrefixDir . '/' . basename($prefix);
+
                 return str_starts_with($path, $normalizedPrefix);
             }
         }
@@ -153,7 +148,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Match directory patterns (ending with /)
+     * Match directory patterns (ending with /).
      */
     private function matchesDirectoryPattern(string $path, string $absoluteExcludePattern): bool
     {
@@ -171,7 +166,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check for the exact pattern match
+     * Check for the exact pattern match.
      */
     private function isExactMatch(string $path, string $absoluteExcludePattern): bool
     {
@@ -187,7 +182,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check if a path matches as directory prefix (for patterns without a trailing slash)
+     * Check if a path matches as directory prefix (for patterns without a trailing slash).
      */
     private function isDirectoryPrefixMatch(string $path, string $absoluteExcludePattern): bool
     {
@@ -204,7 +199,7 @@ final class PathExclusionFilter
     }
 
     /**
-     * Build absolute pattern for matching operations
+     * Build absolute pattern for matching operations.
      */
     private function buildAbsolutePattern(string $pattern): string
     {
@@ -222,12 +217,12 @@ final class PathExclusionFilter
     }
 
     /**
-     * Check if a pattern contains glob characters
+     * Check if a pattern contains glob characters.
      */
     private function containsGlobCharacters(string $pattern): bool
     {
-        return str_contains($pattern, '*') ||
-            str_contains($pattern, '?') ||
-            str_contains($pattern, '[');
+        return str_contains($pattern, '*')
+            || str_contains($pattern, '?')
+            || str_contains($pattern, '[');
     }
 }

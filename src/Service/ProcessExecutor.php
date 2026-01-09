@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
 /**
- * Service responsible for executing processes with proper output handling
+ * Service responsible for executing processes with proper output handling.
  *
  * Handles process creation, execution, output forwarding, and exit code management
  * with support for verbose mode and error output handling.
@@ -16,13 +16,13 @@ use Symfony\Component\Process\Process;
 final class ProcessExecutor
 {
     /**
-     * Execute a process with proper output handling
+     * Execute a process with proper output handling.
      */
     public function executeProcess(
         array $command,
         string $workingDirectory,
         array $environment,
-        OutputInterface $output
+        OutputInterface $output,
     ): int {
         $process = new Process($command, $workingDirectory, $environment);
 
@@ -36,17 +36,17 @@ final class ProcessExecutor
     }
 
     /**
-     * Handle verbose output before process execution
+     * Handle verbose output before process execution.
      */
     private function handleVerboseOutput(OutputInterface $output, Process $process): void
     {
         if ($output->isVerbose()) {
-            $output->writeln(sprintf('<info>Executing: %s</info>', $process->getCommandLine()));
+            $output->writeln(\sprintf('<info>Executing: %s</info>', $process->getCommandLine()));
         }
     }
 
     /**
-     * Forward process output to the appropriate output stream
+     * Forward process output to the appropriate output stream.
      */
     private function forwardProcessOutput(string $type, string $buffer, OutputInterface $output): void
     {
@@ -58,7 +58,7 @@ final class ProcessExecutor
     }
 
     /**
-     * Forward error output to the appropriate error stream
+     * Forward error output to the appropriate error stream.
      */
     private function forwardErrorOutput(string $buffer, OutputInterface $output): void
     {

@@ -74,7 +74,7 @@ quality-tools:
   tools:
     phpstan:
       level: "${PHPSTAN_LEVEL:-6}"  # Converted to integer
-    
+
   performance:
     max_processes: "${MAX_PROCESSES:-4}"  # Converted to integer
 ```
@@ -85,7 +85,7 @@ quality-tools:
   tools:
     rector:
       enabled: "${ENABLE_RECTOR:-true}"  # Converted to boolean
-    
+
   output:
     colors: "${ENABLE_COLORS:-false}"  # Converted to boolean
 
@@ -229,14 +229,14 @@ quality-tools:
   tools:
     rector:
       enabled: "${ENABLE_RECTOR:-true}"
-    
+
     phpstan:
       enabled: "${ENABLE_PHPSTAN:-true}"
       level: "${PHPSTAN_LEVEL:-6}"
-    
+
     php-cs-fixer:
       enabled: "${ENABLE_PHP_CS_FIXER:-true}"
-    
+
     fractor:
       enabled: "${ENABLE_FRACTOR:-false}"  # Disabled by default
 ```
@@ -258,11 +258,11 @@ quality-tools:
     phpstan:
       level: "${PHPSTAN_LEVEL:-6}"
       memory_limit: "${PHPSTAN_MEMORY:-1G}"
-    
+
     rector:
       enabled: "${ENABLE_RECTOR:-true}"
       # Memory will be calculated automatically, but can override
-  
+
   performance:
     parallel: "${ENABLE_PARALLEL:-true}"
     max_processes: "${MAX_PROCESSES:-4}"
@@ -521,7 +521,7 @@ echo "Resolved project name: ${PROJECT_NAME:-default-name}"
 1. **Variable not found error**
    ```bash
    # Error: Environment variable "PROJECT_NAME" is not set
-   
+
    # Solution: Set the variable or add a default
    export PROJECT_NAME="my-project"
    # Or in YAML: "${PROJECT_NAME:-default-project}"
@@ -550,11 +550,11 @@ echo "Resolved project name: ${PROJECT_NAME:-default-name}"
    # Good: Consistent prefixes
    PROJECT_NAME="my-project"
    PROJECT_VERSION="1.0.0"
-   
+
    # Good: Tool-specific prefixes
    PHPSTAN_LEVEL="6"
    PHPSTAN_MEMORY="1G"
-   
+
    RECTOR_ENABLED="true"
    RECTOR_DRY_RUN="false"
    ```
@@ -564,12 +564,12 @@ echo "Resolved project name: ${PROJECT_NAME:-default-name}"
    # Project settings
    PROJECT_NAME="my-project"
    PROJECT_ENV="development"
-   
+
    # PHPStan settings
    PHPSTAN_LEVEL="6"
    PHPSTAN_MEMORY="1G"
    PHPSTAN_ENABLED="true"
-   
+
    # Output settings
    OUTPUT_COLORS="true"
    OUTPUT_VERBOSITY="normal"

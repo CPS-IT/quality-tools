@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RectorLintCommand extends AbstractToolCommand
 {
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -19,7 +20,7 @@ class RectorLintCommand extends AbstractToolCommand
             ->setHelp(
                 'This command runs Rector in dry-run mode to show what changes would be made ' .
                 'without actually modifying your code files. Use --config to specify a custom ' .
-                'configuration file or --path to target specific directories.'
+                'configuration file or --path to target specific directories.',
             );
     }
 
@@ -37,7 +38,7 @@ class RectorLintCommand extends AbstractToolCommand
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array {
         $command = [
             $this->getVendorBinPath() . '/rector',

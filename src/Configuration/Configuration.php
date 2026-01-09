@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Configuration;
 
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
-use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use Cpsit\QualityTools\Utility\PathScanner;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 
 class Configuration
 {
-    private array $data;
     private array $projectConfig;
     private array $pathsConfig;
     private array $toolsConfig;
@@ -21,9 +20,8 @@ class Configuration
     private ?VendorDirectoryDetector $vendorDetector = null;
     private ?PathScanner $pathScanner = null;
 
-    public function __construct(array $data = [])
+    public function __construct(private array $data = [])
     {
-        $this->data = $data;
         $this->parseConfiguration();
     }
 
@@ -81,6 +79,7 @@ class Configuration
     public function getRectorConfig(): array
     {
         $config = $this->getToolConfig('rector');
+
         return array_merge([
             'enabled' => true,
             'level' => 'typo3-13',
@@ -91,6 +90,7 @@ class Configuration
     public function getFractorConfig(): array
     {
         $config = $this->getToolConfig('fractor');
+
         return array_merge([
             'enabled' => true,
             'indentation' => 2,
@@ -100,6 +100,7 @@ class Configuration
     public function getPhpStanConfig(): array
     {
         $config = $this->getToolConfig('phpstan');
+
         return array_merge([
             'enabled' => true,
             'level' => 6,
@@ -110,6 +111,7 @@ class Configuration
     public function getPhpCsFixerConfig(): array
     {
         $config = $this->getToolConfig('php-cs-fixer');
+
         return array_merge([
             'enabled' => true,
             'preset' => 'typo3',
@@ -119,6 +121,7 @@ class Configuration
     public function getTypoScriptLintConfig(): array
     {
         $config = $this->getToolConfig('typoscript-lint');
+
         return array_merge([
             'enabled' => true,
             'indentation' => 2,
@@ -185,6 +188,7 @@ class Configuration
     public function getVendorBinPath(): ?string
     {
         $vendorPath = $this->getVendorPath();
+
         return $vendorPath !== null ? $vendorPath . '/bin' : null;
     }
 
@@ -200,6 +204,7 @@ class Configuration
         }
 
         $detector = $this->getVendorDetector();
+
         return $detector->getDetectionDebugInfo($this->projectRoot);
     }
 
@@ -218,7 +223,7 @@ class Configuration
             if ($this->projectRoot === null) {
                 throw new \RuntimeException('Project root must be set before using path scanner');
             }
-            
+
             $this->pathScanner = new PathScanner($this->projectRoot);
             $this->pathScanner->setVendorPath($this->getVendorPath());
         }
@@ -227,7 +232,7 @@ class Configuration
     }
 
     /**
-     * Get all resolved paths for a specific tool (global scan paths + tool-specific paths - exclusions)
+     * Get all resolved paths for a specific tool (global scan paths + tool-specific paths - exclusions).
      */
     public function getResolvedPathsForTool(string $tool): array
     {
@@ -236,40 +241,40 @@ class Configuration
         }
 
         $scanner = $this->getPathScanner();
-        
+
         // Start with global scan paths
         $globalScanPaths = $this->getScanPaths();
-        
+
         // Get tool-specific paths
         $toolPaths = $this->getToolPaths($tool);
         $toolScanPaths = $toolPaths['scan'] ?? [];
-        
+
         // Combine all scan patterns
         $allScanPatterns = array_merge($globalScanPaths, $toolScanPaths);
-        
+
         // Get exclusion patterns and add them to scan patterns
         $globalExcludePaths = $this->getExcludePaths();
         $toolExcludePaths = $toolPaths['exclude'] ?? [];
         $allExcludePatterns = array_merge($globalExcludePaths, $toolExcludePaths);
-        
+
         // Add exclusion patterns with '!' prefix to scan patterns
         if (!empty($allExcludePatterns)) {
-            $exclusionPatterns = array_map(fn($pattern) => '!' . $pattern, $allExcludePatterns);
+            $exclusionPatterns = array_map(fn ($pattern) => '!' . $pattern, $allExcludePatterns);
             $allScanPatterns = array_merge($allScanPatterns, $exclusionPatterns);
         }
-        
+
         // Resolve all patterns (including exclusions) in one call
         $resolvedPaths = $scanner->resolvePaths($allScanPatterns);
 
         // Remove duplicates and sort
         $resolvedPaths = array_unique($resolvedPaths);
         sort($resolvedPaths);
-        
+
         return $resolvedPaths;
     }
 
     /**
-     * Get path scanning debug information
+     * Get path scanning debug information.
      */
     public function getPathScanningDebugInfo(string $tool): array
     {
@@ -281,7 +286,7 @@ class Configuration
         $globalScanPaths = $this->getScanPaths();
         $globalExcludePaths = $this->getExcludePaths();
         $toolPaths = $this->getToolPaths($tool);
-        
+
         return [
             'tool' => $tool,
             'project_root' => $this->projectRoot,
@@ -291,8 +296,8 @@ class Configuration
             'tool_paths' => $toolPaths,
             'resolved_paths' => $this->getResolvedPathsForTool($tool),
             'path_scanner_debug' => $scanner->getPathResolutionDebugInfo(
-                array_merge($globalScanPaths, $toolPaths['scan'] ?? [])
-            )
+                array_merge($globalScanPaths, $toolPaths['scan'] ?? []),
+            ),
         ];
     }
 
@@ -304,6 +309,7 @@ class Configuration
     public function merge(Configuration $other): self
     {
         $mergedData = array_merge_recursive($this->data, $other->toArray());
+
         return new self($mergedData);
     }
 

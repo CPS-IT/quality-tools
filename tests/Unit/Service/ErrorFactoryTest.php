@@ -24,7 +24,7 @@ final class ErrorFactoryTest extends TestCase
         self::assertEquals(ConfigurationException::ERROR_CONFIG_FILE_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertNotEmpty($exception->getTroubleshootingSteps());
-        
+
         $context = $exception->getContext();
         self::assertEquals($filePath, $context['file_path']);
         self::assertNull($context['custom_path']);
@@ -36,10 +36,10 @@ final class ErrorFactoryTest extends TestCase
         $exception = ErrorFactory::configFileNotFound($filePath, $filePath);
 
         self::assertInstanceOf(ConfigurationException::class, $exception);
-        
+
         $context = $exception->getContext();
         self::assertEquals($filePath, $context['custom_path']);
-        
+
         $troubleshooting = $exception->getTroubleshootingSteps();
         self::assertContains('Ensure your custom configuration file is valid', $troubleshooting);
     }
@@ -48,14 +48,14 @@ final class ErrorFactoryTest extends TestCase
     {
         $filePath = '/path/to/config.yaml';
         $errors = ['Missing section A', 'Invalid value B'];
-        
+
         $exception = ErrorFactory::configValidationFailed($filePath, $errors);
 
         self::assertInstanceOf(ConfigurationException::class, $exception);
         self::assertEquals(ConfigurationException::ERROR_CONFIG_VALIDATION_FAILED, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertStringContainsString('Missing section A', $exception->getMessage());
-        
+
         $context = $exception->getContext();
         self::assertEquals($filePath, $context['file_path']);
         self::assertEquals($errors, $context['validation_errors']);
@@ -75,7 +75,7 @@ final class ErrorFactoryTest extends TestCase
         self::assertStringContainsString($command, $exception->getMessage());
         self::assertStringContainsString((string) $exitCode, $exception->getMessage());
         self::assertEquals($exitCode, $exception->getProcessExitCode());
-        
+
         $context = $exception->getContext();
         self::assertEquals($command, $context['command']);
         self::assertEquals($exitCode, $context['exit_code']);
@@ -86,7 +86,7 @@ final class ErrorFactoryTest extends TestCase
     public function testProcessExecutionFailedWithSpecificExitCode(): void
     {
         $exception = ErrorFactory::processExecutionFailed('test', 127);
-        
+
         $troubleshooting = $exception->getTroubleshootingSteps();
         self::assertContains('Binary not found - ensure the tool is properly installed', $troubleshooting);
     }
@@ -99,7 +99,7 @@ final class ErrorFactoryTest extends TestCase
         self::assertInstanceOf(ProcessException::class, $exception);
         self::assertEquals(ProcessException::ERROR_PROCESS_BINARY_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($binaryPath, $exception->getMessage());
-        
+
         $context = $exception->getContext();
         self::assertEquals($binaryPath, $context['binary_path']);
     }
@@ -113,7 +113,7 @@ final class ErrorFactoryTest extends TestCase
         self::assertEquals(FileSystemException::ERROR_FILE_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertEquals($filePath, $exception->getFilePath());
-        
+
         $context = $exception->getContext();
         self::assertEquals($filePath, $context['file_path']);
     }
@@ -139,7 +139,7 @@ final class ErrorFactoryTest extends TestCase
         self::assertEquals(FileSystemException::ERROR_PERMISSION_DENIED, $exception->getCode());
         self::assertStringContainsString($path, $exception->getMessage());
         self::assertStringContainsString($operation, $exception->getMessage());
-        
+
         $context = $exception->getContext();
         self::assertEquals($path, $context['path']);
         self::assertEquals($operation, $context['operation']);

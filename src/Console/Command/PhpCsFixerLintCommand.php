@@ -9,11 +9,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class PhpCsFixerLintCommand extends BaseCommand
 {
+    #[\Override]
     protected function getTargetPath(InputInterface $input): string
     {
         return $this->getTargetPathForTool($input, 'php-cs-fixer');
     }
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -25,7 +27,7 @@ final class PhpCsFixerLintCommand extends BaseCommand
                 'This command runs PHP CS Fixer in dry-run mode to show what code style ' .
                 'issues would be fixed without actually modifying your code files. Use ' .
                 '--config to specify a custom configuration file or --path to target ' .
-                'specific directories.'
+                'specific directories.',
             );
     }
 
@@ -56,13 +58,11 @@ final class PhpCsFixerLintCommand extends BaseCommand
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
+                    throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
                 }
                 $command[] = realpath($customPath);
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
+                    $output->writeln(\sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
                 }
             } else {
                 // Use resolved paths from configuration - pass all paths to php-cs-fixer
@@ -73,7 +73,7 @@ final class PhpCsFixerLintCommand extends BaseCommand
                         $command[] = $path;
                     }
                     if ($output->isVerbose()) {
-                        $output->writeln(sprintf('<comment>Analyzing resolved paths: %s</comment>', implode(', ', $resolvedPaths)));
+                        $output->writeln(\sprintf('<comment>Analyzing resolved paths: %s</comment>', implode(', ', $resolvedPaths)));
                     }
                 } else {
                     if ($output->isVerbose()) {
@@ -89,9 +89,9 @@ final class PhpCsFixerLintCommand extends BaseCommand
             }
 
             return $this->executeProcess($command, $input, $output, $memoryLimit);
-
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
+            $output->writeln(\sprintf('<error>Error: %s</error>', $e->getMessage()));
+
             return 1;
         }
     }

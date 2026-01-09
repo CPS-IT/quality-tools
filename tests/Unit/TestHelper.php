@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit;
 
 /**
- * Helper class for unit tests providing common utilities and test data
+ * Helper class for unit tests providing common utilities and test data.
  */
 final class TestHelper
 {
     /**
-     * Create a temporary directory for testing
+     * Create a temporary directory for testing.
      */
     public static function createTempDirectory(string $prefix = 'qt_test_'): string
     {
         $tempDir = sys_get_temp_dir() . '/' . $prefix . uniqid();
 
-        if (!mkdir($tempDir, 0777, true)) {
+        if (!mkdir($tempDir, 0o777, true)) {
             throw new \RuntimeException("Failed to create temp directory: {$tempDir}");
         }
 
@@ -24,7 +24,7 @@ final class TestHelper
     }
 
     /**
-     * Remove a directory and all its contents recursively
+     * Remove a directory and all its contents recursively.
      */
     public static function removeDirectory(string $directory): void
     {
@@ -35,17 +35,19 @@ final class TestHelper
         // Handle symbolic links
         if (is_link($directory)) {
             unlink($directory);
+
             return;
         }
 
         if (!is_dir($directory)) {
             unlink($directory);
+
             return;
         }
 
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+            \RecursiveIteratorIterator::CHILD_FIRST,
         );
 
         foreach ($iterator as $file) {
@@ -62,7 +64,7 @@ final class TestHelper
     }
 
     /**
-     * Create a composer.json file with specified content
+     * Create a composer.json file with specified content.
      */
     public static function createComposerJson(string $directory, array $content): string
     {
@@ -77,7 +79,7 @@ final class TestHelper
     }
 
     /**
-     * Get sample composer.json content for different project types
+     * Get sample composer.json content for different project types.
      */
     public static function getComposerContent(string $type): array
     {
@@ -127,18 +129,18 @@ final class TestHelper
     }
 
     /**
-     * Create a nested directory structure for testing traversal
+     * Create a nested directory structure for testing traversal.
      */
     public static function createNestedStructure(string $basePath, int $depth): array
     {
         $paths = [$basePath];
         $currentPath = $basePath;
 
-        mkdir($currentPath, 0777, true);
+        mkdir($currentPath, 0o777, true);
 
-        for ($i = 1; $i <= $depth; $i++) {
+        for ($i = 1; $i <= $depth; ++$i) {
             $currentPath .= '/level' . $i;
-            mkdir($currentPath, 0777, true);
+            mkdir($currentPath, 0o777, true);
             $paths[] = $currentPath;
         }
 
@@ -146,29 +148,27 @@ final class TestHelper
     }
 
     /**
-     * Assert that a string contains all expected substrings
+     * Assert that a string contains all expected substrings.
      */
     public static function assertStringContainsAll(array $needles, string $haystack, string $message = ''): void
     {
         foreach ($needles as $needle) {
-            if (!str_contains($haystack, $needle)) {
-                throw new \PHPUnit\Framework\AssertionFailedError(
-                    $message ?: "Failed asserting that '{$haystack}' contains '{$needle}'"
-                );
+            if (!str_contains($haystack, (string) $needle)) {
+                throw new \PHPUnit\Framework\AssertionFailedError($message ?: "Failed asserting that '{$haystack}' contains '{$needle}'");
             }
         }
     }
 
     /**
-     * Get the project root path for tests
+     * Get the project root path for tests.
      */
     public static function getProjectRoot(): string
     {
-        return dirname(__DIR__, 2);
+        return \dirname(__DIR__, 2);
     }
 
     /**
-     * Get the fixtures directory path
+     * Get the fixtures directory path.
      */
     public static function getFixturesPath(): string
     {
@@ -176,7 +176,7 @@ final class TestHelper
     }
 
     /**
-     * Backup and restore environment variables for testing
+     * Backup and restore environment variables for testing.
      */
     public static function withEnvironment(array $variables, callable $callback): mixed
     {
@@ -204,7 +204,7 @@ final class TestHelper
 
     /**
      * Create vendor directory structure with cpsit/quality-tools package
-     * This supports both app/vendor and vendor patterns for dynamic detection
+     * This supports both app/vendor and vendor patterns for dynamic detection.
      */
     public static function createVendorStructure(string $projectRoot, bool $useAppVendor = false): string
     {
@@ -214,14 +214,14 @@ final class TestHelper
         $binDir = $vendorDir . '/bin';
 
         // Create directories
-        mkdir($configDir, 0777, true);
-        mkdir($binDir, 0777, true);
+        mkdir($configDir, 0o777, true);
+        mkdir($binDir, 0o777, true);
 
         return $vendorDir;
     }
 
     /**
-     * Create mock executables in vendor/bin directory
+     * Create mock executables in vendor/bin directory.
      */
     public static function createMockExecutables(string $vendorBinDir, array $executables): void
     {
@@ -230,9 +230,9 @@ final class TestHelper
             // Use the specific message format expected by tests
             $message = $executable === 'composer-normalize'
                 ? 'Composer normalize executed successfully'
-                : ucfirst($executable) . ' executed successfully';
+                : ucfirst((string) $executable) . ' executed successfully';
             file_put_contents($executablePath, "#!/bin/bash\necho '{$message}'\nexit 0\n");
-            chmod($executablePath, 0755);
+            chmod($executablePath, 0o755);
         }
     }
 }

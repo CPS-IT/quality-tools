@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Edge case and error scenario tests for BaseCommand
+ * Edge case and error scenario tests for BaseCommand.
  *
  * @covers \Cpsit\QualityTools\Console\Command\BaseCommand
  */
@@ -40,7 +40,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new EdgeCaseTestCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -56,7 +56,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
     {
         $projectRoot = $this->tempDir;
         $configDir = $projectRoot . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0777, true);
+        mkdir($configDir, 0o777, true);
 
         $defaultConfigFile = $configDir . '/test.php';
         file_put_contents($defaultConfigFile, '<?php return [];');
@@ -204,7 +204,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
         $actualDir = $this->tempDir . '/actual-dir';
         $symlinkDir = $this->tempDir . '/symlink-dir';
 
-        mkdir($actualDir, 0777, true);
+        mkdir($actualDir, 0o777, true);
         symlink($actualDir, $symlinkDir);
 
         $this->mockInput
@@ -226,7 +226,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
 
         // Create relative directory
         $fullPath = $currentDir . '/' . $relativePath;
-        mkdir($fullPath, 0777, true);
+        mkdir($fullPath, 0o777, true);
 
         try {
             $this->mockInput
@@ -268,7 +268,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
 
         // Test that shortcuts don't conflict among our custom options
         $customShortcuts = ['c', 'p'];
-        $this->assertEquals(2, count(array_unique($customShortcuts)), "Custom shortcuts should not conflict");
+        $this->assertEquals(2, \count(array_unique($customShortcuts)), 'Custom shortcuts should not conflict');
     }
 
     public function testExecuteProcessWithSpecialCharactersInCommand(): void
@@ -323,7 +323,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
 }
 
 /**
- * Test command for edge case testing
+ * Test command for edge case testing.
  */
 final class EdgeCaseTestCommand extends BaseCommand
 {
@@ -345,7 +345,7 @@ final class EdgeCaseTestCommand extends BaseCommand
     public function testExecuteProcess(
         array $command,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): int {
         return $this->executeProcess($command, $input, $output);
     }

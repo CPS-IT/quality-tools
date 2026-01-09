@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
 /**
- * Environmental variation tests
+ * Environmental variation tests.
  *
  * These tests validate that our quality tools work correctly across
  * different project structures, dependency versions, and environments.
@@ -32,35 +32,36 @@ final class EnvironmentalVariationTest extends TestCase
     {
         $tempDir = TestHelper::createTempDirectory("env_test_{$type}_");
         $this->tempDirectories[] = $tempDir;
+
         return $tempDir;
     }
 
     /**
-     * Test different TYPO3 project structures
+     * Test different TYPO3 project structures.
      */
     public function testAcrossDifferentTypo3ProjectTypes(): void
     {
         $projectTypes = [
             'typo3-core' => [
                 'require' => ['typo3/cms-core' => '^13.4'],
-                'expectedBehavior' => 'success'
+                'expectedBehavior' => 'success',
             ],
             'typo3-minimal' => [
                 'require' => ['typo3/minimal' => '^13.4'],
-                'expectedBehavior' => 'success'
+                'expectedBehavior' => 'success',
             ],
             'typo3-cms' => [
                 'require' => ['typo3/cms' => '^13.4'],
-                'expectedBehavior' => 'success'
+                'expectedBehavior' => 'success',
             ],
             'typo3-dev-only' => [
                 'require' => ['symfony/console' => '^7.0'],
                 'require-dev' => ['typo3/cms-core' => '^13.4'],
-                'expectedBehavior' => 'success' // Should work with dev dependency
+                'expectedBehavior' => 'success', // Should work with dev dependency
             ],
             'non-typo3' => [
                 'require' => ['doctrine/orm' => '^3.0'],
-                'expectedBehavior' => 'limited' // Some commands should work
+                'expectedBehavior' => 'limited', // Some commands should work
             ],
         ];
 
@@ -71,27 +72,31 @@ final class EnvironmentalVariationTest extends TestCase
             $result = $this->testQualityToolsInProject($projectDir, $type);
 
             if ($config['expectedBehavior'] === 'success') {
-                $this->assertEquals(0, $result['exitCode'],
-                    "Quality tools should work with {$type} project"
+                $this->assertEquals(
+                    0,
+                    $result['exitCode'],
+                    "Quality tools should work with {$type} project",
                 );
             } elseif ($config['expectedBehavior'] === 'limited') {
                 // Should not crash, but some features may be limited
-                $this->assertLessThan(128, $result['exitCode'],
-                    "Quality tools should not crash with {$type} project"
+                $this->assertLessThan(
+                    128,
+                    $result['exitCode'],
+                    "Quality tools should not crash with {$type} project",
                 );
             }
         }
     }
 
     /**
-     * Test different vendor directory locations
+     * Test different vendor directory locations.
      */
     public function testDifferentVendorDirectoryStructures(): void
     {
         $vendorStructures = [
             'standard' => 'vendor',
             'app_vendor' => 'app/vendor',
-            'composer_vendor' => 'composer/vendor'
+            'composer_vendor' => 'composer/vendor',
         ];
 
         foreach ($vendorStructures as $name => $vendorPath) {
@@ -100,14 +105,16 @@ final class EnvironmentalVariationTest extends TestCase
 
             $result = $this->testToolDiscoveryInProject($projectDir, $vendorPath);
 
-            $this->assertEquals(0, $result['exitCode'],
-                "Quality tools should discover tools in {$vendorPath}"
+            $this->assertEquals(
+                0,
+                $result['exitCode'],
+                "Quality tools should discover tools in {$vendorPath}",
             );
         }
     }
 
     /**
-     * Test different PHP memory limits
+     * Test different PHP memory limits.
      */
     public function testAcrossDifferentPhpMemoryLimits(): void
     {
@@ -115,7 +122,7 @@ final class EnvironmentalVariationTest extends TestCase
             'low' => '64M',
             'medium' => '128M',
             'high' => '256M',
-            'unlimited' => '-1'
+            'unlimited' => '-1',
         ];
 
         $projectDir = $this->createTestProject('memory_test');
@@ -128,19 +135,23 @@ final class EnvironmentalVariationTest extends TestCase
 
             if ($limitName === 'low') {
                 // Low memory might fail, but should fail gracefully
-                $this->assertContains($result['exitCode'], [0, 1, 2],
-                    "Tool should handle low memory gracefully"
+                $this->assertContains(
+                    $result['exitCode'],
+                    [0, 1, 2],
+                    'Tool should handle low memory gracefully',
                 );
             } else {
-                $this->assertEquals(0, $result['exitCode'],
-                    "Tool should work with {$limitName} memory limit ({$limitValue})"
+                $this->assertEquals(
+                    0,
+                    $result['exitCode'],
+                    "Tool should work with {$limitName} memory limit ({$limitValue})",
                 );
             }
         }
     }
 
     /**
-     * Test different file permissions scenarios
+     * Test different file permissions scenarios.
      */
     public function testFilePermissionScenarios(): void
     {
@@ -149,33 +160,37 @@ final class EnvironmentalVariationTest extends TestCase
 
         // Test read-only configuration files
         $configFile = $projectDir . '/vendor/cpsit/quality-tools/config/rector.php';
-        chmod($configFile, 0444); // Read-only
+        chmod($configFile, 0o444); // Read-only
 
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'],
-            'Should handle read-only config files'
+        $this->assertEquals(
+            0,
+            $result['exitCode'],
+            'Should handle read-only config files',
         );
 
         // Restore permissions
-        chmod($configFile, 0644);
+        chmod($configFile, 0o644);
 
         // Test read-only source files
         $sourceFile = $projectDir . '/packages/test_extension/Classes/Controller/TestController.php';
-        $sourceDir = dirname($sourceFile);
+        $sourceDir = \dirname($sourceFile);
         if (!is_dir($sourceDir)) {
-            mkdir($sourceDir, 0777, true);
+            mkdir($sourceDir, 0o777, true);
         }
         file_put_contents($sourceFile, '<?php class TestController {}');
-        chmod($sourceFile, 0444); // Read-only
+        chmod($sourceFile, 0o444); // Read-only
 
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'],
-            'Should handle read-only source files in dry-run mode'
+        $this->assertEquals(
+            0,
+            $result['exitCode'],
+            'Should handle read-only source files in dry-run mode',
         );
     }
 
     /**
-     * Test different file encodings and special characters
+     * Test different file encodings and special characters.
      */
     public function testDifferentFileEncodings(): void
     {
@@ -192,7 +207,7 @@ final class EnvironmentalVariationTest extends TestCase
 
         $classesDir = $projectDir . '/packages/test_extension/Classes';
         if (!is_dir($classesDir)) {
-            mkdir($classesDir, 0777, true);
+            mkdir($classesDir, 0o777, true);
         }
 
         foreach ($testFiles as $filename => $content) {
@@ -201,18 +216,22 @@ final class EnvironmentalVariationTest extends TestCase
 
         // Test that tools can handle different encodings
         $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-        $this->assertEquals(0, $result['exitCode'],
-            'Should handle different file encodings'
+        $this->assertEquals(
+            0,
+            $result['exitCode'],
+            'Should handle different file encodings',
         );
 
         $result = $this->runQualityTool($projectDir, 'phpstan');
-        $this->assertContains($result['exitCode'], [0, 1],
-            'PHPStan should process files with different encodings'
+        $this->assertContains(
+            $result['exitCode'],
+            [0, 1],
+            'PHPStan should process files with different encodings',
         );
     }
 
     /**
-     * Test different composer autoloader configurations
+     * Test different composer autoloader configurations.
      */
     public function testDifferentAutoloaderConfigurations(): void
     {
@@ -220,32 +239,32 @@ final class EnvironmentalVariationTest extends TestCase
             'psr4_only' => [
                 'autoload' => [
                     'psr-4' => [
-                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/'
-                    ]
-                ]
+                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/',
+                    ],
+                ],
             ],
             'psr4_and_psr0' => [
                 'autoload' => [
                     'psr-4' => [
-                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/'
+                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/',
                     ],
                     'psr-0' => [
-                        'Legacy_' => 'legacy/src/'
-                    ]
-                ]
+                        'Legacy_' => 'legacy/src/',
+                    ],
+                ],
             ],
             'classmap' => [
                 'autoload' => [
-                    'classmap' => ['packages/']
-                ]
+                    'classmap' => ['packages/'],
+                ],
             ],
             'files' => [
                 'autoload' => [
                     'files' => ['config/functions.php'],
                     'psr-4' => [
-                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/'
-                    ]
-                ]
+                        'MyVendor\\MyExtension\\' => 'packages/my_extension/Classes/',
+                    ],
+                ],
             ],
         ];
 
@@ -254,14 +273,16 @@ final class EnvironmentalVariationTest extends TestCase
             $this->setupProjectWithAutoloaderConfig($projectDir, $config);
 
             $result = $this->runQualityTool($projectDir, 'rector', ['--dry-run']);
-            $this->assertEquals(0, $result['exitCode'],
-                "Should work with {$configName} autoloader configuration"
+            $this->assertEquals(
+                0,
+                $result['exitCode'],
+                "Should work with {$configName} autoloader configuration",
             );
         }
     }
 
     /**
-     * Test different operating system behaviors
+     * Test different operating system behaviors.
      */
     public function testCrossPlatformCompatibility(): void
     {
@@ -283,18 +304,20 @@ final class EnvironmentalVariationTest extends TestCase
 
             $result = $this->runQualityTool($projectDir, 'rector', [
                 '--config', $configFile,
-                '--dry-run'
+                '--dry-run',
             ]);
 
             // Should handle path normalization gracefully
-            $this->assertContains($result['exitCode'], [0, 1],
-                "Should handle {$style} paths gracefully"
+            $this->assertContains(
+                $result['exitCode'],
+                [0, 1],
+                "Should handle {$style} paths gracefully",
             );
         }
     }
 
     /**
-     * Test with large number of dependencies
+     * Test with large number of dependencies.
      */
     public function testWithManyDependencies(): void
     {
@@ -318,17 +341,19 @@ final class EnvironmentalVariationTest extends TestCase
             'require' => $manyDependencies,
             'autoload' => [
                 'psr-4' => [
-                    'Test\\ManyDeps\\' => 'packages/many_deps/Classes/'
-                ]
-            ]
+                    'Test\\ManyDeps\\' => 'packages/many_deps/Classes/',
+                ],
+            ],
         ]);
 
         $this->setupVendorStructure($projectDir);
         $this->createBasicPhpFile($projectDir, 'packages/many_deps/Classes/TestClass.php');
 
         $result = $this->runQualityTool($projectDir, 'phpstan');
-        $this->assertContains($result['exitCode'], [0, 1],
-            'Should handle projects with many dependencies'
+        $this->assertContains(
+            $result['exitCode'],
+            [0, 1],
+            'Should handle projects with many dependencies',
         );
     }
 
@@ -352,7 +377,7 @@ final class EnvironmentalVariationTest extends TestCase
             'name' => 'test/custom-vendor',
             'type' => 'project',
             'require' => ['typo3/cms-core' => '^13.4'],
-            'config' => ['vendor-dir' => $vendorPath]
+            'config' => ['vendor-dir' => $vendorPath],
         ]);
 
         $fullVendorPath = $projectDir . '/' . $vendorPath;
@@ -365,7 +390,7 @@ final class EnvironmentalVariationTest extends TestCase
         TestHelper::createComposerJson($projectDir, [
             'name' => 'test/standard-project',
             'type' => 'project',
-            'require' => ['typo3/cms-core' => '^13.4']
+            'require' => ['typo3/cms-core' => '^13.4'],
         ]);
 
         $this->setupVendorStructure($projectDir);
@@ -377,7 +402,7 @@ final class EnvironmentalVariationTest extends TestCase
         $composerData = [
             'name' => 'test/autoloader-test',
             'type' => 'project',
-            'require' => ['typo3/cms-core' => '^13.4']
+            'require' => ['typo3/cms-core' => '^13.4'],
         ];
 
         $composerData = array_merge($composerData, $autoloadConfig);
@@ -387,9 +412,9 @@ final class EnvironmentalVariationTest extends TestCase
 
         // Create files according to autoloader config
         if (isset($autoloadConfig['autoload']['psr-4'])) {
-            foreach ($autoloadConfig['autoload']['psr-4'] as $namespace => $path) {
+            foreach ($autoloadConfig['autoload']['psr-4'] as $path) {
                 $fullPath = $projectDir . '/' . $path;
-                mkdir($fullPath, 0777, true);
+                mkdir($fullPath, 0o777, true);
                 $this->createBasicPhpFile($projectDir, $path . 'TestClass.php');
             }
         }
@@ -397,7 +422,7 @@ final class EnvironmentalVariationTest extends TestCase
         if (isset($autoloadConfig['autoload']['files'])) {
             foreach ($autoloadConfig['autoload']['files'] as $file) {
                 $fullPath = $projectDir . '/' . $file;
-                mkdir(dirname($fullPath), 0777, true);
+                mkdir(\dirname($fullPath), 0o777, true);
                 file_put_contents($fullPath, "<?php\n// Functions file\n");
             }
         }
@@ -409,83 +434,91 @@ final class EnvironmentalVariationTest extends TestCase
         $binDir = $fullVendorPath . '/bin';
         $configDir = $fullVendorPath . '/cpsit/quality-tools/config';
 
-        mkdir($binDir, 0777, true);
-        mkdir($configDir, 0777, true);
+        mkdir($binDir, 0o777, true);
+        mkdir($configDir, 0o777, true);
 
         // Create basic config files
         file_put_contents($configDir . '/rector.php', '<?php return [];');
         file_put_contents($configDir . '/phpstan.neon', 'parameters: { level: 1 }');
 
         // Create executable tools
-        file_put_contents($binDir . '/rector', <<<'BASH'
-#!/bin/bash
-echo "Rector analysis complete"
-exit 0
-BASH
+        file_put_contents(
+            $binDir . '/rector',
+            <<<'BASH'
+                #!/bin/bash
+                echo "Rector analysis complete"
+                exit 0
+                BASH
         );
-        file_put_contents($binDir . '/qt', <<<'BASH'
-#!/bin/bash
-echo "Quality Tools CLI"
-exit 0
-BASH
-        );
-
-        file_put_contents($binDir . '/phpstan', <<<'BASH'
-#!/bin/bash
-echo "PHPStan analysis complete"
-exit 0
-BASH
+        file_put_contents(
+            $binDir . '/qt',
+            <<<'BASH'
+                #!/bin/bash
+                echo "Quality Tools CLI"
+                exit 0
+                BASH
         );
 
-        chmod($binDir . '/rector', 0755);
-        chmod($binDir . '/qt', 0755);
-        chmod($binDir . '/phpstan', 0755);
+        file_put_contents(
+            $binDir . '/phpstan',
+            <<<'BASH'
+                #!/bin/bash
+                echo "PHPStan analysis complete"
+                exit 0
+                BASH
+        );
+
+        chmod($binDir . '/rector', 0o755);
+        chmod($binDir . '/qt', 0o755);
+        chmod($binDir . '/phpstan', 0o755);
     }
 
     private function createBasicPhpFile(string $projectDir, string $relativePath): void
     {
         $fullPath = $projectDir . '/' . $relativePath;
-        mkdir(dirname($fullPath), 0777, true);
+        mkdir(\dirname($fullPath), 0o777, true);
 
-        file_put_contents($fullPath, <<<'PHP'
-<?php
-namespace Test\Extension;
+        file_put_contents(
+            $fullPath,
+            <<<'PHP'
+                <?php
+                namespace Test\Extension;
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+                use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * Basic test class for environmental testing
- */
-class TestClass
-{
-    /**
-     * @var array
-     */
-    protected $configuration = array();
+                /**
+                 * Basic test class for environmental testing
+                 */
+                class TestClass
+                {
+                    /**
+                     * @var array
+                     */
+                    protected $configuration = array();
 
-    public function __construct()
-    {
-        $this->configuration = array(
-            'setting1' => 'value1',
-            'setting2' => 'value2'
-        );
-    }
+                    public function __construct()
+                    {
+                        $this->configuration = array(
+                            'setting1' => 'value1',
+                            'setting2' => 'value2'
+                        );
+                    }
 
-    public function getConfiguration()
-    {
-        return $this->configuration;
-    }
+                    public function getConfiguration()
+                    {
+                        return $this->configuration;
+                    }
 
-    public function processData($input)
-    {
-        if (is_array($input)) {
-            return array_merge($this->configuration, $input);
-        }
+                    public function processData($input)
+                    {
+                        if (is_array($input)) {
+                            return array_merge($this->configuration, $input);
+                        }
 
-        return $this->configuration;
-    }
-}
-PHP
+                        return $this->configuration;
+                    }
+                }
+                PHP
         );
     }
 
@@ -495,7 +528,7 @@ PHP
         $process = new Process([
             'php',
             'vendor/bin/qt',
-            'list'
+            'list',
         ], $projectDir, null, null, 30);
 
         $process->run();
@@ -503,7 +536,7 @@ PHP
         return [
             'exitCode' => $process->getExitCode(),
             'output' => $process->getOutput(),
-            'error' => $process->getErrorOutput()
+            'error' => $process->getErrorOutput(),
         ];
     }
 
@@ -512,7 +545,7 @@ PHP
         $process = new Process([
             'php',
             $vendorPath . '/bin/rector',
-            '--help'
+            '--help',
         ], $projectDir, null, null, 30);
 
         $process->run();
@@ -520,7 +553,7 @@ PHP
         return [
             'exitCode' => $process->getExitCode(),
             'output' => $process->getOutput(),
-            'error' => $process->getErrorOutput()
+            'error' => $process->getErrorOutput(),
         ];
     }
 
@@ -529,7 +562,7 @@ PHP
         $process = new Process([
             'vendor/bin/rector',
             '--dry-run',
-            'packages/'
+            'packages/',
         ], $projectDir, $env, null, 60);
 
         $process->run();
@@ -537,7 +570,7 @@ PHP
         return [
             'exitCode' => $process->getExitCode(),
             'output' => $process->getOutput(),
-            'error' => $process->getErrorOutput()
+            'error' => $process->getErrorOutput(),
         ];
     }
 
@@ -551,7 +584,7 @@ PHP
         return [
             'exitCode' => $process->getExitCode(),
             'output' => $process->getOutput(),
-            'error' => $process->getErrorOutput()
+            'error' => $process->getErrorOutput(),
         ];
     }
 }

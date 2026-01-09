@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown when configuration-related issues occur
+ * Exception thrown when configuration-related issues occur.
  */
 class ConfigurationException extends QualityToolsException
 {
@@ -19,7 +19,7 @@ class ConfigurationException extends QualityToolsException
         int $code = self::ERROR_CONFIG_VALIDATION_FAILED,
         ?\Throwable $previous = null,
         private readonly array $troubleshootingSteps = [],
-        private readonly array $context = []
+        private readonly array $context = [],
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);
     }

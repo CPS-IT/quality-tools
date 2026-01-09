@@ -7,7 +7,7 @@ namespace Cpsit\QualityTools\Configuration;
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
 
-final class ConfigurationValidator
+final readonly class ConfigurationValidator
 {
     private array $schema;
 

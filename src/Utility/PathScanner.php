@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Utility;
 
 /**
- * Scans and resolves additional package paths based on various patterns
+ * Scans and resolves additional package paths based on various patterns.
  *
  * This utility supports multiple path specification formats:
  * - Glob patterns: packages/*\/Classes/**\/*.php
@@ -15,7 +15,7 @@ namespace Cpsit\QualityTools\Utility;
  */
 final class PathScanner
 {
-    private string $projectRoot;
+    private readonly string $projectRoot;
     private ?string $vendorPath = null;
     private array $resolvedPathsCache = [];
 
@@ -31,16 +31,17 @@ final class PathScanner
     }
 
     /**
-     * Generate optimized cache key for path patterns and vendor path
+     * Generate optimized cache key for path patterns and vendor path.
      */
     private function generateCacheKey(array $pathPatterns, string $vendorPath): string
     {
         $data = implode('|', $pathPatterns) . '|' . $vendorPath;
+
         return md5($data);
     }
 
     /**
-     * Resolve an array of path patterns to actual filesystem paths
+     * Resolve an array of path patterns to actual filesystem paths.
      */
     public function resolvePaths(array $pathPatterns): array
     {
@@ -55,8 +56,8 @@ final class PathScanner
 
         // Separate inclusion and exclusion patterns
         foreach ($pathPatterns as $pattern) {
-            if (str_starts_with($pattern, '!')) {
-                $excludePatterns[] = substr($pattern, 1);
+            if (str_starts_with((string) $pattern, '!')) {
+                $excludePatterns[] = substr((string) $pattern, 1);
             } else {
                 $includePatterns[] = $pattern;
             }
@@ -94,7 +95,7 @@ final class PathScanner
     }
 
     /**
-     * Resolve a single pattern to filesystem paths
+     * Resolve a single pattern to filesystem paths.
      */
     private function resolvePattern(string $pattern): array
     {
@@ -113,7 +114,7 @@ final class PathScanner
     }
 
     /**
-     * Check if a pattern is a vendor namespace pattern (vendor/namespace/*)
+     * Check if a pattern is a vendor namespace pattern (vendor/namespace/*).
      */
     private function isVendorNamespacePattern(string $pattern): bool
     {
@@ -136,11 +137,12 @@ final class PathScanner
 
         // Check if this namespace actually exists in the vendor directory
         $vendorNamespaceDir = $this->vendorPath . '/' . $namespace;
+
         return is_dir($vendorNamespaceDir);
     }
 
     /**
-     * Check if a pattern is an explicit vendor path pattern (vendor/namespace/*)
+     * Check if a pattern is an explicit vendor path pattern (vendor/namespace/*).
      */
     private function isExplicitVendorPattern(string $pattern): bool
     {
@@ -154,7 +156,7 @@ final class PathScanner
     }
 
     /**
-     * Resolve vendor namespace patterns to actual vendor directories
+     * Resolve vendor namespace patterns to actual vendor directories.
      */
     private function resolveVendorNamespacePattern(string $pattern): array
     {
@@ -199,17 +201,17 @@ final class PathScanner
     }
 
     /**
-     * Check if a pattern contains glob characters
+     * Check if a pattern contains glob characters.
      */
     private function containsGlobCharacters(string $pattern): bool
     {
-        return str_contains($pattern, '*') ||
-            str_contains($pattern, '?') ||
-            str_contains($pattern, '[');
+        return str_contains($pattern, '*')
+            || str_contains($pattern, '?')
+            || str_contains($pattern, '[');
     }
 
     /**
-     * Resolve glob patterns to matching paths
+     * Resolve glob patterns to matching paths.
      */
     private function resolveGlobPattern(string $pattern): array
     {
@@ -235,7 +237,7 @@ final class PathScanner
     }
 
     /**
-     * Resolve a simple directory path
+     * Resolve a simple directory path.
      */
     private function resolveDirectoryPath(string $pattern): array
     {
@@ -252,7 +254,7 @@ final class PathScanner
     }
 
     /**
-     * Build absolute pattern for glob operations (without realpath normalization)
+     * Build absolute pattern for glob operations (without realpath normalization).
      */
     private function buildAbsolutePattern(string $pattern): string
     {
@@ -270,7 +272,7 @@ final class PathScanner
     }
 
     /**
-     * Convert a relative path to absolute based on the project root
+     * Convert a relative path to absolute based on the project root.
      */
     private function toAbsolutePath(string $path): string
     {
@@ -282,15 +284,17 @@ final class PathScanner
         // Handle vendor/ prefix for vendor namespace resolution
         if ($this->vendorPath !== null && str_starts_with($path, 'vendor/')) {
             $fullPath = $this->vendorPath . '/' . substr($path, 7);
+
             return realpath($fullPath) ?: $fullPath;
         }
 
         $fullPath = $this->projectRoot . '/' . ltrim($path, '/');
+
         return realpath($fullPath) ?: $fullPath;
     }
 
     /**
-     * Check if a path exists (directory or file)
+     * Check if a path exists (directory or file).
      */
     private function pathExists(string $path): bool
     {
@@ -298,7 +302,7 @@ final class PathScanner
     }
 
     /**
-     * Apply exclusion patterns to resolved paths
+     * Apply exclusion patterns to resolved paths.
      */
     private function applyExclusions(array $paths, array $excludePatterns, array $explicitVendorPaths = []): array
     {
@@ -306,22 +310,21 @@ final class PathScanner
             $this->projectRoot,
             $this->vendorPath,
             $excludePatterns,
-            $explicitVendorPaths
+            $explicitVendorPaths,
         );
 
         return $pathFilter->filter($paths);
     }
 
-
     /**
-     * Validate that paths exist and are accessible
+     * Validate that paths exist and are accessible.
      */
     public function validatePaths(array $paths): array
     {
         $validation = [
             'valid' => [],
             'invalid' => [],
-            'inaccessible' => []
+            'inaccessible' => [],
         ];
 
         foreach ($paths as $path) {
@@ -344,7 +347,7 @@ final class PathScanner
     }
 
     /**
-     * Get debug information about path resolution
+     * Get debug information about path resolution.
      */
     public function getPathResolutionDebugInfo(array $pathPatterns): array
     {
@@ -353,21 +356,19 @@ final class PathScanner
             'vendor_path' => $this->vendorPath,
             'input_patterns' => $pathPatterns,
             'resolved_paths' => $this->resolvePaths($pathPatterns),
-            'pattern_analysis' => array_map(function ($pattern) {
-                return [
-                    'pattern' => $pattern,
-                    'type' => $this->getPatternType($pattern),
-                    'is_exclusion' => str_starts_with($pattern, '!'),
-                    'absolute_pattern' => str_starts_with($pattern, '!')
-                        ? $this->getAbsolutePatternForDebug(substr($pattern, 1))
-                        : $this->getAbsolutePatternForDebug($pattern)
-                ];
-            }, $pathPatterns)
+            'pattern_analysis' => array_map(fn ($pattern) => [
+                'pattern' => $pattern,
+                'type' => $this->getPatternType($pattern),
+                'is_exclusion' => str_starts_with((string) $pattern, '!'),
+                'absolute_pattern' => str_starts_with((string) $pattern, '!')
+                    ? $this->getAbsolutePatternForDebug(substr((string) $pattern, 1))
+                    : $this->getAbsolutePatternForDebug($pattern),
+            ], $pathPatterns),
         ];
     }
 
     /**
-     * Determine the type of pattern
+     * Determine the type of pattern.
      */
     private function getPatternType(string $pattern): string
     {
@@ -385,7 +386,7 @@ final class PathScanner
     }
 
     /**
-     * Get absolute pattern for debug purposes (handles vendor namespace patterns correctly)
+     * Get absolute pattern for debug purposes (handles vendor namespace patterns correctly).
      */
     private function getAbsolutePatternForDebug(string $pattern): string
     {
@@ -397,7 +398,7 @@ final class PathScanner
     }
 
     /**
-     * Clear internal caches
+     * Clear internal caches.
      */
     public function clearCache(): void
     {

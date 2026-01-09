@@ -55,19 +55,19 @@ quality-tools:
       - "var/"
       - "vendor/"
       - "node_modules/"
-    
+
     # Additional path scanning (Feature 013)
     additional:
       - "src/**/*.php"                    # Custom source directory
       - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
       - "vendor/fr/*/Classes"             # Scan other vendor packages
       - "custom-extensions/*/Classes/"    # Custom extension location
-    
+
     # Advanced exclusion patterns
     exclude_patterns:
       - "packages/legacy/*"               # Exclude legacy packages
       - "vendor/*/Tests/"                 # Exclude vendor tests
-    
+
     # Tool-specific path overrides
     tool_overrides:
       rector:
@@ -85,12 +85,12 @@ quality-tools:
     rector:
       enabled: true
       level: "typo3-13"
-    
+
     phpstan:
       enabled: true
       level: 6
       memory_limit: "1G"
-    
+
     php-cs-fixer:
       enabled: true
       preset: "typo3"
@@ -264,25 +264,25 @@ quality-tools:
     additional:
       - "src/**/*.php"
       - "vendor/cpsit/*/Classes"
-    
+
     # Tool-specific overrides
     tool_overrides:
       rector:
         additional:
           - "config/rector/*.php"       # Rector-specific config files
           - "scripts/**/*.php"          # Include scripts for Rector
-      
+
       fractor:
         additional:
           - "config/sites/*/setup.typoscript"
           - "fileadmin/templates/*.typoscript"
-      
+
       phpstan:
         additional:
           - "Tests/**/*.php"            # Include tests for PHPStan
         exclude:
           - "packages/experimental/*"   # Exclude unstable code from PHPStan
-      
+
       typoscript-lint:
         additional:
           - "fileadmin/**/*.typoscript"
@@ -296,14 +296,14 @@ quality-tools:
 quality-tools:
   project:
     name: "enterprise-monorepo"
-  
+
   paths:
     additional:
       - "apps/*/src/**/*.php"           # Multiple apps
       - "libs/*/Classes/**/*.php"       # Shared libraries
       - "packages/*/Classes/**/*.php"   # Custom packages
       - "vendor/company/*/Classes"      # Company-specific packages
-    
+
     exclude_patterns:
       - "apps/*/Tests/"                 # Exclude app tests
       - "libs/legacy/*"                 # Exclude legacy libraries
@@ -315,13 +315,13 @@ quality-tools:
 quality-tools:
   project:
     name: "vendor-package-analysis"
-  
+
   paths:
     additional:
       - "cpsit/*"                       # All CPSIT packages
       - "typo3/cms-*"                   # TYPO3 core packages
       - "symfony/*/src"                 # Symfony package sources
-    
+
     exclude_patterns:
       - "*/Tests/"                      # Exclude all tests
       - "*/Documentation/"              # Exclude documentation
@@ -332,15 +332,15 @@ quality-tools:
 quality-tools:
   project:
     name: "legacy-migration"
-  
+
   paths:
     additional:
       - "legacy/Classes/**/*.php"       # Legacy code to modernize
       - "migration/src/**/*.php"        # Migration utilities
-    
+
     exclude_patterns:
       - "legacy/deprecated/*"           # Skip deprecated legacy code
-    
+
     tool_overrides:
       rector:
         additional:
@@ -596,7 +596,7 @@ quality-tools:
   tools:
     rector:
       enabled: "${ENABLE_RECTOR:-true}"
-    
+
     phpstan:
       enabled: "${ENABLE_PHPSTAN:-true}"
       level: "${PHPSTAN_LEVEL:-6}"
@@ -615,7 +615,7 @@ quality-tools:
       paths:  # PHPStan-specific paths
         - "packages/"
         - "Tests/"
-    
+
     typoscript-lint:
       # Uses global scan paths
 ```
@@ -627,7 +627,7 @@ quality-tools:
   tools:
     phpstan:
       memory_limit: "${PHPSTAN_MEMORY:-1G}"
-    
+
   performance:
     parallel: "${ENABLE_PARALLEL:-true}"
     max_processes: "${MAX_PROCESSES:-4}"
@@ -641,7 +641,7 @@ quality-tools:
    ```bash
    # Check current directory
    ls -la .quality-tools.yaml
-   
+
    # Initialize if missing
    vendor/bin/qt config:init
    ```
@@ -650,7 +650,7 @@ quality-tools:
    ```bash
    # Check validation
    vendor/bin/qt config:validate
-   
+
    # Show resolved config
    vendor/bin/qt config:show --verbose
    ```
@@ -659,7 +659,7 @@ quality-tools:
    ```bash
    # Check environment variables
    echo $PROJECT_NAME
-   
+
    # Test variable substitution
    vendor/bin/qt config:show | grep -A5 "project:"
    ```

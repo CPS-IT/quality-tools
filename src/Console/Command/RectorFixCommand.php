@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class RectorFixCommand extends AbstractToolCommand
 {
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -19,7 +20,7 @@ final class RectorFixCommand extends AbstractToolCommand
             ->setHelp(
                 'This command runs Rector to automatically apply code fixes and upgrades. ' .
                 'This will modify your code files! Use --config to specify a custom ' .
-                'configuration file or --path to target specific directories.'
+                'configuration file or --path to target specific directories.',
             );
     }
 
@@ -37,7 +38,7 @@ final class RectorFixCommand extends AbstractToolCommand
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array {
         $command = [
             $this->getVendorBinPath() . '/rector',

@@ -24,6 +24,7 @@ final class ConfigInitCommand extends BaseCommand
         self::TEMPLATE_DEFAULT => 'Default Configuration',
     ];
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -35,13 +36,13 @@ final class ConfigInitCommand extends BaseCommand
                 't',
                 InputOption::VALUE_REQUIRED,
                 'Configuration template: ' . implode(', ', array_keys(self::TEMPLATES)),
-                'default'
+                'default',
             )
             ->addOption(
                 'force',
                 'f',
                 InputOption::VALUE_NONE,
-                'Overwrite existing configuration file'
+                'Overwrite existing configuration file',
             );
     }
 
@@ -52,12 +53,13 @@ final class ConfigInitCommand extends BaseCommand
         $template = $input->getOption('template');
         $force = $input->getOption('force');
 
-        if (!array_key_exists($template, self::TEMPLATES)) {
-            $io->error(sprintf(
+        if (!\array_key_exists($template, self::TEMPLATES)) {
+            $io->error(\sprintf(
                 'Invalid template "%s". Available templates: %s',
                 $template,
-                implode(', ', array_keys(self::TEMPLATES))
+                implode(', ', array_keys(self::TEMPLATES)),
             ));
+
             return self::FAILURE;
         }
 
@@ -68,8 +70,9 @@ final class ConfigInitCommand extends BaseCommand
         $existingConfig = $loader->findConfigurationFile($projectRoot);
 
         if ($existingConfig !== null && !$force) {
-            $io->warning(sprintf('Configuration file already exists: %s', $existingConfig));
+            $io->warning(\sprintf('Configuration file already exists: %s', $existingConfig));
             $io->note('Use --force to overwrite the existing configuration.');
+
             return self::SUCCESS;
         }
 
@@ -78,12 +81,12 @@ final class ConfigInitCommand extends BaseCommand
 
             $result = file_put_contents($configFile, $configContent);
             if ($result === false) {
-                throw new \RuntimeException(sprintf('Failed to write configuration file: %s', $configFile));
+                throw new \RuntimeException(\sprintf('Failed to write configuration file: %s', $configFile));
             }
 
             $io->success([
-                sprintf('Created configuration file: %s', $configFile),
-                sprintf('Template used: %s', self::TEMPLATES[$template]),
+                \sprintf('Created configuration file: %s', $configFile),
+                \sprintf('Template used: %s', self::TEMPLATES[$template]),
             ]);
 
             $io->note([
@@ -94,12 +97,12 @@ final class ConfigInitCommand extends BaseCommand
             ]);
 
             return self::SUCCESS;
-
         } catch (\Exception $e) {
             $io->error([
                 'Failed to create configuration file:',
                 $e->getMessage(),
             ]);
+
             return self::FAILURE;
         }
     }
@@ -140,216 +143,216 @@ final class ConfigInitCommand extends BaseCommand
     private function getBaseTemplate(string $projectName): string
     {
         return <<<YAML
-# Quality Tools Configuration for $projectName
-# This file configures all quality analysis tools for your TYPO3 project
-quality-tools:
-  project:
-    name: "$projectName"
-    php_version: "8.3"
-    typo3_version: "13.4"
+            # Quality Tools Configuration for $projectName
+            # This file configures all quality analysis tools for your TYPO3 project
+            quality-tools:
+              project:
+                name: "$projectName"
+                php_version: "8.3"
+                typo3_version: "13.4"
 
-  paths:
-    scan:
-      - "packages/"
-      - "config/system/"
-    exclude:
-      - "var/"
-      - "vendor/"
-      - "node_modules/"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/system/"
+                exclude:
+                  - "var/"
+                  - "vendor/"
+                  - "node_modules/"
 
-  tools:
-    rector:
-      enabled: true
-      level: "typo3-13"
+              tools:
+                rector:
+                  enabled: true
+                  level: "typo3-13"
 
-    fractor:
-      enabled: true
-      indentation: 2
+                fractor:
+                  enabled: true
+                  indentation: 2
 
-    phpstan:
-      enabled: true
-      level: 6
-      memory_limit: "1G"
+                phpstan:
+                  enabled: true
+                  level: 6
+                  memory_limit: "1G"
 
-    php-cs-fixer:
-      enabled: true
-      preset: "typo3"
+                php-cs-fixer:
+                  enabled: true
+                  preset: "typo3"
 
-    typoscript-lint:
-      enabled: true
-      indentation: 2
+                typoscript-lint:
+                  enabled: true
+                  indentation: 2
 
-  output:
-    verbosity: "normal"
-    colors: true
-    progress: true
+              output:
+                verbosity: "normal"
+                colors: true
+                progress: true
 
-  performance:
-    parallel: true
-    max_processes: 4
-    cache_enabled: true
-YAML;
+              performance:
+                parallel: true
+                max_processes: 4
+                cache_enabled: true
+            YAML;
     }
 
     private function getExtensionTemplate(string $projectName): string
     {
         return <<<YAML
-# Quality Tools Configuration for $projectName Extension
-quality-tools:
-  project:
-    name: "$projectName"
-    php_version: "8.3"
-    typo3_version: "13.4"
+            # Quality Tools Configuration for $projectName Extension
+            quality-tools:
+              project:
+                name: "$projectName"
+                php_version: "8.3"
+                typo3_version: "13.4"
 
-  paths:
-    scan:
-      - "Classes/"
-      - "Configuration/"
-      - "Tests/"
-    exclude:
-      - "var/"
-      - "vendor/"
-      - ".build/"
+              paths:
+                scan:
+                  - "Classes/"
+                  - "Configuration/"
+                  - "Tests/"
+                exclude:
+                  - "var/"
+                  - "vendor/"
+                  - ".build/"
 
-  tools:
-    rector:
-      enabled: true
-      level: "typo3-13"
+              tools:
+                rector:
+                  enabled: true
+                  level: "typo3-13"
 
-    fractor:
-      enabled: true
-      indentation: 2
+                fractor:
+                  enabled: true
+                  indentation: 2
 
-    phpstan:
-      enabled: true
-      level: 8
-      memory_limit: "512M"
+                phpstan:
+                  enabled: true
+                  level: 8
+                  memory_limit: "512M"
 
-    php-cs-fixer:
-      enabled: true
-      preset: "typo3"
+                php-cs-fixer:
+                  enabled: true
+                  preset: "typo3"
 
-    typoscript-lint:
-      enabled: true
-      indentation: 2
+                typoscript-lint:
+                  enabled: true
+                  indentation: 2
 
-  output:
-    verbosity: "normal"
-    colors: true
+              output:
+                verbosity: "normal"
+                colors: true
 
-  performance:
-    parallel: false
-    cache_enabled: true
-YAML;
+              performance:
+                parallel: false
+                cache_enabled: true
+            YAML;
     }
 
     private function getSitePackageTemplate(string $projectName): string
     {
         return <<<YAML
-# Quality Tools Configuration for $projectName Site Package
-quality-tools:
-  project:
-    name: "$projectName"
-    php_version: "8.3"
-    typo3_version: "13.4"
+            # Quality Tools Configuration for $projectName Site Package
+            quality-tools:
+              project:
+                name: "$projectName"
+                php_version: "8.3"
+                typo3_version: "13.4"
 
-  paths:
-    scan:
-      - "packages/"
-      - "config/"
-    exclude:
-      - "var/"
-      - "vendor/"
-      - "public/"
-      - "node_modules/"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/"
+                exclude:
+                  - "var/"
+                  - "vendor/"
+                  - "public/"
+                  - "node_modules/"
 
-  tools:
-    rector:
-      enabled: true
-      level: "typo3-13"
+              tools:
+                rector:
+                  enabled: true
+                  level: "typo3-13"
 
-    fractor:
-      enabled: true
-      indentation: 2
+                fractor:
+                  enabled: true
+                  indentation: 2
 
-    phpstan:
-      enabled: true
-      level: 6
-      memory_limit: "1G"
+                phpstan:
+                  enabled: true
+                  level: 6
+                  memory_limit: "1G"
 
-    php-cs-fixer:
-      enabled: true
-      preset: "typo3"
+                php-cs-fixer:
+                  enabled: true
+                  preset: "typo3"
 
-    typoscript-lint:
-      enabled: true
-      indentation: 2
+                typoscript-lint:
+                  enabled: true
+                  indentation: 2
 
-  output:
-    verbosity: "normal"
-    colors: true
-    progress: true
+              output:
+                verbosity: "normal"
+                colors: true
+                progress: true
 
-  performance:
-    parallel: true
-    max_processes: 4
-    cache_enabled: true
-YAML;
+              performance:
+                parallel: true
+                max_processes: 4
+                cache_enabled: true
+            YAML;
     }
 
     private function getDistributionTemplate(string $projectName): string
     {
         return <<<YAML
-# Quality Tools Configuration for $projectName Distribution
-quality-tools:
-  project:
-    name: "$projectName"
-    php_version: "8.3"
-    typo3_version: "13.4"
+            # Quality Tools Configuration for $projectName Distribution
+            quality-tools:
+              project:
+                name: "$projectName"
+                php_version: "8.3"
+                typo3_version: "13.4"
 
-  paths:
-    scan:
-      - "packages/"
-      - "config/system/"
-      - "config/sites/"
-    exclude:
-      - "var/"
-      - "vendor/"
-      - "public/"
-      - "node_modules/"
-      - ".build/"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/system/"
+                  - "config/sites/"
+                exclude:
+                  - "var/"
+                  - "vendor/"
+                  - "public/"
+                  - "node_modules/"
+                  - ".build/"
 
-  tools:
-    rector:
-      enabled: true
-      level: "typo3-13"
+              tools:
+                rector:
+                  enabled: true
+                  level: "typo3-13"
 
-    fractor:
-      enabled: true
-      indentation: 2
+                fractor:
+                  enabled: true
+                  indentation: 2
 
-    phpstan:
-      enabled: true
-      level: 5
-      memory_limit: "2G"
+                phpstan:
+                  enabled: true
+                  level: 5
+                  memory_limit: "2G"
 
-    php-cs-fixer:
-      enabled: true
-      preset: "typo3"
+                php-cs-fixer:
+                  enabled: true
+                  preset: "typo3"
 
-    typoscript-lint:
-      enabled: true
-      indentation: 2
+                typoscript-lint:
+                  enabled: true
+                  indentation: 2
 
-  output:
-    verbosity: "normal"
-    colors: true
-    progress: true
+              output:
+                verbosity: "normal"
+                colors: true
+                progress: true
 
-  performance:
-    parallel: true
-    max_processes: 8
-    cache_enabled: true
-YAML;
+              performance:
+                parallel: true
+                max_processes: 8
+                cache_enabled: true
+            YAML;
     }
 }

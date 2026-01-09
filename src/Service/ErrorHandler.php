@@ -9,20 +9,20 @@ use Cpsit\QualityTools\Exception\TransientException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Service for handling errors with structured responses and retry mechanisms
+ * Service for handling errors with structured responses and retry mechanisms.
  */
 class ErrorHandler
 {
-    private const MAX_RETRY_ATTEMPTS = 3;
-    private const BASE_RETRY_DELAY = 1; // seconds
+    private const int MAX_RETRY_ATTEMPTS = 3;
+    private const int BASE_RETRY_DELAY = 1; // seconds
 
     /**
-     * Handle an exception with structured error reporting
+     * Handle an exception with structured error reporting.
      */
     public function handleException(
         \Throwable $exception,
         OutputInterface $output,
-        bool $verbose = false
+        bool $verbose = false,
     ): int {
         if ($exception instanceof QualityToolsException) {
             return $this->handleStructuredException($exception, $output, $verbose);
@@ -32,28 +32,28 @@ class ErrorHandler
     }
 
     /**
-     * Handle QualityToolsException with structured information
+     * Handle QualityToolsException with structured information.
      */
     private function handleStructuredException(
         QualityToolsException $exception,
         OutputInterface $output,
-        bool $verbose
+        bool $verbose,
     ): int {
         $errorInfo = $exception->getErrorInfo();
 
         // Output error header
-        $output->writeln(sprintf(
+        $output->writeln(\sprintf(
             '<error>%s Error (%d): %s</error>',
-            ucfirst($errorInfo['type']),
+            ucfirst((string) $errorInfo['type']),
             $errorInfo['code'],
-            $errorInfo['message']
+            $errorInfo['message'],
         ));
 
         // Show context in verbose mode
         if ($verbose && !empty($errorInfo['context'])) {
             $output->writeln('<comment>Context:</comment>');
             foreach ($errorInfo['context'] as $key => $value) {
-                $output->writeln(sprintf('  %s: %s', $key, $this->formatContextValue($value)));
+                $output->writeln(\sprintf('  %s: %s', $key, $this->formatContextValue($value)));
             }
         }
 
@@ -62,7 +62,7 @@ class ErrorHandler
         if (!empty($troubleshootingSteps)) {
             $output->writeln('<comment>Troubleshooting:</comment>');
             foreach ($troubleshootingSteps as $i => $step) {
-                $output->writeln(sprintf('  %d. %s', $i + 1, $step));
+                $output->writeln(\sprintf('  %d. %s', $i + 1, $step));
             }
         }
 
@@ -73,22 +73,22 @@ class ErrorHandler
     }
 
     /**
-     * Handle generic exceptions
+     * Handle generic exceptions.
      */
     private function handleGenericException(
         \Throwable $exception,
         OutputInterface $output,
-        bool $verbose
+        bool $verbose,
     ): int {
-        $output->writeln(sprintf('<error>Unexpected Error: %s</error>', $exception->getMessage()));
+        $output->writeln(\sprintf('<error>Unexpected Error: %s</error>', $exception->getMessage()));
 
         if ($verbose) {
             $output->writeln('<comment>Technical Details:</comment>');
-            $output->writeln(sprintf('  Exception: %s', get_class($exception)));
-            $output->writeln(sprintf('  File: %s:%d', $exception->getFile(), $exception->getLine()));
-            
+            $output->writeln(\sprintf('  Exception: %s', $exception::class));
+            $output->writeln(\sprintf('  File: %s:%d', $exception->getFile(), $exception->getLine()));
+
             if ($exception->getPrevious()) {
-                $output->writeln(sprintf('  Previous: %s', $exception->getPrevious()->getMessage()));
+                $output->writeln(\sprintf('  Previous: %s', $exception->getPrevious()->getMessage()));
             }
         }
 
@@ -102,12 +102,12 @@ class ErrorHandler
     }
 
     /**
-     * Execute an operation with automatic retry for transient failures
+     * Execute an operation with automatic retry for transient failures.
      */
     public function executeWithRetry(
         callable $operation,
         OutputInterface $output,
-        int $maxAttempts = self::MAX_RETRY_ATTEMPTS
+        int $maxAttempts = self::MAX_RETRY_ATTEMPTS,
     ): mixed {
         $attempt = 1;
         $lastException = null;
@@ -117,25 +117,25 @@ class ErrorHandler
                 return $operation();
             } catch (TransientException $e) {
                 $lastException = $e;
-                
+
                 if ($attempt >= $maxAttempts) {
                     break;
                 }
 
                 $delay = $this->calculateRetryDelay($attempt, $e->getRetryAfter());
-                
+
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf(
+                    $output->writeln(\sprintf(
                         '<comment>Transient error (attempt %d/%d): %s. Retrying in %d seconds...</comment>',
                         $attempt,
                         $maxAttempts,
                         $e->getMessage(),
-                        $delay
+                        $delay,
                     ));
                 }
 
                 sleep($delay);
-                $attempt++;
+                ++$attempt;
             } catch (\Throwable $e) {
                 // Non-transient errors should not be retried
                 throw $e;
@@ -147,7 +147,7 @@ class ErrorHandler
     }
 
     /**
-     * Calculate retry delay with exponential backoff
+     * Calculate retry delay with exponential backoff.
      */
     private function calculateRetryDelay(int $attempt, int $baseDelay = self::BASE_RETRY_DELAY): int
     {
@@ -155,7 +155,7 @@ class ErrorHandler
     }
 
     /**
-     * Show additional help based on error type
+     * Show additional help based on error type.
      */
     private function showAdditionalHelp(QualityToolsException $exception, OutputInterface $output): void
     {
@@ -193,23 +193,23 @@ class ErrorHandler
     }
 
     /**
-     * Format context value for display
+     * Format context value for display.
      */
     private function formatContextValue(mixed $value): string
     {
-        if (is_array($value)) {
+        if (\is_array($value)) {
             return json_encode($value, JSON_UNESCAPED_SLASHES);
         }
 
-        if (is_object($value)) {
-            return get_class($value);
+        if (\is_object($value)) {
+            return $value::class;
         }
 
         return (string) $value;
     }
 
     /**
-     * Create error response array for API/structured responses
+     * Create error response array for API/structured responses.
      */
     public function createErrorResponse(\Throwable $exception): array
     {
@@ -227,7 +227,7 @@ class ErrorHandler
                 'Verify your configuration files are valid',
             ],
             'context' => [
-                'exception_class' => get_class($exception),
+                'exception_class' => $exception::class,
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
             ],

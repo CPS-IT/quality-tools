@@ -33,21 +33,21 @@ final class RectorFixCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake rector executable
         $rectorExecutable = $vendorBinDir . '/rector';
         file_put_contents($rectorExecutable, "#!/bin/bash\necho 'Rector fix completed successfully'\nexit 0\n");
-        chmod($rectorExecutable, 0755);
+        chmod($rectorExecutable, 0o755);
 
         // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/rector.php', "<?php\nreturn [];\n");
 
         // Create packages directory for RectorFixCommand default target path
         $packagesDir = $this->tempDir . '/packages';
-        mkdir($packagesDir, 0777, true);
+        mkdir($packagesDir, 0o777, true);
 
         // Add a sample PHP file for project analysis
         file_put_contents($packagesDir . '/sample.php', "<?php\nclass SampleClass {}\n");
@@ -59,7 +59,7 @@ final class RectorFixCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new RectorFixCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -152,7 +152,7 @@ final class RectorFixCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
@@ -265,7 +265,7 @@ final class RectorFixCommandTest extends TestCase
 
         // Execute with custom config option
         $commandTester->execute([
-            '--config' => $customConfigPath
+            '--config' => $customConfigPath,
         ]);
 
         // Command should execute successfully
@@ -279,13 +279,13 @@ final class RectorFixCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -360,7 +360,7 @@ final class RectorFixCommandTest extends TestCase
     {
         // Create a custom target directory with PHP files
         $customTargetDir = $this->tempDir . '/src';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $testFile = $customTargetDir . '/Service.php';
         file_put_contents($testFile, "<?php\nclass Service {\n    public function process() {\n        return true;\n    }\n}\n");
@@ -369,7 +369,7 @@ final class RectorFixCommandTest extends TestCase
 
         // Execute fix command targeting specific path
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully

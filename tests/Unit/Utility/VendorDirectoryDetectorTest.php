@@ -33,8 +33,8 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create standard vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         $result = $this->detector->detectVendorPath($this->tempDir);
@@ -46,16 +46,16 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create custom vendor directory
         $customVendorDir = $this->tempDir . '/custom-vendor';
-        mkdir($customVendorDir, 0777, true);
-        mkdir($customVendorDir . '/composer', 0777, true);
+        mkdir($customVendorDir, 0o777, true);
+        mkdir($customVendorDir . '/composer', 0o777, true);
         file_put_contents($customVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create composer.json with custom vendor-dir
         $composerJson = [
             'name' => 'test/project',
             'config' => [
-                'vendor-dir' => 'custom-vendor'
-            ]
+                'vendor-dir' => 'custom-vendor',
+            ],
         ];
         file_put_contents($this->tempDir . '/composer.json', json_encode($composerJson));
 
@@ -68,16 +68,16 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create custom vendor directory outside project root
         $outsideVendorDir = $this->tempDir . '_outside/vendor';
-        mkdir($outsideVendorDir, 0777, true);
-        mkdir($outsideVendorDir . '/composer', 0777, true);
+        mkdir($outsideVendorDir, 0o777, true);
+        mkdir($outsideVendorDir . '/composer', 0o777, true);
         file_put_contents($outsideVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create composer.json with absolute vendor-dir
         $composerJson = [
             'name' => 'test/project',
             'config' => [
-                'vendor-dir' => $outsideVendorDir
-            ]
+                'vendor-dir' => $outsideVendorDir,
+            ],
         ];
         file_put_contents($this->tempDir . '/composer.json', json_encode($composerJson));
 
@@ -90,8 +90,8 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create vendor directory
         $envVendorDir = $this->tempDir . '/env-vendor';
-        mkdir($envVendorDir, 0777, true);
-        mkdir($envVendorDir . '/composer', 0777, true);
+        mkdir($envVendorDir, 0o777, true);
+        mkdir($envVendorDir . '/composer', 0o777, true);
         file_put_contents($envVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Set environment variable
@@ -115,10 +115,10 @@ final class VendorDirectoryDetectorTest extends TestCase
     public function testDetectVendorPathFromFallbacks(): void
     {
         // Create vendor directory in parent directory (fallback)
-        $parentVendorDir = dirname($this->tempDir) . '/vendor';
+        $parentVendorDir = \dirname($this->tempDir) . '/vendor';
         if (!is_dir($parentVendorDir)) {
-            mkdir($parentVendorDir, 0777, true);
-            mkdir($parentVendorDir . '/composer', 0777, true);
+            mkdir($parentVendorDir, 0o777, true);
+            mkdir($parentVendorDir . '/composer', 0o777, true);
             file_put_contents($parentVendorDir . '/autoload.php', '<?php // Composer autoload');
 
             $result = $this->detector->detectVendorPath($this->tempDir);
@@ -130,9 +130,9 @@ final class VendorDirectoryDetectorTest extends TestCase
         } else {
             // If parent vendor already exists, test different fallback
             $subVendorDir = $this->tempDir . '/sub/vendor';
-            mkdir(dirname($subVendorDir), 0777, true);
-            mkdir($subVendorDir, 0777, true);
-            mkdir($subVendorDir . '/composer', 0777, true);
+            mkdir(\dirname($subVendorDir), 0o777, true);
+            mkdir($subVendorDir, 0o777, true);
+            mkdir($subVendorDir . '/composer', 0o777, true);
             file_put_contents($subVendorDir . '/autoload.php', '<?php // Composer autoload');
 
             $subProjectDir = $this->tempDir . '/sub';
@@ -157,8 +157,8 @@ final class VendorDirectoryDetectorTest extends TestCase
 
         // Create fallback vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Should fall back to standard location
@@ -173,15 +173,15 @@ final class VendorDirectoryDetectorTest extends TestCase
         $composerJson = [
             'name' => 'test/project',
             'config' => [
-                'vendor-dir' => 'non-existent-vendor'
-            ]
+                'vendor-dir' => 'non-existent-vendor',
+            ],
         ];
         file_put_contents($this->tempDir . '/composer.json', json_encode($composerJson));
 
         // Create fallback vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Should fall back to standard location
@@ -194,8 +194,8 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // First call should detect and cache
@@ -220,23 +220,23 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Test valid vendor directory
         $validVendorDir = $this->tempDir . '/valid-vendor';
-        mkdir($validVendorDir, 0777, true);
-        mkdir($validVendorDir . '/composer', 0777, true);
+        mkdir($validVendorDir, 0o777, true);
+        mkdir($validVendorDir . '/composer', 0o777, true);
         file_put_contents($validVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         self::assertTrue($this->detector->validateVendorDirectory($validVendorDir));
 
         // Test invalid vendor directory (missing composer directory)
         $invalidVendorDir = $this->tempDir . '/invalid-vendor';
-        mkdir($invalidVendorDir, 0777, true);
+        mkdir($invalidVendorDir, 0o777, true);
         file_put_contents($invalidVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         self::assertFalse($this->detector->validateVendorDirectory($invalidVendorDir));
 
         // Test invalid vendor directory (missing autoload.php)
         $incompleteVendorDir = $this->tempDir . '/incomplete-vendor';
-        mkdir($incompleteVendorDir, 0777, true);
-        mkdir($incompleteVendorDir . '/composer', 0777, true);
+        mkdir($incompleteVendorDir, 0o777, true);
+        mkdir($incompleteVendorDir . '/composer', 0o777, true);
 
         self::assertFalse($this->detector->validateVendorDirectory($incompleteVendorDir));
 
@@ -248,9 +248,9 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
-        mkdir($vendorDir . '/bin', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
+        mkdir($vendorDir . '/bin', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         $result = $this->detector->getVendorBinPath($this->tempDir);
@@ -262,8 +262,8 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         // Create vendor directory
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         $debugInfo = $this->detector->getDetectionDebugInfo($this->tempDir);
@@ -282,14 +282,14 @@ final class VendorDirectoryDetectorTest extends TestCase
 
     public function testNormalizePathWithSymlinks(): void
     {
-        if (!function_exists('symlink')) {
+        if (!\function_exists('symlink')) {
             self::markTestSkipped('Symlinks not supported on this system');
         }
 
         // Create real vendor directory
         $realVendorDir = $this->tempDir . '/real-vendor';
-        mkdir($realVendorDir, 0777, true);
-        mkdir($realVendorDir . '/composer', 0777, true);
+        mkdir($realVendorDir, 0o777, true);
+        mkdir($realVendorDir . '/composer', 0o777, true);
         file_put_contents($realVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create symlink to vendor directory
@@ -304,7 +304,7 @@ final class VendorDirectoryDetectorTest extends TestCase
 
     public function testDetectFromComposerApiWhenAvailable(): void
     {
-        if (!class_exists('Composer\InstalledVersions')) {
+        if (!class_exists(\Composer\InstalledVersions::class)) {
             self::markTestSkipped('Composer\InstalledVersions not available');
         }
 
@@ -312,8 +312,8 @@ final class VendorDirectoryDetectorTest extends TestCase
         // The actual detection will depend on the real Composer installation
 
         $vendorDir = $this->tempDir . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // This should not throw an exception
@@ -331,7 +331,6 @@ final class VendorDirectoryDetectorTest extends TestCase
         // Try to trigger the realpath failure by using a non-existent but structured path
         $reflection = new \ReflectionClass($this->detector);
         $method = $reflection->getMethod('normalizePath');
-        $method->setAccessible(true);
 
         $method->invoke($this->detector, '/this/path/should/not/exist/vendor');
     }
@@ -340,7 +339,6 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         $reflection = new \ReflectionClass($this->detector);
         $method = $reflection->getMethod('isAbsolutePath');
-        $method->setAccessible(true);
 
         // Unix absolute paths
         self::assertTrue($method->invoke($this->detector, '/path/to/vendor'));

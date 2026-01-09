@@ -1,8 +1,8 @@
 # Issue 016: Configuration Schema Validation
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Medium (3-8h)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Medium (3-8h)
 **Impact:** Medium
 
 ## Description
@@ -25,7 +25,7 @@ Missing schema validation for configuration files
 No runtime validation of configuration values
 ```
 
-**Location:** Configuration loading and processing throughout the system  
+**Location:** Configuration loading and processing throughout the system
 **Trigger:** Loading invalid or malformed configuration files
 
 ## Impact Analysis

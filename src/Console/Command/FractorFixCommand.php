@@ -12,6 +12,7 @@ final class FractorFixCommand extends AbstractToolCommand
 {
     private array $yamlValidationResults = [];
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -22,7 +23,7 @@ final class FractorFixCommand extends AbstractToolCommand
             ->setHelp(
                 'This command runs Fractor to apply TypoScript and code changes to your files. ' .
                 'This will modify your files! Use --config to specify a custom configuration ' .
-                'file or --path to target specific directories.'
+                'file or --path to target specific directories.',
             );
     }
 
@@ -36,6 +37,7 @@ final class FractorFixCommand extends AbstractToolCommand
         return 'fractor.php';
     }
 
+    #[\Override]
     protected function resolveTargetPaths(InputInterface $input, OutputInterface $output): array
     {
         $targetPaths = parent::resolveTargetPaths($input, $output);
@@ -48,6 +50,7 @@ final class FractorFixCommand extends AbstractToolCommand
         return $targetPaths;
     }
 
+    #[\Override]
     protected function executePreProcessingHooks(InputInterface $input, OutputInterface $output, array $targetPaths): void
     {
         // Perform YAML validation before running Fractor
@@ -58,7 +61,7 @@ final class FractorFixCommand extends AbstractToolCommand
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array {
         $command = [
             $this->getVendorBinPath() . '/fractor',
@@ -76,6 +79,7 @@ final class FractorFixCommand extends AbstractToolCommand
         return $command;
     }
 
+    #[\Override]
     protected function executePostProcessingHooks(InputInterface $input, OutputInterface $output, int $exitCode): void
     {
         // Show YAML validation summary if there were issues
@@ -103,7 +107,7 @@ final class FractorFixCommand extends AbstractToolCommand
                 continue;
             }
 
-            $output->writeln(sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
+            $output->writeln(\sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
             $results = $validator->validateYamlFiles($targetPath);
 
             // Merge results
@@ -115,9 +119,9 @@ final class FractorFixCommand extends AbstractToolCommand
         }
 
         if ($combinedResults['summary']['invalid'] > 0) {
-            $output->writeln(sprintf(
+            $output->writeln(\sprintf(
                 '<comment>Found %d problematic YAML files across all paths (will be processed with error recovery)</comment>',
-                $combinedResults['summary']['invalid']
+                $combinedResults['summary']['invalid'],
             ));
         } else {
             $output->writeln('<info>All YAML files validated successfully across all paths</info>');
@@ -135,9 +139,9 @@ final class FractorFixCommand extends AbstractToolCommand
     {
         $output->writeln('');
         $output->writeln('<comment>YAML Validation Summary:</comment>');
-        $output->writeln(sprintf('  Total files: %d', $validationResults['summary']['total']));
-        $output->writeln(sprintf('  Valid files: %d', $validationResults['summary']['valid']));
-        $output->writeln(sprintf('  Problematic files: %d', $validationResults['summary']['invalid']));
+        $output->writeln(\sprintf('  Total files: %d', $validationResults['summary']['total']));
+        $output->writeln(\sprintf('  Valid files: %d', $validationResults['summary']['valid']));
+        $output->writeln(\sprintf('  Problematic files: %d', $validationResults['summary']['invalid']));
 
         if (!empty($validationResults['invalid'])) {
             $output->writeln('');
@@ -147,7 +151,7 @@ final class FractorFixCommand extends AbstractToolCommand
             $summary = $validator->getProblematicFilesSummary($validationResults);
 
             foreach ($summary as $issue) {
-                $output->writeln(sprintf('  - %s', $issue));
+                $output->writeln(\sprintf('  - %s', $issue));
             }
 
             $output->writeln('');

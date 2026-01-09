@@ -12,6 +12,7 @@ final class FractorLintCommand extends AbstractToolCommand
 {
     private array $yamlValidationResults = [];
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -22,7 +23,7 @@ final class FractorLintCommand extends AbstractToolCommand
             ->setHelp(
                 'This command runs Fractor in dry-run mode to show what TypoScript and code ' .
                 'changes would be made without actually modifying your files. Use --config ' .
-                'to specify a custom configuration file or --path to target specific directories.'
+                'to specify a custom configuration file or --path to target specific directories.',
             );
     }
 
@@ -36,6 +37,7 @@ final class FractorLintCommand extends AbstractToolCommand
         return 'fractor.php';
     }
 
+    #[\Override]
     protected function resolveTargetPaths(InputInterface $input, OutputInterface $output): array
     {
         $targetPaths = parent::resolveTargetPaths($input, $output);
@@ -48,6 +50,7 @@ final class FractorLintCommand extends AbstractToolCommand
         return $targetPaths;
     }
 
+    #[\Override]
     protected function executePreProcessingHooks(InputInterface $input, OutputInterface $output, array $targetPaths): void
     {
         // Perform YAML validation before running Fractor
@@ -58,7 +61,7 @@ final class FractorLintCommand extends AbstractToolCommand
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array {
         $command = [
             $this->getVendorBinPath() . '/fractor',
@@ -77,6 +80,7 @@ final class FractorLintCommand extends AbstractToolCommand
         return $command;
     }
 
+    #[\Override]
     protected function executePostProcessingHooks(InputInterface $input, OutputInterface $output, int $exitCode): void
     {
         // Show YAML validation summary if there were issues
@@ -104,7 +108,7 @@ final class FractorLintCommand extends AbstractToolCommand
                 continue;
             }
 
-            $output->writeln(sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
+            $output->writeln(\sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
             $results = $validator->validateYamlFiles($targetPath);
 
             // Merge results
@@ -116,9 +120,9 @@ final class FractorLintCommand extends AbstractToolCommand
         }
 
         if ($combinedResults['summary']['invalid'] > 0) {
-            $output->writeln(sprintf(
+            $output->writeln(\sprintf(
                 '<comment>Found %d problematic YAML files across all paths (will be processed with error recovery)</comment>',
-                $combinedResults['summary']['invalid']
+                $combinedResults['summary']['invalid'],
             ));
         } else {
             $output->writeln('<info>All YAML files validated successfully across all paths</info>');
@@ -136,9 +140,9 @@ final class FractorLintCommand extends AbstractToolCommand
     {
         $output->writeln('');
         $output->writeln('<comment>YAML Validation Summary:</comment>');
-        $output->writeln(sprintf('  Total files: %d', $validationResults['summary']['total']));
-        $output->writeln(sprintf('  Valid files: %d', $validationResults['summary']['valid']));
-        $output->writeln(sprintf('  Problematic files: %d', $validationResults['summary']['invalid']));
+        $output->writeln(\sprintf('  Total files: %d', $validationResults['summary']['total']));
+        $output->writeln(\sprintf('  Valid files: %d', $validationResults['summary']['valid']));
+        $output->writeln(\sprintf('  Problematic files: %d', $validationResults['summary']['invalid']));
 
         if (!empty($validationResults['invalid'])) {
             $output->writeln('');
@@ -148,7 +152,7 @@ final class FractorLintCommand extends AbstractToolCommand
             $summary = $validator->getProblematicFilesSummary($validationResults);
 
             foreach ($summary as $issue) {
-                $output->writeln(sprintf('  - %s', $issue));
+                $output->writeln(\sprintf('  - %s', $issue));
             }
 
             $output->writeln('');

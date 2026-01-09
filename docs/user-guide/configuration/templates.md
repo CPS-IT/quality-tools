@@ -349,7 +349,7 @@ quality-tools:
   tools:
     phpstan:
       level: 3  # Lower level for legacy code
-    
+
     rector:
       enabled: false  # Skip modernization for now
 ```
@@ -364,7 +364,7 @@ quality-tools:
     phpstan:
       level: 9  # Maximum strictness
       memory_limit: "1G"
-    
+
     php-cs-fixer:
       preset: "typo3"
       cache: true

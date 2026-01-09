@@ -1,9 +1,9 @@
 # Code Quality Review - CPSIT Quality Tools Package
 
-**Review Date:** 2026-01-07  
-**Package:** cpsit/quality-tools  
-**Version:** Current main branch (fed57de)  
-**Target:** PHP 8.3+, TYPO3 v13.4  
+**Review Date:** 2026-01-07
+**Package:** cpsit/quality-tools
+**Version:** Current main branch (fed57de)
+**Target:** PHP 8.3+, TYPO3 v13.4
 
 ## Executive Summary
 
@@ -263,7 +263,7 @@ file_put_contents(...): Failed to open stream: Permission denied
    {
        abstract protected function getToolName(): string;
        abstract protected function buildToolCommand(): array;
-       
+
        protected function execute(InputInterface $input, OutputInterface $output): int
        {
            return $this->executeWithTemplate($input, $output);
@@ -321,13 +321,13 @@ class PathExclusionFilter
     {
         return array_filter($paths, fn($path) => $this->shouldIncludePath($path));
     }
-    
+
     private function shouldIncludePath(string $path): bool
     {
         if ($this->isExplicitVendorPath($path)) {
             return $this->applyNonVendorExclusions($path);
         }
-        
+
         return $this->applyAllExclusions($path);
     }
 }

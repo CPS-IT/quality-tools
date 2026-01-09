@@ -17,7 +17,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 5, 'totalLines' => 200],
             'xml' => ['fileCount' => 3, 'totalLines' => 150],
             'typoscript' => ['fileCount' => 8, 'totalLines' => 400],
-            'other' => ['fileCount' => 50, 'totalLines' => 2500]
+            'other' => ['fileCount' => 50, 'totalLines' => 2500],
         ];
 
         $metrics = new ProjectMetrics($data);
@@ -38,7 +38,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 5],
             'xml' => ['fileCount' => 3],
             'typoscript' => ['fileCount' => 8],
-            'other' => ['fileCount' => 50]
+            'other' => ['fileCount' => 50],
         ]);
 
         $this->assertEquals(186, $metrics->getTotalFileCount());
@@ -52,7 +52,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['totalLines' => 200],
             'xml' => ['totalLines' => 150],
             'typoscript' => ['totalLines' => 400],
-            'other' => ['totalLines' => 2500]
+            'other' => ['totalLines' => 2500],
         ]);
 
         $this->assertEquals(9250, $metrics->getTotalLines());
@@ -61,7 +61,7 @@ final class ProjectMetricsTest extends TestCase
     public function testGetPhpFileCount(): void
     {
         $metrics = new ProjectMetrics([
-            'php' => ['fileCount' => 125]
+            'php' => ['fileCount' => 125],
         ]);
 
         $this->assertEquals(125, $metrics->getPhpFileCount());
@@ -70,7 +70,7 @@ final class ProjectMetricsTest extends TestCase
     public function testGetPhpLines(): void
     {
         $metrics = new ProjectMetrics([
-            'php' => ['totalLines' => 7500]
+            'php' => ['totalLines' => 7500],
         ]);
 
         $this->assertEquals(7500, $metrics->getPhpLines());
@@ -79,7 +79,7 @@ final class ProjectMetricsTest extends TestCase
     public function testGetPhpComplexityScore(): void
     {
         $metrics = new ProjectMetrics([
-            'php' => ['fileCount' => 100, 'avgComplexity' => 15]
+            'php' => ['fileCount' => 100, 'avgComplexity' => 15],
         ]);
 
         $this->assertEquals(1500, $metrics->getPhpComplexityScore());
@@ -93,7 +93,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 5],
             'xml' => ['fileCount' => 2],
             'typoscript' => ['fileCount' => 3],
-            'other' => ['fileCount' => 20]
+            'other' => ['fileCount' => 20],
         ]);
 
         $this->assertEquals('small', $metrics->getProjectSize());
@@ -107,7 +107,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 50],
             'xml' => ['fileCount' => 25],
             'typoscript' => ['fileCount' => 75],
-            'other' => ['fileCount' => 150]
+            'other' => ['fileCount' => 150],
         ]);
 
         $this->assertEquals('medium', $metrics->getProjectSize());
@@ -121,7 +121,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 250],
             'xml' => ['fileCount' => 100],
             'typoscript' => ['fileCount' => 200],
-            'other' => ['fileCount' => 1000]
+            'other' => ['fileCount' => 1000],
         ]);
 
         $this->assertEquals('large', $metrics->getProjectSize());
@@ -135,7 +135,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 1000],
             'xml' => ['fileCount' => 500],
             'typoscript' => ['fileCount' => 1000],
-            'other' => ['fileCount' => 5000]
+            'other' => ['fileCount' => 5000],
         ]);
 
         $this->assertEquals('enterprise', $metrics->getProjectSize());
@@ -149,7 +149,7 @@ final class ProjectMetricsTest extends TestCase
             'json' => ['fileCount' => 5, 'totalLines' => 200],
             'xml' => ['fileCount' => 3, 'totalLines' => 150],
             'typoscript' => ['fileCount' => 8, 'totalLines' => 400],
-            'other' => ['fileCount' => 50, 'totalLines' => 2500]
+            'other' => ['fileCount' => 50, 'totalLines' => 2500],
         ];
 
         $metrics = new ProjectMetrics($data);
@@ -167,7 +167,7 @@ final class ProjectMetricsTest extends TestCase
     public function testConstructionWithMissingData(): void
     {
         $metrics = new ProjectMetrics([
-            'php' => ['fileCount' => 50]
+            'php' => ['fileCount' => 50],
         ]);
 
         $this->assertEquals(0, $metrics->yaml['fileCount'] ?? 0);

@@ -98,10 +98,10 @@ parameters:
         - packages/*/Tests/Acceptance/*
         - var/*
         - vendor/*
-    
+
     ignoreErrors:
         - '#Call to an undefined method.*#'
-    
+
     memory_limit: 1G
 ```
 
@@ -568,10 +568,10 @@ ENABLE_COLORS="false"
    ```bash
    # Old way
    app/vendor/bin/phpstan analyse -c phpstan.neon packages/
-   
+
    # New way
    vendor/bin/qt lint:phpstan
-   
+
    # Compare outputs
    ```
 

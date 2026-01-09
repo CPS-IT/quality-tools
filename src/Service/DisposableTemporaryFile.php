@@ -6,7 +6,7 @@ namespace Cpsit\QualityTools\Service;
 
 final class DisposableTemporaryFile
 {
-    private TemporaryFile $temporaryFile;
+    private readonly TemporaryFile $temporaryFile;
     private static array $registry = [];
 
     public function __construct(string $prefix = 'qt_temp_', string $suffix = '', ?SecurityService $securityService = null)
@@ -46,7 +46,7 @@ final class DisposableTemporaryFile
 
     /**
      * Emergency cleanup for all registered temporary files
-     * Called during process shutdown
+     * Called during process shutdown.
      */
     public static function cleanupAll(): void
     {

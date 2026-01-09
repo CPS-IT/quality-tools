@@ -13,6 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class ConfigShowCommand extends BaseCommand
 {
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -24,7 +25,7 @@ final class ConfigShowCommand extends BaseCommand
                 'f',
                 InputOption::VALUE_REQUIRED,
                 'Output format: yaml, json',
-                'yaml'
+                'yaml',
             );
     }
 
@@ -34,8 +35,9 @@ final class ConfigShowCommand extends BaseCommand
         $projectRoot = $this->getProjectRoot();
         $format = $input->getOption('format');
 
-        if (!in_array($format, ['yaml', 'json'], true)) {
+        if (!\in_array($format, ['yaml', 'json'], true)) {
             $io->error('Format must be either "yaml" or "json".');
+
             return self::FAILURE;
         }
 
@@ -65,12 +67,12 @@ final class ConfigShowCommand extends BaseCommand
             }
 
             return self::SUCCESS;
-
         } catch (\Exception $e) {
             $io->error([
                 'Failed to load configuration:',
                 $e->getMessage(),
             ]);
+
             return self::FAILURE;
         }
     }
@@ -86,14 +88,14 @@ final class ConfigShowCommand extends BaseCommand
         if (!empty($homeDir)) {
             $globalConfig = $homeDir . '/.quality-tools.yaml';
             if (file_exists($globalConfig)) {
-                $sources[] = sprintf('Global: %s', $globalConfig);
+                $sources[] = \sprintf('Global: %s', $globalConfig);
             }
         }
 
         // Check for project configuration
         $projectConfig = $loader->findConfigurationFile($projectRoot);
         if ($projectConfig !== null) {
-            $sources[] = sprintf('Project: %s', $projectConfig);
+            $sources[] = \sprintf('Project: %s', $projectConfig);
         }
 
         // Show package defaults

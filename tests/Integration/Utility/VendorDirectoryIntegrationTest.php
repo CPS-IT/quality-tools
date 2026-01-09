@@ -9,7 +9,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Integration tests for vendor directory detection with configuration system
+ * Integration tests for vendor directory detection with configuration system.
  */
 final class VendorDirectoryIntegrationTest extends TestCase
 {
@@ -31,16 +31,16 @@ final class VendorDirectoryIntegrationTest extends TestCase
     {
         // Create vendor directory
         $vendorDir = $this->tempProjectRoot . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create basic YAML configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "vendor-integration-test"
-YAML;
+            quality-tools:
+              project:
+                name: "vendor-integration-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -57,26 +57,26 @@ YAML;
     {
         // Create custom vendor directory
         $customVendorDir = $this->tempProjectRoot . '/deps';
-        mkdir($customVendorDir, 0777, true);
-        mkdir($customVendorDir . '/composer', 0777, true);
+        mkdir($customVendorDir, 0o777, true);
+        mkdir($customVendorDir . '/composer', 0o777, true);
         file_put_contents($customVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create composer.json with custom vendor-dir
         $composerJson = [
             'name' => 'test/integration-project',
             'config' => [
-                'vendor-dir' => 'deps'
-            ]
+                'vendor-dir' => 'deps',
+            ],
         ];
         file_put_contents($this->tempProjectRoot . '/composer.json', json_encode($composerJson));
 
         // Create YAML configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "custom-vendor-test"
-    php_version: "8.3"
-YAML;
+            quality-tools:
+              project:
+                name: "custom-vendor-test"
+                php_version: "8.3"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -92,10 +92,10 @@ YAML;
     {
         // Create YAML configuration without creating vendor directory
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "no-vendor-test"
-YAML;
+            quality-tools:
+              project:
+                name: "no-vendor-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -112,8 +112,8 @@ YAML;
     {
         // Create vendor directory
         $vendorDir = $this->tempProjectRoot . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create composer.json for more complete debug info
@@ -122,10 +122,10 @@ YAML;
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "debug-test"
-YAML;
+            quality-tools:
+              project:
+                name: "debug-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -153,8 +153,8 @@ YAML;
     {
         // Create environment-specified vendor directory
         $envVendorDir = $this->tempProjectRoot . '/env-vendor';
-        mkdir($envVendorDir, 0777, true);
-        mkdir($envVendorDir . '/composer', 0777, true);
+        mkdir($envVendorDir, 0o777, true);
+        mkdir($envVendorDir . '/composer', 0o777, true);
         file_put_contents($envVendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Set environment variable
@@ -164,10 +164,10 @@ YAML;
         try {
             // Create configuration
             $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "env-vendor-test"
-YAML;
+                quality-tools:
+                  project:
+                    name: "env-vendor-test"
+                YAML;
             file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
             // Load configuration
@@ -176,7 +176,6 @@ YAML;
             // Test environment-based detection
             self::assertTrue($config->hasVendorDirectory());
             self::assertEquals(realpath($envVendorDir), $config->getVendorPath());
-
         } finally {
             // Restore environment
             if ($originalEnv !== null) {
@@ -191,16 +190,16 @@ YAML;
     {
         // Create vendor directory
         $vendorDir = $this->tempProjectRoot . '/vendor';
-        mkdir($vendorDir, 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir, 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "reuse-test"
-YAML;
+            quality-tools:
+              project:
+                name: "reuse-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -221,16 +220,16 @@ YAML;
     {
         // Create initial vendor directory
         $vendorDir1 = $this->tempProjectRoot . '/vendor';
-        mkdir($vendorDir1, 0777, true);
-        mkdir($vendorDir1 . '/composer', 0777, true);
+        mkdir($vendorDir1, 0o777, true);
+        mkdir($vendorDir1 . '/composer', 0o777, true);
         file_put_contents($vendorDir1 . '/autoload.php', '<?php // Composer autoload');
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "project-root-test"
-YAML;
+            quality-tools:
+              project:
+                name: "project-root-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -240,8 +239,8 @@ YAML;
         // Create second project root with different vendor
         $tempProjectRoot2 = TestHelper::createTempDirectory('vendor_integration_test2_');
         $vendorDir2 = $tempProjectRoot2 . '/vendor';
-        mkdir($vendorDir2, 0777, true);
-        mkdir($vendorDir2 . '/composer', 0777, true);
+        mkdir($vendorDir2, 0o777, true);
+        mkdir($vendorDir2 . '/composer', 0o777, true);
         file_put_contents($vendorDir2 . '/autoload.php', '<?php // Composer autoload');
 
         // Update project root

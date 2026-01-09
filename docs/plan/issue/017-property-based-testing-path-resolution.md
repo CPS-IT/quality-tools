@@ -1,8 +1,8 @@
 # Issue 017: Property-Based Testing for Path Resolution
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** High (1-3d)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** High (1-3d)
 **Impact:** Medium
 
 ## Description
@@ -25,7 +25,7 @@ Limited test coverage for path resolution edge cases
 Missing property-based testing for complex input combinations
 ```
 
-**Location:** PathScanner and related path resolution logic  
+**Location:** PathScanner and related path resolution logic
 **Trigger:** Complex path resolution scenarios not covered by current example-based tests
 
 ## Impact Analysis

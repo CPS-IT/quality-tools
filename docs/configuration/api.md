@@ -595,29 +595,29 @@ class CustomConfigurationValidator extends ConfigurationValidator
     {
         // Call parent validation first
         $result = parent::validate($config);
-        
+
         if (!$result->isValid()) {
             return $result;
         }
-        
+
         // Add custom validation logic
         $errors = [];
         $customErrors = $this->validateCustomRules($config);
-        
+
         return new ValidationResult(empty($customErrors), $customErrors);
     }
-    
+
     private function validateCustomRules(array $config): array
     {
         $errors = [];
-        
+
         // Example: Ensure PHPStan level is not too high for large projects
         $phpstan = $config['quality-tools']['tools']['phpstan'] ?? [];
         if (($phpstan['level'] ?? 0) > 6) {
             // Check project size or complexity
             $errors[] = "PHPStan level too high for this project type";
         }
-        
+
         return $errors;
     }
 }
@@ -634,18 +634,18 @@ class DatabaseConfigurationLoader
     {
         // Load configuration from database
         $configData = $this->loadFromDatabase($projectId);
-        
+
         // Apply defaults and validation
         $validator = new ConfigurationValidator();
         $result = $validator->validate($configData);
-        
+
         if (!$result->isValid()) {
             throw new RuntimeException('Invalid configuration: ' . implode(', ', $result->getErrors()));
         }
-        
+
         return new Configuration($configData);
     }
-    
+
     private function loadFromDatabase(string $projectId): array
     {
         // Database loading logic
@@ -693,18 +693,18 @@ For performance-critical applications, consider caching parsed configurations:
 class CachedConfigurationLoader extends YamlConfigurationLoader
 {
     private array $cache = [];
-    
+
     public function load(string $projectRoot): Configuration
     {
         $cacheKey = md5($projectRoot);
-        
+
         if (isset($this->cache[$cacheKey])) {
             return $this->cache[$cacheKey];
         }
-        
+
         $config = parent::load($projectRoot);
         $this->cache[$cacheKey] = $config;
-        
+
         return $config;
     }
 }
@@ -719,19 +719,19 @@ class LazyConfiguration
 {
     private ?Configuration $config = null;
     private string $projectRoot;
-    
+
     public function __construct(string $projectRoot)
     {
         $this->projectRoot = $projectRoot;
     }
-    
+
     public function getConfig(): Configuration
     {
         if ($this->config === null) {
             $loader = new YamlConfigurationLoader();
             $this->config = $loader->load($this->projectRoot);
         }
-        
+
         return $this->config;
     }
 }

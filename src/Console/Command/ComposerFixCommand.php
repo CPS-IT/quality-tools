@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class ComposerFixCommand extends BaseCommand
 {
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -19,7 +20,7 @@ final class ComposerFixCommand extends BaseCommand
             ->setHelp(
                 'This command runs composer-normalize to format composer.json files according ' .
                 'to normalized standards. This will modify your composer.json file! Use --path ' .
-                'to target specific directories.'
+                'to target specific directories.',
             );
     }
 
@@ -29,9 +30,7 @@ final class ComposerFixCommand extends BaseCommand
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
                 if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
+                    throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
                 }
                 $targetPaths = [realpath($customPath)];
             } else {
@@ -48,12 +47,12 @@ final class ComposerFixCommand extends BaseCommand
                 // Check if composer.json exists in this path
                 if (!file_exists($composerJsonPath)) {
                     if ($output->isVerbose()) {
-                        $output->writeln(sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
+                        $output->writeln(\sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
                     }
                     continue;
                 }
 
-                $foundFiles++;
+                ++$foundFiles;
 
                 // Use composer normalize plugin command
                 // Check if composer exists in vendor/bin (for tests), otherwise use system composer
@@ -69,7 +68,7 @@ final class ComposerFixCommand extends BaseCommand
                     $composerJsonPath,
                 ];
 
-                $output->writeln(sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
+                $output->writeln(\sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
 
                 $exitCode = $this->executeProcess($command, $input, $output);
                 if ($exitCode !== 0) {
@@ -79,13 +78,14 @@ final class ComposerFixCommand extends BaseCommand
 
             if ($foundFiles === 0) {
                 $output->writeln('<comment>No composer.json files found in any of the configured paths</comment>');
+
                 return 1;
             }
 
             return $totalExitCode;
-
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
+            $output->writeln(\sprintf('<error>Error: %s</error>', $e->getMessage()));
+
             return 1;
         }
     }

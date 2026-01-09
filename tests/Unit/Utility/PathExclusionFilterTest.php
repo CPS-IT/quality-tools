@@ -98,7 +98,7 @@ final class PathExclusionFilterTest extends TestCase
 
         $result = $filter->filter($paths);
 
-        // The var/* pattern should match any path containing "/var/" but our test path is 
+        // The var/* pattern should match any path containing "/var/" but our test path is
         // "/project/root/vendor/cpsit/package-b/var/cache" which doesn't start with the absolute pattern "/project/root/var/"
         // So both explicit vendor paths should survive (only vendor/ exclusion is skipped for explicit vendor paths)
         $expected = [

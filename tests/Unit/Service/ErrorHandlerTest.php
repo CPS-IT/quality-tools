@@ -30,7 +30,7 @@ final class ErrorHandlerTest extends TestCase
             ConfigurationException::ERROR_CONFIG_FILE_NOT_FOUND,
             null,
             ['Check file path', 'Verify permissions'],
-            ['file' => '/path/to/config.yaml']
+            ['file' => '/path/to/config.yaml'],
         );
 
         $exitCode = $this->errorHandler->handleException($exception, $this->output);
@@ -52,7 +52,7 @@ final class ErrorHandlerTest extends TestCase
             ConfigurationException::ERROR_CONFIG_VALIDATION_FAILED,
             null,
             ['Fix syntax errors'],
-            ['file' => '/path/to/config.yaml', 'errors' => ['Missing section']]
+            ['file' => '/path/to/config.yaml', 'errors' => ['Missing section']],
         );
 
         $this->output->setVerbosity(BufferedOutput::VERBOSITY_VERBOSE);
@@ -84,7 +84,8 @@ final class ErrorHandlerTest extends TestCase
     {
         $callCount = 0;
         $operation = function () use (&$callCount) {
-            $callCount++;
+            ++$callCount;
+
             return 'success';
         };
 
@@ -98,10 +99,11 @@ final class ErrorHandlerTest extends TestCase
     {
         $callCount = 0;
         $operation = function () use (&$callCount) {
-            $callCount++;
+            ++$callCount;
             if ($callCount < 3) {
                 throw new TransientException('Temporary failure');
             }
+
             return 'success';
         };
 
@@ -114,8 +116,8 @@ final class ErrorHandlerTest extends TestCase
     public function testExecuteWithRetryMaxAttemptsExceeded(): void
     {
         $callCount = 0;
-        $operation = function () use (&$callCount) {
-            $callCount++;
+        $operation = function () use (&$callCount): void {
+            ++$callCount;
             throw new TransientException('Always fails');
         };
 
@@ -129,7 +131,7 @@ final class ErrorHandlerTest extends TestCase
 
     public function testExecuteWithRetryNonTransientFailure(): void
     {
-        $operation = function () {
+        $operation = function (): void {
             throw new \RuntimeException('Non-transient failure');
         };
 
@@ -146,7 +148,7 @@ final class ErrorHandlerTest extends TestCase
             1001,
             null,
             ['Step 1'],
-            ['context' => 'value']
+            ['context' => 'value'],
         );
 
         $response = $this->errorHandler->createErrorResponse($exception);

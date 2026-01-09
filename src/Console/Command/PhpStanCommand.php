@@ -13,6 +13,7 @@ final class PhpStanCommand extends AbstractToolCommand
 {
     private ?DisposableTemporaryFile $temporaryConfig = null;
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -23,19 +24,19 @@ final class PhpStanCommand extends AbstractToolCommand
             ->setHelp(
                 'This command runs PHPStan static analysis to find bugs in your code without ' .
                 'running it. Use --config to specify a custom configuration file, --path to ' .
-                'target specific directories, or --level to override the analysis level.'
+                'target specific directories, or --level to override the analysis level.',
             )
             ->addOption(
                 'level',
                 'l',
                 InputOption::VALUE_REQUIRED,
-                'Override the analysis level (0-9)'
+                'Override the analysis level (0-9)',
             )
             ->addOption(
                 'memory-limit',
                 'm',
                 InputOption::VALUE_REQUIRED,
-                'Memory limit for analysis (e.g., 1G, 512M)'
+                'Memory limit for analysis (e.g., 1G, 512M)',
             );
     }
 
@@ -49,6 +50,7 @@ final class PhpStanCommand extends AbstractToolCommand
         return 'phpstan.neon';
     }
 
+    #[\Override]
     protected function validateToolConfig(InputInterface $input, OutputInterface $output, string $configPath): void
     {
         // Handle dynamic path resolution for PHPStan
@@ -56,7 +58,7 @@ final class PhpStanCommand extends AbstractToolCommand
         if ($customPath === null) {
             try {
                 $resolvedPaths = $this->getResolvedPathsForTool($input, 'phpstan');
-                if (count($resolvedPaths) > 1) {
+                if (\count($resolvedPaths) > 1) {
                     // Create a temporary configuration file with dynamic paths
                     $tempConfigPath = $this->createTemporaryPhpStanConfig($configPath, $resolvedPaths);
                     // We need to update the config path - let's store it for buildToolCommand
@@ -66,7 +68,7 @@ final class PhpStanCommand extends AbstractToolCommand
                 // If we can't create the temporary config, just continue with the original path
                 // This ensures tests that don't fully mock the environment still work
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<comment>Could not create temporary config: %s</comment>', $e->getMessage()));
+                    $output->writeln(\sprintf('<comment>Could not create temporary config: %s</comment>', $e->getMessage()));
                 }
             }
         }
@@ -78,7 +80,7 @@ final class PhpStanCommand extends AbstractToolCommand
         InputInterface $input,
         OutputInterface $output,
         string $configPath,
-        array $targetPaths
+        array $targetPaths,
     ): array {
         // Use temporary config path if it was created
         $actualConfigPath = $this->temporaryConfigPath ?: $configPath;
@@ -113,6 +115,7 @@ final class PhpStanCommand extends AbstractToolCommand
         return $command;
     }
 
+    #[\Override]
     protected function getToolMemoryLimit(InputInterface $input, OutputInterface $output): ?string
     {
         // PHPStan handles memory limit in buildToolCommand to add it as a command argument
@@ -120,12 +123,14 @@ final class PhpStanCommand extends AbstractToolCommand
         return null;
     }
 
+    #[\Override]
     protected function executePostProcessingHooks(InputInterface $input, OutputInterface $output, int $exitCode): void
     {
         // Clean up temporary file if created
         $this->cleanupTemporaryConfig();
     }
 
+    #[\Override]
     protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
     {
         // Clean up temporary file on error
@@ -137,7 +142,7 @@ final class PhpStanCommand extends AbstractToolCommand
         // Read the base configuration
         $baseConfig = file_get_contents($baseConfigPath);
         if ($baseConfig === false) {
-            throw new \RuntimeException(sprintf('Could not read base config file: %s', $baseConfigPath));
+            throw new \RuntimeException(\sprintf('Could not read base config file: %s', $baseConfigPath));
         }
 
         // Create the dynamic paths section

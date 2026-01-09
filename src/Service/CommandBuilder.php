@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Service;
 
 /**
- * Service responsible for building and modifying command arrays for process execution
+ * Service responsible for building and modifying command arrays for process execution.
  *
  * Handles memory limit injection, PHP command modification, and command preparation
  * for different execution scenarios.
@@ -13,7 +13,7 @@ namespace Cpsit\QualityTools\Service;
 final class CommandBuilder
 {
     /**
-     * Prepare command with memory limit if needed
+     * Prepare command with memory limit if needed.
      */
     public function prepareCommandWithMemoryLimit(array $command, ?string $memoryLimit = null): array
     {
@@ -27,7 +27,7 @@ final class CommandBuilder
     }
 
     /**
-     * Check if a memory limit should be injected into the command
+     * Check if a memory limit should be injected into the command.
      */
     private function shouldInjectMemoryLimit(array $command): bool
     {
@@ -35,15 +35,15 @@ final class CommandBuilder
             return false;
         }
 
-        $executable = basename($command[0]);
+        $executable = basename((string) $command[0]);
 
         return str_contains($executable, 'php')
-            || str_ends_with($command[0], '.php')
-            || str_ends_with($command[0], '.phar');
+            || str_ends_with((string) $command[0], '.php')
+            || str_ends_with((string) $command[0], '.phar');
     }
 
     /**
-     * Inject memory limit into the PHP command
+     * Inject memory limit into the PHP command.
      */
     private function injectMemoryLimit(array $command, string $memoryLimit): array
     {

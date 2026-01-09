@@ -110,7 +110,7 @@ reports:
     # Tool capability testing
     test_native_formats: true
     output_samples: "research/samples/"
-    
+
     # Schema validation
     schema_validation: true
     validate_against_tools:
@@ -119,7 +119,7 @@ reports:
       - php-cs-fixer
       - fractor
       - typoscript-lint
-    
+
     # Format specifications
     target_formats:
       - json

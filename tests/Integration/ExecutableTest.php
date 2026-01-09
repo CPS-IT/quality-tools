@@ -54,7 +54,7 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            '--help'
+            '--help',
         ]);
 
         // Act
@@ -74,7 +74,7 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            '--version'
+            '--version',
         ]);
 
         // Act
@@ -94,7 +94,7 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            'list'
+            'list',
         ]);
 
         // Act
@@ -110,12 +110,12 @@ final class ExecutableTest extends TestCase
     {
         // Create isolated non-TYPO3 project directory
         $tempDir = sys_get_temp_dir() . '/qt_integration_test_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir, 0o777, true);
 
         // Create non-TYPO3 composer.json
         $composerContent = json_encode([
             'name' => 'test/non-typo3',
-            'require' => ['symfony/console' => '^7.0']
+            'require' => ['symfony/console' => '^7.0'],
         ]);
         file_put_contents($tempDir . '/composer.json', $composerContent);
 
@@ -124,7 +124,7 @@ final class ExecutableTest extends TestCase
             $process = new Process([
                 'php',
                 $this->getExecutablePath(),
-                'list'
+                'list',
             ], $tempDir); // Set working directory
 
             // Act
@@ -149,9 +149,9 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            'list'
+            'list',
         ], null, [
-            'QT_PROJECT_ROOT' => $validProjectPath
+            'QT_PROJECT_ROOT' => $validProjectPath,
         ]);
 
         // Act
@@ -170,9 +170,9 @@ final class ExecutableTest extends TestCase
             'php',
             $this->getExecutablePath(),
             'list',
-            '--help'
+            '--help',
         ], $this->getFixturePath('valid-typo3-project'), [
-            'QT_DEBUG' => 'true'
+            'QT_DEBUG' => 'true',
         ]);
 
         // Act
@@ -202,15 +202,17 @@ final class ExecutableTest extends TestCase
             $process = new Process([
                 'php',
                 $this->getExecutablePath(),
-                '--version'
+                '--version',
             ]);
 
             // Act
             $process->run();
 
             // Assert
-            $this->assertSame(0, $process->getExitCode(),
-                "Executable should work from {$testPath}"
+            $this->assertSame(
+                0,
+                $process->getExitCode(),
+                "Executable should work from {$testPath}",
             );
             $this->assertStringContainsString('1.0.0-dev', $process->getOutput());
         }
@@ -233,7 +235,7 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            'list'
+            'list',
         ]);
 
         // Act
@@ -252,24 +254,24 @@ final class ExecutableTest extends TestCase
         $successProcess = new Process([
             'php',
             $this->getExecutablePath(),
-            '--version'
+            '--version',
         ]);
 
         // Arrange - Test with invalid project (should return 1)
         $tempDir = sys_get_temp_dir() . '/qt_test_exit_' . uniqid();
-        mkdir($tempDir, 0777, true);
+        mkdir($tempDir, 0o777, true);
 
         // Create non-TYPO3 composer.json
         $composerContent = json_encode([
             'name' => 'test/exit-test',
-            'require' => ['symfony/console' => '^7.0']
+            'require' => ['symfony/console' => '^7.0'],
         ]);
         file_put_contents($tempDir . '/composer.json', $composerContent);
 
         $failProcess = new Process([
             'php',
             $this->getExecutablePath(),
-            'list'
+            'list',
         ], $tempDir);
 
         try {
@@ -294,7 +296,7 @@ final class ExecutableTest extends TestCase
         $process = new Process([
             'php',
             $this->getExecutablePath(),
-            'non-existent-command'
+            'non-existent-command',
         ]);
 
         // Act
@@ -312,7 +314,7 @@ final class ExecutableTest extends TestCase
         chdir($this->getFixturePath('valid-typo3-project'));
         $process = new Process([
             'php',
-            $this->getExecutablePath()
+            $this->getExecutablePath(),
         ]);
 
         // Act

@@ -45,9 +45,9 @@ final class YamlValidatorTest extends TestCase
     public function testValidateYamlFilesWithInvalidFiles(): void
     {
         // Create invalid YAML files
-        $this->createYamlFile('invalid.yaml', "invalid: yaml: content: [");
-        $this->createYamlFile('empty.yml', "");
-        $this->createYamlFile('string_only.yaml', "just a string");
+        $this->createYamlFile('invalid.yaml', 'invalid: yaml: content: [');
+        $this->createYamlFile('empty.yml', '');
+        $this->createYamlFile('string_only.yaml', 'just a string');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 
@@ -61,9 +61,9 @@ final class YamlValidatorTest extends TestCase
     public function testValidateYamlFilesWithMixedFiles(): void
     {
         // Create mix of valid and invalid files
-        $this->createYamlFile('valid.yaml', "key: value");
-        $this->createYamlFile('invalid.yaml', "invalid: [yaml");
-        $this->createYamlFile('empty.yml', "");
+        $this->createYamlFile('valid.yaml', 'key: value');
+        $this->createYamlFile('invalid.yaml', 'invalid: [yaml');
+        $this->createYamlFile('empty.yml', '');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 
@@ -79,7 +79,7 @@ final class YamlValidatorTest extends TestCase
         // Create non-YAML files (should be ignored)
         $this->createFile('test.php', '<?php echo "hello";');
         $this->createFile('test.txt', 'text content');
-        $this->createYamlFile('valid.yaml', "key: value");
+        $this->createYamlFile('valid.yaml', 'key: value');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 
@@ -105,8 +105,8 @@ final class YamlValidatorTest extends TestCase
         $subDir = $this->tempDir . '/subdir';
         $this->filesystem->mkdir($subDir);
 
-        $this->createYamlFile('root.yaml', "root: value");
-        $this->createFile($subDir . '/sub.yaml', "sub: value");
+        $this->createYamlFile('root.yaml', 'root: value');
+        $this->createFile($subDir . '/sub.yaml', 'sub: value');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 
@@ -116,8 +116,8 @@ final class YamlValidatorTest extends TestCase
 
     public function testGetProblematicFilesSummary(): void
     {
-        $this->createYamlFile('invalid.yaml', "invalid: [yaml");
-        $this->createYamlFile('empty.yml', "");
+        $this->createYamlFile('invalid.yaml', 'invalid: [yaml');
+        $this->createYamlFile('empty.yml', '');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
         $summary = $this->yamlValidator->getProblematicFilesSummary($results);
@@ -129,8 +129,8 @@ final class YamlValidatorTest extends TestCase
 
     public function testGetProblematicFilePaths(): void
     {
-        $this->createYamlFile('invalid.yaml', "invalid: [yaml");
-        $this->createYamlFile('valid.yaml', "valid: yaml");
+        $this->createYamlFile('invalid.yaml', 'invalid: [yaml');
+        $this->createYamlFile('valid.yaml', 'valid: yaml');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
         $problematicPaths = $this->yamlValidator->getProblematicFilePaths($results);
@@ -142,7 +142,7 @@ final class YamlValidatorTest extends TestCase
     public function testValidateStringYamlReturnsWrongType(): void
     {
         // YAML that parses to string instead of array (Fractor requirement)
-        $this->createYamlFile('string.yaml', "just a string value");
+        $this->createYamlFile('string.yaml', 'just a string value');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 
@@ -154,7 +154,7 @@ final class YamlValidatorTest extends TestCase
     public function testValidateParseError(): void
     {
         // Invalid YAML syntax
-        $this->createYamlFile('parse_error.yaml', "invalid: yaml: [syntax");
+        $this->createYamlFile('parse_error.yaml', 'invalid: yaml: [syntax');
 
         $results = $this->yamlValidator->validateYamlFiles($this->tempDir);
 

@@ -1,8 +1,8 @@
 # Issue 014: Filesystem Abstraction with Symfony Filesystem
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Medium (3-8h)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Medium (3-8h)
 **Impact:** Medium
 
 ## Description
@@ -25,7 +25,7 @@ Direct filesystem operations without abstraction layer
 Platform-specific path and permission handling issues
 ```
 
-**Location:** Multiple files including Configuration classes, BaseCommand, PhpStanCommand  
+**Location:** Multiple files including Configuration classes, BaseCommand, PhpStanCommand
 **Trigger:** File operations on different operating systems or with different permissions
 
 ## Impact Analysis

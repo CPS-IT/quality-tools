@@ -33,7 +33,7 @@ final class ProcessExecutorTest extends TestCase
             ['echo', 'test'],
             '/tmp',
             [],
-            $output
+            $output,
         );
 
         self::assertSame(0, $result);
@@ -51,7 +51,7 @@ final class ProcessExecutorTest extends TestCase
             ['false'], // Command that always fails
             '/tmp',
             [],
-            $output
+            $output,
         );
 
         self::assertSame(1, $result);
@@ -72,7 +72,7 @@ final class ProcessExecutorTest extends TestCase
             ['echo', 'test'],
             '/tmp',
             [],
-            $output
+            $output,
         );
     }
 
@@ -90,7 +90,7 @@ final class ProcessExecutorTest extends TestCase
             ['echo', 'test'],
             '/tmp',
             [],
-            $output
+            $output,
         );
     }
 
@@ -109,7 +109,7 @@ final class ProcessExecutorTest extends TestCase
             ['echo', 'test'],
             '/tmp',
             [],
-            $output
+            $output,
         );
     }
 
@@ -133,7 +133,7 @@ final class ProcessExecutorTest extends TestCase
             ['php', '-r', 'fwrite(STDERR, "test error");'],
             '/tmp',
             [],
-            $output
+            $output,
         );
     }
 
@@ -153,7 +153,7 @@ final class ProcessExecutorTest extends TestCase
             ['php', '-r', 'fwrite(STDERR, "test error");'],
             '/tmp',
             [],
-            $output
+            $output,
         );
     }
 
@@ -171,7 +171,7 @@ final class ProcessExecutorTest extends TestCase
             ['pwd'],
             '/tmp',
             [],
-            $output
+            $output,
         );
 
         self::assertSame(0, $result);
@@ -191,7 +191,7 @@ final class ProcessExecutorTest extends TestCase
             ['php', '-r', 'echo getenv("TEST_VAR");'],
             '/tmp',
             $environment,
-            $output
+            $output,
         );
 
         self::assertSame(0, $result);

@@ -1,8 +1,8 @@
 # Feature 015: Configuration Overwrites
 
-**Status:** Not Started  
-**Estimated Time:** 6-8 hours  
-**Layer:** MVP  
+**Status:** Not Started
+**Estimated Time:** 6-8 hours
+**Layer:** MVP
 **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
@@ -99,11 +99,11 @@ quality-tools:
       level: "typo3-12"  # Override from default typo3-13
       skip:
         - "Rector\\TypeDeclaration\\Rector\\ClassMethod\\AddVoidReturnTypeWhereNoReturnRector"
-    
+
     phpstan:
       # Override PHPStan level for this project
       level: 5  # Override from default 6
-    
+
   # Override global path configuration
   paths:
     exclude:

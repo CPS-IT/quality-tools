@@ -173,7 +173,7 @@ vendor/bin/qt config:show | grep -A 5 "project:"
    ```bash
    # Error with ${PROJECT_NAME}
    export PROJECT_NAME="my-project"
-   
+
    # Or add default in YAML
    name: "${PROJECT_NAME:-default-project}"
    ```
@@ -184,7 +184,7 @@ vendor/bin/qt config:show | grep -A 5 "project:"
    name: "$PROJECT_NAME"         # Missing braces
    name: "${PROJECT_NAME}"       # Missing default, will fail if unset
    name: "${PROJECT-NAME:-def}"  # Hyphens not allowed in variable names
-   
+
    # CORRECT
    name: "${PROJECT_NAME:-default}"  # Correct syntax with default
    ```
@@ -195,7 +195,7 @@ vendor/bin/qt config:show | grep -A 5 "project:"
    export ENABLE_PARALLEL="True"    # Capital T won't work
    export ENABLE_PARALLEL="1"       # Will work (converted to true)
    export ENABLE_PARALLEL="true"    # Will work
-   
+
    # Wrong: Numeric values
    export PHPSTAN_LEVEL="six"       # Won't work
    export PHPSTAN_LEVEL="6"         # Will work
@@ -301,7 +301,7 @@ vendor/bin/qt config:show | grep -A 1 "enabled:"
    ```bash
    # Verify tool is enabled
    vendor/bin/qt config:show | grep -A 5 "phpstan:"
-   
+
    # Check for typos in tool names
    vendor/bin/qt config:validate
    ```
@@ -396,7 +396,7 @@ cat ~/.quality-tools.yaml
    ```bash
    # View global config if exists
    cat ~/.quality-tools.yaml
-   
+
    # Remove if causing conflicts
    mv ~/.quality-tools.yaml ~/.quality-tools.yaml.backup
    ```
@@ -484,7 +484,7 @@ quality-tools:
   tools:
     phpstan:
       memory_limit: "2G"  # Increase memory limit
-    
+
   performance:
     parallel: false      # Disable parallel processing
 ```
@@ -519,7 +519,7 @@ quality-tools:
       - "node_modules/"
       - ".git/"          # Add more exclusions
       - "public/"
-  
+
   performance:
     cache_enabled: true   # Enable caching to reduce I/O
 ```

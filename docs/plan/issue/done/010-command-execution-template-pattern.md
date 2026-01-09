@@ -76,7 +76,7 @@ The template method pattern provides the best balance of code reuse and structur
 ## Validation Plan
 
 - [x] Verify all commands exhibit identical error handling behavior
-- [x] Confirm configuration resolution works consistently  
+- [x] Confirm configuration resolution works consistently
 - [x] Test optimization display appears uniformly across tools
 - [x] Run existing integration tests to ensure no regressions
 - [x] Add new tests for template method behavior
@@ -92,7 +92,7 @@ Successfully implemented the AbstractToolCommand template method pattern:
 
 2. **Refactored existing commands** to use the template:
    - RectorLintCommand: Reduced from 94 to 56 lines (40% reduction)
-   - RectorFixCommand: Reduced from 93 to 55 lines (41% reduction)  
+   - RectorFixCommand: Reduced from 93 to 55 lines (41% reduction)
    - FractorLintCommand: Maintained complex YAML validation via hooks
    - FractorFixCommand: Preserved all functionality with cleaner structure
    - PhpStanCommand: Integrated special temporary config handling

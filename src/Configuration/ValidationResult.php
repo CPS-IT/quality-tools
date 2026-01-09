@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
-final class ValidationResult
+final readonly class ValidationResult
 {
-    private bool $valid;
-    private array $errors;
-
-    public function __construct(bool $valid, array $errors = [])
+    public function __construct(private bool $valid, private array $errors = [])
     {
-        $this->valid = $valid;
-        $this->errors = $errors;
     }
 
     public function isValid(): bool

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Utility;
 
-final class ProjectMetrics
+final readonly class ProjectMetrics
 {
-    public readonly array $php;
-    public readonly array $yaml;
-    public readonly array $json;
-    public readonly array $xml;
-    public readonly array $typoscript;
-    public readonly array $other;
+    public array $php;
+    public array $yaml;
+    public array $json;
+    public array $xml;
+    public array $typoscript;
+    public array $other;
 
     public function __construct(array $metrics)
     {

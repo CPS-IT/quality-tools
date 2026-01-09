@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown when process execution issues occur
+ * Exception thrown when process execution issues occur.
  */
 class ProcessException extends QualityToolsException
 {
@@ -21,7 +21,7 @@ class ProcessException extends QualityToolsException
         ?\Throwable $previous = null,
         private readonly array $troubleshootingSteps = [],
         private readonly array $context = [],
-        private readonly int $processExitCode = 0
+        private readonly int $processExitCode = 0,
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);
     }

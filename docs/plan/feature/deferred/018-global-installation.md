@@ -1,8 +1,8 @@
 # Feature 018: Global Installation
 
-**Status:** Not Started  
-**Estimated Time:** 6-8 hours  
-**Layer:** MVP  
+**Status:** Not Started
+**Estimated Time:** 6-8 hours
+**Layer:** MVP
 **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description

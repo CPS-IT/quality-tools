@@ -129,11 +129,11 @@ quality-tools:
       - "src/**/*.php"                    # Custom source directory
       - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
       - "vendor/fr/*/Classes"             # Scan FR vendor packages
-    
+
     exclude_patterns:
       - "packages/legacy/*"               # Exclude legacy packages
       - "vendor/*/Tests/"                 # Exclude vendor tests
-    
+
     tool_overrides:
       rector:
         additional:

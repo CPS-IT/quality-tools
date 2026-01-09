@@ -1,8 +1,8 @@
 # Feature 017: Single Package Scanning
 
-**Status:** Not Started  
-**Estimated Time:** 8-12 hours  
-**Layer:** MVP  
+**Status:** Not Started
+**Estimated Time:** 8-12 hours
+**Layer:** MVP
 **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
@@ -115,7 +115,7 @@ quality-tools:
   package:
     mode: "package"  # Enable package-specific scanning
     root: "vendor/cpsit/zug-sitepackage"  # Package root directory
-    
+
     # Package-specific path overrides
     paths:
       scan:
@@ -125,7 +125,7 @@ quality-tools:
       exclude:
         - "Tests/"
         - "Documentation/"
-    
+
     # Package-specific tool configuration
     tools:
       rector:

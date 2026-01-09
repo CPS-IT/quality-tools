@@ -14,6 +14,8 @@ use Symfony\Component\Yaml\Yaml;
 final class ConfigValidateCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
+
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -40,10 +42,11 @@ final class ConfigValidateCommand extends BaseCommand
                 '',
                 'Use "qt config:init" to create a configuration file.',
             ]);
+
             return self::SUCCESS;
         }
 
-        $io->info(sprintf('Validating configuration file: %s', $configFile));
+        $io->info(\sprintf('Validating configuration file: %s', $configFile));
 
         try {
             // Load and validate configuration
@@ -56,7 +59,6 @@ final class ConfigValidateCommand extends BaseCommand
             }
 
             return self::SUCCESS;
-
         } catch (\Throwable $e) {
             return $this->getErrorHandler()->handleException($e, $output, $output->isVerbose());
         }
@@ -82,14 +84,14 @@ final class ConfigValidateCommand extends BaseCommand
         $io->definitionList(
             ['Project Name' => $project['name'] ?? 'Not specified'],
             ['PHP Version' => $project['php_version'] ?? '8.3'],
-            ['TYPO3 Version' => $project['typo3_version'] ?? '13.4']
+            ['TYPO3 Version' => $project['typo3_version'] ?? '13.4'],
         );
 
         // Enabled tools
         $tools = $qualityTools['tools'] ?? [];
         $enabledTools = [];
         foreach ($tools as $tool => $config) {
-            if (($config['enabled'] ?? true)) {
+            if ($config['enabled'] ?? true) {
                 $enabledTools[] = $tool;
             }
         }
@@ -105,7 +107,7 @@ final class ConfigValidateCommand extends BaseCommand
         if (!empty($paths['scan'])) {
             $io->writeln('<info>Scan Paths:</info>');
             foreach ($paths['scan'] as $path) {
-                $io->writeln(sprintf('  - %s', $path));
+                $io->writeln(\sprintf('  - %s', $path));
             }
         }
     }

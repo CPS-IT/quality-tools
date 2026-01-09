@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Integration tests for BaseCommand with real process execution and file system operations
+ * Integration tests for BaseCommand with real process execution and file system operations.
  *
  * @covers \Cpsit\QualityTools\Console\Command\BaseCommand
  */
@@ -34,7 +34,7 @@ final class BaseCommandIntegrationTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempProjectRoot],
             function (): void {
                 $this->application = new QualityToolsApplication();
-            }
+            },
         );
 
         $this->command = new TestableIntegrationCommand();
@@ -53,7 +53,7 @@ final class BaseCommandIntegrationTest extends TestCase
 
         // Create quality tools config directory
         $configDir = $this->tempProjectRoot . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0777, true);
+        mkdir($configDir, 0o777, true);
 
         // Create test configuration files
         file_put_contents($configDir . '/test-config.php', '<?php return ["test" => true];');
@@ -61,8 +61,8 @@ final class BaseCommandIntegrationTest extends TestCase
         file_put_contents($configDir . '/phpstan.neon', 'parameters: {}');
 
         // Create additional test directories
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
-        mkdir($this->tempProjectRoot . '/custom-path', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
+        mkdir($this->tempProjectRoot . '/custom-path', 0o777, true);
     }
 
     public function testRealProcessExecutionWithSimpleCommand(): void
@@ -74,7 +74,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['echo', 'Hello Integration Test'],
             $input,
-            $output
+            $output,
         );
 
         $this->assertEquals(0, $exitCode);
@@ -94,7 +94,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['echo', 'This should not appear'],
             $input,
-            $output
+            $output,
         );
 
         $this->assertEquals(0, $exitCode);
@@ -111,7 +111,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['bash', '-c', 'exit 5'],
             $input,
-            $output
+            $output,
         );
 
         $this->assertEquals(5, $exitCode);
@@ -126,7 +126,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['bash', '-c', 'echo "normal output"'],
             $input,
-            $output
+            $output,
         );
 
         $this->assertEquals(0, $exitCode);
@@ -196,11 +196,11 @@ final class BaseCommandIntegrationTest extends TestCase
         $customTarget = $this->tempProjectRoot . '/workflow-target';
 
         file_put_contents($customConfig, '<?php return ["workflow" => true];');
-        mkdir($customTarget, 0777, true);
+        mkdir($customTarget, 0o777, true);
 
         $input = new ArrayInput([
             '--config' => $customConfig,
-            '--path' => $customTarget
+            '--path' => $customTarget,
         ], $this->command->getDefinition());
         $output = new BufferedOutput();
         $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
@@ -213,7 +213,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['echo', 'Workflow test complete'],
             $input,
-            $output
+            $output,
         );
 
         // Verify all components work together
@@ -236,7 +236,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['pwd'],
             $input,
-            $output
+            $output,
         );
 
         $this->assertEquals(0, $exitCode);
@@ -256,7 +256,7 @@ final class BaseCommandIntegrationTest extends TestCase
         $exitCode = $this->command->testExecuteProcess(
             ['bash', '-c', 'sleep 0.1; echo "Long running task complete"'],
             $input,
-            $output
+            $output,
         );
 
         $endTime = microtime(true);
@@ -271,7 +271,7 @@ final class BaseCommandIntegrationTest extends TestCase
 }
 
 /**
- * Testable concrete implementation for integration testing
+ * Testable concrete implementation for integration testing.
  */
 final class TestableIntegrationCommand extends BaseCommand
 {
@@ -281,6 +281,7 @@ final class TestableIntegrationCommand extends BaseCommand
         $this->setDescription('Test integration command for BaseCommand testing');
     }
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure(); // This adds the base options
@@ -304,7 +305,7 @@ final class TestableIntegrationCommand extends BaseCommand
     public function testExecuteProcess(
         array $command,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): int {
         return $this->executeProcess($command, $input, $output);
     }

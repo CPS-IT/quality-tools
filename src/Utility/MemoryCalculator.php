@@ -6,13 +6,13 @@ namespace Cpsit\QualityTools\Utility;
 
 final class MemoryCalculator
 {
-    private const BASE_MEMORY_MB = 128;
-    private const MIN_MEMORY_MB = 256;
-    private const MAX_MEMORY_MB = 2048;
+    private const int BASE_MEMORY_MB = 128;
+    private const int MIN_MEMORY_MB = 256;
+    private const int MAX_MEMORY_MB = 2048;
 
-    private const PHP_FILE_MULTIPLIER = 0.5;
-    private const PHP_COMPLEXITY_MULTIPLIER = 0.1;
-    private const OTHER_FILE_MULTIPLIER = 0.1;
+    private const float PHP_FILE_MULTIPLIER = 0.5;
+    private const float PHP_COMPLEXITY_MULTIPLIER = 0.1;
+    private const float OTHER_FILE_MULTIPLIER = 0.1;
 
     public function calculateOptimalMemory(ProjectMetrics $metrics): string
     {
@@ -27,35 +27,25 @@ final class MemoryCalculator
 
         $adjustedMemory = max(self::MIN_MEMORY_MB, min($memoryMb, self::MAX_MEMORY_MB));
 
-        return (int)round($adjustedMemory) . 'M';
+        return (int) round($adjustedMemory) . 'M';
     }
 
     public function calculateOptimalMemoryForTool(ProjectMetrics $metrics, string $tool): string
     {
         $baseMemory = $this->calculateOptimalMemory($metrics);
-        $memoryMb = (int)str_replace('M', '', $baseMemory);
+        $memoryMb = (int) str_replace('M', '', $baseMemory);
 
-        switch ($tool) {
-            case 'phpstan':
-                $toolMultiplier = 1.2;
-                break;
-            case 'php-cs-fixer':
-                $toolMultiplier = 1.0;
-                break;
-            case 'rector':
-                $toolMultiplier = 1.5;
-                break;
-            case 'fractor':
-                $toolMultiplier = 0.8;
-                break;
-            default:
-                $toolMultiplier = 1.0;
-                break;
-        }
+        $toolMultiplier = match ($tool) {
+            'phpstan' => 1.2,
+            'php-cs-fixer' => 1.0,
+            'rector' => 1.5,
+            'fractor' => 0.8,
+            default => 1.0,
+        };
 
         $adjustedMemory = max(self::MIN_MEMORY_MB, min($memoryMb * $toolMultiplier, self::MAX_MEMORY_MB));
 
-        return (int)round($adjustedMemory) . 'M';
+        return (int) round($adjustedMemory) . 'M';
     }
 
     public function shouldEnableParallelProcessing(ProjectMetrics $metrics): bool

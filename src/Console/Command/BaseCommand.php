@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Service\CommandBuilder;
 use Cpsit\QualityTools\Service\ErrorFactory;
@@ -16,8 +16,6 @@ use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
-use InvalidArgumentException;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -38,19 +36,19 @@ abstract class BaseCommand extends Command
                 'config',
                 'c',
                 InputOption::VALUE_REQUIRED,
-                'Override default configuration file path'
+                'Override default configuration file path',
             )
             ->addOption(
                 'path',
                 'p',
                 InputOption::VALUE_REQUIRED,
-                'Specify custom target paths (defaults to project root)'
+                'Specify custom target paths (defaults to project root)',
             )
             ->addOption(
                 'no-optimization',
                 null,
                 InputOption::VALUE_NONE,
-                'Disable automatic optimization (use default settings)'
+                'Disable automatic optimization (use default settings)',
             );
         // Note: Optimization details are shown by default unless --no-optimization is used
     }
@@ -60,7 +58,7 @@ abstract class BaseCommand extends Command
         $application = $this->getApplication();
 
         if (!$application instanceof QualityToolsApplication) {
-            throw new RuntimeException('Command must be run within QualityToolsApplication');
+            throw new \RuntimeException('Command must be run within QualityToolsApplication');
         }
 
         return $application->getProjectRoot();
@@ -72,6 +70,7 @@ abstract class BaseCommand extends Command
             if (!file_exists($customConfigPath)) {
                 throw ErrorFactory::configFileNotFound($customConfigPath, $customConfigPath);
             }
+
             return realpath($customConfigPath);
         }
 
@@ -100,16 +99,10 @@ abstract class BaseCommand extends Command
 
             // Validate that cpsit/quality-tools is installed in detected vendor directory
             if (!is_dir($vendorPath . '/cpsit/quality-tools')) {
-                throw new RuntimeException(
-                    sprintf(
-                        'cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.',
-                        $vendorPath
-                    )
-                );
+                throw new \RuntimeException(\sprintf('cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.', $vendorPath));
             }
 
             return $vendorPath;
-
         } catch (VendorDirectoryNotFoundException $e) {
             // Fallback to old hardcoded detection for backward compatibility
             $vendorPaths = [
@@ -123,13 +116,7 @@ abstract class BaseCommand extends Command
                 }
             }
 
-            throw new RuntimeException(
-                sprintf(
-                    'Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s',
-                    $e->getMessage(),
-                    implode(', ', $vendorPaths)
-                )
-            );
+            throw new \RuntimeException(\sprintf('Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s', $e->getMessage(), implode(', ', $vendorPaths)));
         }
     }
 
@@ -141,7 +128,7 @@ abstract class BaseCommand extends Command
         InputInterface $input,
         OutputInterface $output,
         ?string $memoryLimit = null,
-        ?string $tool = null
+        ?string $tool = null,
     ): int {
         $resolvedPaths = $tool !== null ? $this->getResolvedPathsForTool($input, $tool) : null;
 
@@ -156,7 +143,7 @@ abstract class BaseCommand extends Command
             $preparedCommand,
             $this->getProjectRoot(),
             $environment,
-            $output
+            $output,
         );
     }
 
@@ -198,7 +185,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Get aggregated project metrics across all resolved paths for a tool
+     * Get aggregated project metrics across all resolved paths for a tool.
      */
     protected function getAggregatedProjectMetrics(InputInterface $input, string $tool): ProjectMetrics
     {
@@ -232,7 +219,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Merge two ProjectMetrics instances by adding their values
+     * Merge two ProjectMetrics instances by adding their values.
      */
     private function mergeProjectMetrics(ProjectMetrics $base, ProjectMetrics $additional): ProjectMetrics
     {
@@ -243,8 +230,10 @@ abstract class BaseCommand extends Command
                 'totalLines' => $base->getPhpLines() + $additional->getPhpLines(),
                 'totalSize' => ($base->php['totalSize'] ?? 0) + ($additional->php['totalSize'] ?? 0),
                 'avgComplexity' => $this->calculateAverageComplexity(
-                    $base->php['avgComplexity'] ?? 0, $base->getPhpFileCount(),
-                    $additional->php['avgComplexity'] ?? 0, $additional->getPhpFileCount()
+                    $base->php['avgComplexity'] ?? 0,
+                    $base->getPhpFileCount(),
+                    $additional->php['avgComplexity'] ?? 0,
+                    $additional->getPhpFileCount(),
                 ),
                 'maxComplexity' => max($base->php['maxComplexity'] ?? 0, $additional->php['maxComplexity'] ?? 0),
             ],
@@ -289,7 +278,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Calculate weighted average complexity across two metrics sets
+     * Calculate weighted average complexity across two metrics sets.
      */
     private function calculateAverageComplexity(int $avg1, int $count1, int $avg2, int $count2): int
     {
@@ -318,6 +307,7 @@ abstract class BaseCommand extends Command
 
         // Use aggregated metrics for accurate memory calculation across all paths
         $metrics = $this->getAggregatedProjectMetrics($input, $tool);
+
         return $this->getMemoryCalculator()->calculateOptimalMemoryForTool($metrics, $tool);
     }
 
@@ -329,6 +319,7 @@ abstract class BaseCommand extends Command
 
         // Use aggregated metrics for parallel processing decision across all paths
         $metrics = $this->getAggregatedProjectMetrics($input, $tool);
+
         return $this->getMemoryCalculator()->shouldEnableParallelProcessing($metrics);
     }
 
@@ -338,9 +329,9 @@ abstract class BaseCommand extends Command
         $resolvedPaths = $this->getResolvedPathsForTool($input, $tool);
 
         if (!empty($resolvedPaths)) {
-            $output->writeln(sprintf('<comment>Analyzing %d configured paths:</comment>', count($resolvedPaths)));
+            $output->writeln(\sprintf('<comment>Analyzing %d configured paths:</comment>', \count($resolvedPaths)));
             foreach ($resolvedPaths as $i => $path) {
-                $output->writeln(sprintf('  [%d] %s', $i + 1, $path));
+                $output->writeln(\sprintf('  [%d] %s', $i + 1, $path));
             }
         } else {
             $output->writeln('<comment>Using default path discovery</comment>');
@@ -352,35 +343,35 @@ abstract class BaseCommand extends Command
         $profile = $calculator->getOptimizationProfile($metrics);
 
         $output->writeln('<comment>Aggregated Project Analysis (across all paths):</comment>');
-        $output->writeln(sprintf(
+        $output->writeln(\sprintf(
             '  Total project size: %s (%d files, %d lines)',
             $profile['projectSize'],
             $metrics->getTotalFileCount(),
-            $metrics->getTotalLines()
+            $metrics->getTotalLines(),
         ));
-        $output->writeln(sprintf(
+        $output->writeln(\sprintf(
             '  Total PHP files: %d (combined complexity score: %d)',
             $metrics->getPhpFileCount(),
-            $metrics->getPhpComplexityScore()
+            $metrics->getPhpComplexityScore(),
         ));
 
         if (!$this->isOptimizationDisabled($input)) {
             $output->writeln('<comment>Optimization Profile (based on total workload):</comment>');
-            $output->writeln(sprintf('  Memory limit: %s', $profile['memoryLimit']));
+            $output->writeln(\sprintf('  Memory limit: %s', $profile['memoryLimit']));
 
             if ($calculator->supportsParallelProcessing($tool)) {
-                $output->writeln(sprintf('  Parallel processing: %s', $profile['parallelProcessing'] ? 'enabled' : 'disabled'));
+                $output->writeln(\sprintf('  Parallel processing: %s', $profile['parallelProcessing'] ? 'enabled' : 'disabled'));
             } else {
                 $output->writeln('  Parallel processing: not supported by this tool');
             }
 
-            $output->writeln(sprintf('  Progress indicator: %s', $profile['progressIndicator'] ? 'enabled' : 'disabled'));
-            $output->writeln(sprintf('  Tool-specific memory: %s', $calculator->calculateOptimalMemoryForTool($metrics, $tool)));
+            $output->writeln(\sprintf('  Progress indicator: %s', $profile['progressIndicator'] ? 'enabled' : 'disabled'));
+            $output->writeln(\sprintf('  Tool-specific memory: %s', $calculator->calculateOptimalMemoryForTool($metrics, $tool)));
 
             if (!empty($profile['recommendations'])) {
                 $output->writeln('<comment>Recommendations:</comment>');
                 foreach ($profile['recommendations'] as $recommendation) {
-                    $output->writeln(sprintf('  - %s', $recommendation));
+                    $output->writeln(\sprintf('  - %s', $recommendation));
                 }
             }
         } else {
@@ -413,21 +404,21 @@ abstract class BaseCommand extends Command
                 }
             }
         }
+
         return $this->cachedTargetPath;
     }
 
     /**
-     * Get all resolved paths for a tool (for tools that can handle multiple paths)
+     * Get all resolved paths for a tool (for tools that can handle multiple paths).
      */
     protected function getResolvedPathsForTool(InputInterface $input, string $tool): array
     {
         $customPath = $input->getOption('path');
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
-                throw new InvalidArgumentException(
-                    sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                );
+                throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
             }
+
             return [realpath($customPath)];
         }
 
@@ -457,6 +448,7 @@ abstract class BaseCommand extends Command
                 // TODO: Implement config override logic if needed
             }
         }
+
         return $this->configuration;
     }
 }

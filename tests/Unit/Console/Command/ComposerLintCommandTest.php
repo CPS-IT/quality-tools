@@ -35,7 +35,7 @@ final class ComposerLintCommandTest extends TestCase
         $vendorDir = TestHelper::createVendorStructure($this->tempDir);
         $vendorBinDir = $this->tempDir . '/vendor/bin';
         if (!is_dir($vendorBinDir)) {
-            mkdir($vendorBinDir, 0777, true);
+            mkdir($vendorBinDir, 0o777, true);
         }
 
         // Create fake composer executable that simulates composer normalize plugin
@@ -55,7 +55,7 @@ final class ComposerLintCommandTest extends TestCase
 
         $composerExecutable = $vendorBinDir . '/composer';
         file_put_contents($composerExecutable, $composerScript);
-        chmod($composerExecutable, 0755);
+        chmod($composerExecutable, 0o755);
 
         // Set up environment to use temp directory as project root and initialize application
         TestHelper::withEnvironment(
@@ -64,7 +64,7 @@ final class ComposerLintCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new ComposerLintCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -110,13 +110,11 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(function($option) {
-                return match($option) {
-                    'path' => null,
-                    'config' => null,
-                    'no-optimization' => false,
-                    default => null
-                };
+            ->willReturnCallback(fn ($option) => match ($option) {
+                'path' => null,
+                'config' => null,
+                'no-optimization' => false,
+                default => null
             });
 
         $this->mockOutput
@@ -131,7 +129,7 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('write')
-            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
+            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -141,7 +139,7 @@ final class ComposerLintCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         // Create composer.json in custom target directory
         file_put_contents($customTargetDir . '/composer.json', '{}');
@@ -152,7 +150,7 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturnMap([
                 ['path', $customTargetDir],
                 ['config', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -167,7 +165,7 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('write')
-            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
+            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -231,7 +229,7 @@ final class ComposerLintCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         // Create composer.json in custom target directory
         file_put_contents($customTargetDir . '/composer.json', '{}');
@@ -240,7 +238,7 @@ final class ComposerLintCommandTest extends TestCase
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -262,7 +260,7 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturnMap([
                 ['path', null],
                 ['config', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -286,7 +284,7 @@ final class ComposerLintCommandTest extends TestCase
             ->willReturnMap([
                 ['path', null],
                 ['config', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -301,7 +299,7 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('write')
-            ->with($this->stringContains("Running ergebnis/composer-normalize by Andreas Möller and contributors."));
+            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -314,7 +312,7 @@ final class ComposerLintCommandTest extends TestCase
         $composerContent = [
             'name' => 'test/project',
             'require' => [],
-            'extra' => []
+            'extra' => [],
         ];
         file_put_contents($this->tempDir . '/composer.json', json_encode($composerContent));
 

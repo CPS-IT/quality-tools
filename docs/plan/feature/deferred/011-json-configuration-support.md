@@ -1,8 +1,8 @@
 # Feature 011: JSON Configuration Support
 
-**Status:** Not Started  
-**Estimated Time:** 2-3 hours  
-**Layer:** Core System  
+**Status:** Not Started
+**Estimated Time:** 2-3 hours
+**Layer:** Core System
 **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
@@ -193,16 +193,16 @@ class JsonConfigurationLoader extends AbstractConfigurationLoader
     {
         return pathinfo($filePath, PATHINFO_EXTENSION) === 'json';
     }
-    
+
     public function load(string $filePath): Configuration
     {
         $content = file_get_contents($filePath);
         $content = $this->interpolateEnvironmentVariables($content);
-        
+
         $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        
+
         $this->validateConfiguration($data);
-        
+
         return new Configuration($data);
     }
 }
@@ -213,12 +213,12 @@ class ConfigurationFormatConverter
     {
         return json_encode($config->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     }
-    
+
     public function convertToYaml(Configuration $config): string
     {
         return Yaml::dump($config->toArray(), 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
     }
-    
+
     public function convertFile(string $inputPath, string $outputPath): void
     {
         // Auto-detect input format and convert to output format
@@ -236,21 +236,21 @@ class UnifiedConfigurationLoader
             'quality-tools.json',  // JSON for automation
             '.quality-tools.json'  // Hidden JSON
         ];
-        
+
         foreach ($configFiles as $configFile) {
             $path = $projectRoot . '/' . $configFile;
             if (file_exists($path)) {
                 return $this->getLoaderForFile($path)->load($path);
             }
         }
-        
+
         return $this->getDefaultConfiguration();
     }
-    
+
     private function getLoaderForFile(string $path): ConfigurationLoaderInterface
     {
         $extension = pathinfo($path, PATHINFO_EXTENSION);
-        
+
         return match($extension) {
             'yaml', 'yml' => new YamlConfigurationLoader(),
             'json' => new JsonConfigurationLoader(),
@@ -268,7 +268,7 @@ class UnifiedConfigurationLoader
 # Convert YAML to JSON
 qt config:convert quality-tools.yaml quality-tools.json
 
-# Convert JSON to YAML  
+# Convert JSON to YAML
 qt config:convert quality-tools.json quality-tools.yaml
 
 # Auto-detect and convert

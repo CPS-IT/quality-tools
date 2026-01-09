@@ -10,8 +10,8 @@ use Symfony\Component\Console\Exception\RuntimeException;
 
 final class QualityToolsApplication extends Application
 {
-    private const APP_NAME = 'CPSIT Quality Tools';
-    private const APP_VERSION = '1.0.0-dev';
+    private const string APP_NAME = 'CPSIT Quality Tools';
+    private const string APP_VERSION = '1.0.0-dev';
 
     private ?string $projectRoot = null;
 
@@ -21,13 +21,14 @@ final class QualityToolsApplication extends Application
 
         try {
             $this->projectRoot = $this->findProjectRoot();
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException) {
             // Project root detection will be handled per-command if needed
         }
 
         $this->registerCommands();
     }
 
+    #[\Override]
     public function getHelp(): string
     {
         return 'Simple command-line interface for TYPO3 quality assurance tools';
@@ -59,7 +60,7 @@ final class QualityToolsApplication extends Application
         $searchDir = $currentDir;
         $maxLevels = 10; // Prevent infinite traversal
 
-        for ($i = 0; $i < $maxLevels; $i++) {
+        for ($i = 0; $i < $maxLevels; ++$i) {
             $composerFile = $searchDir . '/composer.json';
 
             if (file_exists($composerFile)) {
@@ -68,7 +69,7 @@ final class QualityToolsApplication extends Application
                 }
             }
 
-            $parentDir = dirname($searchDir);
+            $parentDir = \dirname($searchDir);
             if ($parentDir === $searchDir) {
                 // Reached filesystem root
                 break;
@@ -77,10 +78,7 @@ final class QualityToolsApplication extends Application
             $searchDir = $parentDir;
         }
 
-        throw new RuntimeException(
-            'TYPO3 project root not found. Please run this command from within a TYPO3 project directory, ' .
-            'or set the QT_PROJECT_ROOT environment variable.'
-        );
+        throw new RuntimeException('TYPO3 project root not found. Please run this command from within a TYPO3 project directory, or set the QT_PROJECT_ROOT environment variable.');
     }
 
     private function isTypo3Project(string $composerFile): bool
@@ -97,10 +95,10 @@ final class QualityToolsApplication extends Application
             }
 
             $composer = json_decode($content, true);
-            if (!is_array($composer)) {
+            if (!\is_array($composer)) {
                 return false;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // File access failed (permissions, corruption, etc.)
             return false;
         }
@@ -108,7 +106,7 @@ final class QualityToolsApplication extends Application
         // Check for TYPO3 dependencies
         $dependencies = array_merge(
             $composer['require'] ?? [],
-            $composer['require-dev'] ?? []
+            $composer['require-dev'] ?? [],
         );
 
         $typo3Packages = [
@@ -135,7 +133,7 @@ final class QualityToolsApplication extends Application
         }
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($commandDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+            new \RecursiveDirectoryIterator($commandDir, \RecursiveDirectoryIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {
@@ -150,7 +148,7 @@ final class QualityToolsApplication extends Application
                 try {
                     $command = new $className();
                     $this->add($command);
-                } catch (\Throwable $e) {
+                } catch (\Throwable) {
                     // Skip commands that fail to instantiate
                     continue;
                 }
@@ -175,10 +173,10 @@ final class QualityToolsApplication extends Application
         try {
             $reflection = new \ReflectionClass($className);
 
-            return $reflection->isSubclassOf(Command::class) &&
-                   !$reflection->isAbstract() &&
-                   $reflection->isInstantiable();
-        } catch (\Throwable $e) {
+            return $reflection->isSubclassOf(Command::class)
+                   && !$reflection->isAbstract()
+                   && $reflection->isInstantiable();
+        } catch (\Throwable) {
             return false;
         }
     }

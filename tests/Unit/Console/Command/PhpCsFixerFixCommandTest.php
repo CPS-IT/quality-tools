@@ -33,16 +33,16 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake php-cs-fixer executable
         $phpCsFixerExecutable = $vendorBinDir . '/php-cs-fixer';
         file_put_contents($phpCsFixerExecutable, "#!/bin/bash\necho 'PHP CS Fixer fix completed successfully'\nexit 0\n");
-        chmod($phpCsFixerExecutable, 0755);
+        chmod($phpCsFixerExecutable, 0o755);
 
         // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/php-cs-fixer.php', "<?php\nreturn [];\n");
 
         // Set up environment to use temp directory as project root and initialize application
@@ -52,7 +52,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new PhpCsFixerFixCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -116,7 +116,6 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-
         $this->assertEquals(0, $result);
     }
 
@@ -152,7 +151,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
@@ -268,7 +267,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         // Execute with custom config option
         $commandTester->execute([
-            '--config' => $customConfigPath
+            '--config' => $customConfigPath,
         ]);
 
         // Command should execute successfully
@@ -282,13 +281,13 @@ final class PhpCsFixerFixCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully

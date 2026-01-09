@@ -11,7 +11,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Integration tests for path scanning with configuration system
+ * Integration tests for path scanning with configuration system.
  */
 final class PathScanningIntegrationTest extends TestCase
 {
@@ -32,23 +32,23 @@ final class PathScanningIntegrationTest extends TestCase
     public function testConfigurationWithAdditionalPaths(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
-        mkdir($this->tempProjectRoot . '/config/system', 0777, true);
-        mkdir($this->tempProjectRoot . '/src/Custom', 0777, true);
-        mkdir($this->tempProjectRoot . '/app/Classes', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
+        mkdir($this->tempProjectRoot . '/config/system', 0o777, true);
+        mkdir($this->tempProjectRoot . '/src/Custom', 0o777, true);
+        mkdir($this->tempProjectRoot . '/app/Classes', 0o777, true);
 
         // Create YAML configuration with additional scan paths
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "path-scanning-test"
-  paths:
-    scan:
-      - "packages/"
-      - "config/system/"
-      - "src/**"
-      - "app/Classes"
-YAML;
+            quality-tools:
+              project:
+                name: "path-scanning-test"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/system/"
+                  - "src/**"
+                  - "app/Classes"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -62,16 +62,16 @@ YAML;
 
         // Test resolved paths include additional paths
         $rectorPaths = $config->getResolvedPathsForTool('rector');
-        
+
         // Should include standard paths
         $expectedPackagesPath = realpath($this->tempProjectRoot . '/packages');
         $expectedConfigPath = realpath($this->tempProjectRoot . '/config/system');
         $expectedSrcPath = realpath($this->tempProjectRoot . '/src/Custom');
         $expectedAppPath = realpath($this->tempProjectRoot . '/app/Classes');
-        
+
         self::assertContains($expectedPackagesPath, $rectorPaths);
         self::assertContains($expectedConfigPath, $rectorPaths);
-        
+
         // Should include additional paths
         self::assertContains($expectedSrcPath, $rectorPaths);
         self::assertContains($expectedAppPath, $rectorPaths);
@@ -81,26 +81,26 @@ YAML;
     {
         // Create vendor structure
         $vendorDir = $this->tempProjectRoot . '/vendor';
-        mkdir($vendorDir . '/cpsit/package1/Classes', 0777, true);
-        mkdir($vendorDir . '/cpsit/package2/Classes', 0777, true);
-        mkdir($vendorDir . '/fr/package3/Classes', 0777, true);
-        mkdir($vendorDir . '/composer', 0777, true);
+        mkdir($vendorDir . '/cpsit/package1/Classes', 0o777, true);
+        mkdir($vendorDir . '/cpsit/package2/Classes', 0o777, true);
+        mkdir($vendorDir . '/fr/package3/Classes', 0o777, true);
+        mkdir($vendorDir . '/composer', 0o777, true);
         file_put_contents($vendorDir . '/autoload.php', '<?php // Composer autoload');
 
         // Create standard structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
 
         // Create configuration with vendor namespace patterns
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "vendor-namespace-test"
-  paths:
-    scan:
-      - "packages/"
-      - "cpsit/*/Classes"
-      - "fr/*/Classes"
-YAML;
+            quality-tools:
+              project:
+                name: "vendor-namespace-test"
+              paths:
+                scan:
+                  - "packages/"
+                  - "cpsit/*/Classes"
+                  - "fr/*/Classes"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -118,25 +118,25 @@ YAML;
     public function testConfigurationWithExclusionPatterns(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages/good', 0777, true);
-        mkdir($this->tempProjectRoot . '/packages/legacy', 0777, true);
-        mkdir($this->tempProjectRoot . '/packages/experimental', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages/good', 0o777, true);
+        mkdir($this->tempProjectRoot . '/packages/legacy', 0o777, true);
+        mkdir($this->tempProjectRoot . '/packages/experimental', 0o777, true);
 
         // Create configuration with exclusions
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "exclusion-test"
-  paths:
-    scan:
-      - "packages/*"
-    exclude:
-      - "var/"
-      - "vendor/"
-      - "public/"
-      - "packages/legacy"
-      - "packages/experimental"
-YAML;
+            quality-tools:
+              project:
+                name: "exclusion-test"
+              paths:
+                scan:
+                  - "packages/*"
+                exclude:
+                  - "var/"
+                  - "vendor/"
+                  - "public/"
+                  - "packages/legacy"
+                  - "packages/experimental"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -147,7 +147,7 @@ YAML;
 
         // Should include good package
         self::assertContains(realpath($this->tempProjectRoot . '/packages/good'), $paths);
-        
+
         // Should exclude legacy and experimental
         self::assertNotContains(realpath($this->tempProjectRoot . '/packages/legacy'), $paths);
         self::assertNotContains(realpath($this->tempProjectRoot . '/packages/experimental'), $paths);
@@ -156,28 +156,28 @@ YAML;
     public function testConfigurationWithToolSpecificOverrides(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
-        mkdir($this->tempProjectRoot . '/config/system', 0777, true);
-        mkdir($this->tempProjectRoot . '/config/custom', 0777, true);
-        mkdir($this->tempProjectRoot . '/config/sites', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
+        mkdir($this->tempProjectRoot . '/config/system', 0o777, true);
+        mkdir($this->tempProjectRoot . '/config/custom', 0o777, true);
+        mkdir($this->tempProjectRoot . '/config/sites', 0o777, true);
 
         // Create configuration with tool-specific paths
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "tool-override-test"
-  tools:
-    rector:
-      enabled: true
-      paths:
-        scan:
-          - "config/custom"
-    fractor:
-      enabled: true
-      paths:
-        scan:
-          - "config/sites"
-YAML;
+            quality-tools:
+              project:
+                name: "tool-override-test"
+              tools:
+                rector:
+                  enabled: true
+                  paths:
+                    scan:
+                      - "config/custom"
+                fractor:
+                  enabled: true
+                  paths:
+                    scan:
+                      - "config/sites"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -197,20 +197,20 @@ YAML;
     public function testConfigurationBuilderWithResolvedPaths(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
-        mkdir($this->tempProjectRoot . '/src', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
+        mkdir($this->tempProjectRoot . '/src', 0o777, true);
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "builder-test"
-  paths:
-    scan:
-      - "packages/"
-      - "config/system/"
-      - "src"
-YAML;
+            quality-tools:
+              project:
+                name: "builder-test"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/system/"
+                  - "src"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -219,31 +219,31 @@ YAML;
 
         // Test builder includes resolved paths
         $rectorConfig = $builder->buildRectorConfiguration();
-        
+
         self::assertArrayHasKey('paths', $rectorConfig);
         self::assertContains(realpath($this->tempProjectRoot . '/packages'), $rectorConfig['paths']);
         self::assertContains(realpath($this->tempProjectRoot . '/src'), $rectorConfig['paths']);
-        
+
         self::assertEquals($this->tempProjectRoot, $rectorConfig['project_root']);
     }
 
     public function testPathScanningDebugInfo(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "debug-test"
-  paths:
-    scan:
-      - "packages/"
-      - "config/system/"
-      - "src/**"
-      - "cpsit/*"
-YAML;
+            quality-tools:
+              project:
+                name: "debug-test"
+              paths:
+                scan:
+                  - "packages/"
+                  - "config/system/"
+                  - "src/**"
+                  - "cpsit/*"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -265,15 +265,15 @@ YAML;
     public function testConfigurationWithoutAdditionalPaths(): void
     {
         // Create basic project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
-        mkdir($this->tempProjectRoot . '/config/system', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
+        mkdir($this->tempProjectRoot . '/config/system', 0o777, true);
 
         // Create minimal configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "minimal-test"
-YAML;
+            quality-tools:
+              project:
+                name: "minimal-test"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration
@@ -288,7 +288,7 @@ YAML;
         $paths = $config->getResolvedPathsForTool('rector');
         $expectedPackagesPath = realpath($this->tempProjectRoot . '/packages');
         $expectedConfigPath = realpath($this->tempProjectRoot . '/config/system');
-        
+
         self::assertContains($expectedPackagesPath, $paths);
         self::assertContains($expectedConfigPath, $paths);
     }
@@ -296,15 +296,15 @@ YAML;
     public function testConfigurationGeneratesValidFiles(): void
     {
         // Create project structure
-        mkdir($this->tempProjectRoot . '/packages', 0777, true);
+        mkdir($this->tempProjectRoot . '/packages', 0o777, true);
 
         // Create configuration
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "file-generation-test"
-    php_version: "8.3"
-YAML;
+            quality-tools:
+              project:
+                name: "file-generation-test"
+                php_version: "8.3"
+            YAML;
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Load configuration

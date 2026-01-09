@@ -6,7 +6,7 @@ namespace Cpsit\QualityTools\Utility;
 
 final class ProjectAnalyzer
 {
-    private const DEFAULT_EXCLUDE_PATTERNS = [
+    private const array DEFAULT_EXCLUDE_PATTERNS = [
         'vendor/',
         'node_modules/',
         '.git/',
@@ -26,12 +26,12 @@ final class ProjectAnalyzer
     public function analyzeProject(string $projectPath): ProjectMetrics
     {
         if (!is_dir($projectPath)) {
-            throw new \InvalidArgumentException(sprintf('Project path "%s" is not a directory', $projectPath));
+            throw new \InvalidArgumentException(\sprintf('Project path "%s" is not a directory', $projectPath));
         }
 
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($projectPath, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
+            \RecursiveIteratorIterator::LEAVES_ONLY,
         );
 
         $phpFiles = [];
@@ -118,6 +118,7 @@ final class ProjectAnalyzer
                 return true;
             }
         }
+
         return false;
     }
 
@@ -127,6 +128,7 @@ final class ProjectAnalyzer
         if ($content === false) {
             return 0;
         }
+
         return substr_count($content, "\n") + 1;
     }
 
@@ -198,12 +200,12 @@ final class ProjectAnalyzer
             ];
         }
 
-        $fileCount = count($files);
+        $fileCount = \count($files);
         $totalLines = array_sum(array_column($files, 'lines'));
         $totalSize = array_sum(array_column($files, 'size'));
 
         $complexities = array_filter(array_column($files, 'complexity'));
-        $avgComplexity = empty($complexities) ? 0 : (int)round(array_sum($complexities) / count($complexities));
+        $avgComplexity = empty($complexities) ? 0 : (int) round(array_sum($complexities) / \count($complexities));
         $maxComplexity = empty($complexities) ? 0 : max($complexities);
 
         return [

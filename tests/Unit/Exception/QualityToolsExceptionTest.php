@@ -16,13 +16,13 @@ final class QualityToolsExceptionTest extends TestCase
     {
         $troubleshooting = ['Step 1', 'Step 2'];
         $context = ['key' => 'value'];
-        
+
         $exception = new ConfigurationException(
             'Test message',
             1001,
             null,
             $troubleshooting,
-            $context
+            $context,
         );
 
         $errorInfo = $exception->getErrorInfo();

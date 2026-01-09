@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Exception;
 
 /**
- * Exception thrown when file system operations fail
+ * Exception thrown when file system operations fail.
  */
 class FileSystemException extends QualityToolsException
 {
@@ -22,7 +22,7 @@ class FileSystemException extends QualityToolsException
         ?\Throwable $previous = null,
         private readonly array $troubleshootingSteps = [],
         private readonly array $context = [],
-        private readonly string $filePath = ''
+        private readonly string $filePath = '',
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);
     }

@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * Integration test to verify temporary file cleanup in PHPStan command
+ * Integration test to verify temporary file cleanup in PHPStan command.
  */
 final class PhpStanTempFileCleanupTest extends TestCase
 {
@@ -21,32 +21,32 @@ final class PhpStanTempFileCleanupTest extends TestCase
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('phpstan_cleanup_test_');
-        
+
         // Create TYPO3 project structure for proper project root detection
         TestHelper::createComposerJson($this->tempProjectRoot, TestHelper::getComposerContent('typo3-core'));
-        
+
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempProjectRoot . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
-        
+        mkdir($vendorBinDir, 0o777, true);
+
         // Create fake phpstan executable that exits successfully
         $phpStanExecutable = $vendorBinDir . '/phpstan';
         file_put_contents($phpStanExecutable, "#!/bin/bash\necho 'PHPStan analysis completed successfully'\nexit 0\n");
-        chmod($phpStanExecutable, 0755);
-        
+        chmod($phpStanExecutable, 0o755);
+
         // Create cpsit/quality-tools config directory structure
         $vendorConfigDir = $this->tempProjectRoot . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/phpstan.neon', "parameters:\n  level: 6\n");
-        
+
         // Create simple project structure with multiple paths
-        mkdir($this->tempProjectRoot . '/src', 0755, true);
-        mkdir($this->tempProjectRoot . '/config', 0755, true);
-        
+        mkdir($this->tempProjectRoot . '/src', 0o755, true);
+        mkdir($this->tempProjectRoot . '/config', 0o755, true);
+
         // Create simple PHP files
         file_put_contents($this->tempProjectRoot . '/src/TestClass.php', "<?php\nclass TestClass {}\n");
         file_put_contents($this->tempProjectRoot . '/config/services.php', "<?php\nreturn [];\n");
-        
+
         // Create quality tools configuration with multiple paths
         $config = "paths:\n  - src/*\n  - config/*\n";
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $config);
@@ -59,7 +59,7 @@ final class PhpStanTempFileCleanupTest extends TestCase
                 $command = new PhpStanCommand();
                 $command->setApplication($app);
                 $this->commandTester = new CommandTester($command);
-            }
+            },
         );
     }
 
@@ -85,10 +85,10 @@ final class PhpStanTempFileCleanupTest extends TestCase
 
         // Assert no new temporary files remain
         $newTempFiles = array_diff($tempFilesAfter, $tempFilesBefore);
-        
+
         self::assertEmpty(
-            $newTempFiles, 
-            'Temporary files were not cleaned up after command execution: ' . implode(', ', $newTempFiles)
+            $newTempFiles,
+            'Temporary files were not cleaned up after command execution: ' . implode(', ', $newTempFiles),
         );
     }
 
@@ -102,7 +102,7 @@ final class PhpStanTempFileCleanupTest extends TestCase
 
         // Execute command with invalid configuration to trigger exception
         $this->commandTester->execute([
-            '--config' => '/nonexistent/config.neon'
+            '--config' => '/nonexistent/config.neon',
         ]);
 
         // Get list of temporary files after execution
@@ -110,10 +110,10 @@ final class PhpStanTempFileCleanupTest extends TestCase
 
         // Assert no new temporary files remain
         $newTempFiles = array_diff($tempFilesAfter, $tempFilesBefore);
-        
+
         self::assertEmpty(
-            $newTempFiles, 
-            'Temporary files were not cleaned up after exception: ' . implode(', ', $newTempFiles)
+            $newTempFiles,
+            'Temporary files were not cleaned up after exception: ' . implode(', ', $newTempFiles),
         );
     }
 
@@ -121,17 +121,17 @@ final class PhpStanTempFileCleanupTest extends TestCase
     {
         $tempDir = sys_get_temp_dir();
         $files = [];
-        
+
         // Get PHPStan temp files
         foreach (glob($tempDir . '/phpstan_*') ?: [] as $file) {
             $files[] = $file;
         }
-        
+
         // Get quality tools temp files
         foreach (glob($tempDir . '/qt_temp_*') ?: [] as $file) {
             $files[] = $file;
         }
-        
+
         return $files;
     }
 }

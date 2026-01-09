@@ -11,7 +11,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -33,16 +32,16 @@ final class TypoScriptLintCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake typoscript-lint executable
         $typoscriptLintExecutable = $vendorBinDir . '/typoscript-lint';
         file_put_contents($typoscriptLintExecutable, "#!/bin/bash\necho 'TypoScript Lint executed successfully'\nexit 0\n");
-        chmod($typoscriptLintExecutable, 0755);
+        chmod($typoscriptLintExecutable, 0o755);
 
         // Create default config directory and file
         $configDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0777, true);
+        mkdir($configDir, 0o777, true);
         file_put_contents($configDir . '/typoscript-lint.yml', 'sniffs: []');
 
         // Set up environment to use temp directory as project root and initialize application
@@ -52,7 +51,7 @@ final class TypoScriptLintCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new TypoScriptLintCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -101,7 +100,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -134,7 +133,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $customConfigFile],
                 ['path', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -160,14 +159,14 @@ final class TypoScriptLintCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
                 ['path', $customTargetDir],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -178,7 +177,7 @@ final class TypoScriptLintCommandTest extends TestCase
         $this->mockOutput
             ->expects($this->once())
             ->method('writeln')
-            ->with(sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
+            ->with(\sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
 
         $this->mockOutput
             ->expects($this->once())
@@ -196,14 +195,14 @@ final class TypoScriptLintCommandTest extends TestCase
         file_put_contents($customConfigFile, 'sniffs: []');
 
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
             ->willReturnMap([
                 ['config', $customConfigFile],
                 ['path', $customTargetDir],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -214,7 +213,7 @@ final class TypoScriptLintCommandTest extends TestCase
         $this->mockOutput
             ->expects($this->once())
             ->method('writeln')
-            ->with(sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
+            ->with(\sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
 
         $this->mockOutput
             ->expects($this->once())
@@ -234,7 +233,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -247,7 +246,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->method('writeln')
             ->with($this->logicalOr(
                 '<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>',
-                $this->matchesRegularExpression('/Executing:.*typoscript-lint/i')
+                $this->matchesRegularExpression('/Executing:.*typoscript-lint/i'),
             ));
 
         $this->mockOutput
@@ -288,7 +287,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', $nonExistentTargetDir],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -321,14 +320,14 @@ final class TypoScriptLintCommandTest extends TestCase
         file_put_contents($customConfigFile, 'sniffs: []');
 
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom options
         $commandTester->execute([
             '--config' => $customConfigFile,
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -371,7 +370,7 @@ final class TypoScriptLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', false]
+                ['no-optimization', false],
             ]);
 
         // Since the executable doesn't exist, this will fail at the process level

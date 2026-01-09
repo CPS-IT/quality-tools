@@ -73,16 +73,16 @@ Currently, some quality tools return exit code 0 even when they detect warnings 
 quality-tools:
   output:
     tolerateWarnings: false  # Global override (default: false = fail on warnings)
-    
+
   tools:
     typoscript-lint:
       enabled: true
       # tolerateWarnings: false  # Tool-specific override (optional)
-      
+
     rector:
-      enabled: true  
+      enabled: true
       tolerateWarnings: true  # Allow warnings without failing (special case)
-      
+
     # Future tool integrations
     editorconfig:
       enabled: true

@@ -7,7 +7,7 @@ namespace Cpsit\QualityTools\Configuration;
 use Cpsit\QualityTools\Service\SecurityService;
 use Symfony\Component\Yaml\Yaml;
 
-final class YamlConfigurationLoader
+final readonly class YamlConfigurationLoader
 {
     private const array CONFIG_FILES = [
         '.quality-tools.yaml',
@@ -15,13 +15,8 @@ final class YamlConfigurationLoader
         'quality-tools.yml',
     ];
 
-    private ConfigurationValidator $validator;
-    private SecurityService $securityService;
-
-    public function __construct(?ConfigurationValidator $validator = null, ?SecurityService $securityService = null)
+    public function __construct(private ?ConfigurationValidator $validator = new ConfigurationValidator(), private ?SecurityService $securityService = new SecurityService())
     {
-        $this->validator = $validator ?? new ConfigurationValidator();
-        $this->securityService = $securityService ?? new SecurityService();
     }
 
     public function load(string $projectRoot): Configuration
@@ -29,6 +24,7 @@ final class YamlConfigurationLoader
         $configData = $this->loadConfigurationHierarchy($projectRoot);
         $configuration = new Configuration($configData);
         $configuration->setProjectRoot($projectRoot);
+
         return $configuration;
     }
 
@@ -87,7 +83,7 @@ final class YamlConfigurationLoader
         try {
             $content = file_get_contents($path);
             if ($content === false) {
-                throw new \RuntimeException(sprintf('Could not read configuration file: %s', $path));
+                throw new \RuntimeException(\sprintf('Could not read configuration file: %s', $path));
             }
 
             // Interpolate environment variables
@@ -95,32 +91,23 @@ final class YamlConfigurationLoader
 
             // Parse YAML
             $data = Yaml::parse($content);
-            if (!is_array($data)) {
-                throw new \RuntimeException(sprintf('Configuration file must contain valid YAML data: %s', $path));
+            if (!\is_array($data)) {
+                throw new \RuntimeException(\sprintf('Configuration file must contain valid YAML data: %s', $path));
             }
 
             // Validate configuration
             $validationResult = $this->validator->validate($data);
             if (!$validationResult->isValid()) {
                 $errors = implode("\n", $validationResult->getErrors());
-                throw new \RuntimeException(sprintf(
-                    "Invalid configuration in %s:\n%s",
-                    $path,
-                    $errors
-                ));
+                throw new \RuntimeException(\sprintf("Invalid configuration in %s:\n%s", $path, $errors));
             }
 
             return $data;
-
         } catch (\Exception $e) {
             if ($e instanceof \RuntimeException) {
                 throw $e;
             }
-            throw new \RuntimeException(sprintf(
-                'Failed to load configuration from %s: %s',
-                $path,
-                $e->getMessage()
-            ), 0, $e);
+            throw new \RuntimeException(\sprintf('Failed to load configuration from %s: %s', $path, $e->getMessage()), 0, $e);
         }
     }
 
@@ -147,7 +134,7 @@ final class YamlConfigurationLoader
                     throw $e;
                 }
             },
-            $content
+            $content,
         );
     }
 
@@ -167,7 +154,7 @@ final class YamlConfigurationLoader
         $merged = $array1;
 
         foreach ($array2 as $key => $value) {
-            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+            if (\is_array($value) && isset($merged[$key]) && \is_array($merged[$key])) {
                 // If both arrays are indexed (not associative), replace rather than merge
                 if ($this->isIndexedArray($value) && $this->isIndexedArray($merged[$key])) {
                     $merged[$key] = $value;
@@ -184,7 +171,7 @@ final class YamlConfigurationLoader
 
     private function isIndexedArray(array $array): bool
     {
-        return array_keys($array) === range(0, count($array) - 1);
+        return array_keys($array) === range(0, \count($array) - 1);
     }
 
     public function findConfigurationFile(string $projectRoot): ?string

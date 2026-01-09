@@ -34,16 +34,16 @@ final class PhpStanCommandTest extends TestCase
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create a fake phpstan executable
         $phpStanExecutable = $vendorBinDir . '/phpstan';
         file_put_contents($phpStanExecutable, "#!/bin/bash\necho 'PHPStan analysis completed successfully'\nexit 0\n");
-        chmod($phpStanExecutable, 0755);
+        chmod($phpStanExecutable, 0o755);
 
         // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/phpstan.neon', "parameters:\n  level: 6\n");
 
         // Set up environment to use temp directory as project root and initialize application
@@ -53,7 +53,7 @@ final class PhpStanCommandTest extends TestCase
                 $app = new QualityToolsApplication();
                 $this->command = new PhpStanCommand();
                 $this->command->setApplication($app);
-            }
+            },
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -129,7 +129,7 @@ final class PhpStanCommandTest extends TestCase
         bool $needsCustomPath,
         ?string $level,
         ?string $memoryLimit,
-        bool $isVerbose
+        bool $isVerbose,
     ): void {
         $optionMap = [
             ['config', null],
@@ -149,7 +149,7 @@ final class PhpStanCommandTest extends TestCase
         // Set up custom target directory if needed
         if ($needsCustomPath) {
             $customTargetDir = $this->tempDir . '/custom-target';
-            mkdir($customTargetDir, 0777, true);
+            mkdir($customTargetDir, 0o777, true);
             $optionMap[1] = ['path', $customTargetDir];
         }
 
@@ -169,7 +169,7 @@ final class PhpStanCommandTest extends TestCase
 
         // For default options scenario, we don't expect a specific write call
         $expectsSpecificWriteCall = $scenarioName !== 'default options';
-        
+
         if ($expectsSpecificWriteCall) {
             $this->mockOutput
                 ->expects($this->atLeastOnce())
@@ -315,7 +315,7 @@ final class PhpStanCommandTest extends TestCase
         file_put_contents($customConfigPath, "parameters:\n  level: 6\n");
 
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
@@ -324,7 +324,7 @@ final class PhpStanCommandTest extends TestCase
             '--config' => $customConfigPath,
             '--path' => $customTargetDir,
             '--level' => '9',
-            '--memory-limit' => '1G'
+            '--memory-limit' => '1G',
         ]);
 
         // Command should execute successfully

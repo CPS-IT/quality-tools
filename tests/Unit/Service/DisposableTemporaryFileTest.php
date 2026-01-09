@@ -81,18 +81,18 @@ final class DisposableTemporaryFileTest extends TestCase
     {
         $tempFile = new DisposableTemporaryFile();
         $path = $tempFile->getPath();
-        
+
         self::assertFileExists($path);
-        
+
         // Manually trigger destructor by unsetting
         unset($tempFile);
-        
+
         // File may still exist due to shutdown handler, but should be cleaned up eventually
         // For this test, we just ensure manual cleanup works
         if (file_exists($path)) {
             unlink($path); // Manual cleanup for test
         }
-        
+
         self::assertFileDoesNotExist($path);
     }
 
@@ -103,9 +103,9 @@ final class DisposableTemporaryFileTest extends TestCase
     {
         $tempFiles = [];
         $paths = [];
-        
+
         // Create multiple temporary files and keep references
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 3; ++$i) {
             $tempFile = new DisposableTemporaryFile();
             $tempFiles[] = $tempFile;
             $paths[] = $tempFile->getPath();
@@ -123,7 +123,7 @@ final class DisposableTemporaryFileTest extends TestCase
         foreach ($paths as $path) {
             self::assertFileDoesNotExist($path);
         }
-        
+
         // Cleanup references to prevent issues
         unset($tempFiles);
     }
@@ -135,7 +135,7 @@ final class DisposableTemporaryFileTest extends TestCase
     {
         $tempFile1 = new DisposableTemporaryFile();
         $tempFile2 = new DisposableTemporaryFile();
-        
+
         $path1 = $tempFile1->getPath();
         $path2 = $tempFile2->getPath();
 

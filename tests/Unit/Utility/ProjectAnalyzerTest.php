@@ -17,7 +17,7 @@ final class ProjectAnalyzerTest extends TestCase
     {
         $this->projectAnalyzer = new ProjectAnalyzer();
         $this->tempDir = sys_get_temp_dir() . '/qt_test_' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -88,7 +88,7 @@ final class ProjectAnalyzerTest extends TestCase
 
     public function testProjectSizeClassification(): void
     {
-        for ($i = 0; $i < 150; $i++) {
+        for ($i = 0; $i < 150; ++$i) {
             $this->createFile("file_$i.php", '<?php echo "test";');
         }
 
@@ -155,10 +155,10 @@ final class ProjectAnalyzerTest extends TestCase
     private function createFile(string $path, string $content): void
     {
         $fullPath = $this->tempDir . '/' . $path;
-        $directory = dirname($fullPath);
+        $directory = \dirname($fullPath);
 
         if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
+            mkdir($directory, 0o755, true);
         }
 
         file_put_contents($fullPath, $content);
@@ -172,7 +172,7 @@ final class ProjectAnalyzerTest extends TestCase
 
         $files = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+            \RecursiveIteratorIterator::CHILD_FIRST,
         );
 
         foreach ($files as $fileinfo) {

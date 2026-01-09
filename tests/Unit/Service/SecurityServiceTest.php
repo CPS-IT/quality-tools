@@ -30,13 +30,13 @@ final class SecurityServiceTest extends TestCase
             'QT_PROJECT_ROOT',
             'PHP_MEMORY_LIMIT',
             'CI',
-            'PHPSTAN_CONFIG_PATH'
+            'PHPSTAN_CONFIG_PATH',
         ];
 
         foreach ($allowedVars as $var) {
             self::assertTrue(
                 $this->securityService->isEnvironmentVariableAllowed($var),
-                "Variable '{$var}' should be allowed"
+                "Variable '{$var}' should be allowed",
             );
         }
     }
@@ -52,13 +52,13 @@ final class SecurityServiceTest extends TestCase
             'DATABASE_PASSWORD',
             'AWS_SECRET_ACCESS_KEY',
             'SSH_PRIVATE_KEY',
-            'ADMIN_TOKEN'
+            'ADMIN_TOKEN',
         ];
 
         foreach ($disallowedVars as $var) {
             self::assertFalse(
                 $this->securityService->isEnvironmentVariableAllowed($var),
-                "Variable '{$var}' should not be allowed"
+                "Variable '{$var}' should not be allowed",
             );
         }
     }
@@ -74,13 +74,13 @@ final class SecurityServiceTest extends TestCase
             'SPECIAL-CHARS',
             'SPACE VAR',
             'WITH.DOT',
-            ''
+            '',
         ];
 
         foreach ($invalidNames as $name) {
             self::assertFalse(
                 $this->securityService->isEnvironmentVariableAllowed($name),
-                "Invalid variable name '{$name}' should not be allowed"
+                "Invalid variable name '{$name}' should not be allowed",
             );
         }
     }
@@ -148,6 +148,7 @@ final class SecurityServiceTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider dangerousContentProvider
      */
     public function getEnvironmentVariableRejectsDangerousContent(string $dangerousValue, string $description): void
@@ -202,7 +203,7 @@ final class SecurityServiceTest extends TestCase
     public function hasSecureFilePermissionsReturnsTrueForSecureFile(): void
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0600);
+        chmod($tempFile, 0o600);
 
         $result = $this->securityService->hasSecureFilePermissions($tempFile);
 
@@ -217,7 +218,7 @@ final class SecurityServiceTest extends TestCase
     public function hasSecureFilePermissionsReturnsFalseForInsecureFile(): void
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0644); // World-readable
+        chmod($tempFile, 0o644); // World-readable
 
         $result = $this->securityService->hasSecureFilePermissions($tempFile);
 
@@ -242,12 +243,12 @@ final class SecurityServiceTest extends TestCase
     public function setSecureFilePermissionsSetsCorrectPermissions(): void
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0644); // Start with insecure permissions
+        chmod($tempFile, 0o644); // Start with insecure permissions
 
         $this->securityService->setSecureFilePermissions($tempFile);
 
-        $permissions = fileperms($tempFile) & 0777;
-        self::assertSame(0600, $permissions);
+        $permissions = fileperms($tempFile) & 0o777;
+        self::assertSame(0o600, $permissions);
 
         unlink($tempFile);
     }

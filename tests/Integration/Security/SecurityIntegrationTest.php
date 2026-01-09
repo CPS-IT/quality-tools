@@ -11,7 +11,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Integration tests for security hardening features
+ * Integration tests for security hardening features.
  */
 final class SecurityIntegrationTest extends TestCase
 {
@@ -34,10 +34,10 @@ final class SecurityIntegrationTest extends TestCase
     {
         // Create a configuration that tries to access a disallowed environment variable
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "test-\${PATH}"  # PATH is not allowed
-YAML;
+            quality-tools:
+              project:
+                name: "test-\${PATH}"  # PATH is not allowed
+            YAML;
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
@@ -60,10 +60,10 @@ YAML;
 
         // Create a configuration that uses an allowed environment variable in project name
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "test-\${QT_PROJECT_ROOT}"
-YAML;
+            quality-tools:
+              project:
+                name: "test-\${QT_PROJECT_ROOT}"
+            YAML;
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
@@ -88,10 +88,10 @@ YAML;
     {
         // Create a configuration that uses an allowed but unset environment variable with default in project name
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "test-\${PHP_MEMORY_LIMIT:-1G}"
-YAML;
+            quality-tools:
+              project:
+                name: "test-\${PHP_MEMORY_LIMIT:-1G}"
+            YAML;
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
@@ -115,10 +115,10 @@ YAML;
         $_ENV['QT_PROJECT_ROOT'] = '../../../etc/passwd';
 
         $configContent = <<<YAML
-quality-tools:
-  project:
-    name: "test-\${QT_PROJECT_ROOT}"
-YAML;
+            quality-tools:
+              project:
+                name: "test-\${QT_PROJECT_ROOT}"
+            YAML;
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
@@ -146,9 +146,9 @@ YAML;
 
         // Check that file exists and has secure permissions
         self::assertFileExists($path);
-        
-        $permissions = fileperms($path) & 0777;
-        self::assertSame(0600, $permissions, 'Temporary file should have 0600 permissions');
+
+        $permissions = fileperms($path) & 0o777;
+        self::assertSame(0o600, $permissions, 'Temporary file should have 0600 permissions');
 
         $tempFile->cleanup();
         self::assertFileDoesNotExist($path);
@@ -179,21 +179,21 @@ YAML;
     public function securityServiceBlocksCommonAttackVectors(): void
     {
         $securityService = new SecurityService();
-        
+
         // Test various attack vectors
         $attackVectors = [
             'PATH' => 'System path access',
-            'SECRET_KEY' => 'Secret key access', 
+            'SECRET_KEY' => 'Secret key access',
             'DATABASE_PASSWORD' => 'Database credential access',
             'AWS_SECRET_ACCESS_KEY' => 'Cloud credential access',
             'SSH_PRIVATE_KEY' => 'SSH key access',
-            'ADMIN_TOKEN' => 'Admin token access'
+            'ADMIN_TOKEN' => 'Admin token access',
         ];
 
         foreach ($attackVectors as $envVar => $description) {
             self::assertFalse(
                 $securityService->isEnvironmentVariableAllowed($envVar),
-                "Security service should block {$description} via {$envVar}"
+                "Security service should block {$description} via {$envVar}",
             );
         }
     }
@@ -210,7 +210,7 @@ YAML;
         $essentialCategories = [
             'HOME', 'USER', 'USERNAME', // User info
             'QT_PROJECT_ROOT', 'QT_VENDOR_DIR', // Quality tools specific
-            'PHP_MEMORY_LIMIT', 'PHP_VERSION', // PHP configuration  
+            'PHP_MEMORY_LIMIT', 'PHP_VERSION', // PHP configuration
             'CI', 'GITHUB_ACTIONS', // CI/CD indicators
         ];
 

@@ -1,8 +1,8 @@
 # Feature 016: Unified Arguments/Options
 
-**Status:** Not Started  
-**Estimated Time:** 6-10 hours  
-**Layer:** MVP  
+**Status:** Not Started
+**Estimated Time:** 6-10 hours
+**Layer:** MVP
 **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
@@ -121,7 +121,7 @@ quality-tools:
       fractor: "--dry-run"
       php_cs_fixer: "--dry-run"
       phpstan: null  # PHPStan doesn't modify files
-    
+
     verbosity:
       level_1:
         rector: "-v"
@@ -133,7 +133,7 @@ quality-tools:
         fractor: "-vv"
         php_cs_fixer: "-vv"
         phpstan: "-vv"
-    
+
     config:
       rector: "--config"
       fractor: "--config"

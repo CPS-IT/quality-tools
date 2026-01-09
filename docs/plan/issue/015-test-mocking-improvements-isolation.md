@@ -1,8 +1,8 @@
 # Issue 015: Test Mocking Improvements and Test Isolation
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Medium (3-8h)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Medium (3-8h)
 **Impact:** Medium
 
 ## Description
@@ -25,7 +25,7 @@ file_put_contents(...): Failed to open stream: Permission denied
 Potential test isolation issues with shared filesystem state
 ```
 
-**Location:** Test suite execution, particularly filesystem-related tests  
+**Location:** Test suite execution, particularly filesystem-related tests
 **Trigger:** Running test suite, especially multiple consecutive executions
 
 ## Impact Analysis

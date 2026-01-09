@@ -58,7 +58,7 @@ final class ProcessEnvironmentPreparerTest extends TestCase
             ->willReturn(false);
 
         $resolvedPaths = ['/path/to/src', '/path/to/config'];
-        
+
         $result = $this->preparer->prepareEnvironment($input, null, 'fractor', $resolvedPaths);
 
         self::assertArrayHasKey('QT_DYNAMIC_PATHS', $result);
@@ -76,7 +76,7 @@ final class ProcessEnvironmentPreparerTest extends TestCase
             ->willReturn(true);
 
         $resolvedPaths = ['/path/to/src', '/path/to/config'];
-        
+
         $result = $this->preparer->prepareEnvironment($input, null, 'fractor', $resolvedPaths);
 
         self::assertArrayNotHasKey('QT_DYNAMIC_PATHS', $result);
@@ -91,7 +91,7 @@ final class ProcessEnvironmentPreparerTest extends TestCase
         $input->method('hasParameterOption')->willReturn(false);
 
         $resolvedPaths = ['/path/to/src', '/path/to/config'];
-        
+
         $result = $this->preparer->prepareEnvironment($input, null, 'rector', $resolvedPaths);
 
         self::assertArrayNotHasKey('QT_DYNAMIC_PATHS', $result);
@@ -121,7 +121,7 @@ final class ProcessEnvironmentPreparerTest extends TestCase
             ->willReturn(false);
 
         $resolvedPaths = ['/path/to/src'];
-        
+
         $result = $this->preparer->prepareEnvironment($input, '1G', 'fractor', $resolvedPaths);
 
         self::assertArrayHasKey('PHP_MEMORY_LIMIT', $result);

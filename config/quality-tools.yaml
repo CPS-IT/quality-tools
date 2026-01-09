@@ -1,6 +1,6 @@
 # Quality Tools Configuration
 # This file configures all quality analysis tools for your TYPO3 project
-# 
+#
 # Configuration hierarchy (highest priority first):
 # 1. Command-line overrides (--config, --path)
 # 2. Project-specific configuration (quality-tools.yaml)
@@ -14,20 +14,20 @@ quality-tools:
   project:
     # Project name - used in reports and logs
     name: "${PROJECT_NAME:-TYPO3 Project}"
-    
+
     # Target PHP version for code analysis and modernization
     php_version: "8.3"
-    
+
     # Target TYPO3 version for compatibility checks
     typo3_version: "13.4"
-  
+
   # Scan paths configuration
   paths:
     # Directories to analyze - relative to project root
     scan:
       - "packages/"         # Custom extensions and site packages
       - "config/system/"    # System configuration files
-    
+
     # Directories to exclude from analysis
     exclude:
       - "var/"             # Runtime cache and logs
@@ -36,64 +36,64 @@ quality-tools:
       - ".git/"            # Git repository files
       - ".build/"          # Build artifacts
       - "public/"          # Web-accessible files only
-  
+
   # Tool-specific settings
   tools:
     # Rector - PHP modernization and refactoring
     rector:
       enabled: true
-      
+
       # TYPO3 version compatibility level
       level: "typo3-13"
-      
+
       # PHP version override (uses project.php_version if not specified)
       # php_version: "8.3"
-      
+
       # Preview changes without applying them
       # dry_run: true
-      
-    # Fractor - TypoScript modernization  
+
+    # Fractor - TypoScript modernization
     fractor:
       enabled: true
-      
+
       # Indentation spaces for TypoScript files
       indentation: 2
-      
+
       # Files to skip during processing
       # skip_files:
       #   - "Configuration/TypoScript/Legacy/"
-      
+
     # PHPStan - Static analysis
     phpstan:
       enabled: true
-      
+
       # Analysis strictness level (0-9, higher = stricter)
       level: 6
-      
+
       # Memory limit for large projects
       memory_limit: "1G"
-      
+
       # Custom paths override (uses paths.scan if not specified)
       # paths:
       #   - "packages/custom-extension/"
-      
+
     # PHP CS Fixer - Code style fixing
     php-cs-fixer:
       enabled: true
-      
+
       # Code style preset
       preset: "typo3"
-      
+
       # Enable caching for better performance
       # cache: true
-      
+
     # TypoScript Lint - TypoScript validation
     typoscript-lint:
       enabled: true
-      
+
       # Expected indentation for TypoScript files
       indentation: 2
-      
+
       # Patterns to ignore during linting
       # ignore_patterns:
       #   - "**/Tests/**"
@@ -102,21 +102,21 @@ quality-tools:
   output:
     # Verbosity level: quiet, normal, verbose, debug
     verbosity: "normal"
-    
+
     # Enable colored output (auto-detected for terminals)
     colors: true
-    
+
     # Show progress bars for long-running operations
     progress: true
-    
+
   # Performance optimization settings
   performance:
     # Run tools in parallel when possible
     parallel: true
-    
+
     # Maximum number of concurrent processes
     max_processes: 4
-    
+
     # Enable result caching to speed up repeated runs
     cache_enabled: true
 
