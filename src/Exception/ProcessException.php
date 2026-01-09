@@ -19,8 +19,8 @@ class ProcessException extends QualityToolsException
         string $message = '',
         int $code = self::ERROR_PROCESS_EXECUTION_FAILED,
         ?\Throwable $previous = null,
-        private readonly array $troubleshootingSteps = [],
-        private readonly array $context = [],
+        array $troubleshootingSteps = [],
+        array $context = [],
         private readonly int $processExitCode = 0,
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);

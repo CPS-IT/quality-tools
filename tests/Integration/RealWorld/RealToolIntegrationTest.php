@@ -562,30 +562,8 @@ final class RealToolIntegrationTest extends TestCase
     {
         $this->markTestSkipped('Requires large test data setup');
 
-        // This test would create a realistic large TYPO3 project
-        // $this->createLargeTypo3Project(500); // 500 PHP files
-
-        $memoryBefore = memory_get_usage(true);
-        $timeBefore = microtime(true);
-
-        $process = new Process([
-            'vendor/bin/phpstan',
-            'analyse',
-            '--config', 'vendor/cpsit/quality-tools/config/phpstan.neon',
-            '.',
-        ], $this->tempProjectRoot, null, null, 300); // 5 minute timeout
-
-        $process->run();
-
-        $timeAfter = microtime(true);
-        $memoryAfter = memory_get_usage(true);
-
-        $executionTime = $timeAfter - $timeBefore;
-        $memoryUsed = $memoryAfter - $memoryBefore;
-
-        // Performance assertions
-        $this->assertLessThan(120, $executionTime, 'PHPStan took too long');
-        $this->assertLessThan(512 * 1024 * 1024, $memoryUsed, 'PHPStan used too much memory');
+        // TODO: Implement large codebase performance test
+        // This test would create a realistic large TYPO3 project and measure PHPStan performance
     }
 
     /**

@@ -20,8 +20,8 @@ class FileSystemException extends QualityToolsException
         string $message = '',
         int $code = self::ERROR_FILE_NOT_FOUND,
         ?\Throwable $previous = null,
-        private readonly array $troubleshootingSteps = [],
-        private readonly array $context = [],
+        array $troubleshootingSteps = [],
+        array $context = [],
         private readonly string $filePath = '',
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);

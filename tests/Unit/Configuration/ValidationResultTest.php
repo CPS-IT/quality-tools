@@ -94,18 +94,8 @@ final class ValidationResultTest extends TestCase
         $validResult = new ValidationResult(true);
         $invalidResult = new ValidationResult(false);
 
-        // Test in conditional expressions
-        if ($validResult->isValid()) {
-            self::assertTrue(true, 'Valid result should be truthy');
-        } else {
-            self::fail('Valid result should be truthy');
-        }
-
-        if (!$invalidResult->isValid()) {
-            self::assertTrue(true, 'Invalid result should be falsy');
-        } else {
-            self::fail('Invalid result should be falsy');
-        }
+        self::assertTrue($validResult->isValid(), 'Valid result should be truthy');
+        self::assertFalse($invalidResult->isValid(), 'Invalid result should be falsy');
     }
 
     /**

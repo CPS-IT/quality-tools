@@ -20,7 +20,6 @@ final class ErrorFactoryTest extends TestCase
         $filePath = '/path/to/config.yaml';
         $exception = ErrorFactory::configFileNotFound($filePath);
 
-        self::assertInstanceOf(ConfigurationException::class, $exception);
         self::assertEquals(ConfigurationException::ERROR_CONFIG_FILE_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertNotEmpty($exception->getTroubleshootingSteps());
@@ -34,8 +33,6 @@ final class ErrorFactoryTest extends TestCase
     {
         $filePath = '/custom/config.yaml';
         $exception = ErrorFactory::configFileNotFound($filePath, $filePath);
-
-        self::assertInstanceOf(ConfigurationException::class, $exception);
 
         $context = $exception->getContext();
         self::assertEquals($filePath, $context['custom_path']);
@@ -51,7 +48,6 @@ final class ErrorFactoryTest extends TestCase
 
         $exception = ErrorFactory::configValidationFailed($filePath, $errors);
 
-        self::assertInstanceOf(ConfigurationException::class, $exception);
         self::assertEquals(ConfigurationException::ERROR_CONFIG_VALIDATION_FAILED, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertStringContainsString('Missing section A', $exception->getMessage());
@@ -70,7 +66,6 @@ final class ErrorFactoryTest extends TestCase
 
         $exception = ErrorFactory::processExecutionFailed($command, $exitCode, $output, $errorOutput);
 
-        self::assertInstanceOf(ProcessException::class, $exception);
         self::assertEquals(ProcessException::ERROR_PROCESS_EXECUTION_FAILED, $exception->getCode());
         self::assertStringContainsString($command, $exception->getMessage());
         self::assertStringContainsString((string) $exitCode, $exception->getMessage());
@@ -96,7 +91,6 @@ final class ErrorFactoryTest extends TestCase
         $binaryPath = '/usr/bin/rector';
         $exception = ErrorFactory::processBinaryNotFound($binaryPath);
 
-        self::assertInstanceOf(ProcessException::class, $exception);
         self::assertEquals(ProcessException::ERROR_PROCESS_BINARY_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($binaryPath, $exception->getMessage());
 
@@ -109,7 +103,6 @@ final class ErrorFactoryTest extends TestCase
         $filePath = '/path/to/file.txt';
         $exception = ErrorFactory::fileNotFound($filePath);
 
-        self::assertInstanceOf(FileSystemException::class, $exception);
         self::assertEquals(FileSystemException::ERROR_FILE_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertEquals($filePath, $exception->getFilePath());
@@ -123,7 +116,6 @@ final class ErrorFactoryTest extends TestCase
         $directoryPath = '/path/to/directory';
         $exception = ErrorFactory::directoryNotFound($directoryPath);
 
-        self::assertInstanceOf(FileSystemException::class, $exception);
         self::assertEquals(FileSystemException::ERROR_DIRECTORY_NOT_FOUND, $exception->getCode());
         self::assertStringContainsString($directoryPath, $exception->getMessage());
         self::assertEquals($directoryPath, $exception->getFilePath());
@@ -135,7 +127,6 @@ final class ErrorFactoryTest extends TestCase
         $operation = 'write';
         $exception = ErrorFactory::permissionDenied($path, $operation);
 
-        self::assertInstanceOf(FileSystemException::class, $exception);
         self::assertEquals(FileSystemException::ERROR_PERMISSION_DENIED, $exception->getCode());
         self::assertStringContainsString($path, $exception->getMessage());
         self::assertStringContainsString($operation, $exception->getMessage());
@@ -151,7 +142,6 @@ final class ErrorFactoryTest extends TestCase
         $timeoutSeconds = 30;
         $exception = ErrorFactory::networkTimeout($operation, $timeoutSeconds);
 
-        self::assertInstanceOf(TransientException::class, $exception);
         self::assertEquals(TransientException::ERROR_NETWORK_TIMEOUT, $exception->getCode());
         self::assertStringContainsString($operation, $exception->getMessage());
         self::assertStringContainsString((string) $timeoutSeconds, $exception->getMessage());
@@ -164,7 +154,6 @@ final class ErrorFactoryTest extends TestCase
         $filePath = '/tmp/lockfile';
         $exception = ErrorFactory::temporaryFileLock($filePath);
 
-        self::assertInstanceOf(TransientException::class, $exception);
         self::assertEquals(TransientException::ERROR_TEMPORARY_FILE_LOCK, $exception->getCode());
         self::assertStringContainsString($filePath, $exception->getMessage());
         self::assertEquals(1, $exception->getRetryAfter());
@@ -177,7 +166,6 @@ final class ErrorFactoryTest extends TestCase
         $currentLimit = '256M';
         $exception = ErrorFactory::memoryPressure($operation, $currentLimit);
 
-        self::assertInstanceOf(TransientException::class, $exception);
         self::assertEquals(TransientException::ERROR_MEMORY_PRESSURE, $exception->getCode());
         self::assertStringContainsString($operation, $exception->getMessage());
         self::assertStringContainsString($currentLimit, $exception->getMessage());

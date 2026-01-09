@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\ValidationResult;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,7 +27,6 @@ final class ConfigurationValidatorTest extends TestCase
 
         $result = $this->validator->validate($config);
 
-        self::assertInstanceOf(ValidationResult::class, $result);
         self::assertTrue($result->isValid());
         self::assertFalse($result->hasErrors());
         self::assertEmpty($result->getErrors());

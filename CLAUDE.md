@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Targets PHP 8.3+ and TYPO3 v13.4
 - Collection of preconfigured quality assurance tools for TYPO3 projects
 - **Complete CLI interface implemented** - Use `vendor/bin/qt` commands as shortcuts
-- **Status: Completed MVP** - All 10 tool commands implemented and tested (96.91% coverage)
+- **Status: Completed MVP** – All 10 tool commands implemented and tested (96.91% coverage)
 
 ## Architecture
 This package provides standardized configurations for:
@@ -171,21 +171,34 @@ quality-tools:
 
 **CRITICAL:** Implementation of features and bug fixing is **NOT** finished before any failing tests and linting issues are fixed.
 
+**MANDATORY PRE-DEVELOPMENT REQUIREMENT:**
+- **ALL linting issues MUST be resolved BEFORE starting any new feature, issue, or bugfix work**
+- Run `composer lint` and `composer sca` to ensure clean starting state
+- No development work proceeds with existing quality violations
+
 **Definition of Done:**
-- all tasks in the current feature specification are completed
-- all success criteria are met
+- All tasks in the current feature specification are completed
+- All success criteria are met
 - All unit tests must pass
 - All integration tests must pass
-- All linting checks must pass without errors
+- **ALL linting checks must pass without errors or warnings:**
+  - `composer lint:composer` - Composer.json validation
+  - `composer lint:editorconfig` - File formatting compliance
+  - `composer lint:php` - PHP coding standards
+  - `composer lint:rector` - Code modernization compliance
+  - `composer sca:php` - Static analysis at level 6
 - Code coverage requirements must be met
 - Documentation must be updated and accurate
 
 **Quality Gate Requirements:**
 - No failing test suites
-- No linting errors
+- Zero linting errors across all tools
+- Zero PHPStan issues above level 6
 - Proper error handling and edge case coverage
+- All quality metrics are maintained or improved
 
-This ensures code quality, maintainability, and reliability before any feature is considered complete.
+**Quality Tools Package Standard:**
+As a package that provides quality assurance tools, we maintain the highest standards and serve as an exemplar of best practices. Every commit must demonstrate excellence in code quality.
 
 ## Communication Guidelines
 

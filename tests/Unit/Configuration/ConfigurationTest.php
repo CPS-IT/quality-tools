@@ -326,9 +326,6 @@ final class ConfigurationTest extends TestCase
     {
         $config = Configuration::createDefault();
 
-        // Verify it returns a proper Configuration instance
-        self::assertInstanceOf(Configuration::class, $config);
-
         // Test some key defaults to ensure it's properly initialized
         self::assertSame('8.3', $config->getProjectPhpVersion());
         self::assertSame('13.4', $config->getProjectTypo3Version());

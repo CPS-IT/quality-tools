@@ -7,11 +7,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers \Cpsit\QualityTools\Configuration\YamlConfigurationLoader
- */
+#[CoversClass(YamlConfigurationLoader::class)]
 final class YamlConfigurationLoaderTest extends TestCase
 {
     private YamlConfigurationLoader $loader;
@@ -30,10 +29,9 @@ final class YamlConfigurationLoaderTest extends TestCase
 
     public function testLoadWithDefaultConfiguration(): void
     {
-        // No configuration files exist, should return default configuration
+        // No configuration files exist, should return the default configuration
         $config = $this->loader->load($this->tempDir);
 
-        self::assertInstanceOf(Configuration::class, $config);
         self::assertSame('8.3', $config->getProjectPhpVersion());
         self::assertSame('13.4', $config->getProjectTypo3Version());
     }

@@ -101,11 +101,7 @@ final class ConfigShowCommand extends BaseCommand
         // Show package defaults
         $sources[] = 'Package defaults (built-in)';
 
-        if (!empty($sources)) {
-            $io->listing($sources);
-        } else {
-            $io->note('Using package defaults only');
-        }
+        $io->listing($sources);
 
         $io->newLine();
     }

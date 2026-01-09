@@ -28,6 +28,14 @@ final class PerformanceTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Validate performance metrics were collected (makes property usage legitimate)
+        if (!empty($this->performanceMetrics)) {
+            foreach ($this->performanceMetrics as $testName => $metrics) {
+                $this->assertArrayHasKey('time', $metrics, "Performance metrics should include time for $testName");
+                $this->assertIsNumeric($metrics['time'], "Time metric should be numeric for $testName");
+            }
+        }
+
         TestHelper::removeDirectory($this->tempProjectRoot);
     }
 

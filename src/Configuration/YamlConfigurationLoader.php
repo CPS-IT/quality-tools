@@ -117,7 +117,7 @@ final readonly class YamlConfigurationLoader
             '/\$\{([A-Z_][A-Z0-9_]*):?([^}]*)\}/',
             function (array $matches): string {
                 $envVar = $matches[1];
-                $default = $matches[2] ?? '';
+                $default = $matches[2];
 
                 // Handle syntax: ${VAR:-default}
                 if (str_starts_with($default, '-')) {

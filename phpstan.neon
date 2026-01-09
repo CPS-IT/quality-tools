@@ -10,16 +10,8 @@ parameters:
 		- tests
 	excludePaths:
 		- tests/Fixtures
-		- tests/Integration/Fixtures (?)
 	tmpDir: .build/phpstan
 	ignoreErrors:
 		# Ignore missing typehints from arrays (replaces deprecated checkMissingIterableValueType)
 		-
 			identifier: missingType.iterableValue
-		# Allow dynamic property access in test mocks
-		-
-			message: '#Access to an undefined property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9_]+#'
-			path: tests/*
-		# Ignore process exit() calls as they are intentional
-		-
-			message: '#Call to function exit\(\) with#'

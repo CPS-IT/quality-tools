@@ -18,8 +18,8 @@ class ConfigurationException extends QualityToolsException
         string $message = '',
         int $code = self::ERROR_CONFIG_VALIDATION_FAILED,
         ?\Throwable $previous = null,
-        private readonly array $troubleshootingSteps = [],
-        private readonly array $context = [],
+        array $troubleshootingSteps = [],
+        array $context = [],
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);
     }

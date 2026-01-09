@@ -71,7 +71,6 @@ final class QualityToolsApplicationTest extends TestCase
         $application = new QualityToolsApplication();
 
         // Assert
-        $this->assertInstanceOf(QualityToolsApplication::class, $application);
         $this->assertSame($this->getFixturePath('valid-typo3-project'), $application->getProjectRoot());
     }
 
@@ -79,16 +78,13 @@ final class QualityToolsApplicationTest extends TestCase
     public function constructorDoesNotThrowWhenNoTypo3ProjectFound(): void
     {
         // Arrange
-        $tempDir = sys_get_temp_dir() . '/qt_test_' . uniqid();
+        $tempDir = sys_get_temp_dir() . '/qt_test_' . uniqid('', true);
         mkdir($tempDir);
         chdir($tempDir);
 
         try {
             // Act
             $application = new QualityToolsApplication();
-
-            // Assert - Constructor should not throw, but getProjectRoot() should
-            $this->assertInstanceOf(QualityToolsApplication::class, $application);
 
             $this->expectException(RuntimeException::class);
             $this->expectExceptionMessage('TYPO3 project root not found');
@@ -384,40 +380,5 @@ final class QualityToolsApplicationTest extends TestCase
     private function getFixturePath(string $fixture): string
     {
         return realpath(__DIR__ . '/../../Fixtures/' . $fixture);
-    }
-
-    private function createDeepDirectoryStructure(string $basePath, int $depth): void
-    {
-        $currentPath = $basePath;
-
-        // Create all directories in one go
-        for ($i = 1; $i <= $depth; ++$i) {
-            $currentPath .= '/level' . $i;
-        }
-
-        // Create the entire path recursively
-        if (!mkdir($currentPath, 0o777, true)) {
-            throw new \RuntimeException("Failed to create directory: $currentPath");
-        }
-    }
-
-    private function removeDeepDirectoryStructure(string $basePath): void
-    {
-        if (is_dir($basePath)) {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::CHILD_FIRST,
-            );
-
-            foreach ($iterator as $file) {
-                if ($file->isDir()) {
-                    rmdir($file->getPathname());
-                } else {
-                    unlink($file->getPathname());
-                }
-            }
-
-            rmdir($basePath);
-        }
     }
 }

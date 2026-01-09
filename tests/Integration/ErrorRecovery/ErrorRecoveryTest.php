@@ -491,9 +491,6 @@ final class ErrorRecoveryTest extends TestCase
                 || str_contains((string) $result['output'], 'Parse error'),
                 'Should identify syntax error issue when present',
             );
-        } else {
-            // Tool may skip problematic files with improved error recovery
-            $this->assertTrue(true, 'Tool handled syntax errors gracefully without specific file identification');
         }
     }
 

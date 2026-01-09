@@ -7,6 +7,7 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,9 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Unit test to verify BaseCommand path resolution with multiple paths.
- *
- * @covers \Cpsit\QualityTools\Console\Command\BaseCommand
  */
+#[CoversClass(BaseCommand::class)]
 final class BaseCommandPathResolutionTest extends TestCase
 {
     /**
@@ -29,12 +29,12 @@ final class BaseCommandPathResolutionTest extends TestCase
     {
         // Create a test command that extends BaseCommand
         $command = new class extends BaseCommand {
-            public function publicGetTargetPathForTool($input, string $tool): string
+            public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
                 return $this->getTargetPathForTool($input, $tool);
             }
 
-            public function publicGetResolvedPathsForTool($input, string $tool): array
+            public function publicGetResolvedPathsForTool(InputInterface $input, string $tool): array
             {
                 return $this->getResolvedPathsForTool($input, $tool);
             }
@@ -98,7 +98,7 @@ final class BaseCommandPathResolutionTest extends TestCase
     public function userProvidedPathOptionOverridesConfiguration(): void
     {
         $command = new class extends RectorLintCommand {
-            public function publicGetTargetPathForTool($input, string $tool): string
+            public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
                 return $this->getTargetPathForTool($input, $tool);
             }
@@ -154,14 +154,12 @@ final class BaseCommandPathResolutionTest extends TestCase
             ]);
 
         $command = new class extends BaseCommand {
-            private readonly Configuration $mockConfig;
-
             public function setMockConfiguration(Configuration $config): void
             {
                 $this->configuration = $config;
             }
 
-            public function publicGetResolvedPathsForTool($input, string $tool): array
+            public function publicGetResolvedPathsForTool(InputInterface $input, string $tool): array
             {
                 return $this->getResolvedPathsForTool($input, $tool);
             }
@@ -194,9 +192,5 @@ final class BaseCommandPathResolutionTest extends TestCase
         $this->assertContains('/project/packages', $paths);
         $this->assertContains('/project/vendor/company1/package1', $paths);
         $this->assertContains('/project/vendor/company2/package2', $paths);
-
-        // The actual command execution now iterates through these paths
-        // and passes them as arguments instead of using environment variables
-        $this->assertTrue(true, 'Multi-path scanning is now implemented through direct command arguments');
     }
 }

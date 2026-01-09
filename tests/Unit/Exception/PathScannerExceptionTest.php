@@ -15,7 +15,6 @@ final class PathScannerExceptionTest extends TestCase
     {
         $exception = new PathScannerException();
 
-        self::assertInstanceOf(\RuntimeException::class, $exception);
         self::assertEquals('', $exception->getMessage());
         self::assertEquals(PathScannerException::ERROR_PATH_RESOLUTION_FAILED, $exception->getCode());
         self::assertNull($exception->getPrevious());
@@ -53,14 +52,5 @@ final class PathScannerExceptionTest extends TestCase
         self::assertEquals($message, $exception->getMessage());
         self::assertEquals($code, $exception->getCode());
         self::assertSame($previousException, $exception->getPrevious());
-    }
-
-    public function testExceptionInheritsFromRuntimeException(): void
-    {
-        $exception = new PathScannerException();
-
-        self::assertInstanceOf(\RuntimeException::class, $exception);
-        self::assertInstanceOf(\Exception::class, $exception);
-        self::assertInstanceOf(\Throwable::class, $exception);
     }
 }

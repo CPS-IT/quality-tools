@@ -156,7 +156,7 @@ final class QualityToolsApplication extends Application
         }
     }
 
-    private function getClassNameFromFile(string $relativePath): ?string
+    private function getClassNameFromFile(string $relativePath): string
     {
         $pathWithoutExtension = str_replace('.php', '', $relativePath);
         $classPath = str_replace('/', '\\', $pathWithoutExtension);

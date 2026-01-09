@@ -168,15 +168,11 @@ final class MultiPathScanningTest extends TestCase
 
         $vendorPaths = array_filter($resolvedPaths, fn ($path) => str_contains((string) $path, '/vendor/company/'));
         $this->assertGreaterThan(0, \count($vendorPaths), 'Vendor namespace paths should be resolved');
-
-        // But command execution only uses first path (this is the bug)
-        // We'll verify this in the actual command execution test above
-        $this->assertTrue(true, 'Path resolution works, but execution layer has the bug');
     }
 
     private function createTempProjectStructure(): string
     {
-        $tempDir = sys_get_temp_dir() . '/quality-tools-test-' . uniqid();
+        $tempDir = sys_get_temp_dir() . '/quality-tools-test-' . uniqid('', true);
 
         // Create directory structure
         $dirs = [

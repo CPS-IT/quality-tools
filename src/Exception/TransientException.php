@@ -19,8 +19,8 @@ class TransientException extends QualityToolsException
         string $message = '',
         int $code = self::ERROR_SERVICE_UNAVAILABLE,
         ?\Throwable $previous = null,
-        private readonly array $troubleshootingSteps = [],
-        private readonly array $context = [],
+        array $troubleshootingSteps = [],
+        array $context = [],
         private readonly int $retryAfter = 1,
     ) {
         parent::__construct($message, $code, $previous, $troubleshootingSteps, $context);

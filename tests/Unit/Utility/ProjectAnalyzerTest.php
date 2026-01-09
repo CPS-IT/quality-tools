@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Utility;
 
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
-use Cpsit\QualityTools\Utility\ProjectMetrics;
 use PHPUnit\Framework\TestCase;
 
 final class ProjectAnalyzerTest extends TestCase
@@ -29,7 +28,6 @@ final class ProjectAnalyzerTest extends TestCase
     {
         $metrics = $this->projectAnalyzer->analyzeProject($this->tempDir);
 
-        $this->assertInstanceOf(ProjectMetrics::class, $metrics);
         $this->assertEquals(0, $metrics->getTotalFileCount());
         $this->assertEquals(0, $metrics->getPhpFileCount());
         $this->assertEquals('small', $metrics->getProjectSize());
