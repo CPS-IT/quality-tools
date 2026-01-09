@@ -227,13 +227,8 @@ final class VendorDirectoryDetector
         if (str_starts_with($path, '/')) {
             return true;
         }
-
         // Windows absolute path
-        if (preg_match('/^[a-zA-Z]:[\\\\\/]/', $path)) {
-            return true;
-        }
-
-        return false;
+        return (bool) preg_match('/^[a-zA-Z]:[\\\\\/]/', $path);
     }
 
     /**
@@ -276,11 +271,7 @@ final class VendorDirectoryDetector
 
         // Check for autoload.php (essential for Composer autoloading)
         $autoloadFile = $vendorPath . '/autoload.php';
-        if (!is_file($autoloadFile)) {
-            return false;
-        }
-
-        return true;
+        return is_file($autoloadFile);
     }
 
     /**
@@ -323,7 +314,7 @@ final class VendorDirectoryDetector
 
         // Test fallbacks
         $debug['methods']['fallbacks'] = [
-            'tried_paths' => array_map(fn ($path) => $projectRoot . '/' . $path, self::FALLBACK_PATHS),
+            'tried_paths' => array_map(fn ($path): string => $projectRoot . '/' . $path, self::FALLBACK_PATHS),
             'result' => $this->detectFromFallbacks($projectRoot),
         ];
 

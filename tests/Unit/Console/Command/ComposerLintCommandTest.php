@@ -110,7 +110,7 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(fn ($option) => match ($option) {
+            ->willReturnCallback(fn ($option): ?false => match ($option) {
                 'path' => null,
                 'config' => null,
                 'no-optimization' => false,

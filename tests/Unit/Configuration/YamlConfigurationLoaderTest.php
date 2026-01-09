@@ -100,7 +100,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         // Test with environment variable set
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn () => $this->loader->load($this->tempDir),
+            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
         );
 
         // Project config should override global, but global should provide defaults
@@ -125,7 +125,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         // Test without HOME environment variable
         $config = TestHelper::withEnvironment(
             ['HOME' => ''],
-            fn () => $this->loader->load($this->tempDir),
+            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
         );
 
         self::assertSame('no-home', $config->getProjectName());
@@ -153,7 +153,7 @@ final class YamlConfigurationLoaderTest extends TestCase
             'PHP_VERSION' => '8.4',
             // PHPSTAN_MEMORY not set, should use default
             // SCAN_PATH not set, should use default
-        ], fn () => $this->loader->load($this->tempDir));
+        ], fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir));
 
         self::assertSame('env-test-project', $config->getProjectName());
         self::assertSame('8.4', $config->getProjectPhpVersion());
@@ -319,7 +319,7 @@ final class YamlConfigurationLoaderTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn () => $this->loader->load($this->tempDir),
+            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
         );
 
         // Check merged values
@@ -371,7 +371,7 @@ final class YamlConfigurationLoaderTest extends TestCase
             'MEMORY_LIMIT' => '2G',
             'SECONDARY_SCAN_PATH' => 'custom/',
             // PHP_VERSION, PHPSTAN_LEVEL, PRIMARY_SCAN_PATH not set - should use defaults
-        ], fn () => $this->loader->load($this->tempDir));
+        ], fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir));
 
         self::assertSame('env-override', $config->getProjectName());
         self::assertSame('8.3', $config->getProjectPhpVersion()); // default

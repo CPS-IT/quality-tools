@@ -87,7 +87,7 @@ class ErrorHandler
             $output->writeln(\sprintf('  Exception: %s', $exception::class));
             $output->writeln(\sprintf('  File: %s:%d', $exception->getFile(), $exception->getLine()));
 
-            if ($exception->getPrevious()) {
+            if ($exception->getPrevious() instanceof \Throwable) {
                 $output->writeln(\sprintf('  Previous: %s', $exception->getPrevious()->getMessage()));
             }
         }

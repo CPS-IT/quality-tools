@@ -177,7 +177,7 @@ final class ConfigShowCommandTest extends TestCase
 
         $exitCode = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn () => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]),
+            fn (): int => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]),
         );
 
         self::assertSame(Command::SUCCESS, $exitCode);
@@ -202,7 +202,7 @@ final class ConfigShowCommandTest extends TestCase
 
         $exitCode = TestHelper::withEnvironment(
             ['HOME' => '/nonexistent'],
-            fn () => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]),
+            fn (): int => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]),
         );
 
         self::assertSame(Command::SUCCESS, $exitCode);
@@ -245,7 +245,7 @@ final class ConfigShowCommandTest extends TestCase
             'PROJECT_NAME' => 'env-test',
             'MEMORY_LIMIT' => '2G',
             // PHP_VERSION not set, should use default
-        ], fn () => $this->commandTester->execute(['--format' => 'yaml']));
+        ], fn (): int => $this->commandTester->execute(['--format' => 'yaml']));
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
@@ -296,7 +296,7 @@ final class ConfigShowCommandTest extends TestCase
 
         $exitCode = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn () => $this->commandTester->execute(['--format' => 'json']),
+            fn (): int => $this->commandTester->execute(['--format' => 'json']),
         );
 
         self::assertSame(Command::SUCCESS, $exitCode);

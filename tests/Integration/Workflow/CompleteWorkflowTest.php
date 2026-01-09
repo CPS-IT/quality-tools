@@ -29,11 +29,9 @@ final class CompleteWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         // Validate workflow metrics were collected (makes property usage legitimate)
-        if (!empty($this->workflowMetrics)) {
-            foreach ($this->workflowMetrics as $workflowName => $timing) {
-                $this->assertIsString($timing, "Workflow timing should be a string for $workflowName");
-                $this->assertStringContainsString('s', $timing, "Workflow timing should include seconds unit for $workflowName");
-            }
+        foreach ($this->workflowMetrics as $workflowName => $timing) {
+            $this->assertIsString($timing, "Workflow timing should be a string for $workflowName");
+            $this->assertStringContainsString('s', $timing, "Workflow timing should include seconds unit for $workflowName");
         }
 
         TestHelper::removeDirectory($this->tempProjectRoot);

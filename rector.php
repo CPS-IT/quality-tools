@@ -12,9 +12,9 @@ return RectorConfig::configure()
         __DIR__ . '/tests',
     ])
     ->withPhpSets()
-    ->withTypeCoverageLevel(0)
-    ->withDeadCodeLevel(0)
-    ->withCodeQualityLevel(0)
+    ->withTypeCoverageLevel(30)
+    ->withDeadCodeLevel(30)
+    ->withCodeQualityLevel(30)
     ->withSkip([
         // Skip NewInInitializerRector for TemporaryFile as we have planned Symfony DI injection
         NewInInitializerRector::class => [

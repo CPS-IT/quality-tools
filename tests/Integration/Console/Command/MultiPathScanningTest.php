@@ -166,7 +166,7 @@ final class MultiPathScanningTest extends TestCase
         $this->assertGreaterThan(1, \count($resolvedPaths), 'Multiple paths should be resolved');
         $this->assertStringContainsString('/packages', $resolvedPaths[0] ?? '');
 
-        $vendorPaths = array_filter($resolvedPaths, fn ($path) => str_contains((string) $path, '/vendor/company/'));
+        $vendorPaths = array_filter($resolvedPaths, fn ($path): bool => str_contains((string) $path, '/vendor/company/'));
         $this->assertGreaterThan(0, \count($vendorPaths), 'Vendor namespace paths should be resolved');
     }
 

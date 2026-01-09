@@ -203,7 +203,7 @@ final class ConfigValidateCommandTest extends TestCase
         $exitCode = TestHelper::withEnvironment([
             'PROJECT_NAME' => 'env-test-project',
             'PHP_VERSION' => '8.4',
-        ], fn () => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]));
+        ], fn (): int => $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]));
 
         self::assertSame(Command::SUCCESS, $exitCode);
 

@@ -63,10 +63,8 @@ final class QualityToolsApplication extends Application
         for ($i = 0; $i < $maxLevels; ++$i) {
             $composerFile = $searchDir . '/composer.json';
 
-            if (file_exists($composerFile)) {
-                if ($this->isTypo3Project($composerFile)) {
-                    return $searchDir;
-                }
+            if (file_exists($composerFile) && $this->isTypo3Project($composerFile)) {
+                return $searchDir;
             }
 
             $parentDir = \dirname($searchDir);

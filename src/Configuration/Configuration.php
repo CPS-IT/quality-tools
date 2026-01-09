@@ -259,7 +259,7 @@ class Configuration
 
         // Add exclusion patterns with '!' prefix to scan patterns
         if (!empty($allExcludePatterns)) {
-            $exclusionPatterns = array_map(fn ($pattern) => '!' . $pattern, $allExcludePatterns);
+            $exclusionPatterns = array_map(fn ($pattern): string => '!' . $pattern, $allExcludePatterns);
             $allScanPatterns = array_merge($allScanPatterns, $exclusionPatterns);
         }
 

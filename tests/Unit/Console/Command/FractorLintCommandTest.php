@@ -200,7 +200,7 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(fn ($option) => match ($option) {
+            ->willReturnCallback(fn ($option): ?false => match ($option) {
                 'config' => null,
                 'path' => null,
                 'no-optimization' => false,
@@ -336,7 +336,7 @@ final class FractorLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(fn ($option) => match ($option) {
+            ->willReturnCallback(fn ($option): ?false => match ($option) {
                 'config' => null,
                 'path' => null,
                 'no-optimization' => false,

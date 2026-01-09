@@ -356,7 +356,7 @@ final class PathScanner
             'vendor_path' => $this->vendorPath,
             'input_patterns' => $pathPatterns,
             'resolved_paths' => $this->resolvePaths($pathPatterns),
-            'pattern_analysis' => array_map(fn ($pattern) => [
+            'pattern_analysis' => array_map(fn ($pattern): array => [
                 'pattern' => $pattern,
                 'type' => $this->getPatternType($pattern),
                 'is_exclusion' => str_starts_with((string) $pattern, '!'),

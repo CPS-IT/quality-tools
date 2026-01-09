@@ -153,9 +153,8 @@ final class ProjectAnalyzer
         $complexity += substr_count($content, 'function ');
         $complexity += substr_count($content, 'class ');
         $complexity += substr_count($content, 'interface ');
-        $complexity += substr_count($content, 'trait ');
 
-        return $complexity;
+        return $complexity + substr_count($content, 'trait ');
     }
 
     private function isTypoScriptFile(string $filePath): bool
