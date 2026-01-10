@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
+use Cpsit\QualityTools\Exception\FileSystemException;
+
 final class TemporaryFile
 {
     private string $filePath;
@@ -11,25 +13,14 @@ final class TemporaryFile
 
     public function __construct(
         private readonly SecurityService $securityService,
+        private readonly FilesystemService $filesystemService,
         string $prefix = 'qt_temp_',
         string $suffix = '',
     ) {
-        $tempDir = sys_get_temp_dir();
-        $tempFile = tempnam($tempDir, $prefix);
-
-        if ($tempFile === false) {
-            throw new \RuntimeException('Failed to create temporary file');
-        }
-
-        // If suffix is provided, rename the file to include the suffix
-        if ($suffix !== '') {
-            $this->filePath = $tempFile . $suffix;
-            if (!rename($tempFile, $this->filePath)) {
-                unlink($tempFile);
-                throw new \RuntimeException('Failed to add suffix to temporary file');
-            }
-        } else {
-            $this->filePath = $tempFile;
+        try {
+            $this->filePath = $this->filesystemService->createTempFile($prefix, $suffix);
+        } catch (FileSystemException $e) {
+            throw new \RuntimeException('Failed to create temporary file: ' . $e->getMessage(), 0, $e);
         }
 
         // Set secure file permissions (readable/writable by owner only)

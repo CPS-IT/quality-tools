@@ -9,6 +9,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -26,6 +27,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         $this->loader = new YamlConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
+            new FilesystemService(),
         );
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Utility;
 
+use Symfony\Component\Filesystem\Filesystem;
+
 /**
  * Scans and resolves additional package paths based on various patterns.
  *
@@ -19,8 +21,10 @@ final class PathScanner
     private ?string $vendorPath = null;
     private array $resolvedPathsCache = [];
 
-    public function __construct(string $projectRoot)
-    {
+    public function __construct(
+        string $projectRoot,
+        private readonly ?Filesystem $filesystem = null,
+    ) {
         $this->projectRoot = rtrim($projectRoot, '/');
     }
 
@@ -276,21 +280,23 @@ final class PathScanner
      */
     private function toAbsolutePath(string $path): string
     {
+        $filesystem = $this->filesystem ?? new Filesystem();
+
         // Already absolute
-        if (str_starts_with($path, '/') || preg_match('/^[a-zA-Z]:/', $path)) {
-            return realpath($path) ?: $path;
+        if ($filesystem->isAbsolutePath($path)) {
+            return file_exists($path) ? realpath($path) ?: $path : $path;
         }
 
         // Handle vendor/ prefix for vendor namespace resolution
         if ($this->vendorPath !== null && str_starts_with($path, 'vendor/')) {
-            $fullPath = $this->vendorPath . '/' . substr($path, 7);
+            $fullPath = $this->vendorPath . DIRECTORY_SEPARATOR . substr($path, 7);
 
-            return realpath($fullPath) ?: $fullPath;
+            return file_exists($fullPath) ? realpath($fullPath) ?: $fullPath : $fullPath;
         }
 
-        $fullPath = $this->projectRoot . '/' . ltrim($path, '/');
+        $fullPath = $this->projectRoot . DIRECTORY_SEPARATOR . ltrim($path, '/');
 
-        return realpath($fullPath) ?: $fullPath;
+        return file_exists($fullPath) ? realpath($fullPath) ?: $fullPath : $fullPath;
     }
 
     /**

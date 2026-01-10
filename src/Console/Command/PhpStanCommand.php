@@ -152,7 +152,7 @@ final class PhpStanCommand extends AbstractToolCommand
         }
 
         // Create a disposable temporary file
-        $this->temporaryConfig = new DisposableTemporaryFile(new \Cpsit\QualityTools\Service\SecurityService(), 'phpstan_', '.neon');
+        $this->temporaryConfig = new DisposableTemporaryFile(new \Cpsit\QualityTools\Service\SecurityService(), new \Cpsit\QualityTools\Service\FilesystemService(), 'phpstan_', '.neon');
         $this->temporaryConfig->write($pathsSection);
 
         return $this->temporaryConfig->getPath();

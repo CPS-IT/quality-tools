@@ -35,19 +35,30 @@ services:
     tags:
       - { name: 'console.command' }
 
+  # External Dependencies
+  Symfony\Component\Filesystem\Filesystem:
+    public: false
+
   # Specific Service Definitions
   Cpsit\QualityTools\Service\SecurityService:
+    public: true
+
+  Cpsit\QualityTools\Service\FilesystemService:
+    arguments:
+      $filesystem: '@Symfony\Component\Filesystem\Filesystem'
     public: true
 
   Cpsit\QualityTools\Service\TemporaryFile:
     arguments:
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $prefix: 'qt_temp_'
       $suffix: ''
 
   Cpsit\QualityTools\Service\DisposableTemporaryFile:
     arguments:
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $prefix: 'qt_temp_'
       $suffix: ''
 
@@ -58,6 +69,7 @@ services:
     arguments:
       $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationValidator:

@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
 use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -36,7 +37,7 @@ final class ConfigInitCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ConfigInitCommand();
+                $this->command = new ConfigInitCommand(new FilesystemService());
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
             },
@@ -318,7 +319,7 @@ final class ConfigInitCommandTest extends TestCase
                 ['QT_PROJECT_ROOT' => $testDir],
                 function () use ($template, $testDir): void {
                     $app = new QualityToolsApplication();
-                    $command = new ConfigInitCommand();
+                    $command = new ConfigInitCommand(new FilesystemService());
                     $command->setApplication($app);
                     $commandTester = new CommandTester($command);
 

@@ -13,6 +13,7 @@ use Cpsit\QualityTools\DependencyInjection\ContainerAwareTrait;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Service\CommandBuilder;
 use Cpsit\QualityTools\Service\ErrorFactory;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\SecurityService;
@@ -516,6 +517,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new YamlConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
+            new FilesystemService(),
         );
     }
 }

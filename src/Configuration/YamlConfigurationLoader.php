@@ -7,6 +7,8 @@ namespace Cpsit\QualityTools\Configuration;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotFoundException;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
+use Cpsit\QualityTools\Exception\FileSystemException;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Symfony\Component\Yaml\Yaml;
 
@@ -21,6 +23,7 @@ final readonly class YamlConfigurationLoader
     public function __construct(
         private ConfigurationValidator $validator,
         private SecurityService $securityService,
+        private FilesystemService $filesystemService,
     ) {
     }
 
@@ -83,23 +86,26 @@ final readonly class YamlConfigurationLoader
         return [];
     }
 
+    private function readConfigurationFile(string $path): string
+    {
+        try {
+            return $this->filesystemService->readFile($path);
+        } catch (FileSystemException $e) {
+            // Convert filesystem exceptions to configuration-specific exceptions
+            if ($e->getCode() === FileSystemException::ERROR_FILE_NOT_FOUND) {
+                throw new ConfigurationFileNotFoundException($path);
+            }
+            if ($e->getCode() === FileSystemException::ERROR_FILE_NOT_READABLE) {
+                throw new ConfigurationFileNotReadableException($path);
+            }
+            throw new ConfigurationLoadException('Failed to read configuration file: ' . $e->getMessage(), $path, $e);
+        }
+    }
+
     private function loadYamlFile(string $path): array
     {
-        // Check if the file exists
-        if (!file_exists($path)) {
-            throw new ConfigurationFileNotFoundException($path);
-        }
-
-        // Check if the file is readable
-        if (!is_readable($path)) {
-            throw new ConfigurationFileNotReadableException($path);
-        }
-
         try {
-            $content = file_get_contents($path);
-            if ($content === false) {
-                throw new ConfigurationLoadException('Failed to read file contents', $path);
-            }
+            $content = $this->readConfigurationFile($path);
 
             // Interpolate environment variables
             $content = $this->interpolateEnvironmentVariables($content);

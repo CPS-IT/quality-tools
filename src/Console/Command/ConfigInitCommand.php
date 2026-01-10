@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
+use Cpsit\QualityTools\Exception\FileSystemException;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,6 +14,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 final class ConfigInitCommand extends BaseCommand
 {
+    public function __construct(
+        private readonly FilesystemService $filesystemService,
+    ) {
+        parent::__construct();
+    }
+
     private const string TEMPLATE_TYPO3_EXTENSION = 'typo3-extension';
     private const string TEMPLATE_TYPO3_SITE_PACKAGE = 'typo3-site-package';
     private const string TEMPLATE_TYPO3_DISTRIBUTION = 'typo3-distribution';
@@ -359,27 +367,12 @@ final class ConfigInitCommand extends BaseCommand
      */
     private function writeConfigurationFile(string $configFile, string $content): void
     {
-        $directory = \dirname($configFile);
-
-        // Check if directory exists
-        if (!is_dir($directory)) {
-            throw new ConfigurationFileWriteException('Directory does not exist', $configFile);
-        }
-
-        // Check if directory is writable
-        if (!is_writable($directory)) {
-            throw new ConfigurationFileWriteException('Directory is not writable', $configFile);
-        }
-
-        // If file exists, check if it's writable
-        if (file_exists($configFile) && !is_writable($configFile)) {
-            throw new ConfigurationFileWriteException('File exists but is not writable', $configFile);
-        }
-
-        // Attempt to write the file
-        $result = file_put_contents($configFile, $content);
-        if ($result === false) {
-            throw new ConfigurationFileWriteException('Failed to write file contents', $configFile);
+        try {
+            // Use the FilesystemService for secure file writing
+            $this->filesystemService->writeFile($configFile, $content);
+        } catch (FileSystemException $e) {
+            // Convert filesystem exceptions to configuration-specific exceptions
+            throw new ConfigurationFileWriteException($e->getMessage(), $configFile, $e);
         }
     }
 }

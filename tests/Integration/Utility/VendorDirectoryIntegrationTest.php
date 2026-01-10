@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Integration\Utility;
 
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +20,7 @@ final class VendorDirectoryIntegrationTest extends TestCase
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('vendor_integration_test_');
-        $this->loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService());
+        $this->loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
     }
 
     protected function tearDown(): void
