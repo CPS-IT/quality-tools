@@ -20,13 +20,20 @@ class Configuration
     private ?VendorDirectoryDetector $vendorDetector = null;
     private ?PathScanner $pathScanner = null;
 
-    public function __construct(private array $data = [])
-    {
+    public function __construct(
+        private readonly array $data = [],
+        private readonly ?ConfigurationValidator $validator = null,
+    ) {
         $this->parseConfiguration();
     }
 
     private function parseConfiguration(): void
     {
+        // Validate configuration if validator is provided and data is not empty
+        if ($this->validator !== null && !empty($this->data)) {
+            $this->validator->validate($this->data);
+        }
+
         $qualityTools = $this->data['quality-tools'] ?? [];
 
         $this->projectConfig = $qualityTools['project'] ?? [];
@@ -203,9 +210,7 @@ class Configuration
             return ['error' => 'Project root not set'];
         }
 
-        $detector = $this->getVendorDetector();
-
-        return $detector->getDetectionDebugInfo($this->projectRoot);
+        return $this->getVendorDetector()->getDetectionDebugInfo($this->projectRoot);
     }
 
     private function getVendorDetector(): VendorDirectoryDetector
@@ -360,5 +365,15 @@ class Configuration
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Create a configuration instance with validation enabled.
+     *
+     * @param array<string, mixed> $data Configuration data
+     */
+    public static function createWithValidation(array $data): self
+    {
+        return new self($data, new ConfigurationValidator());
     }
 }

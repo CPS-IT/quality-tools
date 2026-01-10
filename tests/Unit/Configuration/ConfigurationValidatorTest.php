@@ -25,7 +25,7 @@ final class ConfigurationValidatorTest extends TestCase
             'quality-tools' => (object) [],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertTrue($result->isValid());
         self::assertFalse($result->hasErrors());
@@ -93,7 +93,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertTrue($result->isValid());
         self::assertFalse($result->hasErrors());
@@ -105,7 +105,7 @@ final class ConfigurationValidatorTest extends TestCase
             'invalid-root' => [],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -119,7 +119,7 @@ final class ConfigurationValidatorTest extends TestCase
     {
         $config = [];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -138,7 +138,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -160,7 +160,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -179,7 +179,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -197,7 +197,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -218,7 +218,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -239,7 +239,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -258,7 +258,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -279,13 +279,13 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
 
         $config['quality-tools']['tools']['fractor']['indentation'] = 9; // Invalid: maximum is 8
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -301,7 +301,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -320,7 +320,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -339,13 +339,13 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
 
         $config['quality-tools']['performance']['max_processes'] = 17; // Invalid: maximum is 16
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -363,7 +363,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -384,7 +384,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -403,7 +403,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -421,7 +421,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
@@ -442,7 +442,7 @@ final class ConfigurationValidatorTest extends TestCase
                 ],
             ];
 
-            $result = $this->validator->validate($config);
+            $result = $this->validator->validateSafe($config);
 
             self::assertTrue(
                 $result->isValid(),
@@ -471,7 +471,7 @@ final class ConfigurationValidatorTest extends TestCase
             ],
         ];
 
-        $result = $this->validator->validate($config);
+        $result = $this->validator->validateSafe($config);
 
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());

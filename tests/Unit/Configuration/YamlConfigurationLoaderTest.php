@@ -139,9 +139,10 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
         $yamlContent = 'quality-tools: { project: { name: "${MISSING_VAR}" } }';
         $this->createVirtualFile('project/.quality-tools.yaml', $yamlContent);
 
-        $config = $this->loader->load($this->projectRoot);
+        $this->expectException(ConfigurationLoadException::class);
+        $this->expectExceptionMessage('Invalid configuration');
 
-        self::assertSame('', $config->getProjectName());
+        $this->loader->load($this->projectRoot);
     }
 
     public function testInvalidYamlFile(): void

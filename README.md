@@ -220,6 +220,7 @@ vendor/bin/qt lint:phpstan --memory-limit=1024M
 - [Project Planning](docs/plan/index.md) - Complete planning documentation and known issues
 
 ### Developer Guide
+- [Developer Guide](docs/developer-guide/index.md) - Complete developer documentation including architecture, testing, and contribution guidelines
 - [Testing Infrastructure](docs/developer-guide/testing.md) - Testing best practices, virtual filesystem, and test isolation
 
 ### Configuration Guide

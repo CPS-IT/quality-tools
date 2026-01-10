@@ -1,8 +1,8 @@
 # Issue 016: Configuration Schema Validation
 
-**Status:** Open
+**Status:** done
 **Priority:** Medium
-**Effort:** Medium (3-8h)
+**Effort:** Medium (3–8h)
 **Impact:** Medium
 
 ## Description
@@ -78,11 +78,11 @@ Use established JSON Schema standards while adding runtime validation for dynami
 
 ## Validation Plan
 
-- [ ] Invalid configuration files are rejected with clear error messages
-- [ ] Schema validation catches structural configuration problems
-- [ ] Runtime validation prevents invalid configuration values
-- [ ] Error messages provide actionable guidance for fixes
-- [ ] Configuration migration path is documented and tested
+- [x] Invalid configuration files are rejected with clear error messages
+- [x] Schema validation catches structural configuration problems
+- [x] Runtime validation prevents invalid configuration values
+- [x] Error messages provide actionable guidance for fixes
+- [x] Configuration migration path is documented and tested
 
 ## Dependencies
 

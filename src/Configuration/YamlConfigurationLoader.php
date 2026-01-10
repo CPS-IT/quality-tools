@@ -117,7 +117,7 @@ final readonly class YamlConfigurationLoader
             }
 
             // Validate configuration
-            $validationResult = $this->validator->validate($data);
+            $validationResult = $this->validator->validateSafe($data);
             if (!$validationResult->isValid()) {
                 $errors = implode("\n", $validationResult->getErrors());
                 throw new ConfigurationLoadException("Invalid configuration:\n$errors", $path);
@@ -192,7 +192,7 @@ final readonly class YamlConfigurationLoader
 
     private function isIndexedArray(array $array): bool
     {
-        return array_keys($array) === range(0, \count($array) - 1);
+        return array_is_list($array);
     }
 
     public function findConfigurationFile(string $projectRoot): ?string

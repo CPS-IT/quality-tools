@@ -85,8 +85,8 @@ The following issues have been identified and prioritized for improvement:
 **Medium Priority:**
 - [x] [013 - Dependency Injection Container Architecture](issue/done/013-dependency-injection-container-architecture.md)
 - [x] [014 - Filesystem Abstraction Symfony Filesystem](issue/done/014-filesystem-abstraction-symfony-filesystem.md)
-- [ ] [015 - Test Mocking Improvements Isolation](issue/done/015-test-mocking-improvements-isolation.md)
-- [ ] [016 - Configuration Schema Validation](issue/016-configuration-schema-validation.md)
+- [x] [015 - Test Mocking Improvements Isolation](issue/done/015-test-mocking-improvements-isolation.md)
+- [x] [016 - Configuration Schema Validation](issue/done/016-configuration-schema-validation.md)
 - [ ] [017 - Property Based Testing Path Resolution](issue/017-property-based-testing-path-resolution.md)
 
 **Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md)

@@ -1,0 +1,327 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/CPS-IT/quality-tools/config/schema/quality-tools.json",
+  "title": "CPSIT Quality Tools Configuration Schema",
+  "description": "JSON Schema for CPSIT Quality Tools YAML configuration files",
+  "type": "object",
+  "properties": {
+    "quality-tools": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/project"
+        },
+        "paths": {
+          "$ref": "#/definitions/paths"
+        },
+        "tools": {
+          "$ref": "#/definitions/tools"
+        },
+        "output": {
+          "$ref": "#/definitions/output"
+        },
+        "performance": {
+          "$ref": "#/definitions/performance"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["quality-tools"],
+  "additionalProperties": false,
+  "definitions": {
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name for identification",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "php_version": {
+          "type": "string",
+          "description": "PHP version requirement (e.g., '8.0', '8.3', '8.4')",
+          "pattern": "^8\\.[0-9]$"
+        },
+        "typo3_version": {
+          "type": "string",
+          "description": "TYPO3 version requirement (e.g., '13.4', '12.4')",
+          "pattern": "^(12|13|14)\\.(\\d+)$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "scan": {
+          "type": "array",
+          "description": "Paths to scan for quality tools",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": ["packages/", "config/system/"],
+          "minItems": 1
+        },
+        "exclude": {
+          "type": "array",
+          "description": "Paths to exclude from scanning",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": ["var/", "vendor/", "public/", "_assets/", "fileadmin/", "typo3/", "Tests/", "tests/", "typo3conf/"]
+        },
+        "additional": {
+          "type": "array",
+          "description": "Additional paths to include with glob pattern support",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude_patterns": {
+          "type": "array",
+          "description": "Additional exclusion patterns with glob support",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tool_overrides": {
+          "type": "object",
+          "description": "Tool-specific path overrides",
+          "patternProperties": {
+            "^[a-z-]+$": {
+              "$ref": "#/definitions/tool_paths"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tool_paths": {
+      "type": "object",
+      "properties": {
+        "scan": {
+          "type": "array",
+          "description": "Additional scan paths for this tool",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additional": {
+          "type": "array",
+          "description": "Additional paths for this tool",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "description": "Paths to exclude for this tool",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tools": {
+      "type": "object",
+      "properties": {
+        "rector": {
+          "$ref": "#/definitions/rector_config"
+        },
+        "fractor": {
+          "$ref": "#/definitions/fractor_config"
+        },
+        "phpstan": {
+          "$ref": "#/definitions/phpstan_config"
+        },
+        "php-cs-fixer": {
+          "$ref": "#/definitions/php_cs_fixer_config"
+        },
+        "typoscript-lint": {
+          "$ref": "#/definitions/typoscript_lint_config"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rector_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable Rector",
+          "default": true
+        },
+        "level": {
+          "type": "string",
+          "description": "Rector level configuration",
+          "enum": ["typo3-11", "typo3-12", "typo3-13"],
+          "default": "typo3-13"
+        },
+        "php_version": {
+          "type": "string",
+          "description": "PHP version for Rector",
+          "pattern": "^8\\.[0-9]$"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Run in dry-run mode (preview changes only)",
+          "default": false
+        },
+        "paths": {
+          "$ref": "#/definitions/tool_paths"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fractor_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable Fractor",
+          "default": true
+        },
+        "indentation": {
+          "type": "integer",
+          "description": "Indentation spaces for TypoScript",
+          "minimum": 2,
+          "maximum": 8,
+          "default": 2
+        },
+        "paths": {
+          "$ref": "#/definitions/tool_paths"
+        }
+      },
+      "additionalProperties": false
+    },
+    "phpstan_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable PHPStan",
+          "default": true
+        },
+        "level": {
+          "type": "integer",
+          "description": "PHPStan analysis level",
+          "minimum": 0,
+          "maximum": 9,
+          "default": 6
+        },
+        "memory_limit": {
+          "type": "string",
+          "description": "Memory limit for PHPStan",
+          "pattern": "^\\d+[MG]?$",
+          "default": "1G"
+        },
+        "paths": {
+          "$ref": "#/definitions/tool_paths"
+        }
+      },
+      "additionalProperties": false
+    },
+    "php_cs_fixer_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable PHP CS Fixer",
+          "default": true
+        },
+        "preset": {
+          "type": "string",
+          "description": "PHP CS Fixer preset",
+          "enum": ["typo3", "psr12", "symfony"],
+          "default": "typo3"
+        },
+        "cache": {
+          "type": "boolean",
+          "description": "Enable caching for faster subsequent runs",
+          "default": true
+        },
+        "paths": {
+          "$ref": "#/definitions/tool_paths"
+        }
+      },
+      "additionalProperties": false
+    },
+    "typoscript_lint_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable or disable TypoScript Lint",
+          "default": true
+        },
+        "indentation": {
+          "type": "integer",
+          "description": "Indentation spaces for TypoScript",
+          "minimum": 2,
+          "maximum": 8,
+          "default": 2
+        },
+        "paths": {
+          "$ref": "#/definitions/tool_paths"
+        }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "verbosity": {
+          "type": "string",
+          "description": "Output verbosity level",
+          "enum": ["quiet", "normal", "verbose", "very-verbose", "debug"],
+          "default": "normal"
+        },
+        "colors": {
+          "type": "boolean",
+          "description": "Enable colored output",
+          "default": true
+        },
+        "progress": {
+          "type": "boolean",
+          "description": "Show progress indicators",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "parallel": {
+          "type": "boolean",
+          "description": "Enable parallel processing",
+          "default": true
+        },
+        "max_processes": {
+          "type": "integer",
+          "description": "Maximum number of parallel processes",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 4
+        },
+        "cache_enabled": {
+          "type": "boolean",
+          "description": "Enable caching",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -4,338 +4,89 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Exception\ConfigurationValidationException;
 use JsonSchema\Constraints\Constraint;
 use JsonSchema\Validator;
 
-final readonly class ConfigurationValidator
+/**
+ * Validates YAML configuration against JSON schema.
+ */
+final class ConfigurationValidator
 {
-    private array $schema;
+    private const string SCHEMA_FILE = __DIR__ . '/../../config/schema/quality-tools.json';
 
-    public function __construct()
+    private ?array $schema = null;
+
+    public function __construct(private readonly Validator $validator = new Validator())
     {
-        $this->schema = $this->getConfigurationSchema();
     }
 
-    public function validate(array $config): ValidationResult
+    /**
+     * Validates configuration data against the JSON schema.
+     *
+     * @param array<string, mixed> $data The configuration data to validate
+     *
+     * @throws ConfigurationValidationException If validation fails
+     * @throws \JsonException
+     */
+    public function validate(array $data): void
     {
-        $validator = new Validator();
-        $configObject = json_decode(json_encode($config));
-        $schemaObject = json_decode(json_encode($this->schema));
+        $schema = $this->getSchema();
+        $dataObject = json_decode(
+            json_encode($data, JSON_THROW_ON_ERROR),
+            false,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
 
-        $validator->validate($configObject, $schemaObject, Constraint::CHECK_MODE_APPLY_DEFAULTS);
+        $this->validator->validate($dataObject, $schema, Constraint::CHECK_MODE_COERCE_TYPES);
 
-        $errors = [];
-        if (!$validator->isValid()) {
-            foreach ($validator->getErrors() as $error) {
-                $property = $error['property'] ? $error['property'] . ': ' : '';
-                $errors[] = $property . $error['message'];
+        if (!$this->validator->isValid()) {
+            throw new ConfigurationValidationException('Configuration validation failed', $this->validator->getErrors());
+        }
+    }
+
+    /**
+     * Validates configuration data and returns a validation result without throwing.
+     *
+     * @param array<string, mixed> $data The configuration data to validate
+     */
+    public function validateSafe(array $data): ValidationResult
+    {
+        try {
+            $this->validate($data);
+
+            return new ValidationResult(true, []);
+        } catch (ConfigurationValidationException $e) {
+            return new ValidationResult(false, $e->getFormattedErrors());
+        }
+    }
+
+    /**
+     * Get the JSON schema for validation.
+     *
+     * @throws ConfigurationValidationException If schema cannot be loaded
+     *
+     * @return object The decoded JSON schema
+     */
+    private function getSchema(): object
+    {
+        if ($this->schema === null) {
+            if (!file_exists(self::SCHEMA_FILE)) {
+                throw new ConfigurationValidationException('Configuration schema file not found: ' . self::SCHEMA_FILE);
+            }
+
+            $schemaContent = file_get_contents(self::SCHEMA_FILE);
+            if ($schemaContent === false) {
+                throw new ConfigurationValidationException('Failed to read configuration schema file: ' . self::SCHEMA_FILE);
+            }
+
+            $this->schema = json_decode($schemaContent, true);
+            if ($this->schema === null) {
+                throw new ConfigurationValidationException('Invalid JSON in configuration schema file: ' . self::SCHEMA_FILE);
             }
         }
 
-        return new ValidationResult($validator->isValid(), $errors);
-    }
-
-    private function getConfigurationSchema(): array
-    {
-        return [
-            '$schema' => 'http://json-schema.org/draft-07/schema#',
-            'title' => 'Quality Tools Configuration',
-            'description' => 'Configuration schema for TYPO3 quality analysis tools',
-            'type' => 'object',
-            'properties' => [
-                'quality-tools' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'project' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'name' => [
-                                    'type' => 'string',
-                                    'description' => 'Project name',
-                                ],
-                                'php_version' => [
-                                    'type' => 'string',
-                                    'pattern' => '^[0-9]+\.[0-9]+$',
-                                    'description' => 'Target PHP version (e.g., "8.3")',
-                                    'default' => '8.3',
-                                ],
-                                'typo3_version' => [
-                                    'type' => 'string',
-                                    'pattern' => '^[0-9]+\.[0-9]+$',
-                                    'description' => 'Target TYPO3 version (e.g., "13.4")',
-                                    'default' => '13.4',
-                                ],
-                            ],
-                            'additionalProperties' => false,
-                        ],
-                        'paths' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'scan' => [
-                                    'type' => 'array',
-                                    'items' => [
-                                        'type' => 'string',
-                                    ],
-                                    'description' => 'Directories and patterns to analyze (supports glob patterns and vendor namespaces)',
-                                    'default' => ['packages/', 'config/system/'],
-                                ],
-                                'exclude' => [
-                                    'type' => 'array',
-                                    'items' => [
-                                        'type' => 'string',
-                                    ],
-                                    'description' => 'Directories and patterns to exclude from analysis (supports glob patterns and vendor namespaces)',
-                                    'default' => ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'],
-                                ],
-                            ],
-                            'additionalProperties' => false,
-                        ],
-                        'tools' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'rector' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'enabled' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'level' => [
-                                            'type' => 'string',
-                                            'enum' => ['typo3-13', 'typo3-12', 'typo3-11'],
-                                            'default' => 'typo3-13',
-                                        ],
-                                        'php_version' => [
-                                            'type' => 'string',
-                                            'pattern' => '^[0-9]+\.[0-9]+$',
-                                        ],
-                                        'dry_run' => [
-                                            'type' => 'boolean',
-                                            'default' => false,
-                                        ],
-                                        'paths' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                                'scan' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional scan paths specific to this tool',
-                                                ],
-                                                'exclude' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional exclusion patterns specific to this tool',
-                                                ],
-                                            ],
-                                            'additionalProperties' => false,
-                                        ],
-                                    ],
-                                    'additionalProperties' => false,
-                                ],
-                                'fractor' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'enabled' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'indentation' => [
-                                            'type' => 'integer',
-                                            'minimum' => 1,
-                                            'maximum' => 8,
-                                            'default' => 2,
-                                        ],
-                                        'paths' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                                'scan' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional scan paths specific to this tool',
-                                                ],
-                                                'exclude' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional exclusion patterns specific to this tool',
-                                                ],
-                                            ],
-                                            'additionalProperties' => false,
-                                        ],
-                                    ],
-                                    'additionalProperties' => false,
-                                ],
-                                'phpstan' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'enabled' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'level' => [
-                                            'type' => 'integer',
-                                            'minimum' => 0,
-                                            'maximum' => 9,
-                                            'default' => 6,
-                                        ],
-                                        'memory_limit' => [
-                                            'type' => 'string',
-                                            'pattern' => '^[0-9]+[GMK]?$',
-                                            'default' => '1G',
-                                        ],
-                                        'paths' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                                'scan' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional scan paths specific to this tool',
-                                                ],
-                                                'exclude' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional exclusion patterns specific to this tool',
-                                                ],
-                                            ],
-                                            'additionalProperties' => false,
-                                        ],
-                                    ],
-                                    'additionalProperties' => false,
-                                ],
-                                'php-cs-fixer' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'enabled' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'preset' => [
-                                            'type' => 'string',
-                                            'enum' => ['typo3', 'psr12', 'symfony'],
-                                            'default' => 'typo3',
-                                        ],
-                                        'cache' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'paths' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                                'scan' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional scan paths specific to this tool',
-                                                ],
-                                                'exclude' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional exclusion patterns specific to this tool',
-                                                ],
-                                            ],
-                                            'additionalProperties' => false,
-                                        ],
-                                    ],
-                                    'additionalProperties' => false,
-                                ],
-                                'typoscript-lint' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'enabled' => [
-                                            'type' => 'boolean',
-                                            'default' => true,
-                                        ],
-                                        'indentation' => [
-                                            'type' => 'integer',
-                                            'minimum' => 1,
-                                            'maximum' => 8,
-                                            'default' => 2,
-                                        ],
-                                        'paths' => [
-                                            'type' => 'object',
-                                            'properties' => [
-                                                'scan' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional scan paths specific to this tool',
-                                                ],
-                                                'exclude' => [
-                                                    'type' => 'array',
-                                                    'items' => [
-                                                        'type' => 'string',
-                                                    ],
-                                                    'description' => 'Additional exclusion patterns specific to this tool',
-                                                ],
-                                            ],
-                                            'additionalProperties' => false,
-                                        ],
-                                    ],
-                                    'additionalProperties' => false,
-                                ],
-                            ],
-                            'additionalProperties' => false,
-                        ],
-                        'output' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'verbosity' => [
-                                    'type' => 'string',
-                                    'enum' => ['quiet', 'normal', 'verbose', 'debug'],
-                                    'default' => 'normal',
-                                ],
-                                'colors' => [
-                                    'type' => 'boolean',
-                                    'default' => true,
-                                ],
-                                'progress' => [
-                                    'type' => 'boolean',
-                                    'default' => true,
-                                ],
-                            ],
-                            'additionalProperties' => false,
-                        ],
-                        'performance' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'parallel' => [
-                                    'type' => 'boolean',
-                                    'default' => true,
-                                ],
-                                'max_processes' => [
-                                    'type' => 'integer',
-                                    'minimum' => 1,
-                                    'maximum' => 16,
-                                    'default' => 4,
-                                ],
-                                'cache_enabled' => [
-                                    'type' => 'boolean',
-                                    'default' => true,
-                                ],
-                            ],
-                            'additionalProperties' => false,
-                        ],
-                    ],
-                    'additionalProperties' => false,
-                ],
-            ],
-            'required' => ['quality-tools'],
-            'additionalProperties' => false,
-        ];
+        return json_decode(json_encode($this->schema), false);
     }
 }
