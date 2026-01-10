@@ -219,6 +219,9 @@ vendor/bin/qt lint:phpstan --memory-limit=1024M
 - [User Guide](docs/user-guide/index.md) - Complete guide for installing and using the CLI tool
 - [Project Planning](docs/plan/index.md) - Complete planning documentation and known issues
 
+### Developer Guide
+- [Testing Infrastructure](docs/developer-guide/testing.md) - Testing best practices, virtual filesystem, and test isolation
+
 ### Configuration Guide
 - [YAML Configuration Guide](docs/configuration/yaml-configuration.md) - Complete guide for unified YAML configuration
 - [Configuration Reference](docs/configuration/reference.md) - Complete reference of all configuration options
@@ -228,11 +231,11 @@ vendor/bin/qt lint:phpstan --memory-limit=1024M
 
 ### Tool Configuration
 - [Dynamic Resource Optimization](docs/user-guide/optimization.md) - How automatic optimization works
-- [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
-- [PHP CS Fixer](docs/PhpCsFixer.md) - PHP coding standards fixer configuration
-- [PHPStan](docs/Phpstan.md) - Static analysis tool configuration
-- [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
-- [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
+- [Fractor](docs/user-guide/tool/Fractor.md) - TYPO3 Fractor configuration and usage
+- [PHP CS Fixer](docs/user-guide/tool/PhpCsFixer.md) - PHP coding standards fixer configuration
+- [PHPStan](docs/user-guide/tool/Phpstan.md) - Static analysis tool configuration
+- [Rector](docs/user-guide/tool/Rector.md) - TYPO3 Rector configuration and usage
+- [TypoScript Lint](docs/user-guide/tool/TypoScriptLint.md) - TypoScript linting configuration
 
 [typo3-fractor]: https://packagist.org/packages/a9f/typo3-fractor
 [editorconfig-cli]: https://packagist.org/packages/armin/editorconfig-cli
