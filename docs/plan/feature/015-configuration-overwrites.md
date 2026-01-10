@@ -1,17 +1,19 @@
 # Feature 015: Configuration Overwrites
 
-**Status:** Not Started
-**Estimated Time:** 6-8 hours
-**Layer:** MVP
-**Dependencies:** 010-unified-yaml-configuration-system (Not Started)
+- **Status:** Not Started
+- **Estimated Time:** 6–8 hours
+- **Layer:** MVP
+- **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
 
 ## Description
 
 Implement a hierarchical configuration overwrite system that allows projects to customize quality tool configurations at multiple levels. This provides flexibility while maintaining strong defaults from the unified configuration system.
 
+Developers can use the quality tools without having to modify their existing configuration files.
+
 ## Problem Statement
 
-Projects need the ability to customize quality tool configurations for their specific needs without losing the benefits of standardized defaults. Currently there's no clear precedence order for configuration files, leading to:
+Projects need the ability to customize quality tool configurations for their specific needs without losing the benefits of standardized defaults. Currently, there's no clear precedence order for configuration files, leading to:
 
 - Unpredictable configuration behavior
 - Difficulty in understanding which configuration takes effect
@@ -19,7 +21,7 @@ Projects need the ability to customize quality tool configurations for their spe
 
 ## Goals
 
-- Establish clear configuration precedence hierarchy
+- Establish a clear configuration precedence hierarchy
 - Support multiple configuration file locations
 - Enable partial configuration overrides
 - Maintain backward compatibility with existing configurations
@@ -32,7 +34,7 @@ Projects need the ability to customize quality tool configurations for their spe
   - [ ] Create configuration merging algorithm
   - [ ] Add configuration source tracking and debugging
 - [ ] Configuration File Support
-  - [ ] Support phpcs.xml in project root
+  - [ ] Support phpcs.xml in the project root
   - [ ] Support tool configs in package root directories
   - [ ] Support tool configs in config/ subdirectory
   - [ ] Support quality-tools.yaml in various locations
@@ -54,13 +56,13 @@ Projects need the ability to customize quality tool configurations for their spe
 
 ### Configuration File Locations (in precedence order)
 
-1. Command line arguments (highest priority)
+1. Command line arguments (the highest priority)
 2. `quality-tools.yaml` in project root
 3. `quality-tools.yaml` in config/ directory
 4. Tool-specific config in project root (e.g., `phpcs.xml`)
-5. Tool-specific config in config/ directory
+5. Tool-specific config in an arbitrary directory (e.g., <package>/`config/phpcs.xml`, <package>/`phpcs.xml`, <project>/`config/phpcs.xml`)
 6. `quality-tools.yaml` in package root
-7. Package defaults (lowest priority)
+7. Package defaults (the lowest priority)
 
 ### Configuration Merging Strategy
 
@@ -68,13 +70,14 @@ Projects need the ability to customize quality tool configurations for their spe
 - Objects: Deep merge with override
 - Scalars: Override completely
 - Special handling for path arrays (relative path resolution)
+- a custom config file for a tool overrides the default config file and all other configs for that tool in configuration YAML files. (config file set as command argument or in `quality-tools.yaml`)
 
 ## Implementation Plan
 
 ### Phase 1: Discovery and Loading
 
 1. Implement configuration file discovery algorithm
-2. Create configuration loading with source tracking
+2. Create a configuration loading with source tracking
 3. Add configuration validation at each level
 4. Implement basic merging for simple cases
 
@@ -178,7 +181,7 @@ project-root/
 ## Notes
 
 - Precedence rules should be intuitive and well-documented
-- Consider performance impact of multiple configuration files
+- Consider the performance impact of multiple configuration files
 - Ensure debugging tools make precedence clear to users
 - Plan for future extension without breaking changes
-- Maintain consistency with Feature 010 YAML schema structure
+- Maintain consistency with the Feature 010 YAML schema structure

@@ -1,9 +1,9 @@
 # Issue 017: Property-Based Testing for Path Resolution
 
-**Status:** Open
-**Priority:** Medium
-**Effort:** High (1-3d)
-**Impact:** Medium
+- **Status:** done
+- **Priority:** Medium
+- **Effort:** High (1–3d)
+- **Impact:** Medium
 
 ## Description
 
@@ -11,7 +11,7 @@ The path resolution system lacks comprehensive property-based testing to validat
 
 ## Root Cause
 
-Current testing approach uses example-based tests which may not cover all possible combinations of:
+The current testing approach uses example-based tests which may not cover all possible combinations of:
 - Different path patterns and exclusion rules
 - Various vendor path configurations
 - Complex nested directory structures
@@ -69,21 +69,21 @@ Missing property-based testing for complex input combinations
 Leverage existing tools while creating specific generators for path resolution scenarios.
 
 **Implementation Steps:**
-1. Add property-based testing library (e.g., eris/generator)
+1. Add a property-based testing library (e.g., eris/generator)
 2. Create path pattern generators for various scenarios
 3. Develop exclusion rule property generators
 4. Implement invariant tests for path resolution properties
 5. Add shrinking capabilities for failed test cases
-6. Create comprehensive property test suite for PathScanner
+6. Create a comprehensive property test suite for PathScanner
 7. Document property-based testing approach and patterns
 
 ## Validation Plan
 
-- [ ] Property-based tests cover wide range of path resolution scenarios
-- [ ] Edge cases are automatically discovered and tested
-- [ ] Test failures provide minimal failing examples
-- [ ] Path resolution invariants are verified across all test cases
-- [ ] Integration with existing test suite is seamless
+- [x] Property-based tests cover a wide range of path resolution scenarios
+- [x] Edge cases are automatically discovered and tested
+- [x] Test failures provide minimal failing examples
+- [x] Path resolution invariants are verified across all test cases
+- [x] Integration with the existing test suite is seamless
 
 ## Dependencies
 
