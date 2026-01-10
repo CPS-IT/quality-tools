@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -20,11 +21,13 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  */
 final class YamlConfigurationWorkflowTest extends TestCase
 {
-    private ApplicationTester $appTester;
     private string $tempDir;
 
     protected function setUp(): void
     {
+        // Reset the service container to ensure clean state for each test
+        ServiceContainer::reset();
+
         $this->tempDir = TestHelper::createTempDirectory('yaml_workflow_test_');
 
         // Create a basic project structure
@@ -34,14 +37,22 @@ final class YamlConfigurationWorkflowTest extends TestCase
             'require' => ['typo3/cms-core' => '^13.4'],
         ]);
 
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $app->setAutoExit(false);
-                $this->appTester = new ApplicationTester($app);
-            },
-        );
+        // Ensure no environment pollution from previous tests
+        $envVariablesToClean = [
+            'PROJECT_NAME',
+            'PHP_VERSION',
+            'TYPO3_VERSION',
+            'MEMORY_LIMIT',
+            'PHPSTAN_LEVEL',
+        ];
+
+        foreach ($envVariablesToClean as $envVar) {
+            if (getenv($envVar) !== false) {
+                putenv($envVar);
+            }
+        }
+
+        // Note: We create ApplicationTester instances per test method to avoid state leakage
     }
 
     protected function tearDown(): void
@@ -49,43 +60,66 @@ final class YamlConfigurationWorkflowTest extends TestCase
         TestHelper::removeDirectory($this->tempDir);
     }
 
+    private function createAppTester(array $additionalEnv = []): ApplicationTester
+    {
+        $env = ['QT_PROJECT_ROOT' => $this->tempDir] + $additionalEnv;
+
+        // Also set $_SERVER and $_ENV variables for SecurityService compatibility
+        foreach ($env as $key => $value) {
+            $_SERVER[$key] = $value;
+            $_ENV[$key] = $value;
+        }
+
+        return TestHelper::withEnvironment(
+            $env,
+            function (): ApplicationTester {
+                $app = new QualityToolsApplication();
+                $app->setAutoExit(false);
+
+                return new ApplicationTester($app);
+            },
+        );
+    }
+
     public function testCompleteYamlWorkflow(): void
     {
+        $appTester = $this->createAppTester();
+
         // Step 1: Initialize configuration with default template
-        $exitCode = $this->appTester->run(['command' => 'config:init']);
+        $exitCode = $appTester->run(['command' => 'config:init']);
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Created configuration file', $output);
 
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         self::assertFileExists($configFile);
 
         // Step 2: Validate the created configuration
-        $this->appTester->run(['command' => 'config:validate']);
+        $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Configuration is valid', $output);
 
         // Step 3: Show the configuration
-        $this->appTester->run(['command' => 'config:show']);
+        $appTester->run(['command' => 'config:show']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Resolved Configuration', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output);
 
         // Step 4: Show configuration in JSON format
-        $this->appTester->run(['command' => 'config:show', '--format' => 'json']);
+        $appTester->run(['command' => 'config:show', '--format' => 'json']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
 
         // Extract JSON from output
         $lines = explode("\n", $output);
@@ -108,8 +142,10 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
     public function testWorkflowWithCustomTemplate(): void
     {
+        $appTester = $this->createAppTester();
+
         // Initialize with extension template
-        $exitCode = $this->appTester->run([
+        $exitCode = $appTester->run([
             'command' => 'config:init',
             '--template' => 'typo3-extension',
         ]);
@@ -125,11 +161,11 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertStringContainsString('level: 8', $content); // Higher PHPStan level for extensions
 
         // Validate the extension configuration
-        $this->appTester->run(['command' => 'config:validate']);
+        $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Configuration is valid', $output);
     }
 
@@ -140,7 +176,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
             quality-tools:
               project:
                 name: "\${PROJECT_NAME:-fallback-name}"
-                php_version: "\${PHP_VERSION}"
+                php_version: "\${PHP_VERSION:-8.3}"
                 typo3_version: "\${TYPO3_VERSION:-13.4}"
               tools:
                 phpstan:
@@ -152,48 +188,50 @@ final class YamlConfigurationWorkflowTest extends TestCase
         file_put_contents($configFile, $configContent);
 
         // Test with environment variables set
-        TestHelper::withEnvironment([
+        $appTester = $this->createAppTester([
             'PROJECT_NAME' => 'env-test-project',
             'PHP_VERSION' => '8.4',
             'MEMORY_LIMIT' => '2G',
             'PHPSTAN_LEVEL' => '8',
-        ], function (): void {
-            // Validate configuration
-            $this->appTester->run(['command' => 'config:validate']);
+        ]);
 
-            self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        // Validate configuration
+        $appTester->run(['command' => 'config:validate']);
 
-            // Show configuration to verify interpolation
-            $this->appTester->run(['command' => 'config:show', '--format' => 'json']);
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-            $output = $this->appTester->getDisplay();
+        // Show configuration to verify interpolation
+        $appTester->run(['command' => 'config:show', '--format' => 'json']);
 
-            // Extract and verify JSON
-            $lines = explode("\n", $output);
-            $jsonStart = false;
-            $jsonOutput = '';
+        $output = $appTester->getDisplay();
 
-            foreach ($lines as $line) {
-                if (str_starts_with($line, '{')) {
-                    $jsonStart = true;
-                }
-                if ($jsonStart) {
-                    $jsonOutput .= $line . "\n";
-                }
+        // Extract and verify JSON
+        $lines = explode("\n", $output);
+        $jsonStart = false;
+        $jsonOutput = '';
+
+        foreach ($lines as $line) {
+            if (str_starts_with($line, '{')) {
+                $jsonStart = true;
             }
+            if ($jsonStart) {
+                $jsonOutput .= $line . "\n";
+            }
+        }
 
-            $config = json_decode(trim($jsonOutput), true);
+        $config = json_decode(trim($jsonOutput), true);
 
-            self::assertSame('env-test-project', $config['quality-tools']['project']['name']);
-            self::assertSame('8.4', $config['quality-tools']['project']['php_version']);
-            self::assertSame('13.4', $config['quality-tools']['project']['typo3_version']); // default
-            self::assertSame('2G', $config['quality-tools']['tools']['phpstan']['memory_limit']);
-            self::assertSame(8, $config['quality-tools']['tools']['phpstan']['level']);
-        });
+        self::assertSame('env-test-project', $config['quality-tools']['project']['name']);
+        self::assertSame('8.4', $config['quality-tools']['project']['php_version']);
+        self::assertSame('13.4', $config['quality-tools']['project']['typo3_version']); // default
+        self::assertSame('2G', $config['quality-tools']['tools']['phpstan']['memory_limit']);
+        self::assertSame(8, $config['quality-tools']['tools']['phpstan']['level']);
     }
 
     public function testWorkflowWithInvalidConfiguration(): void
     {
+        $appTester = $this->createAppTester();
+
         // Create invalid configuration
         $invalidConfig = <<<YAML
             quality-tools:
@@ -208,41 +246,43 @@ final class YamlConfigurationWorkflowTest extends TestCase
         file_put_contents($configFile, $invalidConfig);
 
         // Validation should fail
-        $this->appTester->run(['command' => 'config:validate']);
+        $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::FAILURE, $this->appTester->getStatusCode());
+        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Unexpected Error:', $output);
 
         // Show command should also fail
-        $this->appTester->run(['command' => 'config:show']);
+        $appTester->run(['command' => 'config:show']);
 
-        self::assertSame(Command::FAILURE, $this->appTester->getStatusCode());
+        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Failed to load configuration', $output);
     }
 
     public function testWorkflowWithForceOverwrite(): void
     {
+        $appTester = $this->createAppTester();
+
         // Create initial configuration
-        $this->appTester->run(['command' => 'config:init']);
+        $appTester->run(['command' => 'config:init']);
 
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $originalContent = file_get_contents($configFile);
 
         // Try to init again without force
-        $this->appTester->run(['command' => 'config:init']);
+        $appTester->run(['command' => 'config:init']);
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Configuration file already exists', $output);
 
         // Content should be unchanged
         self::assertSame($originalContent, file_get_contents($configFile));
 
         // Init with force should overwrite
-        $this->appTester->run([
+        $appTester->run([
             'command' => 'config:init',
             '--template' => 'typo3-extension',
             '--force' => true,
@@ -255,15 +295,17 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
     public function testWorkflowWithVerboseOutput(): void
     {
+        $appTester = $this->createAppTester();
+
         // Initialize configuration
-        $this->appTester->run(['command' => 'config:init']);
+        $appTester->run(['command' => 'config:init']);
 
         // Validate with verbose output
-        $this->appTester->run(['command' => 'config:validate', '--verbose' => true]);
+        $appTester->run(['command' => 'config:validate', '--verbose' => true]);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Configuration Summary', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('rector', $output);
@@ -271,9 +313,9 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertStringContainsString('packages/', $output);
 
         // Show with verbose output (shows configuration sources)
-        $this->appTester->run(['command' => 'config:show', '--verbose' => true]);
+        $appTester->run(['command' => 'config:show', '--verbose' => true]);
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Configuration Sources', $output);
         self::assertStringContainsString('Project:', $output);
         self::assertStringContainsString('.quality-tools.yaml', $output);
@@ -317,70 +359,94 @@ final class YamlConfigurationWorkflowTest extends TestCase
             YAML;
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $projectConfig);
 
-        TestHelper::withEnvironment(['HOME' => $homeDir], function (): void {
-            // Validate merged configuration
-            $this->appTester->run(['command' => 'config:validate']);
+        // Verify both configuration files exist
+        self::assertFileExists($homeDir . '/.quality-tools.yaml');
+        self::assertFileExists($this->tempDir . '/.quality-tools.yaml');
 
-            self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        // Set HOME environment for global config detection
+        $originalHome = getenv('HOME');
+        $originalServerHome = $_SERVER['HOME'] ?? null;
+        putenv('HOME=' . $homeDir);
+        $_SERVER['HOME'] = $homeDir;
 
-            // Show configuration to verify merging
-            $this->appTester->run(['command' => 'config:show', '--format' => 'json', '--verbose' => true]);
+        $appTester = $this->createAppTester();
 
-            $output = $this->appTester->getDisplay();
+        // Validate merged configuration
+        $appTester->run(['command' => 'config:validate']);
 
-            // Should show both configuration sources
-            self::assertStringContainsString('Global:', $output);
-            self::assertStringContainsString('Project:', $output);
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-            // Extract and verify merged configuration
-            $lines = explode("\n", $output);
-            $jsonStart = false;
-            $jsonOutput = '';
+        // Show configuration to verify merging
+        $appTester->run(['command' => 'config:show', '--format' => 'json', '--verbose' => true]);
 
-            foreach ($lines as $line) {
-                if (str_starts_with($line, '{')) {
-                    $jsonStart = true;
-                }
-                if ($jsonStart) {
-                    $jsonOutput .= $line . "\n";
-                }
+        $output = $appTester->getDisplay();
+
+        // Should show both configuration sources
+        self::assertStringContainsString('Global:', $output);
+        self::assertStringContainsString('Project:', $output);
+
+        // Extract and verify merged configuration
+        $lines = explode("\n", $output);
+        $jsonStart = false;
+        $jsonOutput = '';
+
+        foreach ($lines as $line) {
+            if (str_starts_with($line, '{')) {
+                $jsonStart = true;
             }
+            if ($jsonStart) {
+                $jsonOutput .= $line . "\n";
+            }
+        }
 
-            $config = json_decode(trim($jsonOutput), true);
+        $config = json_decode(trim($jsonOutput), true);
 
-            // Verify merged values
-            self::assertSame('hierarchy-test', $config['quality-tools']['project']['name']); // project
-            self::assertSame('8.4', $config['quality-tools']['project']['php_version']); // global
-            self::assertSame('13.4', $config['quality-tools']['project']['typo3_version']); // project
+        // Verify merged values
+        self::assertSame('hierarchy-test', $config['quality-tools']['project']['name']); // project
+        self::assertSame('8.4', $config['quality-tools']['project']['php_version']); // global
+        self::assertSame('13.4', $config['quality-tools']['project']['typo3_version']); // project
 
-            // Tool settings should be merged
-            self::assertSame('typo3-13', $config['quality-tools']['tools']['rector']['level']); // project override
-            self::assertSame(4, $config['quality-tools']['tools']['fractor']['indentation']); // project only
-            self::assertSame('2G', $config['quality-tools']['tools']['phpstan']['memory_limit']); // global
+        // Tool settings should be merged
+        self::assertSame('typo3-13', $config['quality-tools']['tools']['rector']['level']); // project override
+        self::assertSame(4, $config['quality-tools']['tools']['fractor']['indentation']); // project only
+        self::assertSame('2G', $config['quality-tools']['tools']['phpstan']['memory_limit']); // global
 
-            // Output settings should be merged
-            self::assertTrue($config['quality-tools']['output']['colors']); // project override
-            self::assertSame('verbose', $config['quality-tools']['output']['verbosity']); // global
-        });
+        // Output settings should be merged
+        self::assertTrue($config['quality-tools']['output']['colors']); // project override
+        self::assertSame('verbose', $config['quality-tools']['output']['verbosity']); // global
+
+        // Restore environment variables
+        if ($originalHome !== false) {
+            putenv('HOME=' . $originalHome);
+        } else {
+            putenv('HOME');
+        }
+        if ($originalServerHome !== null) {
+            $_SERVER['HOME'] = $originalServerHome;
+        } else {
+            unset($_SERVER['HOME']);
+        }
     }
 
     public function testWorkflowWithMissingConfigurationFile(): void
     {
+        $appTester = $this->createAppTester();
+
         // Try to validate without any configuration file
-        $this->appTester->run(['command' => 'config:validate']);
+        $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('No YAML configuration file found', $output);
         self::assertStringContainsString('qt config:init', $output);
 
         // Show command should work with defaults
-        $this->appTester->run(['command' => 'config:show']);
+        $appTester->run(['command' => 'config:show']);
 
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-        $output = $this->appTester->getDisplay();
+        $output = $appTester->getDisplay();
         self::assertStringContainsString('Resolved Configuration', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output); // defaults
     }
@@ -425,13 +491,14 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
     public function testWorkflowEndToEndPerformance(): void
     {
+        $appTester = $this->createAppTester();
         $startTime = microtime(true);
 
         // Complete workflow should be reasonably fast
-        $this->appTester->run(['command' => 'config:init']);
-        $this->appTester->run(['command' => 'config:validate']);
-        $this->appTester->run(['command' => 'config:show']);
-        $this->appTester->run(['command' => 'config:show', '--format' => 'json']);
+        $appTester->run(['command' => 'config:init']);
+        $appTester->run(['command' => 'config:validate']);
+        $appTester->run(['command' => 'config:show']);
+        $appTester->run(['command' => 'config:show', '--format' => 'json']);
 
         $endTime = microtime(true);
         $executionTime = $endTime - $startTime;
@@ -440,6 +507,6 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertLessThan(5.0, $executionTime, 'Complete YAML workflow should be reasonably fast');
 
         // All commands should have succeeded
-        self::assertSame(Command::SUCCESS, $this->appTester->getStatusCode());
+        self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
     }
 }

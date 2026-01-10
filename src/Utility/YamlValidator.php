@@ -12,8 +12,6 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class YamlValidator
 {
-    private array $validationResults = [];
-
     /**
      * Validate YAML files in a directory and return validation results.
      *
@@ -23,26 +21,26 @@ final class YamlValidator
      */
     public function validateYamlFiles(string $projectPath): array
     {
-        $this->validationResults = ['valid' => [], 'invalid' => [], 'summary' => []];
+        $validationResults = ['valid' => [], 'invalid' => []];
 
         $yamlFiles = $this->findYamlFiles($projectPath);
 
         foreach ($yamlFiles as $yamlFile) {
             $result = $this->validateSingleFile($yamlFile);
             if ($result['valid']) {
-                $this->validationResults['valid'][] = $result;
+                $validationResults['valid'][] = $result;
             } else {
-                $this->validationResults['invalid'][] = $result;
+                $validationResults['invalid'][] = $result;
             }
         }
 
-        $this->validationResults['summary'] = [
+        $validationResults['summary'] = [
             'total' => \count($yamlFiles),
-            'valid' => \count($this->validationResults['valid']),
-            'invalid' => \count($this->validationResults['invalid']),
+            'valid' => \count($validationResults['valid']),
+            'invalid' => \count($validationResults['invalid']),
         ];
 
-        return $this->validationResults;
+        return $validationResults;
     }
 
     /**
@@ -56,7 +54,7 @@ final class YamlValidator
     {
         $yamlFiles = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($projectPath, \RecursiveDirectoryIterator::SKIP_DOTS),
+            new \RecursiveDirectoryIterator($projectPath, \FilesystemIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::LEAVES_ONLY,
         );
 
@@ -112,7 +110,7 @@ final class YamlValidator
         try {
             $parsed = Yaml::parse($content);
 
-            // Check if parsed result is array (expected by Fractor)
+            // Check if the parsed result is an array (expected by Fractor)
             if (!\is_array($parsed)) {
                 $result['error'] = \sprintf(
                     'YAML parses to %s instead of array (Fractor requirement)',
@@ -168,7 +166,7 @@ final class YamlValidator
     }
 
     /**
-     * Get relative path for display purposes.
+     * Get a relative path for display purposes.
      *
      * @param string $filePath Absolute file path
      *

@@ -60,6 +60,13 @@ final class ConfigShowCommandTest extends TestCase
     {
         $exitCode = $this->commandTester->execute([]);
 
+        // Debug output
+        if ($exitCode !== Command::SUCCESS) {
+            echo "\nExit code: $exitCode\n";
+            echo "Output:\n" . $this->commandTester->getDisplay() . "\n";
+            echo "Error output:\n" . $this->commandTester->getErrorOutput() . "\n";
+        }
+
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();

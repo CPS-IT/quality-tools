@@ -414,7 +414,9 @@ final class EnvironmentalVariationTest extends TestCase
         if (isset($autoloadConfig['autoload']['psr-4'])) {
             foreach ($autoloadConfig['autoload']['psr-4'] as $path) {
                 $fullPath = $projectDir . '/' . $path;
-                mkdir($fullPath, 0o777, true);
+                if (!is_dir($fullPath)) {
+                    mkdir($fullPath, 0o777, true);
+                }
                 $this->createBasicPhpFile($projectDir, $path . 'TestClass.php');
             }
         }
@@ -422,7 +424,10 @@ final class EnvironmentalVariationTest extends TestCase
         if (isset($autoloadConfig['autoload']['files'])) {
             foreach ($autoloadConfig['autoload']['files'] as $file) {
                 $fullPath = $projectDir . '/' . $file;
-                mkdir(\dirname($fullPath), 0o777, true);
+                $directory = \dirname($fullPath);
+                if (!is_dir($directory)) {
+                    mkdir($directory, 0o777, true);
+                }
                 file_put_contents($fullPath, "<?php\n// Functions file\n");
             }
         }
@@ -434,8 +439,12 @@ final class EnvironmentalVariationTest extends TestCase
         $binDir = $fullVendorPath . '/bin';
         $configDir = $fullVendorPath . '/cpsit/quality-tools/config';
 
-        mkdir($binDir, 0o777, true);
-        mkdir($configDir, 0o777, true);
+        if (!is_dir($binDir)) {
+            mkdir($binDir, 0o777, true);
+        }
+        if (!is_dir($configDir)) {
+            mkdir($configDir, 0o777, true);
+        }
 
         // Create basic config files
         file_put_contents($configDir . '/rector.php', '<?php return [];');
@@ -476,7 +485,11 @@ final class EnvironmentalVariationTest extends TestCase
     private function createBasicPhpFile(string $projectDir, string $relativePath): void
     {
         $fullPath = $projectDir . '/' . $relativePath;
-        mkdir(\dirname($fullPath), 0o777, true);
+        $directory = \dirname($fullPath);
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0o777, true);
+        }
 
         file_put_contents(
             $fullPath,

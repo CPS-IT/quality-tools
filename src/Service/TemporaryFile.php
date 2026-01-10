@@ -8,12 +8,12 @@ final class TemporaryFile
 {
     private string $filePath;
     private bool $isDeleted = false;
-    private readonly SecurityService $securityService;
 
-    public function __construct(string $prefix = 'qt_temp_', string $suffix = '', ?SecurityService $securityService = null)
-    {
-        $this->securityService = $securityService ?? new SecurityService();
-
+    public function __construct(
+        private readonly SecurityService $securityService,
+        string $prefix = 'qt_temp_',
+        string $suffix = '',
+    ) {
         $tempDir = sys_get_temp_dir();
         $tempFile = tempnam($tempDir, $prefix);
 

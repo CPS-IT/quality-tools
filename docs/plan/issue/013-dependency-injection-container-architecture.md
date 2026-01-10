@@ -1,13 +1,13 @@
 # Issue 013: Dependency Injection Container for Architecture Improvements
 
-**Status:** Open
+**Status:** Work in Progress
 **Priority:** Medium
 **Effort:** Very High (1w+)
 **Impact:** Medium
 
 ## Description
 
-The current architecture lacks a proper dependency injection container, leading to tight coupling between classes, difficult testing scenarios, and reduced extensibility for future enhancements.
+The current architecture lacks a proper dependency injection container, leading to tight coupling between classes, challenging testing scenarios, and reduced extensibility for future enhancements.
 
 ## Root Cause
 
@@ -41,7 +41,7 @@ Tight coupling between classes without dependency injection container
 - Harder to troubleshoot complex configuration scenarios
 
 **Technical Impact:**
-- Difficult unit testing with proper isolation
+- Challenging unit testing with proper isolation
 - Tight coupling reduces code maintainability
 - Limited ability to swap implementations for different environments
 

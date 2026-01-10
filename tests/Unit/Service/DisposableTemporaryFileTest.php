@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Service;
 
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,7 +18,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function constructorCreatesTemporaryFile(): void
     {
-        $tempFile = new DisposableTemporaryFile('test_', '.tmp');
+        $tempFile = new DisposableTemporaryFile(new SecurityService(), 'test_', '.tmp');
         $path = $tempFile->getPath();
 
         self::assertIsString($path);
@@ -33,7 +34,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function writeStoresContentInFile(): void
     {
-        $tempFile = new DisposableTemporaryFile();
+        $tempFile = new DisposableTemporaryFile(new SecurityService());
         $content = 'test content for disposable file';
 
         $tempFile->write($content);
@@ -48,7 +49,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function cleanupRemovesFile(): void
     {
-        $tempFile = new DisposableTemporaryFile();
+        $tempFile = new DisposableTemporaryFile(new SecurityService());
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -64,7 +65,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function cleanupCanBeCalledMultipleTimes(): void
     {
-        $tempFile = new DisposableTemporaryFile();
+        $tempFile = new DisposableTemporaryFile(new SecurityService());
         $path = $tempFile->getPath();
 
         $tempFile->cleanup();
@@ -79,7 +80,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function destructorCleansUpFile(): void
     {
-        $tempFile = new DisposableTemporaryFile();
+        $tempFile = new DisposableTemporaryFile(new SecurityService());
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -106,7 +107,7 @@ final class DisposableTemporaryFileTest extends TestCase
 
         // Create multiple temporary files and keep references
         for ($i = 0; $i < 3; ++$i) {
-            $tempFile = new DisposableTemporaryFile();
+            $tempFile = new DisposableTemporaryFile(new SecurityService());
             $tempFiles[] = $tempFile;
             $paths[] = $tempFile->getPath();
         }
@@ -133,8 +134,8 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function registryHandlesFileCleanupCorrectly(): void
     {
-        $tempFile1 = new DisposableTemporaryFile();
-        $tempFile2 = new DisposableTemporaryFile();
+        $tempFile1 = new DisposableTemporaryFile(new SecurityService());
+        $tempFile2 = new DisposableTemporaryFile(new SecurityService());
 
         $path1 = $tempFile1->getPath();
         $path2 = $tempFile2->getPath();

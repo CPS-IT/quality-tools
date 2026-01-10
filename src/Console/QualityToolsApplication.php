@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console;
 
+use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
+use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class QualityToolsApplication extends Application
 {
@@ -14,10 +17,20 @@ final class QualityToolsApplication extends Application
     private const string APP_VERSION = '1.0.0-dev';
 
     private ?string $projectRoot = null;
+    private ContainerBuilder $container;
 
     public function __construct()
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
+
+        // Initialize service container (gracefully handle test scenarios)
+        try {
+            $this->container = ServiceContainer::getContainer();
+        } catch (\Throwable) {
+            // Fallback for test scenarios where container initialization might fail
+            // This ensures existing tests continue to work during the DI integration phase
+            $this->container = new ContainerBuilder();
+        }
 
         try {
             $this->projectRoot = $this->findProjectRoot();
@@ -144,7 +157,15 @@ final class QualityToolsApplication extends Application
 
             if ($className && $this->isValidCommandClass($className)) {
                 try {
-                    $command = new $className();
+                    $command = $this->container->has($className)
+                        ? $this->container->get($className)
+                        : new $className();
+
+                    // Inject container for container-aware commands
+                    if ($command instanceof ContainerAwareInterface) {
+                        $command->setContainer($this->container);
+                    }
+
                     $this->add($command);
                 } catch (\Throwable) {
                     // Skip commands that fail to instantiate

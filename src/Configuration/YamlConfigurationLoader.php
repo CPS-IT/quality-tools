@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Exception\ConfigurationFileNotFoundException;
+use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
+use Cpsit\QualityTools\Exception\ConfigurationLoadException;
 use Cpsit\QualityTools\Service\SecurityService;
 use Symfony\Component\Yaml\Yaml;
 
@@ -15,8 +18,10 @@ final readonly class YamlConfigurationLoader
         'quality-tools.yml',
     ];
 
-    public function __construct(private ?ConfigurationValidator $validator = new ConfigurationValidator(), private ?SecurityService $securityService = new SecurityService())
-    {
+    public function __construct(
+        private ConfigurationValidator $validator,
+        private SecurityService $securityService,
+    ) {
     }
 
     public function load(string $projectRoot): Configuration
@@ -80,10 +85,20 @@ final readonly class YamlConfigurationLoader
 
     private function loadYamlFile(string $path): array
     {
+        // Check if the file exists
+        if (!file_exists($path)) {
+            throw new ConfigurationFileNotFoundException($path);
+        }
+
+        // Check if the file is readable
+        if (!is_readable($path)) {
+            throw new ConfigurationFileNotReadableException($path);
+        }
+
         try {
             $content = file_get_contents($path);
             if ($content === false) {
-                throw new \RuntimeException(\sprintf('Could not read configuration file: %s', $path));
+                throw new ConfigurationLoadException('Failed to read file contents', $path);
             }
 
             // Interpolate environment variables
@@ -92,22 +107,22 @@ final readonly class YamlConfigurationLoader
             // Parse YAML
             $data = Yaml::parse($content);
             if (!\is_array($data)) {
-                throw new \RuntimeException(\sprintf('Configuration file must contain valid YAML data: %s', $path));
+                throw new ConfigurationLoadException('Configuration file must contain valid YAML data', $path);
             }
 
             // Validate configuration
             $validationResult = $this->validator->validate($data);
             if (!$validationResult->isValid()) {
                 $errors = implode("\n", $validationResult->getErrors());
-                throw new \RuntimeException(\sprintf("Invalid configuration in %s:\n%s", $path, $errors));
+                throw new ConfigurationLoadException("Invalid configuration:\n$errors", $path);
             }
 
             return $data;
+        } catch (ConfigurationFileNotFoundException|ConfigurationFileNotReadableException|ConfigurationLoadException $e) {
+            // Re-throw configuration-specific exceptions as-is
+            throw $e;
         } catch (\Exception $e) {
-            if ($e instanceof \RuntimeException) {
-                throw $e;
-            }
-            throw new \RuntimeException(\sprintf('Failed to load configuration from %s: %s', $path, $e->getMessage()), 0, $e);
+            throw new ConfigurationLoadException('Failed to load configuration: ' . $e->getMessage(), $path, $e);
         }
     }
 

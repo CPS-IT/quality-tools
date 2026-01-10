@@ -21,7 +21,7 @@ final class PathScanningIntegrationTest extends TestCase
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('path_scanning_integration_test_');
-        $this->loader = new YamlConfigurationLoader();
+        $this->loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService());
     }
 
     protected function tearDown(): void

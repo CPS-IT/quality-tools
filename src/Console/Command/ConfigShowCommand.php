@@ -16,6 +16,8 @@ final class ConfigShowCommand extends BaseCommand
     #[\Override]
     protected function configure(): void
     {
+        parent::configure();
+
         $this
             ->setName('config:show')
             ->setDescription('Show resolved configuration')
@@ -42,21 +44,21 @@ final class ConfigShowCommand extends BaseCommand
         }
 
         try {
-            $loader = new YamlConfigurationLoader();
-            $configuration = $loader->load($projectRoot);
+            $configuration = $this->getConfiguration($input);
             $configData = $configuration->toArray();
 
             $io->title('Resolved Configuration');
 
             // Show configuration file sources if verbose
             if ($output->isVerbose()) {
+                $loader = $this->getYamlConfigurationLoader();
                 $this->showConfigurationSources($io, $loader, $projectRoot);
             }
 
-            // Output configuration in requested format
+            // Output configuration in the requested format
             switch ($format) {
                 case 'json':
-                    $output->writeln(json_encode($configData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                    $output->writeln(json_encode($configData, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                     break;
 
                 case 'yaml':

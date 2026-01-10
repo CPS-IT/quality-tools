@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,6 +17,8 @@ final class ConfigValidateCommand extends BaseCommand
     #[\Override]
     protected function configure(): void
     {
+        parent::configure();
+
         $this
             ->setName('config:validate')
             ->setDescription('Validate YAML configuration file')
@@ -28,7 +29,7 @@ final class ConfigValidateCommand extends BaseCommand
     {
         $io = new SymfonyStyle($input, $output);
         $projectRoot = $this->getProjectRoot();
-        $loader = new YamlConfigurationLoader();
+        $loader = $this->getYamlConfigurationLoader();
 
         // Check if YAML configuration exists
         $configFile = $loader->findConfigurationFile($projectRoot);

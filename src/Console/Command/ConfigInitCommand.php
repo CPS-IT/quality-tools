@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -27,6 +27,8 @@ final class ConfigInitCommand extends BaseCommand
     #[\Override]
     protected function configure(): void
     {
+        parent::configure();
+
         $this
             ->setName('config:init')
             ->setDescription('Initialize YAML configuration file')
@@ -65,8 +67,8 @@ final class ConfigInitCommand extends BaseCommand
 
         $configFile = $projectRoot . '/.quality-tools.yaml';
 
-        // Check if configuration file already exists
-        $loader = new YamlConfigurationLoader();
+        // Check if a configuration file already exists
+        $loader = $this->getYamlConfigurationLoader();
         $existingConfig = $loader->findConfigurationFile($projectRoot);
 
         if ($existingConfig !== null && !$force) {
@@ -78,11 +80,7 @@ final class ConfigInitCommand extends BaseCommand
 
         try {
             $configContent = $this->generateTemplate($template, $projectRoot);
-
-            $result = file_put_contents($configFile, $configContent);
-            if ($result === false) {
-                throw new \RuntimeException(\sprintf('Failed to write configuration file: %s', $configFile));
-            }
+            $this->writeConfigurationFile($configFile, $configContent);
 
             $io->success([
                 \sprintf('Created configuration file: %s', $configFile),
@@ -354,5 +352,34 @@ final class ConfigInitCommand extends BaseCommand
                 max_processes: 8
                 cache_enabled: true
             YAML;
+    }
+
+    /**
+     * Safely write configuration content to a file with proper validation.
+     */
+    private function writeConfigurationFile(string $configFile, string $content): void
+    {
+        $directory = \dirname($configFile);
+
+        // Check if directory exists
+        if (!is_dir($directory)) {
+            throw new ConfigurationFileWriteException('Directory does not exist', $configFile);
+        }
+
+        // Check if directory is writable
+        if (!is_writable($directory)) {
+            throw new ConfigurationFileWriteException('Directory is not writable', $configFile);
+        }
+
+        // If file exists, check if it's writable
+        if (file_exists($configFile) && !is_writable($configFile)) {
+            throw new ConfigurationFileWriteException('File exists but is not writable', $configFile);
+        }
+
+        // Attempt to write the file
+        $result = file_put_contents($configFile, $content);
+        if ($result === false) {
+            throw new ConfigurationFileWriteException('Failed to write file contents', $configFile);
+        }
     }
 }

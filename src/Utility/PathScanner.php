@@ -31,7 +31,7 @@ final class PathScanner
     }
 
     /**
-     * Generate optimized cache key for path patterns and vendor path.
+     * Generate an optimized cache key for path patterns and vendor path.
      */
     private function generateCacheKey(array $pathPatterns, string $vendorPath): string
     {

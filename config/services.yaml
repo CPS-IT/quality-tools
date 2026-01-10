@@ -1,0 +1,79 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # Core Services
+  Cpsit\QualityTools\Service\:
+    resource: '../src/Service/*'
+    public: true
+    exclude:
+      - '../src/Service/TemporaryFile.php'
+      - '../src/Service/DisposableTemporaryFile.php'
+
+  # Utilities
+  Cpsit\QualityTools\Utility\:
+    resource: '../src/Utility/*'
+    public: true
+    exclude:
+      - '../src/Utility/PathExclusionFilter.php'
+      - '../src/Utility/PathScanner.php'
+      - '../src/Utility/ProjectMetrics.php'
+
+  # Configuration Services
+  Cpsit\QualityTools\Configuration\:
+    resource: '../src/Configuration/*'
+    public: true
+    exclude:
+      - '../src/Configuration/ValidationResult.php'
+
+  # Console Commands
+  Cpsit\QualityTools\Console\Command\:
+    resource: '../src/Console/Command/*'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  # Specific Service Definitions
+  Cpsit\QualityTools\Service\SecurityService:
+    public: true
+
+  Cpsit\QualityTools\Service\TemporaryFile:
+    arguments:
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $prefix: 'qt_temp_'
+      $suffix: ''
+
+  Cpsit\QualityTools\Service\DisposableTemporaryFile:
+    arguments:
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $prefix: 'qt_temp_'
+      $suffix: ''
+
+  Cpsit\QualityTools\Utility\VendorDirectoryDetector:
+    public: true
+
+  Cpsit\QualityTools\Configuration\YamlConfigurationLoader:
+    arguments:
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationValidator:
+    public: true
+
+  Cpsit\QualityTools\Service\ProcessEnvironmentPreparer:
+    public: true
+
+  Cpsit\QualityTools\Service\CommandBuilder:
+    public: true
+
+  Cpsit\QualityTools\Service\ProcessExecutor:
+    public: true
+
+  Cpsit\QualityTools\Utility\ProjectAnalyzer:
+    public: true
+
+  Cpsit\QualityTools\Utility\MemoryCalculator:
+    public: true

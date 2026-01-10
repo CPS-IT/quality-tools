@@ -227,6 +227,7 @@ final class VendorDirectoryDetector
         if (str_starts_with($path, '/')) {
             return true;
         }
+
         // Windows absolute path
         return (bool) preg_match('/^[a-zA-Z]:[\\\\\/]/', $path);
     }
@@ -271,6 +272,7 @@ final class VendorDirectoryDetector
 
         // Check for autoload.php (essential for Composer autoloading)
         $autoloadFile = $vendorPath . '/autoload.php';
+
         return is_file($autoloadFile);
     }
 

@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
+use Cpsit\QualityTools\DependencyInjection\ContainerAwareTrait;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Service\CommandBuilder;
 use Cpsit\QualityTools\Service\ErrorFactory;
 use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
@@ -21,8 +25,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-abstract class BaseCommand extends Command
+abstract class BaseCommand extends Command implements ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     protected ?ProjectMetrics $projectMetrics = null;
     protected ?MemoryCalculator $memoryCalculator = null;
     protected ?string $cachedTargetPath = null;
@@ -92,7 +98,7 @@ abstract class BaseCommand extends Command
     private function findVendorPath(): string
     {
         $projectRoot = $this->getProjectRoot();
-        $detector = new VendorDirectoryDetector();
+        $detector = $this->getVendorDirectoryDetector();
 
         try {
             $vendorPath = $detector->detectVendorPath($projectRoot);
@@ -132,9 +138,9 @@ abstract class BaseCommand extends Command
     ): int {
         $resolvedPaths = $tool !== null ? $this->getResolvedPathsForTool($input, $tool) : null;
 
-        $environmentPreparer = new ProcessEnvironmentPreparer();
-        $commandBuilder = new CommandBuilder();
-        $processExecutor = new ProcessExecutor();
+        $environmentPreparer = $this->getProcessEnvironmentPreparer();
+        $commandBuilder = $this->getCommandBuilder();
+        $processExecutor = $this->getProcessExecutor();
 
         $environment = $environmentPreparer->prepareEnvironment($input, $memoryLimit, $tool, $resolvedPaths);
         $preparedCommand = $commandBuilder->prepareCommandWithMemoryLimit($command, $memoryLimit);
@@ -177,7 +183,7 @@ abstract class BaseCommand extends Command
     protected function getProjectMetrics(InputInterface $input): ProjectMetrics
     {
         if ($this->projectMetrics === null) {
-            $analyzer = new ProjectAnalyzer();
+            $analyzer = $this->getProjectAnalyzer();
             $this->projectMetrics = $analyzer->analyzeProject($this->getTargetPath($input));
         }
 
@@ -196,7 +202,7 @@ abstract class BaseCommand extends Command
             return $this->getProjectMetrics($input);
         }
 
-        $analyzer = new ProjectAnalyzer();
+        $analyzer = $this->getProjectAnalyzer();
         $aggregatedMetrics = null;
 
         foreach ($resolvedPaths as $path) {
@@ -438,7 +444,7 @@ abstract class BaseCommand extends Command
     {
         if ($this->configuration === null) {
             $projectRoot = $this->getProjectRoot();
-            $loader = new YamlConfigurationLoader();
+            $loader = $this->getYamlConfigurationLoader();
             $this->configuration = $loader->load($projectRoot);
 
             // Override with a custom config path if provided
@@ -450,5 +456,66 @@ abstract class BaseCommand extends Command
         }
 
         return $this->configuration;
+    }
+
+    /**
+     * Service getters for dependency injection with fallback for testing.
+     */
+    private function getVendorDirectoryDetector(): VendorDirectoryDetector
+    {
+        if ($this->hasService(VendorDirectoryDetector::class)) {
+            return $this->getService(VendorDirectoryDetector::class);
+        }
+
+        return new VendorDirectoryDetector();
+    }
+
+    private function getProcessEnvironmentPreparer(): ProcessEnvironmentPreparer
+    {
+        if ($this->hasService(ProcessEnvironmentPreparer::class)) {
+            return $this->getService(ProcessEnvironmentPreparer::class);
+        }
+
+        return new ProcessEnvironmentPreparer();
+    }
+
+    private function getCommandBuilder(): CommandBuilder
+    {
+        if ($this->hasService(CommandBuilder::class)) {
+            return $this->getService(CommandBuilder::class);
+        }
+
+        return new CommandBuilder();
+    }
+
+    private function getProcessExecutor(): ProcessExecutor
+    {
+        if ($this->hasService(ProcessExecutor::class)) {
+            return $this->getService(ProcessExecutor::class);
+        }
+
+        return new ProcessExecutor();
+    }
+
+    private function getProjectAnalyzer(): ProjectAnalyzer
+    {
+        if ($this->hasService(ProjectAnalyzer::class)) {
+            return $this->getService(ProjectAnalyzer::class);
+        }
+
+        return new ProjectAnalyzer();
+    }
+
+    protected function getYamlConfigurationLoader(): YamlConfigurationLoader
+    {
+        if ($this->hasService(YamlConfigurationLoader::class)) {
+            return $this->getService(YamlConfigurationLoader::class);
+        }
+
+        // Fallback for tests and scenarios without DI container
+        return new YamlConfigurationLoader(
+            new ConfigurationValidator(),
+            new SecurityService(),
+        );
     }
 }

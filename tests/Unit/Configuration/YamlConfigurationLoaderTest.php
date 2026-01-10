@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
+use Cpsit\QualityTools\Exception\ConfigurationLoadException;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +23,10 @@ final class YamlConfigurationLoaderTest extends TestCase
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('yaml_loader_test_');
-        $this->loader = new YamlConfigurationLoader();
+        $this->loader = new YamlConfigurationLoader(
+            new ConfigurationValidator(),
+            new SecurityService(),
+        );
     }
 
     protected function tearDown(): void
@@ -100,7 +107,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         // Test with environment variable set
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
+            fn (): Configuration => $this->loader->load($this->tempDir),
         );
 
         // Project config should override global, but global should provide defaults
@@ -125,7 +132,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         // Test without HOME environment variable
         $config = TestHelper::withEnvironment(
             ['HOME' => ''],
-            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
+            fn (): Configuration => $this->loader->load($this->tempDir),
         );
 
         self::assertSame('no-home', $config->getProjectName());
@@ -153,7 +160,7 @@ final class YamlConfigurationLoaderTest extends TestCase
             'PHP_VERSION' => '8.4',
             // PHPSTAN_MEMORY not set, should use default
             // SCAN_PATH not set, should use default
-        ], fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir));
+        ], fn (): Configuration => $this->loader->load($this->tempDir));
 
         self::assertSame('env-test-project', $config->getProjectName());
         self::assertSame('8.4', $config->getProjectPhpVersion());
@@ -205,7 +212,7 @@ final class YamlConfigurationLoaderTest extends TestCase
             YAML;
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $invalidYamlContent);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationLoadException::class);
         $this->expectExceptionMessageMatches('/Invalid configuration/');
 
         $this->loader->load($this->tempDir);
@@ -216,7 +223,7 @@ final class YamlConfigurationLoaderTest extends TestCase
         $yamlContent = 'just a string, not an object';
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $yamlContent);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationLoadException::class);
         $this->expectExceptionMessageMatches('/Configuration file must contain valid YAML data/');
 
         $this->loader->load($this->tempDir);
@@ -230,8 +237,8 @@ final class YamlConfigurationLoaderTest extends TestCase
         // Make file unreadable
         chmod($configFile, 0o000);
 
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Could not read configuration file/');
+        $this->expectException(ConfigurationFileNotReadableException::class);
+        $this->expectExceptionMessageMatches('/File exists but is not readable/');
 
         try {
             $this->loader->load($this->tempDir);
@@ -319,7 +326,7 @@ final class YamlConfigurationLoaderTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir),
+            fn (): Configuration => $this->loader->load($this->tempDir),
         );
 
         // Check merged values
@@ -371,7 +378,7 @@ final class YamlConfigurationLoaderTest extends TestCase
             'MEMORY_LIMIT' => '2G',
             'SECONDARY_SCAN_PATH' => 'custom/',
             // PHP_VERSION, PHPSTAN_LEVEL, PRIMARY_SCAN_PATH not set - should use defaults
-        ], fn (): \Cpsit\QualityTools\Configuration\Configuration => $this->loader->load($this->tempDir));
+        ], fn (): Configuration => $this->loader->load($this->tempDir));
 
         self::assertSame('env-override', $config->getProjectName());
         self::assertSame('8.3', $config->getProjectPhpVersion()); // default
@@ -387,7 +394,7 @@ final class YamlConfigurationLoaderTest extends TestCase
     {
         file_put_contents($this->tempDir . '/.quality-tools.yaml', '');
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationLoadException::class);
         $this->expectExceptionMessageMatches('/Configuration file must contain valid YAML data/');
 
         $this->loader->load($this->tempDir);
@@ -397,7 +404,7 @@ final class YamlConfigurationLoaderTest extends TestCase
     {
         file_put_contents($this->tempDir . '/.quality-tools.yaml', '~'); // YAML null
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationLoadException::class);
         $this->expectExceptionMessageMatches('/Configuration file must contain valid YAML data/');
 
         $this->loader->load($this->tempDir);
