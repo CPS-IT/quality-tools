@@ -15,6 +15,11 @@ use Symfony\Component\Yaml\Yaml;
 
 final class ConfigShowCommand extends BaseCommand
 {
+    public function __construct(?ConfigurationLoaderInterface $configurationLoader = null)
+    {
+        parent::__construct('config:show', $configurationLoader);
+    }
+
     #[\Override]
     protected function configure(): void
     {
@@ -52,8 +57,8 @@ final class ConfigShowCommand extends BaseCommand
 
             // Use hierarchical configuration loader specifically for config:show
             $loader = $this->getConfigurationLoaderInHierarchicalMode();
-            $enhancedConfiguration = $loader->load($projectRoot);
-            $configData = $enhancedConfiguration->toArray();
+            $configuration = $loader->load($projectRoot);
+            $configData = $configuration->toArray();
 
             $io->title('Resolved Configuration');
 
