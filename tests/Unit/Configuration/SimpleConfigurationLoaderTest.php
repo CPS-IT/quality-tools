@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
-use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;

@@ -6,7 +6,6 @@ namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -203,12 +202,12 @@ final class ConfigShowCommand extends BaseCommand
     {
         if ($this->hasService(ConfigurationLoaderInterface::class)) {
             $loader = $this->getService(ConfigurationLoaderInterface::class);
-            
+
             // If it's a wrapper, switch to hierarchical mode
             if ($loader instanceof ConfigurationLoaderWrapper) {
                 return $loader->withMode('hierarchical');
             }
-            
+
             return $loader;
         }
 
@@ -217,7 +216,7 @@ final class ConfigShowCommand extends BaseCommand
         return new ConfigurationLoaderWrapper(
             $this->getYamlConfigurationLoader(),
             $this->getHierarchicalConfigurationLoader(),
-            'hierarchical'
+            'hierarchical',
         );
     }
 }

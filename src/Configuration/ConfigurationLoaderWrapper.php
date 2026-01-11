@@ -6,7 +6,7 @@ namespace Cpsit\QualityTools\Configuration;
 
 /**
  * Wrapper class that unifies SimpleConfigurationLoader and HierarchicalConfigurationLoader.
- * 
+ *
  * This wrapper implements the complete ConfigurationLoaderInterface by delegating
  * to the appropriate loader based on the configured mode.
  * Part of the evolutionary refactoring strategy in Issue 019.
@@ -16,20 +16,20 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
     public function __construct(
         private SimpleConfigurationLoader $simpleLoader,
         private HierarchicalConfigurationLoader $hierarchicalLoader,
-        private string $mode = 'simple'
+        private string $mode = 'simple',
     ) {
     }
 
     public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => new ConfigurationWrapper(
                 $this->simpleLoader->load($projectRoot),
-                'simple'
+                'simple',
             ),
             'hierarchical' => new ConfigurationWrapper(
                 $this->hierarchicalLoader->load($projectRoot, $commandLineOverrides),
-                'enhanced'
+                'enhanced',
             ),
             default => throw new \InvalidArgumentException("Unknown loader mode: {$this->mode}")
         };
@@ -37,14 +37,14 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): ConfigurationInterface
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => new ConfigurationWrapper(
                 $this->simpleLoader->loadForTool($projectRoot, $tool, $commandLineOverrides),
-                'simple'
+                'simple',
             ),
             'hierarchical' => new ConfigurationWrapper(
                 $this->hierarchicalLoader->loadForTool($projectRoot, $tool, $commandLineOverrides),
-                'enhanced'
+                'enhanced',
             ),
             default => throw new \InvalidArgumentException("Unknown loader mode: {$this->mode}")
         };
@@ -52,7 +52,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function supportsConfiguration(string $projectRoot): bool
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => $this->simpleLoader->supportsConfiguration($projectRoot),
             'hierarchical' => $this->hierarchicalLoader->supportsConfiguration($projectRoot),
             default => false
@@ -61,7 +61,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function findConfigurationFile(string $projectRoot): ?string
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => $this->simpleLoader->findConfigurationFile($projectRoot),
             'hierarchical' => $this->hierarchicalLoader->findConfigurationFile($projectRoot),
             default => null
@@ -70,7 +70,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function validateConfiguration(array $configuration): bool
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => $this->simpleLoader->validateConfiguration($configuration),
             'hierarchical' => $this->hierarchicalLoader->validateConfiguration($configuration),
             default => false
@@ -79,7 +79,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function getValidationErrors(): array
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => $this->simpleLoader->getValidationErrors(),
             'hierarchical' => $this->hierarchicalLoader->getValidationErrors(),
             default => []
@@ -88,7 +88,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function hasHierarchicalConfiguration(string $projectRoot): bool
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => false, // Simple loader doesn't support hierarchical
             'hierarchical' => $this->hierarchicalLoader->hasHierarchicalConfiguration($projectRoot),
             default => false
@@ -97,7 +97,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function getConfigurationErrors(string $projectRoot): array
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => [], // Simple loader doesn't track errors separately
             'hierarchical' => $this->hierarchicalLoader->getConfigurationErrors($projectRoot),
             default => []
@@ -106,7 +106,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function getConfigurationDebugInfo(string $projectRoot): array
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => [], // Simple loader doesn't provide debug info
             'hierarchical' => $this->hierarchicalLoader->getConfigurationDebugInfo($projectRoot),
             default => []
@@ -115,7 +115,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function getConfigurationSources(string $projectRoot): array
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => [], // Simple loader doesn't track sources separately
             'hierarchical' => $this->hierarchicalLoader->getConfigurationSources($projectRoot),
             default => []
@@ -124,7 +124,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function previewMergedConfiguration(string $projectRoot, array $commandLineOverrides = []): array
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => $this->simpleLoader->load($projectRoot)->toArray(), // Simple preview
             'hierarchical' => $this->hierarchicalLoader->previewMergedConfiguration($projectRoot, $commandLineOverrides),
             default => []
@@ -133,7 +133,7 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
 
     public function createSimpleConfiguration(string $projectRoot): ConfigurationInterface
     {
-        return match($this->mode) {
+        return match ($this->mode) {
             'simple' => new ConfigurationWrapper($this->simpleLoader->load($projectRoot), 'simple'),
             'hierarchical' => $this->hierarchicalLoader->createSimpleConfiguration($projectRoot),
             default => throw new \InvalidArgumentException("Unknown loader mode: {$this->mode}")

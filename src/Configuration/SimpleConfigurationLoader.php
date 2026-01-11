@@ -174,7 +174,7 @@ final readonly class SimpleConfigurationLoader implements ConfigurationLoaderInt
     public function getConfigurationSources(string $projectRoot): array
     {
         $configFile = $this->findConfigurationFile($projectRoot);
-        
+
         return $configFile ? [
             [
                 'source' => 'project_root',
@@ -184,19 +184,19 @@ final readonly class SimpleConfigurationLoader implements ConfigurationLoaderInt
                 'precedence' => 0,
                 'exists' => file_exists($configFile),
                 'readable' => is_readable($configFile),
-            ]
+            ],
         ] : [];
     }
 
     public function previewMergedConfiguration(string $projectRoot, array $commandLineOverrides = []): array
     {
         $configData = $this->loadConfigurationHierarchy($projectRoot);
-        
+
         // Apply command line overrides if any
         if (!empty($commandLineOverrides)) {
             $configData = array_merge_recursive($configData, $commandLineOverrides);
         }
-        
+
         return $configData;
     }
 

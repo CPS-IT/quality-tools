@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
-use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\FilesystemTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 
@@ -47,10 +47,10 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
             'SimpleConfigurationLoader' => [$simpleLoader],
             'HierarchicalConfigurationLoader' => [$hierarchicalLoader],
             'ConfigurationLoaderWrapper (simple mode)' => [
-                new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple')
+                new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple'),
             ],
             'ConfigurationLoaderWrapper (hierarchical mode)' => [
-                new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'hierarchical')
+                new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'hierarchical'),
             ],
         ];
     }
@@ -77,7 +77,7 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         // Test findConfigurationFile
         $configFile = $loader->findConfigurationFile($this->projectRoot);
-        self::assertTrue(is_string($configFile) || $configFile === null);
+        self::assertTrue(\is_string($configFile) || $configFile === null);
 
         // Test supportsConfiguration
         $supportsConfig = $loader->supportsConfiguration($this->projectRoot);
@@ -147,7 +147,7 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     }
 
     /**
-     * Test all implementations handle empty project roots consistently
+     * Test all implementations handle empty project roots consistently.
      */
     public function testEmptyProjectRootHandling(): void
     {
@@ -157,21 +157,28 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         foreach ($implementations as $name => [$loader]) {
             // Should not throw exceptions
             $config = $loader->load($emptyRoot);
-            self::assertInstanceOf(ConfigurationInterface::class, $config, 
-                "load() must return ConfigurationInterface in $name");
+            self::assertInstanceOf(
+                ConfigurationInterface::class,
+                $config,
+                "load() must return ConfigurationInterface in $name",
+            );
 
             $supportsConfig = $loader->supportsConfiguration($emptyRoot);
-            self::assertIsBool($supportsConfig, 
-                "supportsConfiguration() must return bool in $name");
+            self::assertIsBool(
+                $supportsConfig,
+                "supportsConfiguration() must return bool in $name",
+            );
 
             $configFile = $loader->findConfigurationFile($emptyRoot);
-            self::assertTrue(is_string($configFile) || $configFile === null, 
-                "findConfigurationFile() must return string|null in $name");
+            self::assertTrue(
+                \is_string($configFile) || $configFile === null,
+                "findConfigurationFile() must return string|null in $name",
+            );
         }
     }
 
     /**
-     * Test consistency of configuration sources across implementations
+     * Test consistency of configuration sources across implementations.
      */
     public function testConfigurationSourcesConsistency(): void
     {
@@ -189,7 +196,7 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     }
 
     /**
-     * Test error handling consistency across implementations
+     * Test error handling consistency across implementations.
      */
     public function testErrorHandlingConsistency(): void
     {
@@ -207,7 +214,7 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     }
 
     /**
-     * Test that all loaders produce valid configuration data structure
+     * Test that all loaders produce valid configuration data structure.
      */
     public function testValidConfigurationDataStructure(): void
     {
@@ -232,22 +239,28 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         foreach ($implementations as $name => [$loader]) {
             $config = $loader->load($this->projectRoot);
             $data = $config->toArray();
-            
+
             self::assertIsArray($data, "Configuration data must be array in $name");
-            self::assertArrayHasKey('quality-tools', $data, 
-                "Configuration must have 'quality-tools' key in $name");
-            
+            self::assertArrayHasKey(
+                'quality-tools',
+                $data,
+                "Configuration must have 'quality-tools' key in $name",
+            );
+
             $qtConfig = $data['quality-tools'];
             self::assertIsArray($qtConfig, "quality-tools section must be array in $name");
-            
+
             // Verify project name is loaded correctly
-            self::assertSame('contract-test', $config->getProjectName(), 
-                "Project name should be loaded correctly in $name");
+            self::assertSame(
+                'contract-test',
+                $config->getProjectName(),
+                "Project name should be loaded correctly in $name",
+            );
         }
     }
 
     /**
-     * Test that wrapper implementations can switch modes correctly
+     * Test that wrapper implementations can switch modes correctly.
      */
     public function testWrapperModeHandling(): void
     {
@@ -262,17 +275,17 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         $simpleWrapper = new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple');
         $config = $simpleWrapper->load($this->projectRoot);
         self::assertInstanceOf(ConfigurationInterface::class, $config);
-        
+
         // Test hierarchical mode
         $hierarchicalWrapper = new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'hierarchical');
         $config = $hierarchicalWrapper->load($this->projectRoot);
         self::assertInstanceOf(ConfigurationInterface::class, $config);
-        
+
         // Test mode switching
         $switchedWrapper = $simpleWrapper->withMode('hierarchical');
         self::assertInstanceOf(ConfigurationLoaderWrapper::class, $switchedWrapper);
         self::assertNotSame($simpleWrapper, $switchedWrapper);
-        
+
         $config = $switchedWrapper->load($this->projectRoot);
         self::assertInstanceOf(ConfigurationInterface::class, $config);
     }

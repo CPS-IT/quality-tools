@@ -278,20 +278,20 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
     {
         $hierarchy = new ConfigurationHierarchy($projectRoot);
         $existingFiles = $hierarchy->getExistingConfigurationFiles();
-        
+
         // Return the first project-level configuration file found
         if (isset($existingFiles['project_root'])) {
             foreach ($existingFiles['project_root'] as $fileInfo) {
                 return $fileInfo['path'];
             }
         }
-        
+
         return null;
     }
 
     public function supportsConfiguration(string $projectRoot): bool
     {
-        return $this->hasHierarchicalConfiguration($projectRoot) || 
-               $this->findConfigurationFile($projectRoot) !== null;
+        return $this->hasHierarchicalConfiguration($projectRoot)
+               || $this->findConfigurationFile($projectRoot) !== null;
     }
 }

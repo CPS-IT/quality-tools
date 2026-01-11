@@ -1,6 +1,6 @@
 # Configuration Classes Dependency Diagram
 
-Date: 2026-01-11  
+Date: 2026-01-11
 Purpose: Visual representation of configuration class dependencies and program flow
 
 ## High-Level Architecture
@@ -95,7 +95,7 @@ YamlConfigurationLoader
 ```
 HierarchicalConfigurationLoader
 ├── ConfigurationValidator (constructor injection)
-├── SecurityService (constructor injection)  
+├── SecurityService (constructor injection)
 ├── FilesystemService (constructor injection)
 ├── ConfigurationHierarchy (runtime creation)
 │   ├── Project root analysis
@@ -214,11 +214,11 @@ quality-tools:
     name: "project-name"     ← EnhancedConfiguration::getProjectName()
     php_version: "8.3"       ← Both classes duplicate this logic
     typo3_version: "13.4"    ← Both classes duplicate this logic
-  
+
   paths:                      ← Configuration::getPathsConfig()
     scan: [...]              ← Configuration::getScanPaths()
     exclude: [...]           ← Configuration::getExcludePaths()
-  
+
   tools:                      ← Configuration::getToolsConfig()
     rector:                  ← Configuration::getToolConfig('rector')
       enabled: true          ← Configuration::isToolEnabled('rector')

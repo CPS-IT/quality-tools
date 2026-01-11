@@ -452,7 +452,7 @@ class SimpleConfiguration implements ConfigurationInterface
     {
         return [
             'type' => 'simple',
-            'data_size' => count($this->data),
+            'data_size' => \count($this->data),
             'project_root' => $this->projectRoot,
             'vendor_path' => $this->getVendorPath(),
         ];

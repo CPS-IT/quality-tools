@@ -456,6 +456,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $outputConfig = $qualityTools['output'] ?? [];
+
         return $outputConfig['verbosity'] ?? 'normal';
     }
 
@@ -463,6 +464,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $outputConfig = $qualityTools['output'] ?? [];
+
         return $outputConfig['colors'] ?? true;
     }
 
@@ -470,6 +472,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $outputConfig = $qualityTools['output'] ?? [];
+
         return $outputConfig['progress'] ?? true;
     }
 
@@ -477,6 +480,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $performanceConfig = $qualityTools['performance'] ?? [];
+
         return $performanceConfig['parallel'] ?? true;
     }
 
@@ -484,6 +488,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $performanceConfig = $qualityTools['performance'] ?? [];
+
         return $performanceConfig['max_processes'] ?? 4;
     }
 
@@ -491,6 +496,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     {
         $qualityTools = $this->data['quality-tools'] ?? [];
         $performanceConfig = $qualityTools['performance'] ?? [];
+
         return $performanceConfig['cache_enabled'] ?? true;
     }
 
@@ -504,6 +510,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     public function getVendorBinPath(): ?string
     {
         $vendorPath = $this->getVendorPath();
+
         return $vendorPath !== null ? $vendorPath . '/bin' : null;
     }
 
@@ -535,7 +542,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
     public function merge(ConfigurationInterface $other): ConfigurationInterface
     {
         $mergedData = array_merge_recursive($this->data, $other->toArray());
-        
+
         return new self(
             data: $mergedData,
             sourceMap: $this->sourceMap,
@@ -544,7 +551,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
             hierarchy: $this->hierarchy,
             discovery: $this->discovery,
             projectRoot: $this->actualProjectRoot ?? null,
-            validator: $this->validator
+            validator: $this->validator,
         );
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Utility;
 
-use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationBuilder;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;

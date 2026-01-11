@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
-use Cpsit\QualityTools\Configuration\SimpleConfiguration;
-use Cpsit\QualityTools\Configuration\EnhancedConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
+use Cpsit\QualityTools\Configuration\EnhancedConfiguration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -59,10 +59,10 @@ final class ConfigurationInterfaceContractTest extends TestCase
             'SimpleConfiguration' => [new SimpleConfiguration($testData)],
             'EnhancedConfiguration' => [new EnhancedConfiguration($testData)],
             'ConfigurationWrapper with SimpleConfiguration' => [
-                new ConfigurationWrapper(new SimpleConfiguration($testData), 'simple')
+                new ConfigurationWrapper(new SimpleConfiguration($testData), 'simple'),
             ],
             'ConfigurationWrapper with EnhancedConfiguration' => [
-                new ConfigurationWrapper(new EnhancedConfiguration($testData), 'enhanced')
+                new ConfigurationWrapper(new EnhancedConfiguration($testData), 'enhanced'),
             ],
         ];
     }
@@ -99,7 +99,7 @@ final class ConfigurationInterfaceContractTest extends TestCase
     {
         self::assertSame(['src/', 'tests/'], $configuration->getScanPaths());
         self::assertSame(['build/', 'var/'], $configuration->getExcludePaths());
-        
+
         // getToolPaths should return array (behavior may vary by implementation)
         $toolPaths = $configuration->getToolPaths('rector');
         self::assertIsArray($toolPaths);
@@ -112,7 +112,7 @@ final class ConfigurationInterfaceContractTest extends TestCase
     {
         self::assertTrue($configuration->isToolEnabled('rector'));
         self::assertFalse($configuration->isToolEnabled('phpstan'));
-        
+
         $rectorConfig = $configuration->getToolConfig('rector');
         self::assertIsArray($rectorConfig);
         self::assertSame('typo3-13', $rectorConfig['level']);
@@ -146,15 +146,15 @@ final class ConfigurationInterfaceContractTest extends TestCase
         // These may return null for uninitialized configurations
         $vendorPath = $configuration->getVendorPath();
         $vendorBinPath = $configuration->getVendorBinPath();
-        
+
         if ($vendorPath !== null) {
             self::assertIsString($vendorPath);
         }
-        
+
         if ($vendorBinPath !== null) {
             self::assertIsString($vendorBinPath);
         }
-        
+
         self::assertIsBool($configuration->hasVendorDirectory());
         self::assertIsArray($configuration->getVendorDetectionDebugInfo());
     }
@@ -166,7 +166,7 @@ final class ConfigurationInterfaceContractTest extends TestCase
     {
         $resolvedPaths = $configuration->getResolvedPathsForTool('rector');
         self::assertIsArray($resolvedPaths);
-        
+
         $debugInfo = $configuration->getPathScanningDebugInfo('rector');
         self::assertIsArray($debugInfo);
     }
@@ -181,33 +181,33 @@ final class ConfigurationInterfaceContractTest extends TestCase
         if ($source !== null) {
             self::assertIsString($source);
         }
-        
+
         self::assertIsArray($configuration->getConfigurationSources());
         self::assertIsArray($configuration->getConfigurationConflicts());
         self::assertIsBool($configuration->hasConfigurationConflicts());
         self::assertIsArray($configuration->getConflictsForKey('project.name'));
         self::assertIsArray($configuration->getMergeSummary());
-        
+
         self::assertIsBool($configuration->usesCustomConfigFile('rector'));
-        
+
         $customConfigPath = $configuration->getCustomConfigFilePath('rector');
         if ($customConfigPath !== null) {
             self::assertIsString($customConfigPath);
         }
-        
+
         self::assertIsArray($configuration->getConfigurationWithSources());
         self::assertIsArray($configuration->getToolConfigurationResolved('rector'));
-        
+
         $hierarchyInfo = $configuration->getHierarchyInfo();
         if ($hierarchyInfo !== null) {
             self::assertIsArray($hierarchyInfo);
         }
-        
+
         $discoveryInfo = $configuration->getDiscoveryInfo();
         if ($discoveryInfo !== null) {
             self::assertIsArray($discoveryInfo);
         }
-        
+
         self::assertIsBool($configuration->isHierarchicalConfiguration());
         self::assertIsArray($configuration->getToolsWithCustomConfigs());
         self::assertIsArray($configuration->getComprehensiveDebugInfo());
@@ -233,42 +233,50 @@ final class ConfigurationInterfaceContractTest extends TestCase
                 ],
             ],
         ];
-        
+
         $other = new SimpleConfiguration($otherData);
         $merged = $configuration->merge($other);
-        
+
         self::assertInstanceOf(ConfigurationInterface::class, $merged);
         self::assertNotSame($configuration, $merged);
-        
+
         // Verify merge behavior
         $mergedData = $merged->toArray();
         self::assertArrayHasKey('quality-tools', $mergedData);
     }
 
     /**
-     * Test all implementations return consistent types for optional values
+     * Test all implementations return consistent types for optional values.
      */
     public function testOptionalValueConsistency(): void
     {
         $implementations = self::configurationImplementationsProvider();
-        
+
         foreach ($implementations as $name => [$config]) {
             // Test consistent null/string returns
             $projectName = $config->getProjectName();
-            self::assertTrue(is_string($projectName) || $projectName === null, 
-                "getProjectName() must return string|null in $name");
-            
+            self::assertTrue(
+                \is_string($projectName) || $projectName === null,
+                "getProjectName() must return string|null in $name",
+            );
+
             $vendorPath = $config->getVendorPath();
-            self::assertTrue(is_string($vendorPath) || $vendorPath === null, 
-                "getVendorPath() must return string|null in $name");
-            
+            self::assertTrue(
+                \is_string($vendorPath) || $vendorPath === null,
+                "getVendorPath() must return string|null in $name",
+            );
+
             $vendorBinPath = $config->getVendorBinPath();
-            self::assertTrue(is_string($vendorBinPath) || $vendorBinPath === null, 
-                "getVendorBinPath() must return string|null in $name");
-            
+            self::assertTrue(
+                \is_string($vendorBinPath) || $vendorBinPath === null,
+                "getVendorBinPath() must return string|null in $name",
+            );
+
             $projectRoot = $config->getProjectRoot();
-            self::assertTrue(is_string($projectRoot) || $projectRoot === null, 
-                "getProjectRoot() must return string|null in $name");
+            self::assertTrue(
+                \is_string($projectRoot) || $projectRoot === null,
+                "getProjectRoot() must return string|null in $name",
+            );
         }
     }
 }

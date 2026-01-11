@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
-use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
@@ -30,14 +29,14 @@ final class ConfigurationMergingTest extends TestCase
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_merging_test_');
-        
+
         $validator = new ConfigurationValidator();
         $securityService = new \Cpsit\QualityTools\Service\SecurityService();
         $filesystemService = new FilesystemService();
-        
+
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);
         $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService);
-        
+
         // Test both simple and hierarchical modes via wrapper
         $this->loaders = [
             'simple' => new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple'),
@@ -155,7 +154,7 @@ final class ConfigurationMergingTest extends TestCase
         $rectorConfig = $config->getToolConfig('rector');
         self::assertTrue($rectorConfig['enabled'] ?? true); // from global or default
         self::assertSame('typo3-13', $rectorConfig['level']); // project override
-        
+
         $phpStanConfig = $config->getToolConfig('phpstan');
         self::assertTrue($phpStanConfig['enabled'] ?? true); // from global or default
         self::assertSame(8, $phpStanConfig['level']); // project override
@@ -609,15 +608,15 @@ final class ConfigurationMergingTest extends TestCase
         // Basic project configuration should be equivalent
         self::assertSame($simpleConfig->getProjectName(), $hierarchicalConfig->getProjectName());
         self::assertSame($simpleConfig->getProjectPhpVersion(), $hierarchicalConfig->getProjectPhpVersion());
-        
+
         // Tool configuration should be equivalent
         self::assertSame($simpleConfig->isToolEnabled('rector'), $hierarchicalConfig->isToolEnabled('rector'));
-        
+
         // Path configuration should be equivalent
         self::assertSame($simpleConfig->getScanPaths(), $hierarchicalConfig->getScanPaths());
-        
+
         // Hierarchical mode should provide additional metadata capabilities
-        if ($hierarchicalConfig instanceof \Cpsit\QualityTools\Configuration\ConfigurationInterface) {
+        if ($hierarchicalConfig instanceof ConfigurationInterface) {
             self::assertIsBool($hierarchicalConfig->isHierarchicalConfiguration());
             self::assertIsArray($hierarchicalConfig->getConfigurationSources());
         }

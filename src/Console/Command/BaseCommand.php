@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
@@ -39,12 +38,10 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected ?string $cachedTargetPath = null;
     protected ?bool $cachedNoOptimization = null;
     protected ?ConfigurationInterface $configuration = null;
-    protected ?ConfigurationLoaderInterface $configurationLoader = null;
 
-    public function __construct(?string $name = null, ?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(?string $name = null, protected ?ConfigurationLoaderInterface $configurationLoader = null)
     {
         parent::__construct($name);
-        $this->configurationLoader = $configurationLoader;
     }
 
     protected function configure(): void
@@ -473,7 +470,6 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     /**
      * Service getters for dependency injection with fallback for testing.
      */
-
     protected function getConfigurationLoader(): ConfigurationLoaderInterface
     {
         // Use constructor-injected dependency first
@@ -491,9 +487,10 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new ConfigurationLoaderWrapper(
             $this->getYamlConfigurationLoader(),
             $this->getHierarchicalConfigurationLoader(),
-            'simple'
+            'simple',
         );
     }
+
     private function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
         if ($this->hasService(VendorDirectoryDetector::class)) {

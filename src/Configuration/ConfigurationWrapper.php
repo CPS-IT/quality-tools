@@ -6,22 +6,15 @@ namespace Cpsit\QualityTools\Configuration;
 
 /**
  * Wrapper class that unifies SimpleConfiguration and EnhancedConfiguration.
- * 
+ *
  * This wrapper implements the complete ConfigurationInterface by delegating
  * to the wrapped instance and handling missing methods gracefully.
  * Part of the evolutionary refactoring strategy in Issue 019.
  */
-final class ConfigurationWrapper implements ConfigurationInterface
+final readonly class ConfigurationWrapper implements ConfigurationInterface
 {
-    private SimpleConfiguration|EnhancedConfiguration $wrapped;
-    private string $variant;
-
-    public function __construct(
-        SimpleConfiguration|EnhancedConfiguration $configuration,
-        string $variant = 'simple'
-    ) {
-        $this->wrapped = $configuration;
-        $this->variant = $variant;
+    public function __construct(private SimpleConfiguration|EnhancedConfiguration $wrapped, private string $variant = 'simple')
+    {
     }
 
     // Core data access methods (available in both)
@@ -177,7 +170,7 @@ final class ConfigurationWrapper implements ConfigurationInterface
     // Enhanced configuration methods (only available in EnhancedConfiguration)
     public function getConfigurationSource(string $keyPath): ?string
     {
-        return $this->wrapped instanceof EnhancedConfiguration 
+        return $this->wrapped instanceof EnhancedConfiguration
             ? $this->wrapped->getConfigurationSource($keyPath)
             : null;
     }
@@ -198,9 +191,7 @@ final class ConfigurationWrapper implements ConfigurationInterface
 
     public function hasConfigurationConflicts(): bool
     {
-        return $this->wrapped instanceof EnhancedConfiguration
-            ? $this->wrapped->hasConfigurationConflicts()
-            : false;
+        return $this->wrapped instanceof EnhancedConfiguration && $this->wrapped->hasConfigurationConflicts();
     }
 
     public function getConflictsForKey(string $keyPath): array
@@ -219,9 +210,7 @@ final class ConfigurationWrapper implements ConfigurationInterface
 
     public function usesCustomConfigFile(string $tool): bool
     {
-        return $this->wrapped instanceof EnhancedConfiguration
-            ? $this->wrapped->usesCustomConfigFile($tool)
-            : false;
+        return $this->wrapped instanceof EnhancedConfiguration && $this->wrapped->usesCustomConfigFile($tool);
     }
 
     public function getCustomConfigFilePath(string $tool): ?string
@@ -261,9 +250,7 @@ final class ConfigurationWrapper implements ConfigurationInterface
 
     public function isHierarchicalConfiguration(): bool
     {
-        return $this->wrapped instanceof EnhancedConfiguration
-            ? $this->wrapped->isHierarchicalConfiguration()
-            : false;
+        return $this->wrapped instanceof EnhancedConfiguration && $this->wrapped->isHierarchicalConfiguration();
     }
 
     public function getToolsWithCustomConfigs(): array
@@ -289,9 +276,7 @@ final class ConfigurationWrapper implements ConfigurationInterface
 
     public function wasValueOverridden(string $keyPath): bool
     {
-        return $this->wrapped instanceof EnhancedConfiguration
-            ? $this->wrapped->wasValueOverridden($keyPath)
-            : false;
+        return $this->wrapped instanceof EnhancedConfiguration && $this->wrapped->wasValueOverridden($keyPath);
     }
 
     public function getConfigurationChain(string $keyPath): array
@@ -300,7 +285,6 @@ final class ConfigurationWrapper implements ConfigurationInterface
             ? $this->wrapped->getConfigurationChain($keyPath)
             : [];
     }
-
 
     // Path resolution methods (only available in SimpleConfiguration)
     public function getResolvedPathsForTool(string $tool): array
@@ -314,8 +298,10 @@ final class ConfigurationWrapper implements ConfigurationInterface
     {
         if ($this->wrapped instanceof SimpleConfiguration) {
             $paths = $this->wrapped->getResolvedPathsForTool($tool);
+
             return $paths[0] ?? '';
         }
+
         return '';
     }
 
