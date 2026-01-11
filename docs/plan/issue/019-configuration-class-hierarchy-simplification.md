@@ -151,9 +151,11 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Eliminate duplication between SimpleConfiguration and EnhancedConfiguration
 
 #### Step 4.2: Move Logic from Wrapper to Services
-- [ ] Replace duplicated methods in ConfigurationWrapper with service calls
-- [ ] Inject services via constructor or create factory
-- [ ] Maintain backward compatibility during transition
+- [x] Replace duplicated methods in ConfigurationWrapper with service calls
+- [x] Inject services via constructor via dependency injection
+- [x] Maintain backward compatibility during transition
+- [x] Add comprehensive backward compatibility tests (7 new tests)
+- [x] Update service container configuration for service injection
 
 #### Step 4.3: Add Missing Capabilities
 - [ ] Add path resolution to enhanced variant through PathResolutionService
