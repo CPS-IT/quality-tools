@@ -80,10 +80,13 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Commands working correctly with wrapper-based DI
 
 #### Step 2.2: Update BaseCommand
-- [ ] Change constructor to accept `ConfigurationLoaderInterface`
-- [ ] Update `getConfiguration()` method to return `ConfigurationInterface`
-- [ ] Verify all existing functionality works unchanged
-- [ ] Test path resolution methods work correctly
+- [x] Change constructor to accept `ConfigurationLoaderInterface`
+- [x] Update `getConfiguration()` method to return `ConfigurationInterface` (already done)
+- [x] Added constructor injection with backward compatibility
+- [x] Updated `getConfigurationLoader()` to use injected dependency first
+- [x] Verify all existing functionality works unchanged
+- [x] Test path resolution methods work correctly
+- [x] All 706 tests passing (597 unit + 109 integration)
 
 #### Step 2.3: Update ConfigShowCommand  
 - [ ] Change constructor to accept `ConfigurationLoaderInterface`

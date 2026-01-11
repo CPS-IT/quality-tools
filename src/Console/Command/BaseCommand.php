@@ -39,6 +39,13 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected ?string $cachedTargetPath = null;
     protected ?bool $cachedNoOptimization = null;
     protected ?ConfigurationInterface $configuration = null;
+    protected ?ConfigurationLoaderInterface $configurationLoader = null;
+
+    public function __construct(?string $name = null, ?ConfigurationLoaderInterface $configurationLoader = null)
+    {
+        parent::__construct($name);
+        $this->configurationLoader = $configurationLoader;
+    }
 
     protected function configure(): void
     {
@@ -469,6 +476,12 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
     protected function getConfigurationLoader(): ConfigurationLoaderInterface
     {
+        // Use constructor-injected dependency first
+        if ($this->configurationLoader !== null) {
+            return $this->configurationLoader;
+        }
+
+        // Use service container if available
         if ($this->hasService(ConfigurationLoaderInterface::class)) {
             return $this->getService(ConfigurationLoaderInterface::class);
         }
