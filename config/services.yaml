@@ -30,6 +30,8 @@ services:
       - '../src/Configuration/ConfigurationHierarchy.php'
       - '../src/Configuration/ConfigurationDiscovery.php'
       - '../src/Configuration/EnhancedConfiguration.php'
+      - '../src/Configuration/ConfigurationInterface.php'
+      - '../src/Configuration/ConfigurationLoaderInterface.php'
 
   # Console Commands
   Cpsit\QualityTools\Console\Command\:
@@ -98,4 +100,13 @@ services:
     public: true
 
   Cpsit\QualityTools\Utility\MemoryCalculator:
+    public: true
+
+  # Interface bindings for dependency injection
+  Cpsit\QualityTools\Configuration\ConfigurationInterface:
+    alias: 'Cpsit\QualityTools\Configuration\Configuration'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
+    alias: 'Cpsit\QualityTools\Configuration\YamlConfigurationLoader'
     public: true

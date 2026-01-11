@@ -10,7 +10,7 @@ use Cpsit\QualityTools\Traits\ConfigurationFileReaderTrait;
 use Cpsit\QualityTools\Traits\EnvironmentVariableInterpolationTrait;
 use Cpsit\QualityTools\Traits\YamlFileLoaderTrait;
 
-final readonly class YamlConfigurationLoader
+final readonly class YamlConfigurationLoader implements ConfigurationLoaderInterface
 {
     use ConfigurationFileReaderTrait;
     use EnvironmentVariableInterpolationTrait;
@@ -28,7 +28,7 @@ final readonly class YamlConfigurationLoader
     ) {
     }
 
-    public function load(string $projectRoot): Configuration
+    public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
     {
         $configData = $this->loadConfigurationHierarchy($projectRoot);
         $configuration = new Configuration($configData);
@@ -138,5 +138,70 @@ final readonly class YamlConfigurationLoader
     public function supportsConfiguration(string $projectRoot): bool
     {
         return $this->findConfigurationFile($projectRoot) !== null;
+    }
+
+    // ConfigurationLoaderInterface implementation for hierarchical methods
+    // (Simple loader provides basic implementations)
+
+    public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): ConfigurationInterface
+    {
+        // Simple loader doesn't differentiate by tool, use standard loading
+        return $this->load($projectRoot, $commandLineOverrides);
+    }
+
+    public function hasHierarchicalConfiguration(string $projectRoot): bool
+    {
+        // Simple loader doesn't support hierarchical configuration
+        return false;
+    }
+
+    public function getConfigurationErrors(string $projectRoot): array
+    {
+        // Simple loader doesn't collect detailed error information
+        return [];
+    }
+
+    public function getConfigurationDebugInfo(string $projectRoot): array
+    {
+        return [
+            'loader_type' => 'simple',
+            'supports_configuration' => $this->supportsConfiguration($projectRoot),
+            'config_file' => $this->findConfigurationFile($projectRoot),
+            'hierarchical_support' => false,
+        ];
+    }
+
+    public function getConfigurationSources(string $projectRoot): array
+    {
+        $configFile = $this->findConfigurationFile($projectRoot);
+        
+        return $configFile ? [
+            [
+                'source' => 'project_root',
+                'file_path' => $configFile,
+                'file_type' => 'yaml',
+                'tool' => null,
+                'precedence' => 0,
+                'exists' => file_exists($configFile),
+                'readable' => is_readable($configFile),
+            ]
+        ] : [];
+    }
+
+    public function previewMergedConfiguration(string $projectRoot, array $commandLineOverrides = []): array
+    {
+        $configData = $this->loadConfigurationHierarchy($projectRoot);
+        
+        // Apply command line overrides if any
+        if (!empty($commandLineOverrides)) {
+            $configData = array_merge_recursive($configData, $commandLineOverrides);
+        }
+        
+        return $configData;
+    }
+
+    public function createSimpleConfiguration(string $projectRoot): ConfigurationInterface
+    {
+        return $this->load($projectRoot);
     }
 }

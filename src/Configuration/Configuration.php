@@ -8,7 +8,7 @@ use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\PathScanner;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 
-class Configuration
+class Configuration implements ConfigurationInterface
 {
     private array $projectConfig;
     private array $pathsConfig;
@@ -311,7 +311,7 @@ class Configuration
         return $this->data;
     }
 
-    public function merge(Configuration $other): self
+    public function merge(ConfigurationInterface $other): ConfigurationInterface
     {
         $mergedData = array_merge_recursive($this->data, $other->toArray());
 
@@ -375,5 +375,107 @@ class Configuration
     public static function createWithValidation(array $data): self
     {
         return new self($data, new ConfigurationValidator());
+    }
+
+    // Enhanced configuration methods (return defaults for simple configuration)
+    public function getConfigurationSource(string $keyPath): ?string
+    {
+        return null; // Simple configuration doesn't track sources
+    }
+
+    public function getConfigurationSources(): array
+    {
+        return []; // Simple configuration doesn't track sources
+    }
+
+    public function getConfigurationConflicts(): array
+    {
+        return []; // Simple configuration doesn't track conflicts
+    }
+
+    public function hasConfigurationConflicts(): bool
+    {
+        return false; // Simple configuration doesn't have conflicts
+    }
+
+    public function getConflictsForKey(string $keyPath): array
+    {
+        return []; // Simple configuration doesn't track conflicts
+    }
+
+    public function getMergeSummary(): array
+    {
+        return []; // Simple configuration doesn't track merge summary
+    }
+
+    public function usesCustomConfigFile(string $tool): bool
+    {
+        return false; // Simple configuration doesn't support custom config files
+    }
+
+    public function getCustomConfigFilePath(string $tool): ?string
+    {
+        return null; // Simple configuration doesn't support custom config files
+    }
+
+    public function getConfigurationWithSources(): array
+    {
+        return $this->toArray(); // Return data without source attribution
+    }
+
+    public function getToolConfigurationResolved(string $tool): array
+    {
+        return $this->getToolConfig($tool); // Simple resolution only
+    }
+
+    public function getHierarchyInfo(): ?array
+    {
+        return null; // Simple configuration doesn't have hierarchy
+    }
+
+    public function getDiscoveryInfo(): ?array
+    {
+        return null; // Simple configuration doesn't have discovery
+    }
+
+    public function isHierarchicalConfiguration(): bool
+    {
+        return false; // Simple configuration is not hierarchical
+    }
+
+    public function getToolsWithCustomConfigs(): array
+    {
+        return []; // Simple configuration doesn't support custom configs
+    }
+
+    public function getComprehensiveDebugInfo(): array
+    {
+        return [
+            'type' => 'simple',
+            'data_size' => count($this->data),
+            'project_root' => $this->projectRoot,
+            'vendor_path' => $this->getVendorPath(),
+        ];
+    }
+
+    public function exportWithMetadata(): array
+    {
+        return [
+            'configuration' => $this->toArray(),
+            'metadata' => [
+                'type' => 'simple',
+                'hierarchical' => false,
+            ],
+        ];
+    }
+
+    public function wasValueOverridden(string $keyPath): bool
+    {
+        return false; // Simple configuration doesn't track overrides
+    }
+
+    public function getConfigurationChain(string $keyPath): array
+    {
+        return []; // Simple configuration doesn't track chains
     }
 }

@@ -13,7 +13,7 @@ use Cpsit\QualityTools\Service\SecurityService;
  *
  * Implements the complete configuration override system for Feature 015.
  */
-final readonly class HierarchicalConfigurationLoader
+final readonly class HierarchicalConfigurationLoader implements ConfigurationLoaderInterface
 {
     public function __construct(
         private ConfigurationValidator $validator,
@@ -25,7 +25,7 @@ final readonly class HierarchicalConfigurationLoader
     /**
      * Load configuration with full hierarchy support and source tracking.
      */
-    public function load(string $projectRoot, array $commandLineOverrides = []): EnhancedConfiguration
+    public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
     {
         $hierarchy = new ConfigurationHierarchy($projectRoot);
         $discovery = new ConfigurationDiscovery(
@@ -76,7 +76,7 @@ final readonly class HierarchicalConfigurationLoader
     /**
      * Load configuration for a specific tool with tool-specific precedence.
      */
-    public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): EnhancedConfiguration
+    public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): ConfigurationInterface
     {
         $hierarchy = new ConfigurationHierarchy($projectRoot);
         $discovery = new ConfigurationDiscovery(
@@ -149,7 +149,7 @@ final readonly class HierarchicalConfigurationLoader
     /**
      * Create a simple loader for backward compatibility.
      */
-    public function createSimpleConfiguration(string $projectRoot): Configuration
+    public function createSimpleConfiguration(string $projectRoot): ConfigurationInterface
     {
         $enhanced = $this->load($projectRoot);
 
@@ -270,5 +270,28 @@ final readonly class HierarchicalConfigurationLoader
         }
 
         return $sources;
+    }
+
+    // ConfigurationLoaderInterface implementation - missing methods
+
+    public function findConfigurationFile(string $projectRoot): ?string
+    {
+        $hierarchy = new ConfigurationHierarchy($projectRoot);
+        $existingFiles = $hierarchy->getExistingConfigurationFiles();
+        
+        // Return the first project-level configuration file found
+        if (isset($existingFiles['project_root'])) {
+            foreach ($existingFiles['project_root'] as $fileInfo) {
+                return $fileInfo['path'];
+            }
+        }
+        
+        return null;
+    }
+
+    public function supportsConfiguration(string $projectRoot): bool
+    {
+        return $this->hasHierarchicalConfiguration($projectRoot) || 
+               $this->findConfigurationFile($projectRoot) !== null;
     }
 }

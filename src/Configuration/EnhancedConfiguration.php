@@ -9,7 +9,7 @@ namespace Cpsit\QualityTools\Configuration;
  *
  * Extends the base Configuration class with Feature 015 capabilities.
  */
-final class EnhancedConfiguration
+final class EnhancedConfiguration implements ConfigurationInterface
 {
     private string $actualProjectRoot;
 
@@ -448,5 +448,103 @@ final class EnhancedConfiguration
         }
 
         return $value;
+    }
+
+    // Methods from Configuration interface that EnhancedConfiguration needs to implement
+
+    public function getVerbosity(): string
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+        return $outputConfig['verbosity'] ?? 'normal';
+    }
+
+    public function isColorsEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+        return $outputConfig['colors'] ?? true;
+    }
+
+    public function isProgressEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+        return $outputConfig['progress'] ?? true;
+    }
+
+    public function isParallelEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+        return $performanceConfig['parallel'] ?? true;
+    }
+
+    public function getMaxProcesses(): int
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+        return $performanceConfig['max_processes'] ?? 4;
+    }
+
+    public function isCacheEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+        return $performanceConfig['cache_enabled'] ?? true;
+    }
+
+    public function getVendorPath(): ?string
+    {
+        // Enhanced configuration doesn't have vendor directory detection
+        // This would need to be added if path resolution is needed
+        return null;
+    }
+
+    public function getVendorBinPath(): ?string
+    {
+        $vendorPath = $this->getVendorPath();
+        return $vendorPath !== null ? $vendorPath . '/bin' : null;
+    }
+
+    public function hasVendorDirectory(): bool
+    {
+        return $this->getVendorPath() !== null;
+    }
+
+    public function getVendorDetectionDebugInfo(): array
+    {
+        return ['enhanced_config' => 'vendor detection not implemented'];
+    }
+
+    public function getResolvedPathsForTool(string $tool): array
+    {
+        // Enhanced configuration doesn't have path resolution
+        // This would need to be added if path resolution is needed
+        return [];
+    }
+
+    public function getPathScanningDebugInfo(string $tool): array
+    {
+        return [
+            'enhanced_config' => 'path scanning not implemented',
+            'tool' => $tool,
+        ];
+    }
+
+    public function merge(ConfigurationInterface $other): ConfigurationInterface
+    {
+        $mergedData = array_merge_recursive($this->data, $other->toArray());
+        
+        return new self(
+            data: $mergedData,
+            sourceMap: $this->sourceMap,
+            conflicts: $this->conflicts,
+            mergeSummary: $this->mergeSummary,
+            hierarchy: $this->hierarchy,
+            discovery: $this->discovery,
+            projectRoot: $this->actualProjectRoot ?? null,
+            validator: $this->validator
+        );
     }
 }
