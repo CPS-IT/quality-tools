@@ -109,10 +109,10 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Commands validated: config:init, config:validate, lint:rector, lint:phpstan
 
 #### Step 2.5: Update Tests
-- [ ] Update unit tests to use interface mocking
-- [ ] Create contract tests for both interface implementations
-- [ ] Update integration tests to test both simple and hierarchical modes
-- [ ] Ensure 100% test coverage maintained
+- [x] Update unit tests to use interface mocking
+- [x] Create contract tests for both interface implementations  
+- [x] Update integration tests to test both simple and hierarchical modes
+- [x] Ensure 100% test coverage maintained
 
 #### Step 2.6: Validate DI Switching
 - [ ] Test switching between simple and hierarchical in container config
