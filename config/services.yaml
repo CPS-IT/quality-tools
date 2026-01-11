@@ -118,11 +118,19 @@ services:
       $mode: 'simple'
     public: true
 
-  # Interface bindings for dependency injection - now using wrappers
+  # Factory pattern for intelligent loader selection (Step 3.1)
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory:
+    arguments:
+      $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
+      $hierarchicalLoader: '@Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader'
+      $defaultMode: 'auto'
+    public: true
+
+  # Interface bindings for dependency injection - now using factory
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
     alias: 'Cpsit\QualityTools\Configuration\ConfigurationWrapper'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
-    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper'
+    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory'
     public: true

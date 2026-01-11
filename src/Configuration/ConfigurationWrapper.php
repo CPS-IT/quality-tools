@@ -13,7 +13,7 @@ namespace Cpsit\QualityTools\Configuration;
  */
 final readonly class ConfigurationWrapper implements ConfigurationInterface
 {
-    public function __construct(private SimpleConfiguration|EnhancedConfiguration $wrapped, private string $variant = 'simple')
+    public function __construct(private ConfigurationInterface $wrapped, private string $variant = 'simple')
     {
     }
 
@@ -78,27 +78,27 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
 
     public function getRectorConfig(): array
     {
-        return $this->wrapped->getRectorConfig();
+        return $this->wrapped->getToolConfig('rector');
     }
 
     public function getFractorConfig(): array
     {
-        return $this->wrapped->getFractorConfig();
+        return $this->wrapped->getToolConfig('fractor');
     }
 
     public function getPhpStanConfig(): array
     {
-        return $this->wrapped->getPhpStanConfig();
+        return $this->wrapped->getToolConfig('phpstan');
     }
 
     public function getPhpCsFixerConfig(): array
     {
-        return $this->wrapped->getPhpCsFixerConfig();
+        return $this->wrapped->getToolConfig('php-cs-fixer');
     }
 
     public function getTypoScriptLintConfig(): array
     {
-        return $this->wrapped->getTypoScriptLintConfig();
+        return $this->wrapped->getToolConfig('typoscript-lint');
     }
 
     // Output configuration methods (available in both)
@@ -311,7 +311,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         return $this->variant;
     }
 
-    public function getWrappedInstance(): SimpleConfiguration|EnhancedConfiguration
+    public function getWrappedInstance(): ConfigurationInterface
     {
         return $this->wrapped;
     }

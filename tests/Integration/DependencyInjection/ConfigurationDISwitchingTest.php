@@ -6,7 +6,6 @@ namespace Cpsit\QualityTools\Tests\Integration\DependencyInjection;
 
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
@@ -56,13 +55,13 @@ final class ConfigurationDISwitchingTest extends TestCase
     {
         $container = $this->createContainerWithMode('simple');
 
-        // Test that interface resolves to wrapper in simple mode
+        // Test that interface resolves to factory in simple mode
         self::assertTrue($container->has(ConfigurationLoaderInterface::class));
         $loader = $container->get(ConfigurationLoaderInterface::class);
         self::assertInstanceOf(ConfigurationLoaderInterface::class, $loader);
-        self::assertInstanceOf(ConfigurationLoaderWrapper::class, $loader);
+        self::assertInstanceOf(\Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory::class, $loader);
 
-        // Test that wrapper is in simple mode
+        // Test that factory returns correctly wrapped configuration
         $config = $loader->load($this->tempDir);
         self::assertInstanceOf(ConfigurationInterface::class, $config);
         self::assertSame('di-switch-test', $config->getProjectName());
@@ -81,13 +80,13 @@ final class ConfigurationDISwitchingTest extends TestCase
     {
         $container = $this->createContainerWithMode('hierarchical');
 
-        // Test that interface resolves to wrapper in hierarchical mode
+        // Test that interface resolves to factory in hierarchical mode
         self::assertTrue($container->has(ConfigurationLoaderInterface::class));
         $loader = $container->get(ConfigurationLoaderInterface::class);
         self::assertInstanceOf(ConfigurationLoaderInterface::class, $loader);
-        self::assertInstanceOf(ConfigurationLoaderWrapper::class, $loader);
+        self::assertInstanceOf(\Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory::class, $loader);
 
-        // Test that wrapper is in hierarchical mode
+        // Test that factory returns correctly wrapped configuration
         $config = $loader->load($this->tempDir);
         self::assertInstanceOf(ConfigurationInterface::class, $config);
         self::assertSame('di-switch-test', $config->getProjectName());
@@ -271,9 +270,9 @@ final class ConfigurationDISwitchingTest extends TestCase
         // Override the mode configuration
         $container->setParameter('config.loader.mode', $mode);
 
-        // Update wrapper configuration for the specified mode
-        $wrapperDefinition = $container->getDefinition(ConfigurationLoaderWrapper::class);
-        $wrapperDefinition->setArgument('$mode', $mode);
+        // Update factory configuration for the specified mode
+        $factoryDefinition = $container->getDefinition(\Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory::class);
+        $factoryDefinition->setArgument('$defaultMode', $mode);
 
         // Compile container
         $container->compile();
