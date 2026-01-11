@@ -149,6 +149,18 @@ services:
   Cpsit\QualityTools\Utility\MemoryCalculator:
     public: true
 
+  # Business logic services for Step 4.1 (Issue 019)
+  Cpsit\QualityTools\Service\ProjectConfigService:
+    public: true
+
+  Cpsit\QualityTools\Service\ToolConfigService:
+    public: true
+
+  Cpsit\QualityTools\Service\PathResolutionService:
+    arguments:
+      $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
+    public: true
+
   # Wrapper classes for evolutionary refactoring (Issue 019)
   Cpsit\QualityTools\Configuration\ConfigurationWrapper:
     arguments:
