@@ -68,23 +68,6 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
         };
     }
 
-    public function validateConfiguration(array $configuration): bool
-    {
-        return match ($this->mode) {
-            'simple' => $this->simpleLoader->validateConfiguration($configuration),
-            'hierarchical' => $this->hierarchicalLoader->validateConfiguration($configuration),
-            default => false
-        };
-    }
-
-    public function getValidationErrors(): array
-    {
-        return match ($this->mode) {
-            'simple' => $this->simpleLoader->getValidationErrors(),
-            'hierarchical' => $this->hierarchicalLoader->getValidationErrors(),
-            default => []
-        };
-    }
 
     public function hasHierarchicalConfiguration(string $projectRoot): bool
     {

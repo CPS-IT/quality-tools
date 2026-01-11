@@ -9,7 +9,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 
 /**
  * Test demonstrating interface-based DI switching during refactoring.
- * 
+ *
  * This shows how interfaces enable clean dependency injection to switch
  * between implementations during the refactoring phases.
  */
@@ -44,7 +44,7 @@ class TestBaseCommand
 }
 
 // Example of how ConfigShowCommand would be modified
-class TestConfigShowCommand  
+class TestConfigShowCommand
 {
     public function __construct(
         private readonly ConfigurationLoaderInterface $configurationLoader
@@ -54,7 +54,7 @@ class TestConfigShowCommand
     {
         // Load with hierarchical capabilities
         $configuration = $this->configurationLoader->load($projectRoot);
-        
+
         $result = [
             'config' => $configuration->toArray(),
         ];
@@ -93,7 +93,7 @@ class DIConfigurationTest
             // Different loaders for different commands
             'config.loader.simple' => SimpleConfigurationLoaderWrapper::class,
             'config.loader.hierarchical' => HierarchicalConfigurationLoaderWrapper::class,
-            
+
             // Factory to decide which loader to use
             ConfigurationLoaderInterface::class => ConfigurationLoaderFactory::class,
         ];
@@ -188,28 +188,28 @@ class ConfigurationLoaderFactory implements ConfigurationLoaderInterface
 
 /**
  * Benefits of interface approach:
- * 
+ *
  * 1. CLEAN DI SWITCHING:
  *    - Commands depend on interfaces, not concrete classes
  *    - Container configuration switches implementations
  *    - No code changes in consuming classes during refactoring
- * 
+ *
  * 2. GRADUAL MIGRATION:
  *    - Phase 1: Simple wrapper implements interface
- *    - Phase 2: Enhanced wrapper implements interface  
+ *    - Phase 2: Enhanced wrapper implements interface
  *    - Phase 3: Factory chooses implementation per command
  *    - Phase 6: Unified class implements interface
- * 
+ *
  * 3. TYPE SAFETY:
  *    - Interface contract ensures all methods are implemented
  *    - PHP type system catches missing methods during refactoring
  *    - IDE provides proper autocomplete throughout transition
- * 
+ *
  * 4. TESTING BENEFITS:
  *    - Mock interfaces instead of concrete classes
  *    - Test different implementations with same test suite
  *    - Contract tests ensure interface compliance
- * 
+ *
  * 5. ROLLBACK SAFETY:
  *    - Each phase can be rolled back by changing DI configuration
  *    - No code changes needed in commands/consumers
@@ -227,18 +227,18 @@ class RollbackTest
         $this->container->configure([
             ConfigurationLoaderInterface::class => ConfigurationWrapperLoader::class
         ]);
-        
+
         $command = $this->container->get(TestBaseCommand::class);
         $result1 = $command->getProjectPhpVersion('/project');
-        
+
         // Rollback to Phase 1: Switch to simple
         $this->container->configure([
             ConfigurationLoaderInterface::class => SimpleConfigurationLoader::class
         ]);
-        
-        $command = $this->container->get(TestBaseCommand::class);  
+
+        $command = $this->container->get(TestBaseCommand::class);
         $result2 = $command->getProjectPhpVersion('/project');
-        
+
         // Results should be identical - proves rollback safety
         assert($result1 === $result2);
     }

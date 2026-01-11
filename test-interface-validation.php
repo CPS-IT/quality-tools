@@ -41,7 +41,7 @@ $isEnabled = $config->isToolEnabled('rector');
 $conflicts = $config->getConfigurationConflicts(); // Should be empty for simple config
 $isHierarchical = $config->isHierarchicalConfiguration(); // Should be false
 
-if ($phpVersion === '8.3' && 
+if ($phpVersion === '8.3' &&
     $scanPaths === ['packages/', 'config/system/'] &&
     $isEnabled === true &&
     $conflicts === [] &&
@@ -74,7 +74,7 @@ $debugInfo = $loader->getConfigurationDebugInfo($projectRoot);
 $sources = $loader->getConfigurationSources($projectRoot);
 $isHierarchical = $loader->hasHierarchicalConfiguration($projectRoot);
 
-if (is_bool($supportsConfig) && 
+if (is_bool($supportsConfig) &&
     is_array($debugInfo) &&
     is_array($sources) &&
     $isHierarchical === false &&
@@ -86,7 +86,7 @@ if (is_bool($supportsConfig) &&
     exit(1);
 }
 
-// Test HierarchicalConfigurationLoader implements ConfigurationLoaderInterface  
+// Test HierarchicalConfigurationLoader implements ConfigurationLoaderInterface
 echo "5. Testing HierarchicalConfigurationLoader implements ConfigurationLoaderInterface: ";
 $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $security, $filesystem);
 

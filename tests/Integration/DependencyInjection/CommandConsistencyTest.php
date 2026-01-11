@@ -183,7 +183,7 @@ final class CommandConsistencyTest extends TestCase
         $outputContent = $output['output'];
         self::assertStringContainsString('Validating configuration file:', $outputContent);
         // Normalize whitespace to handle line breaks in file path
-        $normalizedOutput = preg_replace('/\s+/', '', $outputContent);
+        $normalizedOutput = preg_replace('/\s+/', '', (string) $outputContent);
         self::assertStringContainsString('.quality-tools.yaml', $normalizedOutput);
         self::assertStringContainsString('Configuration is valid', $outputContent);
     }
@@ -203,7 +203,7 @@ final class CommandConsistencyTest extends TestCase
         $outputContent = $output['output'];
         self::assertStringContainsString('Validating configuration file:', $outputContent);
         // Normalize whitespace to handle line breaks in file path
-        $normalizedOutput = preg_replace('/\s+/', '', $outputContent);
+        $normalizedOutput = preg_replace('/\s+/', '', (string) $outputContent);
         self::assertStringContainsString('.quality-tools.yaml', $normalizedOutput);
         self::assertStringContainsString('Configuration is valid', $outputContent);
 
@@ -230,7 +230,7 @@ final class CommandConsistencyTest extends TestCase
         self::assertStringContainsString('Configuration file already exists:', $outputContent);
         self::assertStringContainsString('--force', $outputContent);
         // Normalize whitespace to handle line breaks in file path
-        $normalizedOutput = preg_replace('/\s+/', '', $outputContent);
+        $normalizedOutput = preg_replace('/\s+/', '', (string) $outputContent);
         self::assertStringContainsString('.quality-tools.yaml', $normalizedOutput);
     }
 

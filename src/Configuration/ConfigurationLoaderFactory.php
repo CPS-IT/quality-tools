@@ -159,6 +159,7 @@ final readonly class ConfigurationLoaderFactory implements ConfigurationLoaderIn
             self::MODE_SIMPLE => $this->simpleLoader,
             self::MODE_HIERARCHICAL => $this->hierarchicalLoader,
             self::MODE_AUTO => $this->selectLoaderByContext(),
+            default => $this->simpleLoader,
         };
     }
 
@@ -211,7 +212,7 @@ final readonly class ConfigurationLoaderFactory implements ConfigurationLoaderIn
         }
 
         // Method 2: Check server variables (for web context)
-        if (isset($_SERVER['argv'][1]) && str_contains($_SERVER['argv'][1], ':')) {
+        if (isset($_SERVER['argv'][1]) && str_contains((string) $_SERVER['argv'][1], ':')) {
             return $_SERVER['argv'][1];
         }
 
@@ -224,7 +225,7 @@ final readonly class ConfigurationLoaderFactory implements ConfigurationLoaderIn
                 // Extract command name from class name
                 // e.g., ConfigShowCommand -> config:show
                 if (preg_match('/\\\\([A-Z][a-z]+)Command$/', $className, $matches)) {
-                    $commandName = strtolower(preg_replace('/([A-Z])/', '-$1', $matches[1]));
+                    $commandName = strtolower((string) preg_replace('/([A-Z])/', '-$1', $matches[1]));
                     $commandName = ltrim($commandName, '-');
 
                     // Convert CamelCase to kebab-case with namespace
