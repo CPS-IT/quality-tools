@@ -161,11 +161,14 @@ services:
       $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
     public: true
 
-  # Wrapper classes for evolutionary refactoring (Issue 019)
+  # Wrapper classes for evolutionary refactoring (Issue 019 - Step 4.2)
   Cpsit\QualityTools\Configuration\ConfigurationWrapper:
     arguments:
       $wrapped: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
       $variant: 'simple'
+      $projectConfigService: '@Cpsit\QualityTools\Service\ProjectConfigService'
+      $toolConfigService: '@Cpsit\QualityTools\Service\ToolConfigService'
+      $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper:

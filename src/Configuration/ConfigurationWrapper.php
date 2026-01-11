@@ -4,17 +4,27 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Service\PathResolutionService;
+
 /**
  * Wrapper class that unifies SimpleConfiguration and EnhancedConfiguration.
  *
  * This wrapper implements the complete ConfigurationInterface by delegating
  * to the wrapped instance and handling missing methods gracefully.
+ * Updated in Step 4.2 to use extracted business logic services.
  * Part of the evolutionary refactoring strategy in Issue 019.
  */
 final readonly class ConfigurationWrapper implements ConfigurationInterface
 {
-    public function __construct(private ConfigurationInterface $wrapped, private string $variant = 'simple')
-    {
+    public function __construct(
+        private ConfigurationInterface $wrapped, 
+        private string $variant = 'simple',
+        private ?ProjectConfigService $projectConfigService = null,
+        private ?ToolConfigService $toolConfigService = null,
+        private ?PathResolutionService $pathResolutionService = null,
+    ) {
     }
 
     // Core data access methods (available in both)
@@ -78,26 +88,51 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
 
     public function getRectorConfig(): array
     {
+        // Use service if available, otherwise delegate to wrapped instance
+        if ($this->toolConfigService !== null) {
+            return $this->toolConfigService->getRectorConfig($this->wrapped->toArray(), $this->wrapped->getProjectPhpVersion());
+        }
+        
         return $this->wrapped->getToolConfig('rector');
     }
 
     public function getFractorConfig(): array
     {
+        // Use service if available, otherwise delegate to wrapped instance
+        if ($this->toolConfigService !== null) {
+            return $this->toolConfigService->getFractorConfig($this->wrapped->toArray());
+        }
+        
         return $this->wrapped->getToolConfig('fractor');
     }
 
     public function getPhpStanConfig(): array
     {
+        // Use service if available, otherwise delegate to wrapped instance
+        if ($this->toolConfigService !== null) {
+            return $this->toolConfigService->getPhpStanConfig($this->wrapped->toArray());
+        }
+        
         return $this->wrapped->getToolConfig('phpstan');
     }
 
     public function getPhpCsFixerConfig(): array
     {
+        // Use service if available, otherwise delegate to wrapped instance
+        if ($this->toolConfigService !== null) {
+            return $this->toolConfigService->getPhpCsFixerConfig($this->wrapped->toArray());
+        }
+        
         return $this->wrapped->getToolConfig('php-cs-fixer');
     }
 
     public function getTypoScriptLintConfig(): array
     {
+        // Use service if available, otherwise delegate to wrapped instance
+        if ($this->toolConfigService !== null) {
+            return $this->toolConfigService->getTypoScriptLintConfig($this->wrapped->toArray());
+        }
+        
         return $this->wrapped->getToolConfig('typoscript-lint');
     }
 
@@ -286,9 +321,19 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
             : [];
     }
 
-    // Path resolution methods (only available in SimpleConfiguration)
+    // Path resolution methods (enhanced with PathResolutionService)
     public function getResolvedPathsForTool(string $tool): array
     {
+        // Use service if available and we have a project root
+        if ($this->pathResolutionService !== null && $this->wrapped->getProjectRoot() !== null) {
+            return $this->pathResolutionService->getResolvedPathsForTool(
+                $this->wrapped->toArray(),
+                $tool,
+                $this->wrapped->getProjectRoot()
+            );
+        }
+        
+        // Fallback to wrapped instance for SimpleConfiguration
         return $this->wrapped instanceof SimpleConfiguration
             ? $this->wrapped->getResolvedPathsForTool($tool)
             : [];
@@ -296,13 +341,8 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
 
     public function getTargetPathForTool(string $tool): string
     {
-        if ($this->wrapped instanceof SimpleConfiguration) {
-            $paths = $this->wrapped->getResolvedPathsForTool($tool);
-
-            return $paths[0] ?? '';
-        }
-
-        return '';
+        $paths = $this->getResolvedPathsForTool($tool);
+        return $paths[0] ?? '';
     }
 
     // Utility methods for wrapper introspection
