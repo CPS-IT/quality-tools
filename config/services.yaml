@@ -107,7 +107,7 @@ services:
   # Wrapper classes for evolutionary refactoring (Issue 019)
   Cpsit\QualityTools\Configuration\ConfigurationWrapper:
     arguments:
-      $configuration: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
+      $wrapped: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
       $variant: 'simple'
     public: true
 
