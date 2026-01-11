@@ -6,6 +6,8 @@ namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
@@ -447,7 +449,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     {
         if ($this->configuration === null) {
             $projectRoot = $this->getProjectRoot();
-            $loader = $this->getYamlConfigurationLoader();
+            $loader = $this->getConfigurationLoader();
             $this->configuration = $loader->load($projectRoot);
 
             // Override with a custom config path if provided
@@ -464,6 +466,21 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     /**
      * Service getters for dependency injection with fallback for testing.
      */
+
+    protected function getConfigurationLoader(): ConfigurationLoaderInterface
+    {
+        if ($this->hasService(ConfigurationLoaderInterface::class)) {
+            return $this->getService(ConfigurationLoaderInterface::class);
+        }
+
+        // Fallback for tests and scenarios without DI container
+        // Default to the wrapper in simple mode
+        return new ConfigurationLoaderWrapper(
+            $this->getYamlConfigurationLoader(),
+            $this->getHierarchicalConfigurationLoader(),
+            'simple'
+        );
+    }
     private function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
         if ($this->hasService(VendorDirectoryDetector::class)) {

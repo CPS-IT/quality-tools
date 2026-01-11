@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
 use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -49,7 +51,7 @@ final class ConfigShowCommand extends BaseCommand
             $this->validateCriticalConfigurationFiles($projectRoot);
 
             // Use hierarchical configuration loader specifically for config:show
-            $loader = $this->getHierarchicalConfigurationLoader();
+            $loader = $this->getConfigurationLoaderInHierarchicalMode();
             $enhancedConfiguration = $loader->load($projectRoot);
             $configData = $enhancedConfiguration->toArray();
 
@@ -84,7 +86,7 @@ final class ConfigShowCommand extends BaseCommand
         }
     }
 
-    private function showConfigurationSources(SymfonyStyle $io, HierarchicalConfigurationLoader $loader, string $projectRoot): void
+    private function showConfigurationSources(SymfonyStyle $io, ConfigurationLoaderInterface $loader, string $projectRoot): void
     {
         $io->section('Configuration Sources');
 
@@ -186,5 +188,31 @@ final class ConfigShowCommand extends BaseCommand
                 }
             }
         }
+    }
+
+    /**
+     * Get configuration loader specifically configured for hierarchical mode.
+     * ConfigShowCommand needs hierarchical features for source tracking.
+     */
+    private function getConfigurationLoaderInHierarchicalMode(): ConfigurationLoaderInterface
+    {
+        if ($this->hasService(ConfigurationLoaderInterface::class)) {
+            $loader = $this->getService(ConfigurationLoaderInterface::class);
+            
+            // If it's a wrapper, switch to hierarchical mode
+            if ($loader instanceof ConfigurationLoaderWrapper) {
+                return $loader->withMode('hierarchical');
+            }
+            
+            return $loader;
+        }
+
+        // Fallback for tests and scenarios without DI container
+        // Force hierarchical mode for ConfigShowCommand
+        return new ConfigurationLoaderWrapper(
+            $this->getYamlConfigurationLoader(),
+            $this->getHierarchicalConfigurationLoader(),
+            'hierarchical'
+        );
     }
 }

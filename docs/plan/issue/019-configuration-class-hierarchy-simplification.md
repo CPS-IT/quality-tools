@@ -72,10 +72,12 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 ### Phase 2: Replace All Usages
 
 #### Step 2.1: Update Dependency Injection
-- [ ] Update service container to bind interfaces to wrappers
-- [ ] Configure BaseCommand to receive `ConfigurationLoaderInterface`
-- [ ] Configure ConfigShowCommand to receive `ConfigurationLoaderInterface` in hierarchical mode
-- [ ] Test DI switching between simple and hierarchical modes
+- [x] Update service container to bind interfaces to wrappers
+- [x] Configure BaseCommand to receive `ConfigurationLoaderInterface`
+- [x] Configure ConfigShowCommand to receive `ConfigurationLoaderInterface` in hierarchical mode
+- [x] Test DI switching between simple and hierarchical modes
+- [x] All 706 tests passing (597 unit + 109 integration)
+- [x] Commands working correctly with wrapper-based DI
 
 #### Step 2.2: Update BaseCommand
 - [ ] Change constructor to accept `ConfigurationLoaderInterface`
