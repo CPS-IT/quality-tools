@@ -9,11 +9,11 @@ namespace Cpsit\QualityTools\Exception;
  */
 class TransientException extends QualityToolsException
 {
-    public const ERROR_NETWORK_TIMEOUT = 4001;
-    public const ERROR_TEMPORARY_FILE_LOCK = 4002;
-    public const ERROR_MEMORY_PRESSURE = 4003;
-    public const ERROR_SERVICE_UNAVAILABLE = 4004;
-    public const ERROR_RATE_LIMIT_EXCEEDED = 4005;
+    public const int ERROR_NETWORK_TIMEOUT = 4001;
+    public const int ERROR_TEMPORARY_FILE_LOCK = 4002;
+    public const int ERROR_MEMORY_PRESSURE = 4003;
+    public const int ERROR_SERVICE_UNAVAILABLE = 4004;
+    public const int ERROR_RATE_LIMIT_EXCEEDED = 4005;
 
     public function __construct(
         string $message = '',

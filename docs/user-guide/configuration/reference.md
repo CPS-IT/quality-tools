@@ -12,12 +12,18 @@ The configuration loader searches for configuration files in the following order
 
 ## Configuration Hierarchy
 
-Configuration is merged in the following order (later values override earlier ones):
+Configuration sources are applied in the following order (highest to lowest priority):
 
-1. **Package defaults** (built-in defaults)
-2. **Global user configuration** (`~/.quality-tools.yaml`)
-3. **Project-specific configuration** (project root)
-4. **Command-line overrides** (--config, --path, etc.)
+1. **Command Line Arguments** - Highest priority
+2. **Project Root Configuration** - `quality-tools.yaml` in project root
+3. **Config Directory Configuration** - `quality-tools.yaml` in `config/` directory
+4. **Tool-Specific Project Configuration** - Tool config files in the project root
+5. **Tool-Specific Config Directory** - Tool config files in `config/` directory
+6. **Package Configuration** - `quality-tools.yaml` in package directories
+7. **Global User Configuration** - `~/.quality-tools.yaml` in user's home directory
+8. **Package Defaults** - Lowest priority
+
+This hierarchical system allows for flexible configuration management while maintaining clear precedence rules. Higher priority sources override lower priority sources for the same configuration options.
 
 ## Complete Configuration Schema
 

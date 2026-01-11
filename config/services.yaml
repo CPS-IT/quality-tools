@@ -27,6 +27,9 @@ services:
     public: true
     exclude:
       - '../src/Configuration/ValidationResult.php'
+      - '../src/Configuration/ConfigurationHierarchy.php'
+      - '../src/Configuration/ConfigurationDiscovery.php'
+      - '../src/Configuration/EnhancedConfiguration.php'
 
   # Console Commands
   Cpsit\QualityTools\Console\Command\:
@@ -66,6 +69,13 @@ services:
     public: true
 
   Cpsit\QualityTools\Configuration\YamlConfigurationLoader:
+    arguments:
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+    public: true
+
+  Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader:
     arguments:
       $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'

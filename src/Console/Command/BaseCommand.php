@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
@@ -515,6 +516,20 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
         // Fallback for tests and scenarios without DI container
         return new YamlConfigurationLoader(
+            new ConfigurationValidator(),
+            new SecurityService(),
+            new FilesystemService(),
+        );
+    }
+
+    protected function getHierarchicalConfigurationLoader(): HierarchicalConfigurationLoader
+    {
+        if ($this->hasService(HierarchicalConfigurationLoader::class)) {
+            return $this->getService(HierarchicalConfigurationLoader::class);
+        }
+
+        // Fallback for tests and scenarios without DI container
+        return new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),

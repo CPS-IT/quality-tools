@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -44,14 +44,19 @@ final class ConfigShowCommand extends BaseCommand
         }
 
         try {
-            $configuration = $this->getConfiguration($input);
-            $configData = $configuration->toArray();
+            // For config:show command, we need to validate that critical configuration
+            // files can be loaded. If they can't, we should fail.
+            $this->validateCriticalConfigurationFiles($projectRoot);
+
+            // Use hierarchical configuration loader specifically for config:show
+            $loader = $this->getHierarchicalConfigurationLoader();
+            $enhancedConfiguration = $loader->load($projectRoot);
+            $configData = $enhancedConfiguration->toArray();
 
             $io->title('Resolved Configuration');
 
             // Show configuration file sources if verbose
             if ($output->isVerbose()) {
-                $loader = $this->getYamlConfigurationLoader();
                 $this->showConfigurationSources($io, $loader, $projectRoot);
             }
 
@@ -79,32 +84,107 @@ final class ConfigShowCommand extends BaseCommand
         }
     }
 
-    private function showConfigurationSources(SymfonyStyle $io, YamlConfigurationLoader $loader, string $projectRoot): void
+    private function showConfigurationSources(SymfonyStyle $io, HierarchicalConfigurationLoader $loader, string $projectRoot): void
     {
         $io->section('Configuration Sources');
 
         $sources = [];
 
-        // Check for global configuration
-        $homeDir = getenv('HOME') ?: ($_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '');
-        if (!empty($homeDir)) {
-            $globalConfig = $homeDir . '/.quality-tools.yaml';
-            if (file_exists($globalConfig)) {
-                $sources[] = \sprintf('Global: %s', $globalConfig);
+        // Get all configuration sources from hierarchical loader
+        try {
+            $configSources = $loader->getConfigurationSources($projectRoot);
+            foreach ($configSources as $source) {
+                if ($source['file_path'] !== null) {
+                    $label = match ($source['source']) {
+                        'project_root' => 'Project',
+                        'config_dir' => 'Config directory',
+                        'global' => 'Global',
+                        'package_config' => 'Package',
+                        'tool_specific' => 'Tool-specific',
+                        'tool_config_dir' => 'Tool config dir',
+                        default => ucfirst((string) $source['source'])
+                    };
+                    $sources[] = \sprintf('%s: %s', $label, $source['file_path']);
+                } elseif ($source['source'] === 'package_defaults') {
+                    $sources[] = 'Package defaults (built-in)';
+                }
             }
+        } catch (\Exception) {
+            $sources[] = 'Package defaults (built-in)';
         }
-
-        // Check for project configuration
-        $projectConfig = $loader->findConfigurationFile($projectRoot);
-        if ($projectConfig !== null) {
-            $sources[] = \sprintf('Project: %s', $projectConfig);
-        }
-
-        // Show package defaults
-        $sources[] = 'Package defaults (built-in)';
 
         $io->listing($sources);
 
+        // Show configuration errors if any occurred
+        $configErrors = $loader->getConfigurationErrors($projectRoot);
+        if (!empty($configErrors)) {
+            $io->warning('Some configuration files could not be loaded:');
+            foreach ($configErrors as $filePath => $error) {
+                $io->text(\sprintf('• %s: %s', $filePath, $error));
+            }
+            $io->newLine();
+        }
+
         $io->newLine();
+    }
+
+    /**
+     * Validate that critical configuration files can be loaded.
+     *
+     * @throws \RuntimeException when critical configuration files fail to load
+     */
+    private function validateCriticalConfigurationFiles(string $projectRoot): void
+    {
+        $hierarchy = new \Cpsit\QualityTools\Configuration\ConfigurationHierarchy($projectRoot);
+        $existingFiles = $hierarchy->getExistingConfigurationFiles();
+
+        // Check project_root and config_dir configuration files
+        foreach (['project_root', 'config_dir'] as $criticalLevel) {
+            if (!isset($existingFiles[$criticalLevel])) {
+                continue;
+            }
+
+            foreach ($existingFiles[$criticalLevel] as $fileInfo) {
+                try {
+                    // Try to load the configuration file directly
+                    $securityService = new \Cpsit\QualityTools\Service\SecurityService();
+                    $validator = new \Cpsit\QualityTools\Configuration\ConfigurationValidator();
+
+                    // Load the file content
+                    $content = file_get_contents($fileInfo['path']);
+                    if ($content === false) {
+                        throw new \RuntimeException("Cannot read configuration file: {$fileInfo['path']}");
+                    }
+
+                    // Parse YAML and interpolate environment variables
+                    $data = Yaml::parse($content);
+                    if (!\is_array($data)) {
+                        throw new \RuntimeException('Configuration file must contain valid YAML data');
+                    }
+
+                    // Interpolate environment variables
+                    $interpolatedContent = preg_replace_callback(
+                        '/\$\{([A-Z_][A-Z0-9_]*):?([^}]*)\}/',
+                        function (array $matches) use ($securityService): string {
+                            $envVar = $matches[1];
+                            $default = $matches[2];
+
+                            // Handle syntax: ${VAR:-default}
+                            if (str_starts_with($default, '-')) {
+                                $default = substr($default, 1);
+                            }
+
+                            return $securityService->getEnvironmentVariable($envVar, $default);
+                        },
+                        $content,
+                    );
+
+                    // Re-parse after interpolation
+                    Yaml::parse($interpolatedContent);
+                } catch (\Exception $e) {
+                    throw new \RuntimeException('Failed to load configuration: ' . $e->getMessage());
+                }
+            }
+        }
     }
 }

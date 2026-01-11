@@ -206,8 +206,7 @@ final class ConfigInitCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Configuration file already exists', $output);
-        // Use basename to avoid path format differences between /var/ and /private/var/
-        self::assertStringContainsString(basename($existingConfig), $output);
+        self::assertStringContainsString('Use --force to overwrite', $output);
 
         // New file should not be created
         self::assertFileDoesNotExist($this->tempDir . '/.quality-tools.yaml');

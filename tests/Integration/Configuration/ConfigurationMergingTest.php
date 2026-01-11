@@ -148,8 +148,8 @@ final class ConfigurationMergingTest extends TestCase
         self::assertTrue($config->isCacheEnabled()); // from global
 
         // Test paths configuration merging
-        self::assertSame(['packages/', 'src/', 'tests/'], $config->getScanPaths()); // from project
-        self::assertSame(['var/', 'vendor/', 'node_modules/'], $config->getExcludePaths()); // project override
+        self::assertSame(['packages/', 'config/system/', 'src/', 'tests/'], $config->getScanPaths()); // defaults + project
+        self::assertSame(['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/', 'build/', 'node_modules/'], $config->getExcludePaths()); // defaults + global + project
     }
 
     public function testComplexEnvironmentVariableInterpolation(): void
@@ -231,11 +231,11 @@ final class ConfigurationMergingTest extends TestCase
 
         // Test interpolated paths
         self::assertSame(
-            ['custom-packages/', 'src/', 'integration-tests/'],
+            ['packages/', 'config/system/', 'custom-packages/', 'src/', 'integration-tests/'],
             $config->getScanPaths(),
         );
         self::assertSame(
-            ['var/', 'vendor/', 'node_modules/'],
+            ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/', 'node_modules/'],
             $config->getExcludePaths(),
         ); // all defaults
 
@@ -395,7 +395,7 @@ final class ConfigurationMergingTest extends TestCase
         self::assertSame('1G', $phpStanConfig['memory_limit']); // from global
         // Test PHPStan path overrides
         $phpStanPaths = $config->getToolPaths('phpstan');
-        self::assertSame(['src/', 'packages/'], $phpStanPaths['scan'] ?? []); // project override
+        self::assertSame(['default-path/', 'src/', 'packages/'], $phpStanPaths['scan'] ?? []); // global + project merge
 
         // Test Fractor merging
         $fractorConfig = $config->getFractorConfig();
@@ -404,7 +404,7 @@ final class ConfigurationMergingTest extends TestCase
 
         // Test Fractor path overrides
         $fractorPaths = $config->getToolPaths('fractor');
-        self::assertSame(['project-skip.ts', 'another-skip.ts'], $fractorPaths['exclude'] ?? []); // project override
+        self::assertSame(['global-skip.ts', 'project-skip.ts', 'another-skip.ts'], $fractorPaths['exclude'] ?? []); // global + project merge
 
         // Test PHP CS Fixer merging
         $phpCsFixerConfig = $config->getPhpCsFixerConfig();
@@ -419,7 +419,7 @@ final class ConfigurationMergingTest extends TestCase
 
         // Test TypoScript Lint path overrides
         $typoscriptLintPaths = $config->getToolPaths('typoscript-lint');
-        self::assertSame(['project-ignore.ts'], $typoscriptLintPaths['exclude'] ?? []); // project override
+        self::assertSame(['global-ignore.ts', 'project-ignore.ts'], $typoscriptLintPaths['exclude'] ?? []); // global + project merge
     }
 
     public function testArrayMergingBehavior(): void
@@ -469,15 +469,15 @@ final class ConfigurationMergingTest extends TestCase
             fn (): Configuration => $this->loader->load($this->tempDir),
         );
 
-        // Arrays should be replaced by project config, not merged
-        self::assertSame(['project-scan/'], $config->getScanPaths());
+        // Arrays should be merged: defaults + global + project (with deduplication)
+        self::assertSame(['packages/', 'config/system/', 'global-scan1/', 'global-scan2/', 'project-scan/'], $config->getScanPaths());
         self::assertSame(
-            ['project-exclude1/', 'project-exclude2/', 'project-exclude3/'],
+            ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/', 'global-exclude1/', 'global-exclude2/', 'project-exclude1/', 'project-exclude2/', 'project-exclude3/'],
             $config->getExcludePaths(),
         );
 
         $phpStanPaths = $config->getToolPaths('phpstan');
-        self::assertSame(['project-phpstan/'], $phpStanPaths['scan'] ?? []);
+        self::assertSame(['global-phpstan1/', 'global-phpstan2/', 'project-phpstan/'], $phpStanPaths['scan'] ?? []);
     }
 
     public function testConfigurationWithoutGlobalFile(): void

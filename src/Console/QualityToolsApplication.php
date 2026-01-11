@@ -144,7 +144,7 @@ final class QualityToolsApplication extends Application
         }
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($commandDir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            new \RecursiveDirectoryIterator($commandDir, \FilesystemIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {

@@ -9,11 +9,11 @@ namespace Cpsit\QualityTools\Exception;
  */
 class ProcessException extends QualityToolsException
 {
-    public const ERROR_PROCESS_EXECUTION_FAILED = 2001;
-    public const ERROR_PROCESS_TIMEOUT = 2002;
-    public const ERROR_PROCESS_MEMORY_LIMIT = 2003;
-    public const ERROR_PROCESS_BINARY_NOT_FOUND = 2004;
-    public const ERROR_PROCESS_PERMISSION_DENIED = 2005;
+    public const int ERROR_PROCESS_EXECUTION_FAILED = 2001;
+    public const int ERROR_PROCESS_TIMEOUT = 2002;
+    public const int ERROR_PROCESS_MEMORY_LIMIT = 2003;
+    public const int ERROR_PROCESS_BINARY_NOT_FOUND = 2004;
+    public const int ERROR_PROCESS_PERMISSION_DENIED = 2005;
 
     public function __construct(
         string $message = '',
