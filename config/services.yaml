@@ -32,6 +32,8 @@ services:
       - '../src/Configuration/EnhancedConfiguration.php'
       - '../src/Configuration/ConfigurationInterface.php'
       - '../src/Configuration/ConfigurationLoaderInterface.php'
+      - '../src/Configuration/ConfigurationWrapper.php'
+      - '../src/Configuration/ConfigurationLoaderWrapper.php'
 
   # Console Commands
   Cpsit\QualityTools\Console\Command\:
@@ -102,11 +104,25 @@ services:
   Cpsit\QualityTools\Utility\MemoryCalculator:
     public: true
 
-  # Interface bindings for dependency injection
+  # Wrapper classes for evolutionary refactoring (Issue 019)
+  Cpsit\QualityTools\Configuration\ConfigurationWrapper:
+    arguments:
+      $configuration: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
+      $variant: 'simple'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper:
+    arguments:
+      $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
+      $hierarchicalLoader: '@Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader'
+      $mode: 'simple'
+    public: true
+
+  # Interface bindings for dependency injection - now using wrappers
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
-    alias: 'Cpsit\QualityTools\Configuration\SimpleConfiguration'
+    alias: 'Cpsit\QualityTools\Configuration\ConfigurationWrapper'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
-    alias: 'Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
+    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper'
     public: true
