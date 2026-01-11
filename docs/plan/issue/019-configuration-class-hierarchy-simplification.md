@@ -128,27 +128,17 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Maintain interface contract for all loader methods
 
 #### Step 3.2: Update Service Container for Factory Pattern
-```php
-// Service container configuration for factory pattern
-$container->configure([
-    // Register both loaders
-    SimpleConfigurationLoader::class => SimpleConfigurationLoader::class,
-    HierarchicalConfigurationLoader::class => HierarchicalConfigurationLoader::class,
-
-    // Factory chooses loader based on command context
-    ConfigurationLoaderInterface::class => ConfigurationLoaderFactory::class,
-
-    // Configure factory with command-specific modes
-    'config.loader.mode.base' => 'simple',
-    'config.loader.mode.config_show' => 'hierarchical',
-]);
-```
+- [x] Create command-specific factory configurations in services.yaml
+- [x] Configure config commands to use hierarchical factory (enhanced features)
+- [x] Configure tool commands to use simple factory (performance optimization) 
+- [x] Create specialized factory service instances for different modes
+- [x] Test factory pattern integration with DI container
 
 #### Step 3.3: Test Factory Pattern
-- [ ] Test factory selects correct loader for each command type
-- [ ] Verify all loader interface methods work correctly
-- [ ] Test switching between modes via configuration
-- [ ] Validate performance with factory pattern
+- [x] Test factory selects correct loader for each command type
+- [x] Verify all loader interface methods work correctly
+- [x] Test switching between modes via configuration
+- [x] Validate performance with factory pattern
 
 ### Phase 4: Eliminate Duplicated Logic
 
