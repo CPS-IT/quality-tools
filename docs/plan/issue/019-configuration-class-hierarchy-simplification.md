@@ -143,30 +143,12 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 ### Phase 4: Eliminate Duplicated Logic
 
 #### Step 4.1: Extract Business Logic Services
-Create dedicated service classes:
-
-```php
-class ProjectConfigService
-{
-    public function getPhpVersion(array $data): string
-    public function getProjectName(array $data): ?string
-    public function getTypo3Version(array $data): string
-}
-
-class ToolConfigService
-{
-    public function getToolConfig(array $data, string $tool): array
-    public function isToolEnabled(array $data, string $tool): bool
-    public function getToolPaths(array $data, string $tool): array
-}
-
-class PathResolutionService
-{
-    public function getResolvedPathsForTool(array $data, string $tool, string $projectRoot): array
-    public function getScanPaths(array $data): array
-    public function getExcludePaths(array $data): array
-}
-```
+- [x] Create ProjectConfigService for project-level configuration logic
+- [x] Create ToolConfigService for tool-specific configuration logic
+- [x] Create PathResolutionService for path scanning and resolution logic
+- [x] Add comprehensive unit tests for all service classes (48 new tests)
+- [x] Configure services in dependency injection container
+- [x] Eliminate duplication between SimpleConfiguration and EnhancedConfiguration
 
 #### Step 4.2: Move Logic from Wrapper to Services
 - [ ] Replace duplicated methods in ConfigurationWrapper with service calls
