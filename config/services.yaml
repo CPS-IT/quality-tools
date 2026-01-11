@@ -42,6 +42,51 @@ services:
     tags:
       - { name: 'console.command' }
 
+  # Command-specific loader configurations (Step 3.2)
+  # Config commands benefit from hierarchical configuration features
+  Cpsit\QualityTools\Console\Command\ConfigShowCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  Cpsit\QualityTools\Console\Command\ConfigInitCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  # Tool commands prioritize performance with simple configuration
+  Cpsit\QualityTools\Console\Command\RectorLintCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  Cpsit\QualityTools\Console\Command\RectorFixCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
+  Cpsit\QualityTools\Console\Command\PhpStanCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+    public: true
+    tags:
+      - { name: 'console.command' }
+
   # External Dependencies
   Symfony\Component\Filesystem\Filesystem:
     public: false
@@ -118,7 +163,7 @@ services:
       $mode: 'simple'
     public: true
 
-  # Factory pattern for intelligent loader selection (Step 3.1)
+  # Factory pattern for intelligent loader selection (Step 3.1 & 3.2)
   Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory:
     arguments:
       $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
@@ -126,7 +171,24 @@ services:
       $defaultMode: 'auto'
     public: true
 
-  # Interface bindings for dependency injection - now using factory
+  # Command-specific factory configurations for specialized use cases (Step 3.2)
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple:
+    class: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory'
+    arguments:
+      $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
+      $hierarchicalLoader: '@Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader'
+      $defaultMode: 'simple'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical:
+    class: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory'
+    arguments:
+      $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
+      $hierarchicalLoader: '@Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader'
+      $defaultMode: 'hierarchical'
+    public: true
+
+  # Interface bindings for dependency injection - now using factory (Step 3.2)
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
     alias: 'Cpsit\QualityTools\Configuration\ConfigurationWrapper'
     public: true
