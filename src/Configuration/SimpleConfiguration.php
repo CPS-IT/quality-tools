@@ -8,7 +8,7 @@ use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Utility\PathScanner;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 
-class Configuration implements ConfigurationInterface
+class SimpleConfiguration implements ConfigurationInterface
 {
     private array $projectConfig;
     private array $pathsConfig;

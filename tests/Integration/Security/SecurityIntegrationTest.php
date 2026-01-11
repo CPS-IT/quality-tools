@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Security;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
@@ -42,7 +42,7 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Access to environment variable "PATH" is not allowed for security reasons');
@@ -68,7 +68,7 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
         $config = $loader->load($this->tempDir);
 
         $data = $config->toArray();
@@ -96,7 +96,7 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
         $config = $loader->load($this->tempDir);
 
         $data = $config->toArray();
@@ -123,7 +123,7 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Environment variable "QT_PROJECT_ROOT" contains potentially unsafe content');

@@ -76,7 +76,7 @@ final class MultiPathScanningTest extends TestCase
 
         // For now, just verify that the configuration and path resolution works correctly
         // without actually running the commands (which require vendor binaries)
-        $loader = new \Cpsit\QualityTools\Configuration\YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $loader = new \Cpsit\QualityTools\Configuration\SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
         $config = $loader->load($this->tempProjectRoot);
         $resolvedPaths = $config->getResolvedPathsForTool('rector');
 
@@ -125,7 +125,7 @@ final class MultiPathScanningTest extends TestCase
 
         // For now, just verify that the configuration and path resolution works correctly
         // without actually running the commands (which require vendor binaries)
-        $loader = new \Cpsit\QualityTools\Configuration\YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $loader = new \Cpsit\QualityTools\Configuration\SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
         $config = $loader->load($this->tempProjectRoot);
         $resolvedPaths = $config->getResolvedPathsForTool('php-cs-fixer');
 
@@ -159,7 +159,7 @@ final class MultiPathScanningTest extends TestCase
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $configContent);
 
         // Test path resolution directly
-        $loader = new \Cpsit\QualityTools\Configuration\YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $loader = new \Cpsit\QualityTools\Configuration\SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
         $config = $loader->load($this->tempProjectRoot);
         $resolvedPaths = $config->getResolvedPathsForTool('rector');
 

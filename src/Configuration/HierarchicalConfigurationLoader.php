@@ -153,7 +153,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
     {
         $enhanced = $this->load($projectRoot);
 
-        return new Configuration($enhanced->toArray(), $this->validator);
+        return new SimpleConfiguration($enhanced->toArray(), $this->validator);
     }
 
     /**

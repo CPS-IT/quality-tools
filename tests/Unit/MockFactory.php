@@ -134,9 +134,9 @@ final readonly class MockFactory
     }
 
     /**
-     * Create a complete dependency set for YamlConfigurationLoader.
+     * Create a complete dependency set for SimpleConfigurationLoader.
      */
-    public function createYamlConfigurationLoaderDependencies(array $files = []): array
+    public function createSimpleConfigurationLoaderDependencies(array $files = []): array
     {
         return [
             'validator' => $this->createConfigurationValidatorMock(),

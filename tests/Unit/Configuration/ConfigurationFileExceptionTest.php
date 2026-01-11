@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotFoundException;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
@@ -21,13 +21,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ConfigurationLoadException::class)]
 final class ConfigurationFileExceptionTest extends TestCase
 {
-    private YamlConfigurationLoader $loader;
+    private SimpleConfigurationLoader $loader;
     private string $tempDir;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_exception_test_');
-        $this->loader = new YamlConfigurationLoader(
+        $this->loader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),

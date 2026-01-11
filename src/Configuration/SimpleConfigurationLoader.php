@@ -10,7 +10,7 @@ use Cpsit\QualityTools\Traits\ConfigurationFileReaderTrait;
 use Cpsit\QualityTools\Traits\EnvironmentVariableInterpolationTrait;
 use Cpsit\QualityTools\Traits\YamlFileLoaderTrait;
 
-final readonly class YamlConfigurationLoader implements ConfigurationLoaderInterface
+final readonly class SimpleConfigurationLoader implements ConfigurationLoaderInterface
 {
     use ConfigurationFileReaderTrait;
     use EnvironmentVariableInterpolationTrait;
@@ -31,7 +31,7 @@ final readonly class YamlConfigurationLoader implements ConfigurationLoaderInter
     public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
     {
         $configData = $this->loadConfigurationHierarchy($projectRoot);
-        $configuration = new Configuration($configData);
+        $configuration = new SimpleConfiguration($configData);
         $configuration->setProjectRoot($projectRoot);
 
         return $configuration;
@@ -42,7 +42,7 @@ final readonly class YamlConfigurationLoader implements ConfigurationLoaderInter
         $configurations = [];
 
         // 1. Package defaults (lowest priority)
-        $configurations[] = Configuration::createDefault()->toArray();
+        $configurations[] = SimpleConfiguration::createDefault()->toArray();
 
         // 2. Global user configuration
         $globalConfig = $this->loadGlobalConfiguration();

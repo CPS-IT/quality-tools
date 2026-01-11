@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
-use Cpsit\QualityTools\Configuration\Configuration;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Cpsit\QualityTools\Configuration\YamlConfigurationLoader
- * @covers \Cpsit\QualityTools\Configuration\Configuration
- * @covers \Cpsit\QualityTools\Configuration\ConfigurationValidator
+ * @covers \Cpsit\QualityTools\Configuration\SimpleConfigurationLoader
+ * @covers \Cpsit\QualityTools\Configuration\SimpleConfiguration
+ * @covers \Cpsit\QualityTools\Configuration\SimpleConfigurationValidator
  */
 final class ConfigurationMergingTest extends TestCase
 {
-    private YamlConfigurationLoader $loader;
+    private SimpleConfigurationLoader $loader;
     private string $tempDir;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_merging_test_');
-        $this->loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $this->loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
     }
 
     protected function tearDown(): void
@@ -109,7 +109,7 @@ final class ConfigurationMergingTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): Configuration => $this->loader->load($this->tempDir),
+            fn (): SimpleConfiguration => $this->loader->load($this->tempDir),
         );
 
         // Test project-level overrides
@@ -208,7 +208,7 @@ final class ConfigurationMergingTest extends TestCase
             'OUTPUT_COLORS' => 'false',
             'MAX_PROCESSES' => '8',
             // Other variables not set - should use defaults
-        ], fn (): Configuration => $this->loader->load($this->tempDir));
+        ], fn (): SimpleConfiguration => $this->loader->load($this->tempDir));
 
         // Test interpolated project settings
         self::assertSame('env-integration-test', $config->getProjectName());
@@ -283,7 +283,7 @@ final class ConfigurationMergingTest extends TestCase
             'PARALLEL_STRING' => 'false',
             'MAX_PROCESSES_STRING' => '12',
             'CACHE_ENABLED_STRING' => 'false',
-        ], fn (): Configuration => $this->loader->load($this->tempDir));
+        ], fn (): SimpleConfiguration => $this->loader->load($this->tempDir));
 
         // Verify that string values are properly interpreted as appropriate types
         $rectorConfig = $config->getRectorConfig();
@@ -378,7 +378,7 @@ final class ConfigurationMergingTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): Configuration => $this->loader->load($this->tempDir),
+            fn (): SimpleConfiguration => $this->loader->load($this->tempDir),
         );
 
         // Test rector merging
@@ -466,7 +466,7 @@ final class ConfigurationMergingTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): Configuration => $this->loader->load($this->tempDir),
+            fn (): SimpleConfiguration => $this->loader->load($this->tempDir),
         );
 
         // Arrays should be merged: defaults + global + project (with deduplication)
@@ -497,7 +497,7 @@ final class ConfigurationMergingTest extends TestCase
         // Set HOME to non-existent directory
         $config = TestHelper::withEnvironment(
             ['HOME' => '/nonexistent'],
-            fn (): Configuration => $this->loader->load($this->tempDir),
+            fn (): SimpleConfiguration => $this->loader->load($this->tempDir),
         );
 
         // Should merge with package defaults only
@@ -528,7 +528,7 @@ final class ConfigurationMergingTest extends TestCase
 
         $config = TestHelper::withEnvironment(
             ['HOME' => $homeDir],
-            fn (): Configuration => $this->loader->load($this->tempDir),
+            fn (): SimpleConfiguration => $this->loader->load($this->tempDir),
         );
 
         // Should merge global with package defaults

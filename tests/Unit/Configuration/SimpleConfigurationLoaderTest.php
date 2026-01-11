@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
 use Cpsit\QualityTools\Service\FilesystemService;
@@ -14,10 +14,10 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\FilesystemTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 
-#[CoversClass(YamlConfigurationLoader::class)]
-final class YamlConfigurationLoaderTest extends FilesystemTestCase
+#[CoversClass(SimpleConfigurationLoader::class)]
+final class SimpleConfigurationLoaderTest extends FilesystemTestCase
 {
-    private YamlConfigurationLoader $loader;
+    private SimpleConfigurationLoader $loader;
     private string $projectRoot;
 
     #[\Override]
@@ -25,7 +25,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
     {
         parent::setUp();
         $this->projectRoot = $this->createConfigurationStructure();
-        $this->loader = new YamlConfigurationLoader(
+        $this->loader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
@@ -79,7 +79,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => $hierarchy['homeDir']],
-            fn (): Configuration => $this->loader->load($hierarchy['projectRoot']),
+            fn (): SimpleConfiguration => $this->loader->load($hierarchy['projectRoot']),
         );
 
         self::assertSame('project-override', $config->getProjectName());
@@ -99,7 +99,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => ''],
-            fn (): Configuration => $this->loader->load($this->projectRoot),
+            fn (): SimpleConfiguration => $this->loader->load($this->projectRoot),
         );
 
         self::assertSame('no-home', $config->getProjectName());
@@ -125,7 +125,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
         $config = $this->withEnvironment([
             'PROJECT_NAME' => 'env-test-project',
             'PHP_VERSION' => '8.4',
-        ], fn (): Configuration => $this->loader->load($this->projectRoot));
+        ], fn (): SimpleConfiguration => $this->loader->load($this->projectRoot));
 
         self::assertSame('env-test-project', $config->getProjectName());
         self::assertSame('8.4', $config->getProjectPhpVersion());
@@ -276,7 +276,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => $homeDir],
-            fn (): Configuration => $this->loader->load($this->projectRoot),
+            fn (): SimpleConfiguration => $this->loader->load($this->projectRoot),
         );
 
         self::assertSame('test-merge', $config->getProjectName());
@@ -324,7 +324,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
             'PROJECT_NAME' => 'env-override',
             'MEMORY_LIMIT' => '2G',
             'SECONDARY_SCAN_PATH' => 'custom/',
-        ], fn (): Configuration => $this->loader->load($this->projectRoot));
+        ], fn (): SimpleConfiguration => $this->loader->load($this->projectRoot));
 
         self::assertSame('env-override', $config->getProjectName());
         self::assertSame('8.3', $config->getProjectPhpVersion());

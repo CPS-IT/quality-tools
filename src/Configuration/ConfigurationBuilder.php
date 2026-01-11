@@ -12,7 +12,7 @@ namespace Cpsit\QualityTools\Configuration;
  */
 final readonly class ConfigurationBuilder
 {
-    public function __construct(private Configuration $configuration)
+    public function __construct(private SimpleConfiguration $configuration)
     {
     }
 

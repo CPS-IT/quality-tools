@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Cpsit\QualityTools\Configuration\Configuration
+ * @covers \Cpsit\QualityTools\Configuration\SimpleConfiguration
  */
-final class ConfigurationTest extends TestCase
+final class SimpleConfigurationTest extends TestCase
 {
     public function testDefaultConfiguration(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         // Test default project values
         self::assertSame('8.3', $config->getProjectPhpVersion());
@@ -80,7 +80,7 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
 
         // Test custom project values
         self::assertSame('8.4', $config->getProjectPhpVersion());
@@ -120,7 +120,7 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
 
         $rectorConfig = $config->getToolConfig('rector');
         self::assertSame([
@@ -135,7 +135,7 @@ final class ConfigurationTest extends TestCase
 
     public function testGetRectorConfig(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         $rectorConfig = $config->getRectorConfig();
 
@@ -165,7 +165,7 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
         $rectorConfig = $config->getRectorConfig();
 
         $expected = [
@@ -180,7 +180,7 @@ final class ConfigurationTest extends TestCase
 
     public function testGetFractorConfig(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         $fractorConfig = $config->getFractorConfig();
 
@@ -194,7 +194,7 @@ final class ConfigurationTest extends TestCase
 
     public function testGetPhpStanConfig(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         $phpStanConfig = $config->getPhpStanConfig();
 
@@ -209,7 +209,7 @@ final class ConfigurationTest extends TestCase
 
     public function testGetPhpCsFixerConfig(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         $phpCsFixerConfig = $config->getPhpCsFixerConfig();
 
@@ -223,7 +223,7 @@ final class ConfigurationTest extends TestCase
 
     public function testGetTypoScriptLintConfig(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         $typoscriptLintConfig = $config->getTypoScriptLintConfig();
 
@@ -237,7 +237,7 @@ final class ConfigurationTest extends TestCase
 
     public function testIsToolEnabledDefault(): void
     {
-        $config = new Configuration();
+        $config = new SimpleConfiguration();
 
         // Default is true for all tools
         self::assertTrue($config->isToolEnabled('unknown-tool'));
@@ -254,7 +254,7 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
 
         self::assertFalse($config->isToolEnabled('rector'));
         self::assertTrue($config->isToolEnabled('phpstan'));
@@ -271,14 +271,14 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
 
         self::assertSame($data, $config->toArray());
     }
 
     public function testMerge(): void
     {
-        $config1 = new Configuration([
+        $config1 = new SimpleConfiguration([
             'quality-tools' => [
                 'project' => [
                     'name' => 'test',
@@ -290,7 +290,7 @@ final class ConfigurationTest extends TestCase
             ],
         ]);
 
-        $config2 = new Configuration([
+        $config2 = new SimpleConfiguration([
             'quality-tools' => [
                 'project' => [
                     'typo3_version' => '13.4', // This should be added (avoid php_version conflict)
@@ -324,7 +324,7 @@ final class ConfigurationTest extends TestCase
 
     public function testCreateDefault(): void
     {
-        $config = Configuration::createDefault();
+        $config = SimpleConfiguration::createDefault();
 
         // Test some key defaults to ensure it's properly initialized
         self::assertSame('8.3', $config->getProjectPhpVersion());
@@ -345,7 +345,7 @@ final class ConfigurationTest extends TestCase
 
     public function testEmptyDataHandling(): void
     {
-        $config = new Configuration([]);
+        $config = new SimpleConfiguration([]);
 
         // Should still provide defaults
         self::assertSame('8.3', $config->getProjectPhpVersion());
@@ -374,7 +374,7 @@ final class ConfigurationTest extends TestCase
             ],
         ];
 
-        $config = new Configuration($data);
+        $config = new SimpleConfiguration($data);
 
         self::assertSame('test', $config->getProjectName());
         self::assertSame('8.3', $config->getProjectPhpVersion()); // default

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -39,7 +39,7 @@ final class BaseCommandPathResolutionTest extends TestCase
                 return $this->getResolvedPathsForTool($input, $tool);
             }
 
-            public function setMockConfiguration(Configuration $config): void
+            public function setMockConfiguration(SimpleConfiguration $config): void
             {
                 $this->configuration = $config;
             }
@@ -62,7 +62,7 @@ final class BaseCommandPathResolutionTest extends TestCase
         };
 
         // Create mock configuration that returns multiple paths
-        $mockConfig = $this->createMock(Configuration::class);
+        $mockConfig = $this->createMock(SimpleConfiguration::class);
         $mockConfig->method('getResolvedPathsForTool')
             ->with('rector')
             ->willReturn([
@@ -145,7 +145,7 @@ final class BaseCommandPathResolutionTest extends TestCase
         // Instead of relying on environment variables or single paths,
         // commands now pass all resolved paths directly as arguments
 
-        $mockConfig = $this->createMock(Configuration::class);
+        $mockConfig = $this->createMock(SimpleConfiguration::class);
         $mockConfig->method('getResolvedPathsForTool')
             ->willReturn([
                 '/project/packages',
@@ -154,7 +154,7 @@ final class BaseCommandPathResolutionTest extends TestCase
             ]);
 
         $command = new class extends BaseCommand {
-            public function setMockConfiguration(Configuration $config): void
+            public function setMockConfiguration(SimpleConfiguration $config): void
             {
                 $this->configuration = $config;
             }

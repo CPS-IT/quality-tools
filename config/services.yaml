@@ -70,7 +70,7 @@ services:
   Cpsit\QualityTools\Utility\VendorDirectoryDetector:
     public: true
 
-  Cpsit\QualityTools\Configuration\YamlConfigurationLoader:
+  Cpsit\QualityTools\Configuration\SimpleConfigurationLoader:
     arguments:
       $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'
@@ -104,9 +104,9 @@ services:
 
   # Interface bindings for dependency injection
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
-    alias: 'Cpsit\QualityTools\Configuration\Configuration'
+    alias: 'Cpsit\QualityTools\Configuration\SimpleConfiguration'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
-    alias: 'Cpsit\QualityTools\Configuration\YamlConfigurationLoader'
+    alias: 'Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
     public: true

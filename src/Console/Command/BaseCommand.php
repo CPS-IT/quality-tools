@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareTrait;
@@ -35,7 +36,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected ?MemoryCalculator $memoryCalculator = null;
     protected ?string $cachedTargetPath = null;
     protected ?bool $cachedNoOptimization = null;
-    protected ?Configuration $configuration = null;
+    protected ?ConfigurationInterface $configuration = null;
 
     protected function configure(): void
     {
@@ -442,7 +443,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return [$this->getProjectRoot()];
     }
 
-    protected function getConfiguration(InputInterface $input): Configuration
+    protected function getConfiguration(InputInterface $input): ConfigurationInterface
     {
         if ($this->configuration === null) {
             $projectRoot = $this->getProjectRoot();
@@ -508,17 +509,17 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new ProjectAnalyzer();
     }
 
-    protected function getYamlConfigurationLoader(): YamlConfigurationLoader
+    protected function getYamlConfigurationLoader(): SimpleConfigurationLoader
     {
-        if ($this->hasService(YamlConfigurationLoader::class)) {
-            return $this->getService(YamlConfigurationLoader::class);
+        if ($this->hasService(SimpleConfigurationLoader::class)) {
+            return $this->getService(SimpleConfigurationLoader::class);
         }
 
         // Fallback for tests and scenarios without DI container
-        return new YamlConfigurationLoader(
+        return new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(),
+            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
         );
     }
 

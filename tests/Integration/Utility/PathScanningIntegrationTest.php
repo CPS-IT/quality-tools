@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Utility;
 
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\ConfigurationBuilder;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
@@ -17,12 +17,12 @@ use PHPUnit\Framework\TestCase;
 final class PathScanningIntegrationTest extends TestCase
 {
     private string $tempProjectRoot;
-    private YamlConfigurationLoader $loader;
+    private SimpleConfigurationLoader $loader;
 
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('path_scanning_integration_test_');
-        $this->loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $this->loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
     }
 
     protected function tearDown(): void
