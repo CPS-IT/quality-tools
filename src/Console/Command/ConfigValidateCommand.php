@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,6 +14,11 @@ use Symfony\Component\Yaml\Yaml;
 final class ConfigValidateCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
+
+    public function __construct(?ConfigurationLoaderInterface $configurationLoader = null)
+    {
+        parent::__construct('config:validate', $configurationLoader);
+    }
 
     #[\Override]
     protected function configure(): void

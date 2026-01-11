@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Service\ErrorFactory;
 use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AbstractToolCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
+
+    public function __construct(?string $name = null, ?ConfigurationLoaderInterface $configurationLoader = null)
+    {
+        parent::__construct($name, $configurationLoader);
+    }
 
     /**
      * Template method that defines the common execution flow for all tool commands.

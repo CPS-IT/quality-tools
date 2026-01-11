@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
 use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Service\FilesystemService;
@@ -16,8 +17,9 @@ final class ConfigInitCommand extends BaseCommand
 {
     public function __construct(
         private readonly FilesystemService $filesystemService,
+        ?ConfigurationLoaderInterface $configurationLoader = null,
     ) {
-        parent::__construct();
+        parent::__construct('config:init', $configurationLoader);
     }
 
     private const string TEMPLATE_TYPO3_EXTENSION = 'typo3-extension';

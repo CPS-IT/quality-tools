@@ -99,9 +99,14 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Verbose output shows configuration sources correctly
 
 #### Step 2.4: Update All Other Commands
-- [ ] ConfigInitCommand - change to use `ConfigurationLoaderInterface`
-- [ ] ConfigValidateCommand - change to use `ConfigurationLoaderInterface`
-- [ ] All tool commands inheriting from BaseCommand (inherit interface usage)
+- [x] ConfigInitCommand - change to use `ConfigurationLoaderInterface`
+- [x] ConfigValidateCommand - change to use `ConfigurationLoaderInterface`  
+- [x] AbstractToolCommand - added constructor with `ConfigurationLoaderInterface`
+- [x] All tool commands inheriting from BaseCommand (automatically inherit interface usage)
+- [x] Updated constructors to accept ConfigurationLoaderInterface parameter
+- [x] All commands maintain backward compatibility
+- [x] All 706 tests passing (597 unit + 109 integration)
+- [x] Commands validated: config:init, config:validate, lint:rector, lint:phpstan
 
 #### Step 2.5: Update Tests
 - [ ] Update unit tests to use interface mocking
