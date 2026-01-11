@@ -130,7 +130,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
         self::assertSame('env-test-project', $config->getProjectName());
         self::assertSame('8.4', $config->getProjectPhpVersion());
         self::assertSame('2G', $config->getPhpStanConfig()['memory_limit']);
-        $expectedPaths = ['packages/'];
+        $expectedPaths = ['packages/', 'config/system/'];
         self::assertSame($expectedPaths, $config->getScanPaths());
     }
 
@@ -333,7 +333,7 @@ final class YamlConfigurationLoaderTest extends FilesystemTestCase
         self::assertSame('2G', $phpStanConfig['memory_limit']);
         self::assertSame(6, $phpStanConfig['level']);
 
-        self::assertSame(['packages/', 'custom/'], $config->getScanPaths());
+        self::assertSame(['packages/', 'config/system/', 'custom/'], $config->getScanPaths());
     }
 
     public function testEmptyYamlFile(): void

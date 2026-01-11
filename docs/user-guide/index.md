@@ -45,17 +45,17 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
 2. [Getting Started](getting-started.md) - Basic usage and first steps
 3. [Dynamic Resource Optimization](optimization.md) - How automatic optimization works
 4. [Project Detection](project-detection.md) - How the tool finds TYPO3 projects
-5. [Configuration](configuration.md) - Environment variables and customization options
+5. [Configuration](configuration.md) - Configuration system with hierarchical override support
 6. [Troubleshooting](troubleshooting.md) - Common issues and solutions
 
 ## Configuration System
 
-The unified YAML configuration system provides comprehensive configuration management:
+The hierarchical configuration system provides powerful yet simple configuration management:
 
-7. [YAML Configuration Guide](configuration/yaml-configuration.md) - Complete guide to the unified YAML configuration system
-8. [Project Templates](configuration/templates.md) - Pre-configured setups for different TYPO3 project types
-9. [Environment Variables](configuration/environment-variables.md) - Using environment variables in configurations
-10. [Configuration Reference](configuration/reference.md) - Complete reference for all configuration options
+7. [Configuration Reference](configuration/reference.md) - Complete reference for all configuration options and hierarchy
+8. [YAML Configuration Guide](configuration/yaml-configuration.md) - Complete guide to the unified YAML configuration system
+9. [Project Templates](configuration/templates.md) - Pre-configured setups for different TYPO3 project types
+10. [Environment Variables](configuration/environment-variables.md) - Using environment variables in configurations
 11. [Migration Guide](configuration/migration.md) - Migrating from tool-specific configurations
 12. [Configuration Troubleshooting](configuration/troubleshooting.md) - Diagnosing configuration issues
 

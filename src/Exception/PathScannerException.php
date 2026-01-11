@@ -9,9 +9,9 @@ namespace Cpsit\QualityTools\Exception;
  */
 class PathScannerException extends QualityToolsException
 {
-    public const ERROR_PATH_RESOLUTION_FAILED = 6001;
-    public const ERROR_PATH_VALIDATION_FAILED = 6002;
-    public const ERROR_PATTERN_INVALID = 6003;
+    public const int ERROR_PATH_RESOLUTION_FAILED = 6001;
+    public const int ERROR_PATH_VALIDATION_FAILED = 6002;
+    public const int ERROR_PATTERN_INVALID = 6003;
 
     public function __construct(
         string $message = '',

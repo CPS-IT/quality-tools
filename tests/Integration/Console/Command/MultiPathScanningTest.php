@@ -130,7 +130,7 @@ final class MultiPathScanningTest extends TestCase
         $resolvedPaths = $config->getResolvedPathsForTool('php-cs-fixer');
 
         // Verify all paths are resolved correctly
-        $this->assertCount(3, $resolvedPaths, 'All configured paths should be resolved');
+        $this->assertCount(4, $resolvedPaths, 'All configured paths should be resolved');
         $this->assertContains(realpath($this->tempProjectRoot . '/src'), $resolvedPaths);
         $this->assertContains(realpath($this->tempProjectRoot . '/vendor/cpsit/package1'), $resolvedPaths);
         $this->assertContains(realpath($this->tempProjectRoot . '/vendor/fr/package2'), $resolvedPaths);

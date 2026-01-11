@@ -245,21 +245,28 @@ final class YamlConfigurationWorkflowTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, $invalidConfig);
 
-        // Validation should fail
-        $appTester->run(['command' => 'config:validate']);
+        try {
+            // Validation should fail
+            $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
+            self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $appTester->getDisplay();
-        self::assertStringContainsString('Unexpected Error:', $output);
+            $output = $appTester->getDisplay();
+            self::assertStringContainsString('Unexpected Error:', $output);
 
-        // Show command should also fail
-        $appTester->run(['command' => 'config:show']);
+            // Show command should also fail
+            $appTester->run(['command' => 'config:show']);
 
-        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
+            self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $appTester->getDisplay();
-        self::assertStringContainsString('Failed to load configuration', $output);
+            $output = $appTester->getDisplay();
+            self::assertStringContainsString('Failed to load configuration', $output);
+        } finally {
+            // Clean up invalid config file to prevent it from affecting other tests
+            if (file_exists($configFile)) {
+                unlink($configFile);
+            }
+        }
     }
 
     public function testWorkflowWithForceOverwrite(): void
