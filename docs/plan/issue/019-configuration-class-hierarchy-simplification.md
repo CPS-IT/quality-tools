@@ -193,34 +193,50 @@ final class Configuration implements ConfigurationInterface
     // Factory methods for creation
     public static function createSimple(...): self;
     public static function createHierarchical(...): self;
-    
+
     // All business logic delegates to services
     // Source tracking available when hierarchicalMode = true
 }
 ```
 
 #### Step 5.2: Create Unified ConfigurationLoader
+- [x] Create unified ConfigurationLoader class implementing ConfigurationLoaderInterface
+- [x] Support both simple and hierarchical loading modes via method parameter
+- [x] Delegate complex hierarchy loading to ConfigurationHierarchy and ConfigurationDiscovery
+- [x] Provide factory methods for creating simple and hierarchical loaders
+- [x] Implement all interface methods including tool-specific loading and configuration analysis
+- [x] All 895 tests passing with unified loader implementation
+- [x] Full backward compatibility maintained
+
 ```php
-class ConfigurationLoader
+final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 {
     public function __construct(
         private ConfigurationValidator $validator,
         private SecurityService $securityService,
         private FilesystemService $filesystemService,
-        private ProjectConfigService $projectConfigService,
-        private ToolConfigService $toolConfigService,
-        private PathResolutionService $pathResolutionService
+        private ?ProjectConfigService $projectConfigService = null,
+        private ?ToolConfigService $toolConfigService = null,
+        private ?PathResolutionService $pathResolutionService = null,
     ) {}
 
-    public function load(
-        string $projectRoot,
-        array $commandLineOverrides = [],
-        bool $hierarchical = false
-    ): Configuration {
-        return $hierarchical
-            ? $this->loadHierarchical($projectRoot, $commandLineOverrides)
-            : $this->loadSimple($projectRoot);
+    public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
+    {
+        return $this->loadWithMode($projectRoot, $commandLineOverrides, false);
     }
+
+    public function loadHierarchical(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
+    {
+        return $this->loadWithMode($projectRoot, $commandLineOverrides, true);
+    }
+    
+    public function loadSimple(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
+    {
+        return $this->loadWithMode($projectRoot, $commandLineOverrides, false);
+    }
+
+    // All ConfigurationLoaderInterface methods implemented
+    // Factory methods for creating specialized loaders
 }
 ```
 
