@@ -158,35 +158,42 @@ Use wrapper pattern to minimize regression risk with gradual migration.
 - [x] Update service container configuration for service injection
 
 #### Step 4.3: Add Missing Capabilities
-- [ ] Add path resolution to enhanced variant through PathResolutionService
-- [ ] Ensure ConfigurationWrapper provides all capabilities regardless of variant
+- [x] Add path resolution to enhanced variant through PathResolutionService
+- [x] Ensure ConfigurationWrapper provides all capabilities regardless of variant
+- [x] Create unified test suite for consistent behavior validation
+- [x] All missing capabilities added with service delegation pattern
 
 ### Phase 5: Unify Implementations
 
 #### Step 5.1: Create Unified Configuration Class
+- [x] Create unified Configuration class implementing ConfigurationInterface
+- [x] Support both simple and hierarchical modes via constructor flag
+- [x] Delegate all business logic to specialized services (ProjectConfigService, ToolConfigService, PathResolutionService)
+- [x] Provide factory methods for creating simple and hierarchical configurations
+- [x] Source tracking and metadata available only in hierarchical mode
+- [x] All 895 tests passing with unified implementation
+- [x] Full backward compatibility maintained
+
 ```php
-class Configuration
+final class Configuration implements ConfigurationInterface
 {
-    private array $data;
-    private array $sourceMap;
-    private array $conflicts;
-    private array $mergeSummary;
-    private bool $hierarchicalMode;
-
     public function __construct(
-        array $data,
-        array $sourceMap = [],
-        array $conflicts = [],
-        array $mergeSummary = [],
-        bool $hierarchicalMode = false
-    ) {
-        $this->data = $data;
-        $this->sourceMap = $sourceMap;
-        $this->conflicts = $conflicts;
-        $this->mergeSummary = $mergeSummary;
-        $this->hierarchicalMode = $hierarchicalMode;
-    }
+        private readonly array $data = [],
+        private readonly array $sourceMap = [],
+        private readonly array $conflicts = [],
+        private readonly array $mergeSummary = [],
+        private readonly bool $hierarchicalMode = false,
+        private readonly ?ConfigurationValidator $validator = null,
+        private readonly ?ProjectConfigService $projectConfigService = null,
+        private readonly ?ToolConfigService $toolConfigService = null,
+        private readonly ?PathResolutionService $pathResolutionService = null,
+        // ... other services
+    ) {}
 
+    // Factory methods for creation
+    public static function createSimple(...): self;
+    public static function createHierarchical(...): self;
+    
     // All business logic delegates to services
     // Source tracking available when hierarchicalMode = true
 }

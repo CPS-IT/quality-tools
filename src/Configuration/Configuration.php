@@ -1,0 +1,543 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Cpsit\QualityTools\Configuration;
+
+use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\ToolConfigService;
+
+/**
+ * Unified configuration class supporting both simple and hierarchical modes.
+ *
+ * This class replaces both SimpleConfiguration and EnhancedConfiguration,
+ * providing all capabilities through a single, unified interface.
+ * Business logic is delegated to specialized services for maintainability.
+ */
+final class Configuration implements ConfigurationInterface
+{
+    private const string DEFAULT_PHP_VERSION = '8.3';
+    private const string DEFAULT_TYPO3_VERSION = '13.4';
+    private const array DEFAULT_SCAN_PATHS = ['packages/', 'config/system/'];
+    private const array DEFAULT_EXCLUDE_PATHS = [
+        'var/',
+        'vendor/',
+        'public/',
+        '_assets/',
+        'fileadmin/',
+        'typo3/',
+        'Tests/',
+        'tests/',
+        'typo3conf/',
+    ];
+
+    private ?string $projectRoot = null;
+
+    public function __construct(
+        private readonly array $data = [],
+        private readonly array $sourceMap = [],
+        private readonly array $conflicts = [],
+        private readonly array $mergeSummary = [],
+        private readonly bool $hierarchicalMode = false,
+        private readonly ?ConfigurationValidator $validator = null,
+        private readonly ?ProjectConfigService $projectConfigService = null,
+        private readonly ?ToolConfigService $toolConfigService = null,
+        private readonly ?PathResolutionService $pathResolutionService = null,
+        private readonly ?ConfigurationHierarchy $hierarchy = null,
+        private readonly ?ConfigurationDiscovery $discovery = null,
+    ) {
+        // Validate configuration if validator is provided and data is not empty
+        if ($this->validator !== null && !empty($this->data)) {
+            $this->validator->validate($this->data);
+        }
+    }
+
+    // Core data access methods
+
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
+    public function setProjectRoot(string $projectRoot): void
+    {
+        $this->projectRoot = $projectRoot;
+
+        // Clear path resolution cache when project root changes
+        if ($this->pathResolutionService !== null) {
+            $this->pathResolutionService->clearAllCaches();
+        }
+    }
+
+    public function getProjectRoot(): ?string
+    {
+        return $this->projectRoot;
+    }
+
+    // Project configuration methods (delegated to ProjectConfigService)
+
+    public function getProjectPhpVersion(): string
+    {
+        return $this->projectConfigService?->getPhpVersion($this->data)
+            ?? self::DEFAULT_PHP_VERSION;
+    }
+
+    public function getProjectTypo3Version(): string
+    {
+        return $this->projectConfigService?->getTypo3Version($this->data)
+            ?? self::DEFAULT_TYPO3_VERSION;
+    }
+
+    public function getProjectName(): ?string
+    {
+        return $this->projectConfigService?->getProjectName($this->data);
+    }
+
+    // Path configuration methods (delegated to PathResolutionService)
+
+    public function getScanPaths(): array
+    {
+        return $this->pathResolutionService?->getScanPaths($this->data)
+            ?? self::DEFAULT_SCAN_PATHS;
+    }
+
+    public function getExcludePaths(): array
+    {
+        return $this->pathResolutionService?->getExcludePaths($this->data)
+            ?? self::DEFAULT_EXCLUDE_PATHS;
+    }
+
+    public function getToolPaths(string $tool): array
+    {
+        return $this->pathResolutionService?->getToolPaths($this->data, $tool)
+            ?? [];
+    }
+
+    // Tool configuration methods (delegated to ToolConfigService)
+
+    public function isToolEnabled(string $tool): bool
+    {
+        return $this->toolConfigService?->isToolEnabled($this->data, $tool)
+            ?? true;
+    }
+
+    public function getToolConfig(string $tool): array
+    {
+        return $this->toolConfigService?->getToolConfig($this->data, $tool)
+            ?? [];
+    }
+
+    // Output configuration methods
+
+    public function getVerbosity(): string
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+
+        return $outputConfig['verbosity'] ?? 'normal';
+    }
+
+    public function isColorsEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+
+        return $outputConfig['colors'] ?? true;
+    }
+
+    public function isProgressEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $outputConfig = $qualityTools['output'] ?? [];
+
+        return $outputConfig['progress'] ?? true;
+    }
+
+    // Performance configuration methods
+
+    public function isParallelEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+
+        return $performanceConfig['parallel'] ?? false;
+    }
+
+    public function getMaxProcesses(): int
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+
+        return $performanceConfig['max_processes'] ?? 4;
+    }
+
+    public function isCacheEnabled(): bool
+    {
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $performanceConfig = $qualityTools['performance'] ?? [];
+
+        return $performanceConfig['cache'] ?? true;
+    }
+
+    // Vendor directory methods (delegated to PathResolutionService)
+
+    public function getVendorPath(): ?string
+    {
+        if ($this->pathResolutionService === null || $this->projectRoot === null) {
+            return null;
+        }
+
+        return $this->pathResolutionService->getVendorPath($this->projectRoot);
+    }
+
+    public function getVendorBinPath(): ?string
+    {
+        if ($this->pathResolutionService === null || $this->projectRoot === null) {
+            return null;
+        }
+
+        return $this->pathResolutionService->getVendorBinPath($this->projectRoot);
+    }
+
+    public function hasVendorDirectory(): bool
+    {
+        return $this->getVendorPath() !== null;
+    }
+
+    public function getVendorDetectionDebugInfo(): array
+    {
+        return [
+            'project_root' => $this->projectRoot,
+            'vendor_path' => $this->getVendorPath(),
+            'vendor_bin_path' => $this->getVendorBinPath(),
+            'detection_method' => $this->pathResolutionService !== null ? 'PathResolutionService' : 'Not available',
+        ];
+    }
+
+    // Path resolution methods (delegated to PathResolutionService)
+
+    public function getResolvedPathsForTool(string $tool): array
+    {
+        if ($this->pathResolutionService === null || $this->projectRoot === null) {
+            return $this->getScanPaths();
+        }
+
+        return $this->pathResolutionService->getResolvedPathsForTool($this->data, $tool, $this->projectRoot);
+    }
+
+    public function getPathScanningDebugInfo(string $tool): array
+    {
+        return [
+            'tool' => $tool,
+            'project_root' => $this->projectRoot,
+            'scan_paths' => $this->getScanPaths(),
+            'exclude_paths' => $this->getExcludePaths(),
+            'tool_paths' => $this->getToolPaths($tool),
+            'resolved_paths' => $this->getResolvedPathsForTool($tool),
+            'path_resolution_service' => $this->pathResolutionService !== null ? 'Available' : 'Not available',
+        ];
+    }
+
+    // Enhanced configuration methods (only available in hierarchical mode)
+
+    public function getConfigurationSource(string $keyPath): ?string
+    {
+        if (!$this->hierarchicalMode) {
+            return null;
+        }
+
+        return $this->sourceMap[$keyPath] ?? null;
+    }
+
+    public function getConfigurationSources(): array
+    {
+        return $this->hierarchicalMode ? $this->sourceMap : [];
+    }
+
+    public function getConfigurationConflicts(): array
+    {
+        return $this->hierarchicalMode ? $this->conflicts : [];
+    }
+
+    public function hasConfigurationConflicts(): bool
+    {
+        return $this->hierarchicalMode && !empty($this->conflicts);
+    }
+
+    public function getConflictsForKey(string $keyPath): array
+    {
+        if (!$this->hierarchicalMode) {
+            return [];
+        }
+
+        return array_filter($this->conflicts, fn ($conflict): bool => $conflict['key_path'] === $keyPath);
+    }
+
+    public function getMergeSummary(): array
+    {
+        return $this->hierarchicalMode ? $this->mergeSummary : [];
+    }
+
+    public function usesCustomConfigFile(string $tool): bool
+    {
+        if (!$this->hierarchicalMode) {
+            return false;
+        }
+
+        $toolConfigKey = "quality-tools.tools.{$tool}.config_file";
+
+        return isset($this->sourceMap[$toolConfigKey]);
+    }
+
+    public function getCustomConfigFilePath(string $tool): ?string
+    {
+        if (!$this->hierarchicalMode) {
+            return null;
+        }
+
+        $toolConfig = $this->getToolConfig($tool);
+
+        return $toolConfig['config_file'] ?? null;
+    }
+
+    public function getConfigurationWithSources(): array
+    {
+        if (!$this->hierarchicalMode) {
+            return $this->data;
+        }
+
+        $result = [];
+        foreach ($this->data as $key => $value) {
+            $result[$key] = [
+                'value' => $value,
+                'source' => $this->sourceMap[$key] ?? 'unknown',
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getToolConfigurationResolved(string $tool): array
+    {
+        $toolConfig = $this->getToolConfig($tool);
+
+        if (!$this->hierarchicalMode) {
+            return $toolConfig;
+        }
+
+        // Add source information for hierarchical mode
+        $resolved = [];
+        $toolPrefix = "quality-tools.tools.{$tool}";
+
+        foreach ($toolConfig as $key => $value) {
+            $keyPath = "{$toolPrefix}.{$key}";
+            $resolved[$key] = [
+                'value' => $value,
+                'source' => $this->sourceMap[$keyPath] ?? 'default',
+                'overridden' => $this->wasValueOverridden($keyPath),
+            ];
+        }
+
+        return $resolved;
+    }
+
+    public function getHierarchyInfo(): ?array
+    {
+        return $this->hierarchy?->getDebugInfo();
+    }
+
+    public function getDiscoveryInfo(): ?array
+    {
+        return $this->discovery?->getDiscoveryDebugInfo();
+    }
+
+    public function isHierarchicalConfiguration(): bool
+    {
+        return $this->hierarchicalMode;
+    }
+
+    public function getToolsWithCustomConfigs(): array
+    {
+        if (!$this->hierarchicalMode) {
+            return [];
+        }
+
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $toolsConfig = $qualityTools['tools'] ?? [];
+
+        $toolsWithCustomConfigs = [];
+        foreach ($toolsConfig as $tool => $config) {
+            if (isset($config['config_file'])) {
+                $toolsWithCustomConfigs[] = $tool;
+            }
+        }
+
+        return $toolsWithCustomConfigs;
+    }
+
+    public function getComprehensiveDebugInfo(): array
+    {
+        return [
+            'mode' => $this->hierarchicalMode ? 'hierarchical' : 'simple',
+            'data_keys' => array_keys($this->data),
+            'has_source_map' => !empty($this->sourceMap),
+            'has_conflicts' => !empty($this->conflicts),
+            'has_merge_summary' => !empty($this->mergeSummary),
+            'project_root' => $this->projectRoot,
+            'services' => [
+                'project_config' => $this->projectConfigService !== null,
+                'tool_config' => $this->toolConfigService !== null,
+                'path_resolution' => $this->pathResolutionService !== null,
+            ],
+            'hierarchy_info' => $this->getHierarchyInfo(),
+            'discovery_info' => $this->getDiscoveryInfo(),
+            'vendor_info' => $this->getVendorDetectionDebugInfo(),
+        ];
+    }
+
+    public function exportWithMetadata(): array
+    {
+        $export = [
+            'configuration' => $this->data,
+            'mode' => $this->hierarchicalMode ? 'hierarchical' : 'simple',
+        ];
+
+        if ($this->hierarchicalMode) {
+            $export['metadata'] = [
+                'source_map' => $this->sourceMap,
+                'conflicts' => $this->conflicts,
+                'merge_summary' => $this->mergeSummary,
+                'hierarchy_info' => $this->getHierarchyInfo(),
+                'discovery_info' => $this->getDiscoveryInfo(),
+            ];
+        }
+
+        return $export;
+    }
+
+    public function wasValueOverridden(string $keyPath): bool
+    {
+        if (!$this->hierarchicalMode) {
+            return false;
+        }
+
+        // Check if the value was set by multiple sources (indicating override)
+        foreach ($this->conflicts as $conflict) {
+            if ($conflict['key_path'] === $keyPath) {
+                return true;
+            }
+        }
+
+        // Check merge summary for override indicators
+        foreach ($this->mergeSummary as $summary) {
+            if (isset($summary['overrides'][$keyPath])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getConfigurationChain(string $keyPath): array
+    {
+        if (!$this->hierarchicalMode) {
+            return [];
+        }
+
+        $chain = [];
+
+        // Find all sources that provided this key
+        foreach ($this->mergeSummary as $summary) {
+            if (isset($summary['keys'][$keyPath])) {
+                $chain[] = [
+                    'source' => $summary['source'],
+                    'value' => $summary['keys'][$keyPath],
+                    'priority' => $summary['priority'] ?? 0,
+                ];
+            }
+        }
+
+        // Sort by priority (highest first)
+        usort($chain, fn ($a, $b): int => $b['priority'] <=> $a['priority']);
+
+        return $chain;
+    }
+
+    // Merge functionality
+
+    public function merge(ConfigurationInterface $other): ConfigurationInterface
+    {
+        if (!$other instanceof self) {
+            throw new \InvalidArgumentException('Can only merge with another Configuration instance');
+        }
+
+        $mergedData = array_merge_recursive($this->data, $other->data);
+        $mergedSourceMap = array_merge($this->sourceMap, $other->sourceMap);
+        $mergedConflicts = array_merge($this->conflicts, $other->conflicts);
+        $mergedMergeSummary = array_merge($this->mergeSummary, $other->mergeSummary);
+
+        // Determine if merged configuration should be hierarchical
+        $hierarchicalMode = $this->hierarchicalMode || $other->hierarchicalMode;
+
+        return new self(
+            data: $mergedData,
+            sourceMap: $mergedSourceMap,
+            conflicts: $mergedConflicts,
+            mergeSummary: $mergedMergeSummary,
+            hierarchicalMode: $hierarchicalMode,
+            validator: $this->validator ?? $other->validator,
+            projectConfigService: $this->projectConfigService ?? $other->projectConfigService,
+            toolConfigService: $this->toolConfigService ?? $other->toolConfigService,
+            pathResolutionService: $this->pathResolutionService ?? $other->pathResolutionService,
+            hierarchy: $this->hierarchy ?? $other->hierarchy,
+            discovery: $this->discovery ?? $other->discovery,
+        );
+    }
+
+    // Factory methods for creating configurations
+
+    public static function createSimple(
+        array $data = [],
+        ?ConfigurationValidator $validator = null,
+        ?ProjectConfigService $projectConfigService = null,
+        ?ToolConfigService $toolConfigService = null,
+        ?PathResolutionService $pathResolutionService = null,
+    ): self {
+        return new self(
+            data: $data,
+            hierarchicalMode: false,
+            validator: $validator,
+            projectConfigService: $projectConfigService,
+            toolConfigService: $toolConfigService,
+            pathResolutionService: $pathResolutionService,
+        );
+    }
+
+    public static function createHierarchical(
+        array $data = [],
+        array $sourceMap = [],
+        array $conflicts = [],
+        array $mergeSummary = [],
+        ?ConfigurationValidator $validator = null,
+        ?ProjectConfigService $projectConfigService = null,
+        ?ToolConfigService $toolConfigService = null,
+        ?PathResolutionService $pathResolutionService = null,
+        ?ConfigurationHierarchy $hierarchy = null,
+        ?ConfigurationDiscovery $discovery = null,
+    ): self {
+        return new self(
+            data: $data,
+            sourceMap: $sourceMap,
+            conflicts: $conflicts,
+            mergeSummary: $mergeSummary,
+            hierarchicalMode: true,
+            validator: $validator,
+            projectConfigService: $projectConfigService,
+            toolConfigService: $toolConfigService,
+            pathResolutionService: $pathResolutionService,
+            hierarchy: $hierarchy,
+            discovery: $discovery,
+        );
+    }
+}
