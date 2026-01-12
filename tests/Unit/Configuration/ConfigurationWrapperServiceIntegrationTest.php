@@ -6,9 +6,9 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\ToolConfigService;
-use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +26,7 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('wrapper_service_test_');
-        
+
         $this->testData = [
             'quality-tools' => [
                 'project' => [
@@ -68,11 +68,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $pathService = new PathResolutionService();
 
         $wrapperWithServices = new ConfigurationWrapper(
-            $simpleConfig, 
-            'simple', 
-            $projectService, 
-            $toolService, 
-            $pathService
+            $simpleConfig,
+            'simple',
+            $toolService,
+            $pathService,
         );
 
         // Create wrapper without services (for comparison)
@@ -103,11 +102,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $pathService = new PathResolutionService();
 
         $wrapperWithServices = new ConfigurationWrapper(
-            $simpleConfig, 
-            'simple', 
-            $projectService, 
-            $toolService, 
-            $pathService
+            $simpleConfig,
+            'simple',
+            $toolService,
+            $pathService,
         );
 
         $phpstanConfig = $wrapperWithServices->getPhpStanConfig();
@@ -126,11 +124,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         // Create wrapper with services
         $toolService = new ToolConfigService();
         $wrapperWithServices = new ConfigurationWrapper(
-            $simpleConfig, 
-            'simple', 
-            null, 
-            $toolService, 
-            null
+            $simpleConfig,
+            'simple',
+            $toolService,
+            null,
         );
 
         $fractorConfig = $wrapperWithServices->getFractorConfig();
@@ -148,11 +145,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         // Create wrapper with path service
         $pathService = new PathResolutionService();
         $wrapperWithServices = new ConfigurationWrapper(
-            $simpleConfig, 
-            'simple', 
-            null, 
-            null, 
-            $pathService
+            $simpleConfig,
+            'simple',
+            null,
+            $pathService,
         );
 
         // Should be able to resolve paths using service
@@ -172,7 +168,7 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         self::assertSame('service-integration-test', $wrapper->getProjectName());
         self::assertSame('8.4', $wrapper->getProjectPhpVersion());
         self::assertTrue($wrapper->isToolEnabled('rector'));
-        
+
         $rectorConfig = $wrapper->getToolConfig('rector');
         self::assertTrue($rectorConfig['enabled']);
         self::assertSame('typo3-13', $rectorConfig['level']);
@@ -184,12 +180,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
 
         // Test various combinations of service injection
         $wrapperNoServices = new ConfigurationWrapper($simpleConfig);
-        $wrapperWithProject = new ConfigurationWrapper($simpleConfig, 'simple', new ProjectConfigService());
-        $wrapperWithTool = new ConfigurationWrapper($simpleConfig, 'simple', null, new ToolConfigService());
+        $wrapperWithTool = new ConfigurationWrapper($simpleConfig, 'simple', new ToolConfigService());
 
         // All should work
         self::assertSame('service-integration-test', $wrapperNoServices->getProjectName());
-        self::assertSame('service-integration-test', $wrapperWithProject->getProjectName());
         self::assertSame('service-integration-test', $wrapperWithTool->getProjectName());
 
         // Tool configs should work with and without service
@@ -209,11 +203,10 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $simpleConfig->setProjectRoot($this->tempDir);
 
         $wrapper = new ConfigurationWrapper(
-            $simpleConfig, 
+            $simpleConfig,
             'simple',
-            new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService()
+            new PathResolutionService(),
         );
 
         // Basic delegation should still work

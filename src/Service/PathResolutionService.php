@@ -52,14 +52,14 @@ final class PathResolutionService
     public function getResolvedPathsForTool(array $data, string $tool, string $projectRoot): array
     {
         $toolPaths = $this->getToolPaths($data, $tool);
-        
+
         if (!empty($toolPaths)) {
             return $toolPaths;
         }
 
         $pathScanner = $this->getPathScanner($projectRoot);
         $scanPaths = $this->getScanPaths($data);
-        
+
         // Use the PathScanner to resolve the scan paths
         return $pathScanner->resolvePaths($scanPaths);
     }

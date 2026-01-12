@@ -6,12 +6,12 @@ namespace Cpsit\QualityTools\Tests\Integration\DependencyInjection;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
+use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\Command\ConfigShowCommand;
 use Cpsit\QualityTools\Console\Command\ConfigValidateCommand;
-use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
-use Cpsit\QualityTools\Console\Command\RectorLintCommand;
-use Cpsit\QualityTools\Console\Command\RectorFixCommand;
 use Cpsit\QualityTools\Console\Command\PhpStanCommand;
+use Cpsit\QualityTools\Console\Command\RectorFixCommand;
+use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
@@ -79,7 +79,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command's constructor (via reflection)
         $reflection = new \ReflectionClass($configShowCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($configShowCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -101,7 +100,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($configValidateCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($configValidateCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -122,7 +120,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($configInitCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($configInitCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -144,7 +141,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($rectorLintCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($rectorLintCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -166,7 +162,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($rectorFixCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($rectorFixCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -187,7 +182,6 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($phpStanCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $factory = $loaderProperty->getValue($phpStanCommand);
 
         self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
@@ -203,7 +197,7 @@ final class CommandSpecificFactoryTest extends TestCase
     public function testFactoryInstancesAreProperlyConfigured(): void
     {
         // Get the different factory instances
-        $autoFactory = $this->container->get('Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory');
+        $autoFactory = $this->container->get(ConfigurationLoaderFactory::class);
         $simpleFactory = $this->container->get('Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple');
         $hierarchicalFactory = $this->container->get('Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical');
 
@@ -230,7 +224,6 @@ final class CommandSpecificFactoryTest extends TestCase
         $configShowCommand = $this->container->get(ConfigShowCommand::class);
         $reflection = new \ReflectionClass($configShowCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $hierarchicalFactory = $loaderProperty->getValue($configShowCommand);
 
         $hierarchicalConfig = $hierarchicalFactory->load($this->tempDir);
@@ -241,7 +234,6 @@ final class CommandSpecificFactoryTest extends TestCase
         $rectorLintCommand = $this->container->get(RectorLintCommand::class);
         $reflection = new \ReflectionClass($rectorLintCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $loaderProperty->setAccessible(true);
         $simpleFactory = $loaderProperty->getValue($rectorLintCommand);
 
         $simpleConfig = $simpleFactory->load($this->tempDir);
@@ -251,11 +243,11 @@ final class CommandSpecificFactoryTest extends TestCase
         // Both should return equivalent basic configuration
         self::assertSame(
             $hierarchicalConfig->getProjectName(),
-            $simpleConfig->getProjectName()
+            $simpleConfig->getProjectName(),
         );
         self::assertSame(
             $hierarchicalConfig->getProjectPhpVersion(),
-            $simpleConfig->getProjectPhpVersion()
+            $simpleConfig->getProjectPhpVersion(),
         );
     }
 

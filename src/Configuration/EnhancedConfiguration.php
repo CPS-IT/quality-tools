@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
+use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+
 /**
  * Enhanced configuration with source tracking and hierarchical support.
  *
@@ -12,6 +16,8 @@ namespace Cpsit\QualityTools\Configuration;
 final class EnhancedConfiguration implements ConfigurationInterface
 {
     private string $actualProjectRoot;
+    private ?string $vendorPath = null;
+    private ?VendorDirectoryDetector $vendorDetector = null;
 
     public function __construct(
         private readonly array $data = [],
@@ -22,6 +28,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
         private readonly ?ConfigurationDiscovery $discovery = null,
         private readonly ?string $projectRoot = null,
         private readonly ?ConfigurationValidator $validator = null,
+        private readonly ?PathResolutionService $pathResolutionService = null,
     ) {
         // Validate configuration if validator is provided and data is not empty
         if ($this->validator !== null && !empty($this->data)) {
@@ -35,7 +42,8 @@ final class EnhancedConfiguration implements ConfigurationInterface
 
     public function setProjectRoot(string $projectRoot): void
     {
-        $this->actualProjectRoot = $projectRoot; // Reset path scanner
+        $this->actualProjectRoot = $projectRoot;
+        $this->vendorPath = null; // Reset vendor path cache
     }
 
     public function getProjectRoot(): ?string
@@ -379,9 +387,9 @@ final class EnhancedConfiguration implements ConfigurationInterface
     }
 
     /**
-     * Create an enhanced configuration from a regular configuration.
+     * Create an enhanced configuration from any configuration interface.
      */
-    public static function fromConfiguration(Configuration $config): self
+    public static function fromConfiguration(ConfigurationInterface $config): self
     {
         return new self(
             data: $config->toArray(),
@@ -502,9 +510,17 @@ final class EnhancedConfiguration implements ConfigurationInterface
 
     public function getVendorPath(): ?string
     {
-        // Enhanced configuration doesn't have vendor directory detection
-        // This would need to be added if path resolution is needed
-        return null;
+        if ($this->vendorPath === null && isset($this->actualProjectRoot)) {
+            try {
+                $detector = $this->getVendorDetector();
+                $this->vendorPath = $detector->detectVendorPath($this->actualProjectRoot);
+            } catch (VendorDirectoryNotFoundException) {
+                // Return null if detection fails - calling code can handle this
+                return null;
+            }
+        }
+
+        return $this->vendorPath;
     }
 
     public function getVendorBinPath(): ?string
@@ -521,21 +537,77 @@ final class EnhancedConfiguration implements ConfigurationInterface
 
     public function getVendorDetectionDebugInfo(): array
     {
-        return ['enhanced_config' => 'vendor detection not implemented'];
+        if (!isset($this->actualProjectRoot)) {
+            return ['error' => 'Project root not set'];
+        }
+
+        return $this->getVendorDetector()->getDetectionDebugInfo($this->actualProjectRoot);
     }
 
     public function getResolvedPathsForTool(string $tool): array
     {
-        // Enhanced configuration doesn't have path resolution
-        // This would need to be added if path resolution is needed
-        return [];
+        if (!isset($this->actualProjectRoot)) {
+            return $this->getScanPaths(); // Fallback to standard paths
+        }
+
+        if ($this->pathResolutionService !== null) {
+            // Use injected service if available
+            return $this->pathResolutionService->getResolvedPathsForTool(
+                $this->data,
+                $tool,
+                $this->actualProjectRoot,
+            );
+        }
+
+        // Fallback: return basic scan paths if service not available
+        return $this->getScanPaths();
+    }
+
+    private function getVendorDetector(): VendorDirectoryDetector
+    {
+        if ($this->vendorDetector === null) {
+            $this->vendorDetector = new VendorDirectoryDetector();
+        }
+
+        return $this->vendorDetector;
     }
 
     public function getPathScanningDebugInfo(string $tool): array
     {
+        if (!isset($this->actualProjectRoot)) {
+            return ['error' => 'Project root not set'];
+        }
+
+        if ($this->pathResolutionService !== null) {
+            // Use injected service for path resolution
+            $resolvedPaths = $this->pathResolutionService->getResolvedPathsForTool(
+                $this->data,
+                $tool,
+                $this->actualProjectRoot,
+            );
+
+            return [
+                'tool' => $tool,
+                'project_root' => $this->actualProjectRoot,
+                'vendor_path' => $this->getVendorPath(),
+                'global_scan_paths' => $this->pathResolutionService->getScanPaths($this->data),
+                'global_exclude_paths' => $this->pathResolutionService->getExcludePaths($this->data),
+                'tool_paths' => $this->pathResolutionService->getToolPaths($this->data, $tool),
+                'resolved_paths' => $resolvedPaths,
+                'service_status' => 'path_resolution_service_used',
+            ];
+        }
+
+        // Fallback debug info if service not available
         return [
-            'enhanced_config' => 'path scanning not implemented',
             'tool' => $tool,
+            'project_root' => $this->actualProjectRoot,
+            'vendor_path' => $this->getVendorPath(),
+            'global_scan_paths' => $this->getScanPaths(),
+            'global_exclude_paths' => $this->getExcludePaths(),
+            'tool_paths' => $this->getToolPaths($tool),
+            'resolved_paths' => $this->getResolvedPathsForTool($tool),
+            'service_status' => 'path_resolution_service_not_available',
         ];
     }
 

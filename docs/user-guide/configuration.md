@@ -355,9 +355,24 @@ Create initial configuration files:
 # Create initial configuration file
 vendor/bin/qt config:init
 
+# Use specific project template
+vendor/bin/qt config:init --template=typo3-extension
+vendor/bin/qt config:init --template=typo3-site-package
+vendor/bin/qt config:init --template=typo3-distribution
+vendor/bin/qt config:init --template=default
+
 # Force overwrite existing configuration
 vendor/bin/qt config:init --force
+
+# Combine options
+vendor/bin/qt config:init --template=typo3-extension --force
 ```
+
+**Available Templates:**
+- `typo3-extension`: Optimized for TYPO3 extensions
+- `typo3-site-package`: Optimized for TYPO3 site packages
+- `typo3-distribution`: Optimized for TYPO3 distributions
+- `default`: General purpose configuration
 
 ## Runtime Configuration
 
@@ -436,7 +451,10 @@ ENV QT_PROJECT_ROOT=/var/www/html
 ENV QT_DEBUG=false
 
 # Or with docker run
-docker run -e QT_PROJECT_ROOT=/app -e QT_DEBUG=true myimage vendor/bin/qt --version
+docker run \
+  -e QT_PROJECT_ROOT=/app \
+  -e QT_DEBUG=true \
+  myimage vendor/bin/qt --version
 ```
 
 ```yaml

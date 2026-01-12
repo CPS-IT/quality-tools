@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
-use Cpsit\QualityTools\Service\ProjectConfigService;
-use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Service\ToolConfigService;
 
 /**
  * Wrapper class that unifies SimpleConfiguration and EnhancedConfiguration.
@@ -19,9 +18,8 @@ use Cpsit\QualityTools\Service\PathResolutionService;
 final readonly class ConfigurationWrapper implements ConfigurationInterface
 {
     public function __construct(
-        private ConfigurationInterface $wrapped, 
+        private ConfigurationInterface $wrapped,
         private string $variant = 'simple',
-        private ?ProjectConfigService $projectConfigService = null,
         private ?ToolConfigService $toolConfigService = null,
         private ?PathResolutionService $pathResolutionService = null,
     ) {
@@ -92,7 +90,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         if ($this->toolConfigService !== null) {
             return $this->toolConfigService->getRectorConfig($this->wrapped->toArray(), $this->wrapped->getProjectPhpVersion());
         }
-        
+
         return $this->wrapped->getToolConfig('rector');
     }
 
@@ -102,7 +100,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         if ($this->toolConfigService !== null) {
             return $this->toolConfigService->getFractorConfig($this->wrapped->toArray());
         }
-        
+
         return $this->wrapped->getToolConfig('fractor');
     }
 
@@ -112,7 +110,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         if ($this->toolConfigService !== null) {
             return $this->toolConfigService->getPhpStanConfig($this->wrapped->toArray());
         }
-        
+
         return $this->wrapped->getToolConfig('phpstan');
     }
 
@@ -122,7 +120,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         if ($this->toolConfigService !== null) {
             return $this->toolConfigService->getPhpCsFixerConfig($this->wrapped->toArray());
         }
-        
+
         return $this->wrapped->getToolConfig('php-cs-fixer');
     }
 
@@ -132,7 +130,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         if ($this->toolConfigService !== null) {
             return $this->toolConfigService->getTypoScriptLintConfig($this->wrapped->toArray());
         }
-        
+
         return $this->wrapped->getToolConfig('typoscript-lint');
     }
 
@@ -194,12 +192,10 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         return $this->wrapped->getVendorDetectionDebugInfo();
     }
 
-    // Path resolution methods (only available in SimpleConfiguration)
+    // Path resolution methods (available in both variants)
     public function getPathScanningDebugInfo(string $tool): array
     {
-        return $this->wrapped instanceof SimpleConfiguration
-            ? $this->wrapped->getPathScanningDebugInfo($tool)
-            : [];
+        return $this->wrapped->getPathScanningDebugInfo($tool);
     }
 
     // Enhanced configuration methods (only available in EnhancedConfiguration)
@@ -329,19 +325,18 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
             return $this->pathResolutionService->getResolvedPathsForTool(
                 $this->wrapped->toArray(),
                 $tool,
-                $this->wrapped->getProjectRoot()
+                $this->wrapped->getProjectRoot(),
             );
         }
-        
-        // Fallback to wrapped instance for SimpleConfiguration
-        return $this->wrapped instanceof SimpleConfiguration
-            ? $this->wrapped->getResolvedPathsForTool($tool)
-            : [];
+
+        // Fallback to wrapped instance (now available in both variants)
+        return $this->wrapped->getResolvedPathsForTool($tool);
     }
 
     public function getTargetPathForTool(string $tool): string
     {
         $paths = $this->getResolvedPathsForTool($tool);
+
         return $paths[0] ?? '';
     }
 

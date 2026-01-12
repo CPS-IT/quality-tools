@@ -245,30 +245,30 @@ final class PathResolutionServiceTest extends TestCase
     public function testClearVendorPathCache(): void
     {
         $projectRoot = __DIR__ . '/../../..';
-        
+
         // First call
         $result1 = $this->service->getVendorPath($projectRoot);
-        
+
         // Clear cache
         $this->service->clearVendorPathCache();
-        
+
         // Second call should work - can't easily test caching without mocking,
         // but we can test that the method exists and doesn't break anything
         $result2 = $this->service->getVendorPath($projectRoot);
-        
+
         self::assertSame($result1, $result2);
     }
 
     public function testClearAllCaches(): void
     {
         $projectRoot = __DIR__ . '/../../..';
-        
+
         // Call some methods to potentially populate cache
         $this->service->getVendorPath($projectRoot);
-        
+
         // Clear all caches - should not throw any errors
         $this->service->clearAllCaches();
-        
+
         // Methods should still work after clearing cache
         $result = $this->service->getVendorPath($projectRoot);
         self::assertNotNull($result);

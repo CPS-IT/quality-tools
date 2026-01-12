@@ -60,6 +60,7 @@ services:
 
   Cpsit\QualityTools\Console\Command\ConfigInitCommand:
     arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
     public: true
     tags:
@@ -166,7 +167,6 @@ services:
     arguments:
       $wrapped: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
       $variant: 'simple'
-      $projectConfigService: '@Cpsit\QualityTools\Service\ProjectConfigService'
       $toolConfigService: '@Cpsit\QualityTools\Service\ToolConfigService'
       $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
     public: true

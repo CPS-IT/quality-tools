@@ -68,7 +68,6 @@ final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderIn
         };
     }
 
-
     public function hasHierarchicalConfiguration(string $projectRoot): bool
     {
         return match ($this->mode) {
