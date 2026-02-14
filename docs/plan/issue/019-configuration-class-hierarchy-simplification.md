@@ -242,7 +242,14 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
 ### Phase 6: Final Cleanup
 
-#### Step 6.1: Replace Wrapper with Unified Classes
+**Status**: Analysis Complete - Implementation Required
+
+**Compatibility Analysis**: Detailed behavioral difference analysis completed (2026-02-14). See [`docs/plan/review/2026-02-14/unified-configuration-compatibility-analysis.md`](../review/2026-02-14/unified-configuration-compatibility-analysis.md) for complete findings and implementation roadmap.
+
+**Key Finding**: Unified implementations have behavioral differences from wrapper approach causing test failures. Specific changes required for full compatibility documented.
+
+#### Step 6.1: Replace Wrapper with Unified Classes  
+- [ ] **PREREQUISITE**: Implement compatibility fixes from 2026-02-14 analysis
 - [ ] Update all code to use unified `Configuration` and `ConfigurationLoader`
 - [ ] Remove `ConfigurationWrapper` and `ConfigurationLoaderWrapper`
 - [ ] Remove old `SimpleConfiguration`, `EnhancedConfiguration`, etc.
