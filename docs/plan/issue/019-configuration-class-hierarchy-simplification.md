@@ -271,33 +271,37 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Test Coverage: [x] Covered by existing tests
 - Risk: Medium (type change)
 
-**4. BaseCommand.php (MEDIUM IMPACT)**
+**4. BaseCommand.php (MEDIUM IMPACT) - SKIPPED**
 - Usage: `new SimpleConfigurationLoader()` fallback creation
 - Impact: Fallback instantiation, potential backward compatibility concerns
 - Replacement: Use unified ConfigurationLoader
 - Test Coverage: [x] Well covered
 - Risk: Medium
+- **DECISION**: Skip this class as it creates ConfigurationLoaderWrapper and is core transition infrastructure. Changing it causes 24+ test failures due to behavioral differences between ConfigurationWrapper and unified Configuration. Address after ConfigurationLoader is fully stabilized.
 
-**5. HierarchicalConfigurationLoader.php (MEDIUM IMPACT)**
+**5. HierarchicalConfigurationLoader.php (MEDIUM IMPACT) - SKIPPED**
 - Usages: `new EnhancedConfiguration()` (2x), `new SimpleConfiguration()` (1x)
 - Impact: 3 instantiation calls, mixed simple/enhanced usage
 - Replacement: `Configuration::createHierarchical()` and `Configuration::createSimple()`
 - Test Coverage: [x] Integration tests cover usage
 - Risk: Medium
+- **DECISION**: Skip this class as it uses EnhancedConfiguration heavily and the unified Configuration::createHierarchical() factory method has behavioral differences. Changing it causes 19 test failures in hierarchical configuration loading. The unified Configuration class needs further stabilization before this complex loader can be migrated safely.
 
-**6. ConfigurationLoaderFactory.php (MEDIUM IMPACT)**
+**6. ConfigurationLoaderFactory.php (MEDIUM IMPACT) - SKIPPED**
 - Usage: `instanceof SimpleConfigurationLoader` checks for loader selection
 - Impact: Type checking logic needs updating
 - Replacement: Check for unified ConfigurationLoader capabilities
 - Test Coverage: [x] Factory tests cover selection logic
 - Risk: Medium
+- **DECISION**: Skip this class as it's part of the factory pattern transition infrastructure (Step 3.1) that bridges SimpleConfigurationLoader and HierarchicalConfigurationLoader. Modifying it would require the unified ConfigurationLoader to be fully stable, but we've seen behavioral differences that cause test failures. This factory should be replaced entirely when the unified ConfigurationLoader is ready, not modified piecemeal.
 
-**7. ConfigurationWrapper.php (HIGH IMPACT - DO LAST)**
+**7. ConfigurationWrapper.php (HIGH IMPACT - DO LAST) - SKIPPED**
 - Usages: 15+ `instanceof EnhancedConfiguration` and `instanceof SimpleConfiguration` checks
 - Impact: Complex delegation logic, extensive instanceof usage
 - Replacement: Remove entirely (wrapper no longer needed)
 - Test Coverage: [x] Wrapper integration tests
 - Risk: High (entire class removal)
+- **DECISION**: Skip this class as it's the core wrapper infrastructure that bridges SimpleConfiguration and EnhancedConfiguration during transition. The plan is to remove this class entirely (not modify it) when the unified Configuration class is fully stable. Given the behavioral differences we've observed with unified implementations causing test failures, this wrapper should remain until all stability issues are resolved.
 
 #### Step 6.2: Update Documentation
 - [ ] Update developer documentation
