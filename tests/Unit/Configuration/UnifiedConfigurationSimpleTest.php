@@ -49,6 +49,45 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         self::assertSame('project-config', $config->getConfigurationSource('quality-tools.project.name'));
     }
 
+    public function testCreateDefault(): void
+    {
+        $config = Configuration::createDefault();
+
+        // Test that it's properly initialized
+        self::assertInstanceOf(Configuration::class, $config);
+        self::assertFalse($config->isHierarchicalConfiguration());
+
+        // Test some key defaults to ensure it's properly initialized
+        self::assertSame(ConfigurationInterface::DEFAULT_PHP_VERSION, $config->getProjectPhpVersion());
+        self::assertSame(ConfigurationInterface::DEFAULT_TYPO3_VERSION, $config->getProjectTypo3Version());
+        self::assertSame(ConfigurationInterface::DEFAULT_SCAN_PATHS, $config->getScanPaths());
+        
+        // Test that tools are enabled by default
+        self::assertTrue($config->isToolEnabled('rector'));
+        self::assertTrue($config->isToolEnabled('phpstan'));
+        self::assertTrue($config->isToolEnabled('fractor'));
+
+        // Test tool configurations from raw data (since no services injected)
+        $data = $config->toArray();
+        $rectorConfig = $data['quality-tools']['tools']['rector'] ?? [];
+        self::assertTrue($rectorConfig['enabled'] ?? false);
+        self::assertSame(ConfigurationInterface::DEFAULT_RECTOR_LEVEL, $rectorConfig['level'] ?? null);
+
+        $phpstanConfig = $data['quality-tools']['tools']['phpstan'] ?? [];
+        self::assertSame(ConfigurationInterface::DEFAULT_PHPSTAN_LEVEL, $phpstanConfig['level'] ?? null);
+        self::assertSame(ConfigurationInterface::DEFAULT_PHPSTAN_MEMORY_LIMIT, $phpstanConfig['memory_limit'] ?? null);
+
+        // Test output defaults
+        self::assertSame(ConfigurationInterface::DEFAULT_VERBOSITY, $config->getVerbosity());
+        self::assertSame(ConfigurationInterface::DEFAULT_COLORS_ENABLED, $config->isColorsEnabled());
+        self::assertSame(ConfigurationInterface::DEFAULT_PROGRESS_ENABLED, $config->isProgressEnabled());
+
+        // Test performance defaults  
+        self::assertSame(ConfigurationInterface::DEFAULT_PARALLEL_ENABLED, $config->isParallelEnabled());
+        self::assertSame(ConfigurationInterface::DEFAULT_MAX_PROCESSES, $config->getMaxProcesses());
+        self::assertSame(ConfigurationInterface::DEFAULT_CACHE_ENABLED, $config->isCacheEnabled());
+    }
+
     public function testProjectConfigurationWithServices(): void
     {
         $data = [
@@ -159,12 +198,12 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         $config = new Configuration();
 
         // Project defaults
-        self::assertSame('8.3', $config->getProjectPhpVersion());
-        self::assertSame('13.4', $config->getProjectTypo3Version());
+        self::assertSame(ConfigurationInterface::DEFAULT_PHP_VERSION, $config->getProjectPhpVersion());
+        self::assertSame(ConfigurationInterface::DEFAULT_TYPO3_VERSION, $config->getProjectTypo3Version());
         self::assertNull($config->getProjectName());
 
         // Path defaults
-        self::assertSame(['packages/', 'config/system/'], $config->getScanPaths());
+        self::assertSame(ConfigurationInterface::DEFAULT_SCAN_PATHS, $config->getScanPaths());
         self::assertContains('vendor/', $config->getExcludePaths());
         self::assertSame([], $config->getToolPaths('rector'));
 
@@ -173,14 +212,14 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         self::assertSame([], $config->getToolConfig('rector'));
 
         // Output defaults
-        self::assertSame('normal', $config->getVerbosity());
-        self::assertTrue($config->isColorsEnabled());
-        self::assertTrue($config->isProgressEnabled());
+        self::assertSame(ConfigurationInterface::DEFAULT_VERBOSITY, $config->getVerbosity());
+        self::assertSame(ConfigurationInterface::DEFAULT_COLORS_ENABLED, $config->isColorsEnabled());
+        self::assertSame(ConfigurationInterface::DEFAULT_PROGRESS_ENABLED, $config->isProgressEnabled());
 
         // Performance defaults
         self::assertFalse($config->isParallelEnabled());
-        self::assertSame(4, $config->getMaxProcesses());
-        self::assertTrue($config->isCacheEnabled());
+        self::assertSame(ConfigurationInterface::DEFAULT_MAX_PROCESSES, $config->getMaxProcesses());
+        self::assertSame(ConfigurationInterface::DEFAULT_CACHE_ENABLED, $config->isCacheEnabled());
     }
 
     public function testProjectRootManagement(): void
@@ -301,5 +340,24 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         $config = new Configuration($data);
 
         self::assertSame($data, $config->toArray());
+    }
+
+    public function testDefaultConfigurationConstant(): void
+    {
+        // Test that the DEFAULT_CONFIGURATION constant contains all expected structure
+        $defaultConfig = ConfigurationInterface::DEFAULT_CONFIGURATION;
+        
+        self::assertArrayHasKey('quality-tools', $defaultConfig);
+        
+        $qualityTools = $defaultConfig['quality-tools'];
+        self::assertArrayHasKey('project', $qualityTools);
+        self::assertArrayHasKey('paths', $qualityTools);
+        self::assertArrayHasKey('tools', $qualityTools);
+        self::assertArrayHasKey('output', $qualityTools);
+        self::assertArrayHasKey('performance', $qualityTools);
+        
+        // Verify that createDefault() uses the same structure
+        $config = Configuration::createDefault();
+        self::assertSame($defaultConfig, $config->toArray());
     }
 }

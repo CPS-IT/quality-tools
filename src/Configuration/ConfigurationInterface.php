@@ -12,6 +12,86 @@ namespace Cpsit\QualityTools\Configuration;
  */
 interface ConfigurationInterface
 {
+    // Default configuration values
+    public const string DEFAULT_PHP_VERSION = '8.3';
+    public const string DEFAULT_TYPO3_VERSION = '13.4';
+    public const array DEFAULT_SCAN_PATHS = ['packages/', 'config/system/'];
+    public const array DEFAULT_EXCLUDE_PATHS = [
+        'var/',
+        'vendor/',
+        'public/',
+        '_assets/',
+        'fileadmin/',
+        'typo3/',
+        'Tests/',
+        'tests/',
+        'typo3conf/',
+    ];
+    
+    // Tool configuration defaults
+    public const string DEFAULT_RECTOR_LEVEL = 'typo3-13';
+    public const int DEFAULT_FRACTOR_INDENTATION = 2;
+    public const int DEFAULT_PHPSTAN_LEVEL = 6;
+    public const string DEFAULT_PHPSTAN_MEMORY_LIMIT = '1G';
+    public const string DEFAULT_PHP_CS_FIXER_PRESET = 'typo3';
+    public const int DEFAULT_TYPOSCRIPT_LINT_INDENTATION = 2;
+    
+    // Output configuration defaults
+    public const string DEFAULT_VERBOSITY = 'normal';
+    public const bool DEFAULT_COLORS_ENABLED = true;
+    public const bool DEFAULT_PROGRESS_ENABLED = true;
+    
+    // Performance configuration defaults
+    public const bool DEFAULT_PARALLEL_ENABLED = true;
+    public const int DEFAULT_MAX_PROCESSES = 4;
+    public const bool DEFAULT_CACHE_ENABLED = true;
+    
+    // Complete default configuration array
+    public const array DEFAULT_CONFIGURATION = [
+        'quality-tools' => [
+            'project' => [
+                'php_version' => self::DEFAULT_PHP_VERSION,
+                'typo3_version' => self::DEFAULT_TYPO3_VERSION,
+            ],
+            'paths' => [
+                'scan' => self::DEFAULT_SCAN_PATHS,
+                'exclude' => self::DEFAULT_EXCLUDE_PATHS,
+            ],
+            'tools' => [
+                'rector' => [
+                    'enabled' => true,
+                    'level' => self::DEFAULT_RECTOR_LEVEL,
+                ],
+                'fractor' => [
+                    'enabled' => true,
+                    'indentation' => self::DEFAULT_FRACTOR_INDENTATION,
+                ],
+                'phpstan' => [
+                    'enabled' => true,
+                    'level' => self::DEFAULT_PHPSTAN_LEVEL,
+                    'memory_limit' => self::DEFAULT_PHPSTAN_MEMORY_LIMIT,
+                ],
+                'php-cs-fixer' => [
+                    'enabled' => true,
+                    'preset' => self::DEFAULT_PHP_CS_FIXER_PRESET,
+                ],
+                'typoscript-lint' => [
+                    'enabled' => true,
+                    'indentation' => self::DEFAULT_TYPOSCRIPT_LINT_INDENTATION,
+                ],
+            ],
+            'output' => [
+                'verbosity' => self::DEFAULT_VERBOSITY,
+                'colors' => self::DEFAULT_COLORS_ENABLED,
+                'progress' => self::DEFAULT_PROGRESS_ENABLED,
+            ],
+            'performance' => [
+                'parallel' => self::DEFAULT_PARALLEL_ENABLED,
+                'max_processes' => self::DEFAULT_MAX_PROCESSES,
+                'cache_enabled' => self::DEFAULT_CACHE_ENABLED,
+            ],
+        ],
+    ];
     // Core data access methods
     public function toArray(): array;
 

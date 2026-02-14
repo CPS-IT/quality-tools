@@ -17,20 +17,6 @@ use Cpsit\QualityTools\Service\ToolConfigService;
  */
 final class Configuration implements ConfigurationInterface
 {
-    private const string DEFAULT_PHP_VERSION = '8.3';
-    private const string DEFAULT_TYPO3_VERSION = '13.4';
-    private const array DEFAULT_SCAN_PATHS = ['packages/', 'config/system/'];
-    private const array DEFAULT_EXCLUDE_PATHS = [
-        'var/',
-        'vendor/',
-        'public/',
-        '_assets/',
-        'fileadmin/',
-        'typo3/',
-        'Tests/',
-        'tests/',
-        'typo3conf/',
-    ];
 
     private ?string $projectRoot = null;
 
@@ -496,6 +482,11 @@ final class Configuration implements ConfigurationInterface
     }
 
     // Factory methods for creating configurations
+
+    public static function createDefault(): self
+    {
+        return new self(self::DEFAULT_CONFIGURATION);
+    }
 
     public static function createSimple(
         array $data = [],
