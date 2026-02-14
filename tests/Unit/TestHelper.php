@@ -235,4 +235,23 @@ final class TestHelper
             chmod($executablePath, 0o755);
         }
     }
+
+    /**
+     * Normalize console output by removing ANSI codes and formatting.
+     */
+    public static function normalizeConsoleOutput(string $output): string
+    {
+        // Strip ANSI escape codes
+        $output = preg_replace('/\x1b\[[0-9;]*m/', '', $output);
+        // Normalize line endings
+        $output = str_replace(\PHP_EOL, "\n", $output);
+        // Handle cases where a hyphen is split from a word by line break (preserve hyphen)
+        $output = preg_replace('/(\w)-\s*\n\s*(\w)/', '$1-$2', $output);
+        // Remove line breaks that split words without hyphens (like .quality)
+        $output = preg_replace('/(\w|\.)\s*\n\s*(\w)/', '$1$2', $output);
+        // Compress whitespace
+        $output = preg_replace('/\s+/', ' ', $output);
+        // Trim result
+        return trim($output);
+    }
 }

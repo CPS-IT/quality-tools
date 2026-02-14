@@ -487,7 +487,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
                 self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-                $output = $appTester->getDisplay();
+                $output = TestHelper::normalizeConsoleOutput($appTester->getDisplay());
                 self::assertStringContainsString($fileName, $output);
                 self::assertStringContainsString('Configuration is valid', $output);
             });

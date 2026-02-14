@@ -84,7 +84,7 @@ final class ConfigValidateCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
-        $output = $this->commandTester->getDisplay();
+        $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
         self::assertStringContainsString('Validating configuration file:', $output);
         self::assertStringContainsString('.quality-tools.yaml', $output);
         self::assertStringContainsString('Configuration is valid', $output);
@@ -247,7 +247,7 @@ final class ConfigValidateCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
-        $output = $this->commandTester->getDisplay();
+        $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
         self::assertStringContainsString('Validating configuration file:', $output);
         self::assertStringContainsString('quality-tools.yaml', $output);
         self::assertStringContainsString('Configuration is valid', $output);
@@ -268,7 +268,7 @@ final class ConfigValidateCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
-        $output = $this->commandTester->getDisplay();
+        $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
         self::assertStringContainsString('Validating configuration file:', $output);
         self::assertStringContainsString('quality-tools.yml', $output);
         self::assertStringContainsString('Configuration is valid', $output);
