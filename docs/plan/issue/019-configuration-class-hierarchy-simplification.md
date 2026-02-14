@@ -247,6 +247,57 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - [ ] Remove `ConfigurationWrapper` and `ConfigurationLoaderWrapper`
 - [ ] Remove old `SimpleConfiguration`, `EnhancedConfiguration`, etc.
 
+#### Classes to Replace (Priority Order)
+
+**1. ConfigurationDiscovery.php (LOWEST IMPACT - START HERE)**
+- Usage: `SimpleConfiguration::createDefault()->toArray()` (line ~75)
+- Impact: Single static method call
+- Replacement: `Configuration::createDefault()->toArray()`
+- Test Coverage: [x] Covered by ConfigurationLoaderInterfaceContractTest
+- Risk: Very Low
+
+**2. SimpleConfigurationLoader.php (LOW IMPACT)**
+- Usages: `new SimpleConfiguration($configData)`, `SimpleConfiguration::createDefault()->toArray()`
+- Impact: 2 calls, well-isolated instantiation
+- Replacement: `Configuration::createSimple()` factory method
+- Test Coverage: [x] Comprehensive test coverage
+- Risk: Low
+
+**3. ConfigurationBuilder.php (MEDIUM IMPACT)**
+- Usage: Constructor parameter `SimpleConfiguration $configuration`
+- Impact: Type signature change required
+- Replacement: `ConfigurationInterface $configuration` parameter
+- Test Coverage: [x] Covered by existing tests
+- Risk: Medium (type change)
+
+**4. BaseCommand.php (MEDIUM IMPACT)**
+- Usage: `new SimpleConfigurationLoader()` fallback creation
+- Impact: Fallback instantiation, potential backward compatibility concerns
+- Replacement: Use unified ConfigurationLoader
+- Test Coverage: [x] Well covered
+- Risk: Medium
+
+**5. HierarchicalConfigurationLoader.php (MEDIUM IMPACT)**
+- Usages: `new EnhancedConfiguration()` (2x), `new SimpleConfiguration()` (1x)
+- Impact: 3 instantiation calls, mixed simple/enhanced usage
+- Replacement: `Configuration::createHierarchical()` and `Configuration::createSimple()`
+- Test Coverage: [x] Integration tests cover usage
+- Risk: Medium
+
+**6. ConfigurationLoaderFactory.php (MEDIUM IMPACT)**
+- Usage: `instanceof SimpleConfigurationLoader` checks for loader selection
+- Impact: Type checking logic needs updating
+- Replacement: Check for unified ConfigurationLoader capabilities
+- Test Coverage: [x] Factory tests cover selection logic
+- Risk: Medium
+
+**7. ConfigurationWrapper.php (HIGH IMPACT - DO LAST)**
+- Usages: 15+ `instanceof EnhancedConfiguration` and `instanceof SimpleConfiguration` checks
+- Impact: Complex delegation logic, extensive instanceof usage
+- Replacement: Remove entirely (wrapper no longer needed)
+- Test Coverage: [x] Wrapper integration tests
+- Risk: High (entire class removal)
+
 #### Step 6.2: Update Documentation
 - [ ] Update developer documentation
 - [ ] Update API documentation
