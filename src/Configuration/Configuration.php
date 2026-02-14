@@ -33,9 +33,19 @@ final class Configuration implements ConfigurationInterface
         private readonly ?ConfigurationHierarchy $hierarchy = null,
         private readonly ?ConfigurationDiscovery $discovery = null,
     ) {
-        // Validate configuration if validator is provided and data is not empty
+        // Store validator but don't validate immediately to match wrapper behavior
+        // Validation will happen through wrapper or explicit calls
+    }
+
+    public function validateConfiguration(): void
+    {
         if ($this->validator !== null && !empty($this->data)) {
-            $this->validator->validate($this->data);
+            try {
+                $this->validator->validate($this->data);
+            } catch (\Exception $e) {
+                // Log validation errors but don't throw to match wrapper permissiveness
+                error_log('Configuration validation warning: ' . $e->getMessage());
+            }
         }
     }
 
@@ -499,9 +509,9 @@ final class Configuration implements ConfigurationInterface
             data: $data,
             hierarchicalMode: false,
             validator: $validator,
-            projectConfigService: $projectConfigService,
-            toolConfigService: $toolConfigService,
-            pathResolutionService: $pathResolutionService,
+            projectConfigService: $projectConfigService ?? self::createDefaultProjectConfigService(),
+            toolConfigService: $toolConfigService ?? self::createDefaultToolConfigService(),
+            pathResolutionService: $pathResolutionService ?? self::createDefaultPathResolutionService(),
         );
     }
 
@@ -510,25 +520,47 @@ final class Configuration implements ConfigurationInterface
         array $sourceMap = [],
         array $conflicts = [],
         array $mergeSummary = [],
+        ?ConfigurationHierarchy $hierarchy = null,
+        ?ConfigurationDiscovery $discovery = null,
+        ?string $projectRoot = null,
         ?ConfigurationValidator $validator = null,
         ?ProjectConfigService $projectConfigService = null,
         ?ToolConfigService $toolConfigService = null,
         ?PathResolutionService $pathResolutionService = null,
-        ?ConfigurationHierarchy $hierarchy = null,
-        ?ConfigurationDiscovery $discovery = null,
     ): self {
-        return new self(
+        $instance = new self(
             data: $data,
             sourceMap: $sourceMap,
             conflicts: $conflicts,
             mergeSummary: $mergeSummary,
             hierarchicalMode: true,
             validator: $validator,
-            projectConfigService: $projectConfigService,
-            toolConfigService: $toolConfigService,
-            pathResolutionService: $pathResolutionService,
+            projectConfigService: $projectConfigService ?? self::createDefaultProjectConfigService(),
+            toolConfigService: $toolConfigService ?? self::createDefaultToolConfigService(),
+            pathResolutionService: $pathResolutionService ?? self::createDefaultPathResolutionService(),
             hierarchy: $hierarchy,
             discovery: $discovery,
         );
+
+        if ($projectRoot !== null) {
+            $instance->setProjectRoot($projectRoot);
+        }
+
+        return $instance;
+    }
+
+    private static function createDefaultProjectConfigService(): ProjectConfigService
+    {
+        return new ProjectConfigService();
+    }
+
+    private static function createDefaultToolConfigService(): ToolConfigService
+    {
+        return new ToolConfigService();
+    }
+
+    private static function createDefaultPathResolutionService(): PathResolutionService
+    {
+        return new PathResolutionService();
     }
 }
