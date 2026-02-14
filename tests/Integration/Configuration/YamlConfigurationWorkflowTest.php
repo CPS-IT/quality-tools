@@ -50,6 +50,8 @@ final class YamlConfigurationWorkflowTest extends TestCase
             if (getenv($envVar) !== false) {
                 putenv($envVar);
             }
+            // Also clean superglobals
+            unset($_SERVER[$envVar], $_ENV[$envVar]);
         }
 
         // Note: We create ApplicationTester instances per test method to avoid state leakage
@@ -58,13 +60,30 @@ final class YamlConfigurationWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        
+        // Clean up environment variables after each test to prevent pollution
+        $envVariablesToClean = [
+            'PROJECT_NAME',
+            'PHP_VERSION',
+            'TYPO3_VERSION',
+            'MEMORY_LIMIT',
+            'PHPSTAN_LEVEL',
+        ];
+
+        foreach ($envVariablesToClean as $envVar) {
+            if (getenv($envVar) !== false) {
+                putenv($envVar);
+            }
+            // Also clean superglobals
+            unset($_SERVER[$envVar], $_ENV[$envVar]);
+        }
     }
 
     private function createAppTester(array $additionalEnv = []): ApplicationTester
     {
         $env = ['QT_PROJECT_ROOT' => $this->tempDir] + $additionalEnv;
 
-        // Also set $_SERVER and $_ENV variables for SecurityService compatibility
+        // Set superglobals for SecurityService compatibility
         foreach ($env as $key => $value) {
             $_SERVER[$key] = $value;
             $_ENV[$key] = $value;
