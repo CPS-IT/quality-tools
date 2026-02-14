@@ -256,12 +256,13 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Test Coverage: [x] Covered by ConfigurationLoaderInterfaceContractTest
 - Risk: Very Low
 
-**2. SimpleConfigurationLoader.php (LOW IMPACT)**
+**2. SimpleConfigurationLoader.php (LOW IMPACT) - SKIPPED**
 - Usages: `new SimpleConfiguration($configData)`, `SimpleConfiguration::createDefault()->toArray()`
 - Impact: 2 calls, well-isolated instantiation
 - Replacement: `Configuration::createSimple()` factory method
 - Test Coverage: [x] Comprehensive test coverage
 - Risk: Low
+- **DECISION**: Skip this class as it's part of the old loader architecture that will be replaced in later phases. Updating it would be temporary work that fights the intended architecture.
 
 **3. ConfigurationBuilder.php (MEDIUM IMPACT)**
 - Usage: Constructor parameter `SimpleConfiguration $configuration`
