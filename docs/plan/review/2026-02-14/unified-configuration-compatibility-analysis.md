@@ -515,7 +515,7 @@ Wrong type for quality-tools.tools: Array value found, but an object is required
 **Test**: HierarchicalModeDetectionTest failures should be resolved.
 
 ### Step 10: Fix Path Normalization Consistency
-**Status: [PENDING]**
+**Status: [COMPLETED]**
 
 **Issue**: Different path normalization between approaches
 ```
@@ -553,6 +553,41 @@ public function getResolvedPathsForTool(string $tool): array
 ```
 
 **Test**: PathResolutionConsistencyTest::testPathNormalizationConsistency should pass.
+
+### Step 11: Fix Remaining Compatibility Issues
+**Status: [PENDING]**
+
+**Issues**: Multiple remaining test failures indicate additional behavioral differences:
+
+1. **Command Exit Code Consistency**
+```
+Command with hierarchical configuration
+Failed asserting that 0 is identical to 1.
+```
+
+2. **Tool Configuration Service Differences**
+```
+Tool configuration with services
+Failed asserting that two arrays are identical.
+```
+
+3. **Default Value Consistency**
+```
+Default values
+Failed asserting that two arrays are identical.
+```
+
+**Root Cause**: Various behavioral differences between wrapper and unified approaches beyond path normalization.
+
+**Investigation Required**:
+- Analyze remaining test failures to identify specific compatibility gaps
+- Compare service injection behavior between approaches
+- Ensure default value consistency across all configuration methods
+- Fix command exit code differences in hierarchical mode
+
+**Implementation**: Address each remaining failure systematically to achieve complete compatibility.
+
+**Test**: All configuration-related tests should pass, no remaining compatibility failures.
 
 ## Success Criteria
 
@@ -653,7 +688,8 @@ The `WrapperVsUnifiedBehaviorTest` serves as continuous validation:
 - [PENDING] Step 3: Return value wrapping - Required for command exit code consistency
 - [PENDING] Step 5 & 6: Service injection and comprehensive testing
 - [COMPLETED] Step 9: Fix schema type mismatches and tool configuration behavioral differences - ConfigurationLoader uses ConfigurationInterface::DEFAULT_CONFIGURATION constant, Configuration::getToolConfig() matches EnhancedConfiguration behavior with tool-specific methods. Both ConfigurationSchemaValidationTest and HierarchicalModeDetectionTest pass completely
-- [PENDING] Step 10: Fix path normalization consistency
+- [COMPLETED] Step 10: Fix path normalization consistency - Added path normalization to SimpleConfiguration and PathResolutionService to remove ./ prefixes. PathResolutionConsistencyTest now passes completely
+- [PENDING] Step 11: Fix remaining compatibility issues (command exit codes, tool configuration services, default values)
 
 ### Additional Test Coverage Gaps
 
@@ -813,7 +849,8 @@ public function testCommandBehaviorParity(string $commandClass): void
 - **Step 7**: 1 day (Test environment setup for tool commands)
 - **Step 8**: 1-2 days (Fix SimpleConfiguration type safety)
 - **Step 9**: COMPLETED (Fix schema type mismatches)
-- **Step 10**: 1-2 days (Fix path normalization consistency)
+- **Step 10**: COMPLETED (Fix path normalization consistency)
+- **Step 11**: 1-2 days (Fix remaining compatibility issues)
 
 **Phase 1 Total**: 4 days (COMPLETED)
 **Phase 2 Total**: 5-8 days (PENDING)
