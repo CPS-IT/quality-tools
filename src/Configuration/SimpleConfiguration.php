@@ -79,12 +79,14 @@ class SimpleConfiguration implements ConfigurationInterface
 
     public function getScanPaths(): array
     {
-        return $this->pathsConfig['scan'] ?? ['packages/', 'config/system/'];
+        $scanPaths = $this->pathsConfig['scan'] ?? ['packages/', 'config/system/'];
+        return array_map([$this, 'normalizePath'], $scanPaths);
     }
 
     public function getExcludePaths(): array
     {
-        return $this->pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
+        $excludePaths = $this->pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
+        return array_map([$this, 'normalizePath'], $excludePaths);
     }
 
     public function getToolPaths(string $tool): array
@@ -496,5 +498,16 @@ class SimpleConfiguration implements ConfigurationInterface
     public function getConfigurationChain(string $keyPath): array
     {
         return []; // Simple configuration doesn't track chains
+    }
+
+    /**
+     * Normalize path by removing ./ prefix and ensuring consistent format.
+     */
+    private function normalizePath(string $path): string
+    {
+        // Remove leading "./"
+        $path = preg_replace('#^\./+#', '', $path);
+        
+        return $path;
     }
 }

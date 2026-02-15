@@ -31,8 +31,9 @@ final class PathResolutionService
     {
         $qualityTools = $data['quality-tools'] ?? [];
         $pathsConfig = $qualityTools['paths'] ?? [];
+        $scanPaths = $pathsConfig['scan'] ?? ['packages/', 'config/system/'];
 
-        return $pathsConfig['scan'] ?? ['packages/', 'config/system/'];
+        return array_map([$this, 'normalizePath'], $scanPaths);
     }
 
     /**
@@ -42,8 +43,9 @@ final class PathResolutionService
     {
         $qualityTools = $data['quality-tools'] ?? [];
         $pathsConfig = $qualityTools['paths'] ?? [];
+        $excludePaths = $pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
 
-        return $pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
+        return array_map([$this, 'normalizePath'], $excludePaths);
     }
 
     /**
@@ -187,5 +189,16 @@ final class PathResolutionService
         $toolOverrides = $pathsConfig['tool_overrides'] ?? [];
 
         return $toolOverrides[$tool] ?? [];
+    }
+
+    /**
+     * Normalize path by removing ./ prefix and ensuring consistent format.
+     */
+    private function normalizePath(string $path): string
+    {
+        // Remove leading "./"
+        $path = preg_replace('#^\./+#', '', $path);
+        
+        return $path;
     }
 }
