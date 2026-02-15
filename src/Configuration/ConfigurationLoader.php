@@ -397,61 +397,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
     private function getDefaultConfiguration(): array
     {
-        return [
-            'quality-tools' => [
-                'project' => [
-                    'php_version' => '8.3',
-                    'typo3_version' => '13.4',
-                ],
-                'paths' => [
-                    'scan' => ['packages/', 'config/system/'],
-                    'exclude' => [
-                        'var/',
-                        'vendor/',
-                        'public/',
-                        '_assets/',
-                        'fileadmin/',
-                        'typo3/',
-                        'Tests/',
-                        'tests/',
-                        'typo3conf/',
-                    ],
-                ],
-                'tools' => [
-                    'rector' => [
-                        'enabled' => true,
-                        'level' => 'typo3-13',
-                    ],
-                    'fractor' => [
-                        'enabled' => true,
-                        'indentation' => 2,
-                    ],
-                    'phpstan' => [
-                        'enabled' => true,
-                        'level' => 6,
-                        'memory_limit' => '1G',
-                    ],
-                    'php-cs-fixer' => [
-                        'enabled' => true,
-                        'preset' => 'typo3',
-                    ],
-                    'typoscript-lint' => [
-                        'enabled' => true,
-                        'indentation' => 2,
-                    ],
-                ],
-                'output' => [
-                    'verbosity' => 'normal',
-                    'colors' => true,
-                    'progress' => true,
-                ],
-                'performance' => [
-                    'parallel' => false,
-                    'max_processes' => 4,
-                    'cache_enabled' => true,
-                ],
-            ],
-        ];
+        return ConfigurationInterface::DEFAULT_CONFIGURATION;
     }
 
     private function loadGlobalConfiguration(): array
