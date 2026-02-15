@@ -417,7 +417,29 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                         'typo3conf/',
                     ],
                 ],
-                'tools' => [],
+                'tools' => [
+                    'rector' => [
+                        'enabled' => true,
+                        'level' => 'typo3-13',
+                    ],
+                    'fractor' => [
+                        'enabled' => true,
+                        'indentation' => 2,
+                    ],
+                    'phpstan' => [
+                        'enabled' => true,
+                        'level' => 6,
+                        'memory_limit' => '1G',
+                    ],
+                    'php-cs-fixer' => [
+                        'enabled' => true,
+                        'preset' => 'typo3',
+                    ],
+                    'typoscript-lint' => [
+                        'enabled' => true,
+                        'indentation' => 2,
+                    ],
+                ],
                 'output' => [
                     'verbosity' => 'normal',
                     'colors' => true,
