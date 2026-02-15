@@ -189,6 +189,7 @@ final class CommandExitCodeConsistencyTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir . '/child'],
             function () use ($wrapperLoader, $unifiedLoader): void {
                 $app = new QualityToolsApplication();
+                $app->clearCachedProjectRoot(); // Force re-detection with environment variable
 
                 // Test commands with hierarchical configuration
                 $wrapperCommand = new ComposerFixCommand(configurationLoader: $wrapperLoader);

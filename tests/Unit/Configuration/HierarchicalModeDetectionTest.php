@@ -20,7 +20,7 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * Tests hierarchical mode detection and activation between wrapper and unified approaches.
- * 
+ *
  * Problem: Unified loader doesn't auto-detect hierarchical configurations like wrapper does.
  */
 final class HierarchicalModeDetectionTest extends TestCase
@@ -85,7 +85,6 @@ final class HierarchicalModeDetectionTest extends TestCase
             new SecurityService(),
             new FilesystemService()
         );
-
         $wrapperLoader = new ConfigurationLoaderWrapper(
             $simpleLoader,
             $hierarchicalLoader,

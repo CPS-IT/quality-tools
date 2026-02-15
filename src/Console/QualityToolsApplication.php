@@ -56,6 +56,15 @@ final class QualityToolsApplication extends Application
         return $this->projectRoot;
     }
 
+    /**
+     * Clear cached project root to force re-detection.
+     * Useful for tests that change environment variables.
+     */
+    public function clearCachedProjectRoot(): void
+    {
+        $this->projectRoot = null;
+    }
+
     private function findProjectRoot(): string
     {
         $currentDir = getcwd();
