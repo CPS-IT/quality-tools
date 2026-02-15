@@ -118,8 +118,19 @@ final class Configuration implements ConfigurationInterface
 
     public function getToolConfig(string $tool): array
     {
-        return $this->toolConfigService?->getToolConfig($this->data, $tool)
-            ?? [];
+        $qualityTools = $this->data['quality-tools'] ?? [];
+        $toolsConfig = $qualityTools['tools'] ?? [];
+        $config = $toolsConfig[$tool] ?? [];
+
+        // Apply tool-specific defaults for backward compatibility (match EnhancedConfiguration)
+        return match ($tool) {
+            'phpstan' => $this->getPhpStanConfig($config),
+            'rector' => $this->getRectorConfig($config),
+            'fractor' => $this->getFractorConfig($config),
+            'php-cs-fixer' => $this->getPhpCsFixerConfig($config),
+            'typoscript-lint' => $this->getTypoScriptLintConfig($config),
+            default => $config,
+        };
     }
 
     // Output configuration methods
@@ -560,5 +571,49 @@ final class Configuration implements ConfigurationInterface
     private static function createDefaultPathResolutionService(): PathResolutionService
     {
         return new PathResolutionService();
+    }
+
+    // Tool-specific configuration methods (match EnhancedConfiguration behavior)
+
+    private function getPhpStanConfig(array $config = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'level' => 6,
+            'memory_limit' => '1G',
+        ], $config);
+    }
+
+    private function getRectorConfig(array $config = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'level' => 'typo3-13',
+            'php_version' => $this->getProjectPhpVersion(),
+        ], $config);
+    }
+
+    private function getFractorConfig(array $config = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'indentation' => 2,
+        ], $config);
+    }
+
+    private function getPhpCsFixerConfig(array $config = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'preset' => 'typo3',
+        ], $config);
+    }
+
+    private function getTypoScriptLintConfig(array $config = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'indentation' => 2,
+        ], $config);
     }
 }

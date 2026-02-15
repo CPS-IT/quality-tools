@@ -652,7 +652,7 @@ The `WrapperVsUnifiedBehaviorTest` serves as continuous validation:
 - [SKIPPED] Step 2: Project root storage - Private variable naming differences are irrelevant to public interface compatibility
 - [PENDING] Step 3: Return value wrapping - Required for command exit code consistency
 - [PENDING] Step 5 & 6: Service injection and comprehensive testing
-- [PENDING] Step 9: Fix schema type mismatches
+- [COMPLETED] Step 9: Fix schema type mismatches and tool configuration behavioral differences - ConfigurationLoader uses ConfigurationInterface::DEFAULT_CONFIGURATION constant, Configuration::getToolConfig() matches EnhancedConfiguration behavior with tool-specific methods. Both ConfigurationSchemaValidationTest and HierarchicalModeDetectionTest pass completely
 - [PENDING] Step 10: Fix path normalization consistency
 
 ### Additional Test Coverage Gaps
@@ -812,7 +812,7 @@ public function testCommandBehaviorParity(string $commandClass): void
 - **Step 5-6**: 1-2 days (Service injection and comprehensive testing)
 - **Step 7**: 1 day (Test environment setup for tool commands)
 - **Step 8**: 1-2 days (Fix SimpleConfiguration type safety)
-- **Step 9**: 1-2 days (Fix schema type mismatches)
+- **Step 9**: COMPLETED (Fix schema type mismatches)
 - **Step 10**: 1-2 days (Fix path normalization consistency)
 
 **Phase 1 Total**: 4 days (COMPLETED)
