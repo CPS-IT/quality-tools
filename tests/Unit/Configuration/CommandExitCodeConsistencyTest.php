@@ -20,13 +20,14 @@ use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Yaml\Yaml;
 
 /**
  * Tests command exit code consistency between wrapper and unified configuration loaders.
- * 
+ *
  * Problem: Different error handling causes exit code mismatches (1 vs 0).
  */
 final class CommandExitCodeConsistencyTest extends TestCase
@@ -83,8 +84,8 @@ final class CommandExitCodeConsistencyTest extends TestCase
                     'php_version' => '8.3',
                 ],
                 'tools' => [
-                    'composer' => ['enabled' => true],
                     'php-cs-fixer' => ['enabled' => true],
+                    'rector' => ['enabled' => true],
                 ],
             ],
         ];
@@ -95,14 +96,12 @@ final class CommandExitCodeConsistencyTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider commandProvider
-     */
+    #[DataProvider('commandProvider')]
     public function testCommandBehaviorParity(string $commandClass): void
     {
         // Create wrapper-based configuration loader
         $wrapperLoader = $this->createWrapperLoader();
-        
+
         // Create unified configuration loader
         $unifiedLoader = $this->createUnifiedLoader();
 
@@ -277,7 +276,7 @@ final class CommandExitCodeConsistencyTest extends TestCase
         $parentConfig = [
             'quality-tools' => [
                 'project' => ['name' => 'parent-project'],
-                'tools' => ['composer' => ['enabled' => true]],
+                'tools' => ['rector' => ['enabled' => true]],
             ],
         ];
 

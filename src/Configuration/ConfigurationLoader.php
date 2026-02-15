@@ -83,6 +83,9 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             $configData = $this->deepMerge($configData, $commandLineOverrides);
         }
 
+        // Validate final merged configuration to match wrapper behavior
+        $this->validateMergedConfiguration($configData);
+
         $configuration = Configuration::createSimple(
             data: $configData,
             validator: $this->validator,
@@ -93,7 +96,8 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
         $configuration->setProjectRoot($projectRoot);
 
-        return $configuration;
+        // Return wrapped instance to maintain compatibility
+        return new ConfigurationWrapper($configuration, 'simple');
     }
 
     /**
@@ -148,7 +152,8 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
         $configuration->setProjectRoot($projectRoot);
 
-        return $configuration;
+        // Return wrapped instance to maintain compatibility
+        return new ConfigurationWrapper($configuration, 'enhanced');
     }
 
     // Configuration discovery methods
@@ -421,7 +426,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                 'performance' => [
                     'parallel' => false,
                     'max_processes' => 4,
-                    'cache' => true,
+                    'cache_enabled' => true,
                 ],
             ],
         ];
@@ -488,10 +493,14 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
     private function validateMergedConfiguration(array $data): void
     {
-        try {
-            $this->validator->validate($data);
-        } catch (\Throwable $e) {
-            throw new ConfigurationLoadException('Merged configuration validation failed: ' . $e->getMessage(), 0, $e);
+        if (empty($data)) {
+            return; // Empty configuration is valid
+        }
+
+        $validationResult = $this->validator->validateSafe($data);
+        if (!$validationResult->isValid()) {
+            $errors = implode("\n", $validationResult->getErrors());
+            throw new ConfigurationLoadException("Invalid merged configuration:\n$errors", 'merged');
         }
     }
 

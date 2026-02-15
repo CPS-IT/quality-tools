@@ -60,10 +60,8 @@ final class Configuration implements ConfigurationInterface
     {
         $this->projectRoot = $projectRoot;
 
-        // Clear path resolution cache when project root changes
-        if ($this->pathResolutionService !== null) {
-            $this->pathResolutionService->clearAllCaches();
-        }
+        // Clear path resolution cache when the project root changes
+        $this->pathResolutionService?->clearAllCaches();
     }
 
     public function getProjectRoot(): ?string
