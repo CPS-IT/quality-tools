@@ -46,7 +46,9 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
     public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
     {
-        return $this->loadWithMode($projectRoot, $commandLineOverrides, false);
+        // Auto-detect hierarchical configuration for consistency with wrapper approach
+        $useHierarchical = $this->hasHierarchicalConfiguration($projectRoot);
+        return $this->loadWithMode($projectRoot, $commandLineOverrides, $useHierarchical);
     }
 
     public function loadHierarchical(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
