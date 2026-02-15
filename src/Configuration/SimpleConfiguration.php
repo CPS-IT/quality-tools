@@ -36,11 +36,30 @@ class SimpleConfiguration implements ConfigurationInterface
 
         $qualityTools = $this->data['quality-tools'] ?? [];
 
-        $this->projectConfig = $qualityTools['project'] ?? [];
-        $this->pathsConfig = $qualityTools['paths'] ?? [];
-        $this->toolsConfig = $qualityTools['tools'] ?? [];
-        $this->outputConfig = $qualityTools['output'] ?? [];
-        $this->performanceConfig = $qualityTools['performance'] ?? [];
+        $this->projectConfig = $this->ensureArray($qualityTools['project'] ?? []);
+        $this->pathsConfig = $this->ensureArray($qualityTools['paths'] ?? []);
+        $this->toolsConfig = $this->ensureArray($qualityTools['tools'] ?? []);
+        $this->outputConfig = $this->ensureArray($qualityTools['output'] ?? []);
+        $this->performanceConfig = $this->ensureArray($qualityTools['performance'] ?? []);
+    }
+
+    /**
+     * Ensure a value is an array, gracefully handling malformed data.
+     */
+    private function ensureArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        // Handle common malformed cases gracefully
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        // For scalar values, return empty array to prevent type errors
+        // This allows malformed configurations to be handled gracefully
+        return [];
     }
 
     public function getProjectPhpVersion(): string

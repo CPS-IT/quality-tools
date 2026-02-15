@@ -444,35 +444,43 @@ public static function commandProvider(): array
 3. **LOW**: Step 5-6 - Service injection and comprehensive behavioral tests
 
 ### Step 8: Fix SimpleConfiguration Type Safety
-**Status: [PENDING]**
+**Status: [COMPLETED]** - 2026-02-15
 
-**Issue**: TypeError in ConfigurationSchemaValidationTest
-```
-TypeError: Cannot assign string to property SimpleConfiguration::$toolsConfig of type array
-```
+**Issue Resolved**: TypeError in ConfigurationSchemaValidationTest when malformed data assigned string to array-typed properties.
 
-**Root Cause**: SimpleConfiguration property type declarations don't match assigned values.
+**Root Cause**: SimpleConfiguration expected array values but test passed malformed data like `'tools' => 'not-an-array'`, causing type mismatch with `private array $toolsConfig` property.
 
-**Investigation Required**: 
-- Check SimpleConfiguration property types vs actual usage
-- Ensure type consistency across all configuration classes
-- Fix property initialization or type declarations
-
-**Implementation**:
+**Solution Implemented**: Added graceful type handling with `ensureArray()` method:
 ```php
-// Option 1: Fix property type declaration
-private string|array $toolsConfig = [];
+private function parseConfiguration(): void
+{
+    // ... validation code ...
+    $qualityTools = $this->data['quality-tools'] ?? [];
+    
+    $this->projectConfig = $this->ensureArray($qualityTools['project'] ?? []);
+    $this->pathsConfig = $this->ensureArray($qualityTools['paths'] ?? []);
+    $this->toolsConfig = $this->ensureArray($qualityTools['tools'] ?? []);
+    $this->outputConfig = $this->ensureArray($qualityTools['output'] ?? []);
+    $this->performanceConfig = $this->ensureArray($qualityTools['performance'] ?? []);
+}
 
-// Option 2: Fix initialization/assignment
-$this->toolsConfig = (array) $someStringValue;
-
-// Option 3: Proper type handling in constructor
-if (is_string($toolsConfig)) {
-    $this->toolsConfig = [$toolsConfig];
+private function ensureArray(mixed $value): array
+{
+    if (is_array($value)) {
+        return $value;
+    }
+    
+    // Handle malformed cases gracefully - return empty array for scalars
+    // This prevents TypeErrors while allowing malformed config handling
+    return [];
 }
 ```
 
-**Test**: ConfigurationSchemaValidationTest::testValidationErrorHandlingConsistency should pass.
+**Test Results**:
+- ConfigurationSchemaValidationTest::testValidationErrorHandlingConsistency: [PASS]
+- All ConfigurationSchemaValidationTest cases: 4/4 [PASS]
+- All SimpleConfiguration related tests: 61/61 [PASS]
+- No regressions in existing functionality
 
 ### Step 9: Fix Schema Type Mismatches  
 **Status: [PENDING]**
@@ -640,10 +648,10 @@ The `WrapperVsUnifiedBehaviorTest` serves as continuous validation:
 - [COMPLETED] Step 1: Parameter compatibility and service auto-injection - 5/6 UnifiedCompatibilityTest tests pass
 - [COMPLETED] Step 4: Validation deferral - Multiple validation-related test failures resolved
 - [COMPLETED] Step 7: Test environment setup for tool commands - PhpCsFixer commands now pass
+- [COMPLETED] Step 8: Fix SimpleConfiguration type safety - All ConfigurationSchemaValidationTest cases now pass
 - [SKIPPED] Step 2: Project root storage - Private variable naming differences are irrelevant to public interface compatibility
 - [PENDING] Step 3: Return value wrapping - Required for command exit code consistency
 - [PENDING] Step 5 & 6: Service injection and comprehensive testing
-- [PENDING] Step 8: Fix SimpleConfiguration type safety
 - [PENDING] Step 9: Fix schema type mismatches
 - [PENDING] Step 10: Fix path normalization consistency
 
