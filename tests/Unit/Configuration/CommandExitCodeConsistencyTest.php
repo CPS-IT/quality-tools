@@ -38,7 +38,7 @@ final class CommandExitCodeConsistencyTest extends TestCase
     {
         $this->tempDir = TestHelper::createTempDirectory('command_exit_code_test_');
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
-        TestHelper::createVendorStructure($this->tempDir);
+        TestHelper::createVendorStructure($this->tempDir, false, true); // Include config files for tool testing
         $this->createMockExecutables();
         $this->createTestConfiguration();
     }
@@ -294,8 +294,8 @@ final class CommandExitCodeConsistencyTest extends TestCase
         // Create child composer.json
         file_put_contents($childDir . '/composer.json', '{}');
 
-        // Create child vendor structure
-        TestHelper::createVendorStructure($childDir);
+        // Create child vendor structure with config files
+        TestHelper::createVendorStructure($childDir, false, true);
         $childVendorBinDir = $childDir . '/vendor/bin';
         if (!is_dir($childVendorBinDir)) {
             mkdir($childVendorBinDir, 0o777, true);

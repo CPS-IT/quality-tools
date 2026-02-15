@@ -312,8 +312,9 @@ class UnifiedCompatibilityTest extends TestCase
 ```
 
 ### Step 7: Fix Test Environment Setup for Tool Commands
+**Status: [COMPLETED]** - 2026-02-15
 
-**Issue Identified**: CommandExitCodeConsistencyTest fails for PhpCsFixer commands due to missing configuration files in test environment.
+**Issue Resolved**: CommandExitCodeConsistencyTest failures for PhpCsFixer commands due to missing configuration files in test environment.
 
 **Root Cause**: 
 - PhpCsFixer commands require `vendor/cpsit/quality-tools/config/php-cs-fixer.php`
@@ -369,34 +370,51 @@ public static function commandProvider(): array
 }
 ```
 
-**Recommendation**: Use Option 3 (skip tool-specific tests) since the core validation consistency issue is already resolved. The PhpCsFixer test failures don't indicate problems with the wrapper vs unified compatibility - they're test environment setup issues.
+**Implementation Used**: Option 2 - Mock configuration files with minimal content.
+
+**Changes Made:**
+- Updated `TestHelper::createVendorStructure()` with `$includeConfigFiles` parameter
+- Added `createMockConfigurationFiles()` method with minimal working configurations for:
+  - `php-cs-fixer.php` - PHP CS Fixer rules and finder configuration  
+  - `rector.php` - Rector configuration with paths and rule sets
+  - `phpstan.neon` - PHPStan level 6 configuration  
+  - `typoscript-lint.yml` - TypoScript linting rules
+- Updated CommandExitCodeConsistencyTest to use config files
+
+**Test Results:**
+- PhpCsFixerLintCommand: [PASS]
+- PhpCsFixerFixCommand: [PASS]  
+- ComposerLintCommand: [PASS]
+- ComposerFixCommand: [PASS]
+- Command error handling consistency: [PASS]
+- **Remaining**: testCommandWithHierarchicalConfiguration [FAIL] - Path resolution issue (Step 10)
 
 ### Analysis of All Failing Tests
 
 **Tests Covered by Current Implementation Plan:**
 
 1. **CommandExitCodeConsistencyTest** - Step 4 (COMPLETED) + Step 7 (test env setup)
-   - `PhpCsFixerLintCommand`, `PhpCsFixerFixCommand`: Step 7 - test environment setup issue ✅
-   - `testCommandWithHierarchicalConfiguration`: Likely related to Step 3 return value wrapping ✅
+   - `PhpCsFixerLintCommand`, `PhpCsFixerFixCommand`: Step 7 - test environment setup issue [RESOLVED]
+   - `testCommandWithHierarchicalConfiguration`: Likely related to Step 3 return value wrapping [IDENTIFIED AS STEP 10]
 
 2. **UnifiedCompatibilityTest** - Step 1, 4, 6 (behavioral equivalence)
-   - `testAllInterfaceMethodsEquivalence`: Step 6 - comprehensive behavioral testing ✅
+   - `testAllInterfaceMethodsEquivalence`: Step 6 - comprehensive behavioral testing [PENDING]
 
 **Tests NOT Covered by Current Implementation Plan:**
 
 3. **ConfigurationSchemaValidationTest** - **NEW ISSUE**
-   - `testValidationErrorHandlingConsistency`: TypeError in SimpleConfiguration ❌
+   - `testValidationErrorHandlingConsistency`: TypeError in SimpleConfiguration [FAILED]
    - **Root Cause**: Type error `Cannot assign string to property SimpleConfiguration::$toolsConfig of type array`
    - **Impact**: Core compatibility issue affecting SimpleConfiguration usage
 
 4. **HierarchicalModeDetectionTest** - **NEW ISSUE** 
-   - `testHierarchicalModeDetectionAndActivation`: Returns null instead of true ❌
-   - `testFallbackToSimpleModeWhenNoHierarchy`: Schema validation error `Wrong type for quality-tools.tools: Array value found, but an object is required` ❌
-   - `testHierarchicalDetectionWithMissingParentConfigs`: Same schema validation error ❌
+   - `testHierarchicalModeDetectionAndActivation`: Returns null instead of true [FAILED]
+   - `testFallbackToSimpleModeWhenNoHierarchy`: Schema validation error `Wrong type for quality-tools.tools: Array value found, but an object is required` [FAILED]
+   - `testHierarchicalDetectionWithMissingParentConfigs`: Same schema validation error [FAILED]
    - **Root Cause**: Default configuration format vs schema type mismatch
 
 5. **PathResolutionConsistencyTest** - **NEW ISSUE**
-   - `testPathNormalizationConsistency`: Paths starting with "./" instead of normalized paths ❌
+   - `testPathNormalizationConsistency`: Paths starting with "./" instead of normalized paths [FAILED]
    - **Root Cause**: Different path normalization between wrapper and unified approaches
 
 ### Additional Implementation Steps Needed
@@ -563,11 +581,11 @@ The unified implementations will be fully compatible when:
 **Root Cause Identified and Fixed**: ConfigurationLoader simple mode was bypassing validation entirely while hierarchical mode validated correctly.
 
 **Implementation**: 
-- Removed immediate validation from Configuration constructor ✅
-- Added `validateConfiguration()` method for explicit validation ✅ 
-- **Fixed**: Added validation to `loadWithoutHierarchy()` method to match `loadWithHierarchy()` ✅
-- **Fixed**: Corrected schema compatibility - changed `cache` to `cache_enabled` in default configuration ✅
-- **Fixed**: Updated exception constructor to match ConfigurationLoadException signature ✅
+- Removed immediate validation from Configuration constructor [COMPLETED]
+- Added `validateConfiguration()` method for explicit validation [COMPLETED] 
+- **Fixed**: Added validation to `loadWithoutHierarchy()` method to match `loadWithHierarchy()` [COMPLETED]
+- **Fixed**: Corrected schema compatibility - changed `cache` to `cache_enabled` in default configuration [COMPLETED]
+- **Fixed**: Updated exception constructor to match ConfigurationLoadException signature [COMPLETED]
 
 **Key Changes:**
 ```php
@@ -603,8 +621,8 @@ private function validateMergedConfiguration(array $data): void
 - UnifiedCompatibilityTest::testValidationDeferralCompatibility: [PASS]
 - HierarchicalModeDetectionTest validation errors eliminated: [PASS]  
 - ConfigurationSchemaValidationTest validation timing: [PASS]
-- **CommandExitCodeConsistencyTest validation behavior**: [PASS] - Both approaches now validate consistently ✅
-- Composer commands (ComposerFixCommand, ComposerLintCommand): [PASS] - Exit code consistency achieved ✅
+- **CommandExitCodeConsistencyTest validation behavior**: [PASS] - Both approaches now validate consistently
+- Composer commands (ComposerFixCommand, ComposerLintCommand): [PASS] - Exit code consistency achieved
 
 ## Test Coverage Analysis
 
@@ -621,10 +639,10 @@ The `WrapperVsUnifiedBehaviorTest` serves as continuous validation:
 **Progress After Steps 1 & 4**:
 - [COMPLETED] Step 1: Parameter compatibility and service auto-injection - 5/6 UnifiedCompatibilityTest tests pass
 - [COMPLETED] Step 4: Validation deferral - Multiple validation-related test failures resolved
+- [COMPLETED] Step 7: Test environment setup for tool commands - PhpCsFixer commands now pass
 - [SKIPPED] Step 2: Project root storage - Private variable naming differences are irrelevant to public interface compatibility
 - [PENDING] Step 3: Return value wrapping - Required for command exit code consistency
 - [PENDING] Step 5 & 6: Service injection and comprehensive testing
-- [PENDING] Step 7: Test environment setup for tool commands  
 - [PENDING] Step 8: Fix SimpleConfiguration type safety
 - [PENDING] Step 9: Fix schema type mismatches
 - [PENDING] Step 10: Fix path normalization consistency
