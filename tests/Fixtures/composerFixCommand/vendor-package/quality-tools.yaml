@@ -1,0 +1,9 @@
+quality-tools:
+  project:
+    name: 'test-vendor-package'
+    php_version: '8.3'
+  paths:
+    scan:
+      - 'vendor/*/*/'
+      - 'packages/*/'
+      - 'config/system/'

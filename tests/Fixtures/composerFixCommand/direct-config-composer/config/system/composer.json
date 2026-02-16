@@ -1,0 +1,18 @@
+{
+  "name": "test/system-config",
+  "description": "Config directly in config/system/ directory",
+  "type": "typo3-cms-extension",
+  "require": {
+    "typo3/cms-core": "^13.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Test\\SystemConfig\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "system_config"
+    }
+  }
+}

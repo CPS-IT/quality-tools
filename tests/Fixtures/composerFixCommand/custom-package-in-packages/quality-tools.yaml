@@ -1,0 +1,8 @@
+quality-tools:
+  project:
+    name: 'test-custom-package'
+    php_version: '8.3'
+  paths:
+    scan:
+      - 'packages/*/'
+      - 'config/system/'
