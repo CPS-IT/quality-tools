@@ -247,6 +247,11 @@ final readonly class ConfigurationHierarchy
     /**
      * Get debug information about the configuration hierarchy.
      */
+    public function getProjectRoot(): string
+    {
+        return $this->projectRoot;
+    }
+
     public function getDebugInfo(): array
     {
         return [

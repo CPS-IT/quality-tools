@@ -61,7 +61,7 @@ final class ConfigurationDiscovery
         $configurations[] = $this->createConfigurationSource(
             'package_defaults',
             null,
-            Configuration::createDefault()->toArray(),
+            Configuration::createDefault(projectRoot: $this->hierarchy->getProjectRoot())->toArray(),
         );
 
         // 2. Global user configuration
