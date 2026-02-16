@@ -62,6 +62,7 @@ final class UnifiedCompatibilityTest extends TestCase
         
         // Create via unified approach (fix parameter order)
         $unified = Configuration::createHierarchical(
+            projectRoot: $projectRoot,
             data: $data,
             sourceMap: $sourceMap,
             conflicts: [],
@@ -73,7 +74,6 @@ final class UnifiedCompatibilityTest extends TestCase
             hierarchy: null,
             discovery: null
         );
-        $unified->setProjectRoot($projectRoot);
         
         // Assert identical behavior
         $this->assertEquals($wrapper->getProjectName(), $unified->getProjectName());
@@ -100,6 +100,7 @@ final class UnifiedCompatibilityTest extends TestCase
 
         // Create via unified Configuration (should match)
         $unified = Configuration::createHierarchical(
+            projectRoot: $projectRoot,
             data: $data,
             sourceMap: [],
             conflicts: [],
@@ -111,7 +112,6 @@ final class UnifiedCompatibilityTest extends TestCase
             hierarchy: null,
             discovery: null
         );
-        $unified->setProjectRoot($projectRoot);
         $unifiedProjectRoot = $unified->getProjectRoot();
 
         $this->assertEquals($enhancedProjectRoot, $unifiedProjectRoot);
@@ -134,7 +134,10 @@ final class UnifiedCompatibilityTest extends TestCase
         ];
 
         // Should work without explicitly providing services (auto-injection)
-        $configuration = Configuration::createSimple($data);
+        $configuration = Configuration::createSimple(
+            projectRoot: getcwd(),
+            data: $data
+        );
 
         // These methods should work due to auto-injected services
         $this->assertEquals('test-project', $configuration->getProjectName());
@@ -163,7 +166,11 @@ final class UnifiedCompatibilityTest extends TestCase
         $validator = new ConfigurationValidator();
 
         // Should not throw validation exception during creation (deferred validation)
-        $configuration = Configuration::createSimple($dataWithUnknownProperties, null); // Skip validator to test deferred behavior
+        $configuration = Configuration::createSimple(
+            projectRoot: getcwd(),
+            data: $dataWithUnknownProperties,
+            validator: null
+        ); // Skip validator to test deferred behavior
 
         $this->assertEquals('test-project', $configuration->getProjectName());
         $this->assertEquals($dataWithUnknownProperties, $configuration->toArray());
@@ -182,6 +189,7 @@ final class UnifiedCompatibilityTest extends TestCase
         $wrapper = new ConfigurationWrapper($enhanced, 'enhanced');
         
         $unified = Configuration::createHierarchical(
+            projectRoot: '/test',
             data: $testData['data'],
             sourceMap: $testData['sourceMap'],
             conflicts: [],
@@ -193,7 +201,6 @@ final class UnifiedCompatibilityTest extends TestCase
             hierarchy: null,
             discovery: null
         );
-        $unified->setProjectRoot('/test');
         
         // Test all ConfigurationInterface methods
         $this->assertEquals($wrapper->getProjectPhpVersion(), $unified->getProjectPhpVersion());
@@ -256,6 +263,7 @@ final class UnifiedCompatibilityTest extends TestCase
         // Should be able to create unified configuration from hierarchy
         $mergedData = ['quality-tools' => ['project' => ['name' => 'child-project', 'php_version' => '8.4']]];
         $configuration = Configuration::createHierarchical(
+            projectRoot: $childDir,
             data: $mergedData,
             sourceMap: [],
             conflicts: [],
@@ -267,7 +275,6 @@ final class UnifiedCompatibilityTest extends TestCase
             hierarchy: $hierarchy,
             discovery: $discovery
         );
-        $configuration->setProjectRoot($childDir);
 
         $this->assertEquals('child-project', $configuration->getProjectName());
         $this->assertEquals('8.4', $configuration->getProjectPhpVersion());

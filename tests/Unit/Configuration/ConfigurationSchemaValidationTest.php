@@ -46,6 +46,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
 
         // Test 2: Unified approach (should match wrapper permissiveness)
         $unifiedConfig = Configuration::createSimple(
+            projectRoot: getcwd(),
             data: $configWithUnknownProperties,
             validator: null // Skip validation to match wrapper behavior
         );
@@ -77,6 +78,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
 
         // Test unified approach error handling (should match wrapper)
         $unifiedConfig = Configuration::createSimple(
+            projectRoot: getcwd(),
             data: $malformedConfig,
             validator: null // Skip validation to match wrapper permissiveness
         );
@@ -110,6 +112,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
 
         // Test unified approach - should also defer validation like wrapper
         $unifiedConfig = Configuration::createSimple(
+            projectRoot: getcwd(),
             data: $validConfig,
             validator: null // Skip validation for timing comparison
         );
@@ -157,6 +160,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
         $unifiedWorked = false;
         try {
             $unifiedConfig = Configuration::createSimple(
+                projectRoot: getcwd(),
                 data: $configWithExtraFields,
                 validator: null // Skip validation to match wrapper
             );

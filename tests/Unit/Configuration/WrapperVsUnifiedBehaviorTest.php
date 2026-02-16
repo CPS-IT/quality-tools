@@ -105,13 +105,13 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         
         // Test 3: Unified Configuration in simple mode (without validator to avoid schema issues)
         $unifiedConfig = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $this->testConfigData,
             validator: null,  // Skip validation to match wrapper permissiveness
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
             pathResolutionService: new PathResolutionService(),
         );
-        $unifiedConfig->setProjectRoot($this->tempDir);
         
         // Compare basic project properties
         $this->assertProjectPropertiesMatch($simpleConfig, $wrappedSimpleConfig, $unifiedConfig);

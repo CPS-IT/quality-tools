@@ -55,17 +55,19 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $wrapperWithoutServices = new ConfigurationWrapper($simpleConfig, 'simple');
 
         // Test 2: Unified without services (should provide same defaults)
-        $unifiedWithoutServices = Configuration::createSimple($configData);
-        $unifiedWithoutServices->setProjectRoot($this->tempDir);
+        $unifiedWithoutServices = Configuration::createSimple(
+            projectRoot: $this->tempDir,
+            data: $configData
+        );
 
         // Test 3: Unified with explicit services
         $unifiedWithServices = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
             pathResolutionService: new PathResolutionService()
         );
-        $unifiedWithServices->setProjectRoot($this->tempDir);
 
         // All should provide identical basic functionality
         $this->assertEquals('test-project', $wrapperWithoutServices->getProjectName());
@@ -104,15 +106,17 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         // Unified without PathResolutionService
-        $unifiedWithoutService = Configuration::createSimple($configData);
-        $unifiedWithoutService->setProjectRoot($this->tempDir);
+        $unifiedWithoutService = Configuration::createSimple(
+            projectRoot: $this->tempDir,
+            data: $configData
+        );
 
         // Unified with PathResolutionService
         $unifiedWithService = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configData,
             pathResolutionService: new PathResolutionService()
         );
-        $unifiedWithService->setProjectRoot($this->tempDir);
 
         // Path resolution should be consistent
         $wrapperScanPaths = $wrapper->getScanPaths();
@@ -154,8 +158,12 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         // Unified approaches
-        $unifiedWithoutService = Configuration::createSimple($configData);
+        $unifiedWithoutService = Configuration::createSimple(
+            projectRoot: getcwd(),
+            data: $configData
+        );
         $unifiedWithService = Configuration::createSimple(
+            projectRoot: getcwd(),
             data: $configData,
             projectConfigService: new ProjectConfigService()
         );
@@ -192,8 +200,12 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         // Unified approaches
-        $unifiedWithoutService = Configuration::createSimple($configData);
+        $unifiedWithoutService = Configuration::createSimple(
+            projectRoot: getcwd(),
+            data: $configData
+        );
         $unifiedWithService = Configuration::createSimple(
+            projectRoot: getcwd(),
             data: $configData,
             toolConfigService: new ToolConfigService()
         );
@@ -226,8 +238,10 @@ final class ServiceDependencyBehaviorTest extends TestCase
         ];
 
         // Test that unified config works even when no services are provided
-        $unifiedConfig = Configuration::createSimple($configData);
-        $unifiedConfig->setProjectRoot($this->tempDir);
+        $unifiedConfig = Configuration::createSimple(
+            projectRoot: $this->tempDir,
+            data: $configData
+        );
 
         // Basic functionality should work without services
         $this->assertEquals('fallback-test', $unifiedConfig->getProjectName());
@@ -257,7 +271,10 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $simpleConfig = new SimpleConfiguration($configData);
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
-        $unifiedConfig = Configuration::createSimple($configData);
+        $unifiedConfig = Configuration::createSimple(
+            projectRoot: getcwd(),
+            data: $configData
+        );
 
         // Methods that don't require services should work in both
         $this->assertEquals('error-test', $wrapper->getProjectName());

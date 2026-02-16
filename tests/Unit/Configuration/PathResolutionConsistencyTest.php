@@ -96,12 +96,12 @@ final class PathResolutionConsistencyTest extends TestCase
 
         // Create unified configuration
         $unified = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
             pathResolutionService: new PathResolutionService()
         );
-        $unified->setProjectRoot($this->tempDir);
 
         $tools = ['rector', 'phpstan', 'php-cs-fixer'];
 
@@ -159,10 +159,10 @@ final class PathResolutionConsistencyTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         $unified = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configData,
             pathResolutionService: new PathResolutionService()
         );
-        $unified->setProjectRoot($this->tempDir);
 
         // Test vendor path discovery
         $wrapperVendorPath = $wrapper->getVendorPath();
@@ -199,10 +199,10 @@ final class PathResolutionConsistencyTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         $unified = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configWithGlobs,
             pathResolutionService: new PathResolutionService()
         );
-        $unified->setProjectRoot($this->tempDir);
 
         // Path resolution should be identical
         $this->assertEquals(
@@ -244,10 +244,10 @@ final class PathResolutionConsistencyTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         $unified = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configWithMixedPaths,
             pathResolutionService: new PathResolutionService()
         );
-        $unified->setProjectRoot($this->tempDir);
 
         // Path normalization should be consistent
         $wrapperPaths = $wrapper->getScanPaths();
@@ -293,10 +293,10 @@ final class PathResolutionConsistencyTest extends TestCase
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
         $unified = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configWithAbsolutePaths,
             pathResolutionService: new PathResolutionService()
         );
-        $unified->setProjectRoot($this->tempDir);
 
         // Absolute path handling should be consistent
         $this->assertEquals(
@@ -318,16 +318,18 @@ final class PathResolutionConsistencyTest extends TestCase
         ];
 
         // Test without PathResolutionService injection
-        $unifiedWithoutService = Configuration::createSimple($configData);
-        $unifiedWithoutService->setProjectRoot($this->tempDir);
+        $unifiedWithoutService = Configuration::createSimple(
+            projectRoot: $this->tempDir,
+            data: $configData
+        );
 
         // Test with PathResolutionService injection
         $pathService = new PathResolutionService();
         $unifiedWithService = Configuration::createSimple(
+            projectRoot: $this->tempDir,
             data: $configData,
             pathResolutionService: $pathService
         );
-        $unifiedWithService->setProjectRoot($this->tempDir);
 
         // Basic path resolution should work in both cases
         $pathsWithoutService = $unifiedWithoutService->getScanPaths();
