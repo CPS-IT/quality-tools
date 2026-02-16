@@ -1,0 +1,18 @@
+{
+  "name": "test/system",
+  "description": "Test system extension component of multiple composer.json scenario",
+  "type": "typo3-cms-extension",
+  "require": {
+    "typo3/cms-core": "^13.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Test\\System\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "test_system"
+    }
+  }
+}
