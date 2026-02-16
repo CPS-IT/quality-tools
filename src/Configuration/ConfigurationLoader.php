@@ -89,14 +89,13 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         $this->validateMergedConfiguration($configData);
 
         $configuration = Configuration::createSimple(
+            projectRoot: $projectRoot,
             data: $configData,
             validator: $this->validator,
             projectConfigService: $this->projectConfigService,
             toolConfigService: $this->toolConfigService,
             pathResolutionService: $this->pathResolutionService,
         );
-
-        $configuration->setProjectRoot($projectRoot);
 
         // Return wrapped instance to maintain compatibility
         return new ConfigurationWrapper($configuration, 'simple');
@@ -140,6 +139,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
         // Create hierarchical configuration with full metadata
         $configuration = Configuration::createHierarchical(
+            projectRoot: $projectRoot,
             data: $mergeResult['data'],
             sourceMap: $mergeResult['source_map'],
             conflicts: $mergeResult['conflicts'],
@@ -151,8 +151,6 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             hierarchy: $hierarchy,
             discovery: $discovery,
         );
-
-        $configuration->setProjectRoot($projectRoot);
 
         // Return wrapped instance to maintain compatibility
         return new ConfigurationWrapper($configuration, 'enhanced');
@@ -225,6 +223,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
         // Create tool-specific hierarchical configuration
         $configuration = Configuration::createHierarchical(
+            projectRoot: $projectRoot,
             data: $mergeResult['data'],
             sourceMap: $mergeResult['source_map'],
             conflicts: $mergeResult['conflicts'],
@@ -236,8 +235,6 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             hierarchy: $hierarchy,
             discovery: $discovery,
         );
-
-        $configuration->setProjectRoot($projectRoot);
 
         return $configuration;
     }

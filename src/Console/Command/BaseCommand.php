@@ -428,7 +428,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
      */
     protected function getResolvedPathsForTool(InputInterface $input, string $tool): array
     {
-$customPath = $input->getOption('path');
+        $customPath = $input->getOption('path');
         if ($customPath !== null) {
             if (!is_dir($customPath)) {
                 throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));

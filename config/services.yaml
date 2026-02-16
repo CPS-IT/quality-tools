@@ -34,6 +34,7 @@ services:
       - '../src/Configuration/ConfigurationLoaderInterface.php'
       - '../src/Configuration/ConfigurationWrapper.php'
       - '../src/Configuration/ConfigurationLoaderWrapper.php'
+      - '../src/Configuration/Configuration.php'
 
   # Console Commands
   Cpsit\QualityTools\Console\Command\:

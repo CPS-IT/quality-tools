@@ -17,10 +17,8 @@ use Cpsit\QualityTools\Service\ToolConfigService;
  */
 final class Configuration implements ConfigurationInterface
 {
-
-    private ?string $projectRoot = null;
-
     public function __construct(
+        private readonly string $projectRoot,
         private readonly array $data = [],
         private readonly array $sourceMap = [],
         private readonly array $conflicts = [],
@@ -35,6 +33,9 @@ final class Configuration implements ConfigurationInterface
     ) {
         // Store validator but don't validate immediately to match wrapper behavior
         // Validation will happen through wrapper or explicit calls
+
+        // Clear path resolution cache
+        $this->pathResolutionService?->clearAllCaches();
     }
 
     public function validateConfiguration(): void
@@ -58,13 +59,17 @@ final class Configuration implements ConfigurationInterface
 
     public function setProjectRoot(string $projectRoot): void
     {
-        $this->projectRoot = $projectRoot;
-
-        // Clear path resolution cache when the project root changes
-        $this->pathResolutionService?->clearAllCaches();
+        // Since projectRoot is readonly, we cannot modify it after construction
+        // This method exists to satisfy the interface but throws an exception
+        if ($this->projectRoot !== $projectRoot) {
+            throw new \InvalidArgumentException(
+                'Cannot change project root after construction. Project root is immutable in this implementation.'
+            );
+        }
+        // If the same project root is set, do nothing (idempotent)
     }
 
-    public function getProjectRoot(): ?string
+    public function getProjectRoot(): string
     {
         return $this->projectRoot;
     }
@@ -189,7 +194,7 @@ final class Configuration implements ConfigurationInterface
 
     public function getVendorPath(): ?string
     {
-        if ($this->pathResolutionService === null || $this->projectRoot === null) {
+        if ($this->pathResolutionService === null) {
             return null;
         }
 
@@ -198,7 +203,7 @@ final class Configuration implements ConfigurationInterface
 
     public function getVendorBinPath(): ?string
     {
-        if ($this->pathResolutionService === null || $this->projectRoot === null) {
+        if ($this->pathResolutionService === null) {
             return null;
         }
 
@@ -224,11 +229,12 @@ final class Configuration implements ConfigurationInterface
 
     public function getResolvedPathsForTool(string $tool): array
     {
-        if ($this->pathResolutionService === null || $this->projectRoot === null) {
-            return $this->getScanPaths();
+
+        if ($this->pathResolutionService !== null) {
+            return $this->pathResolutionService->getResolvedPathsForTool($this->data, $tool, $this->projectRoot);
         }
 
-        return $this->pathResolutionService->getResolvedPathsForTool($this->data, $tool, $this->projectRoot);
+        return $this->getScanPaths();
     }
 
     public function getPathScanningDebugInfo(string $tool): array
@@ -486,6 +492,7 @@ final class Configuration implements ConfigurationInterface
         $hierarchicalMode = $this->hierarchicalMode || $other->hierarchicalMode;
 
         return new self(
+            projectRoot: $this->projectRoot, // Use this configuration's project root
             data: $mergedData,
             sourceMap: $mergedSourceMap,
             conflicts: $mergedConflicts,
@@ -502,12 +509,16 @@ final class Configuration implements ConfigurationInterface
 
     // Factory methods for creating configurations
 
-    public static function createDefault(): self
+    public static function createDefault(string $projectRoot): self
     {
-        return new self(self::DEFAULT_CONFIGURATION);
+        return new self(
+            projectRoot: $projectRoot,
+            data: self::DEFAULT_CONFIGURATION,
+        );
     }
 
     public static function createSimple(
+        string $projectRoot,
         array $data = [],
         ?ConfigurationValidator $validator = null,
         ?ProjectConfigService $projectConfigService = null,
@@ -515,6 +526,7 @@ final class Configuration implements ConfigurationInterface
         ?PathResolutionService $pathResolutionService = null,
     ): self {
         return new self(
+            projectRoot: $projectRoot,
             data: $data,
             hierarchicalMode: false,
             validator: $validator,
@@ -525,19 +537,20 @@ final class Configuration implements ConfigurationInterface
     }
 
     public static function createHierarchical(
+        string $projectRoot,
         array $data = [],
         array $sourceMap = [],
         array $conflicts = [],
         array $mergeSummary = [],
         ?ConfigurationHierarchy $hierarchy = null,
         ?ConfigurationDiscovery $discovery = null,
-        ?string $projectRoot = null,
         ?ConfigurationValidator $validator = null,
         ?ProjectConfigService $projectConfigService = null,
         ?ToolConfigService $toolConfigService = null,
         ?PathResolutionService $pathResolutionService = null,
     ): self {
-        $instance = new self(
+        return new self(
+            projectRoot: $projectRoot,
             data: $data,
             sourceMap: $sourceMap,
             conflicts: $conflicts,
@@ -550,12 +563,6 @@ final class Configuration implements ConfigurationInterface
             hierarchy: $hierarchy,
             discovery: $discovery,
         );
-
-        if ($projectRoot !== null) {
-            $instance->setProjectRoot($projectRoot);
-        }
-
-        return $instance;
     }
 
     private static function createDefaultProjectConfigService(): ProjectConfigService
@@ -573,47 +580,37 @@ final class Configuration implements ConfigurationInterface
         return new PathResolutionService();
     }
 
-    // Tool-specific configuration methods (match EnhancedConfiguration behavior)
+    // Tool-specific configuration methods (use ConfigurationInterface defaults)
 
     private function getPhpStanConfig(array $config = []): array
     {
-        return array_merge([
-            'enabled' => true,
-            'level' => 6,
-            'memory_limit' => '1G',
-        ], $config);
+        $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['phpstan'];
+        return array_merge($defaults, $config);
     }
 
     private function getRectorConfig(array $config = []): array
     {
-        return array_merge([
-            'enabled' => true,
-            'level' => 'typo3-13',
-            'php_version' => $this->getProjectPhpVersion(),
-        ], $config);
+        $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['rector'];
+        // Add dynamic php_version for backward compatibility
+        $defaults['php_version'] = $this->getProjectPhpVersion();
+        return array_merge($defaults, $config);
     }
 
     private function getFractorConfig(array $config = []): array
     {
-        return array_merge([
-            'enabled' => true,
-            'indentation' => 2,
-        ], $config);
+        $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['fractor'];
+        return array_merge($defaults, $config);
     }
 
     private function getPhpCsFixerConfig(array $config = []): array
     {
-        return array_merge([
-            'enabled' => true,
-            'preset' => 'typo3',
-        ], $config);
+        $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['php-cs-fixer'];
+        return array_merge($defaults, $config);
     }
 
     private function getTypoScriptLintConfig(array $config = []): array
     {
-        return array_merge([
-            'enabled' => true,
-            'indentation' => 2,
-        ], $config);
+        $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['typoscript-lint'];
+        return array_merge($defaults, $config);
     }
 }
