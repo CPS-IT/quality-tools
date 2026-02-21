@@ -155,7 +155,7 @@ final class ConfigurationBuilder
      */
     public function buildYaml(): string
     {
-        return \Symfony\Component\Yaml\Yaml::dump($this->config, 4, 2);
+        return \Symfony\Component\Yaml\Yaml::dump($this->config, 4, 2, \Symfony\Component\Yaml\Yaml::DUMP_OBJECT_AS_MAP);
     }
 
     /**

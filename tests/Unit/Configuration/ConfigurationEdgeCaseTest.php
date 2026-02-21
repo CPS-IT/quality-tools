@@ -16,8 +16,22 @@ use PHPUnit\Framework\TestCase;
 /**
  * Edge case and error condition tests for configuration handling.
  * 
- * Tests file permissions, concurrent access, invalid formats, security boundaries,
- * and performance impact scenarios for configuration loading.
+ * CURRENT BEHAVIOR (Issue 022): Most tests fail due to schema validation errors
+ * before reaching the actual edge case being tested. This documents current
+ * limitations and ensures edge cases are properly handled post-fix.
+ * 
+ * TESTED EDGE CASES:
+ * 1. File permissions (readable, unreadable, wrong permissions)
+ * 2. Concurrent configuration access and consistency
+ * 3. Invalid tool configuration file formats 
+ * 4. Security boundary validation (directory traversal prevention)
+ * 5. Performance impact measurement and memory usage
+ * 
+ * UPDATE INSTRUCTIONS: Once Issue 022 is fixed:
+ * 1. Update permission tests to validate actual file access behavior
+ * 2. Enable format validation tests to check tool-specific syntax
+ * 3. Verify security boundaries work independently of schema validation
+ * 4. Confirm performance characteristics remain acceptable
  */
 final class ConfigurationEdgeCaseTest extends TestCase
 {

@@ -12,8 +12,20 @@ use PHPUnit\Framework\TestCase;
 /**
  * Unit tests for schema validation with config_file properties.
  * 
- * Tests the schema validation behavior when tool configurations include
- * custom config_file paths. Documents Issue 022 schema validation conflicts.
+ * CURRENT BEHAVIOR (Issue 022): Schema validation fails when config_file properties
+ * are present because they are not defined in config/schema/quality-tools.json.
+ * 
+ * EXPECTED POST-FIX BEHAVIOR: Schema should accept config_file properties and validate:
+ * 1. config_file paths are valid strings
+ * 2. Relative and absolute paths are handled correctly  
+ * 3. Security validation prevents directory traversal
+ * 4. Tool-specific config_file properties are properly typed
+ * 
+ * UPDATE INSTRUCTIONS: Once Issue 022 is fixed:
+ * 1. Update schema to include config_file properties for all tools
+ * 2. Change failing test assertions to expect validation success
+ * 3. Add positive tests for valid config_file configurations
+ * 4. Test schema evolution and backward compatibility
  */
 final class CustomConfigSchemaTest extends TestCase
 {
