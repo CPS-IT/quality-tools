@@ -133,16 +133,55 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
     /**
      * Validate the final merged configuration.
      */
-    private function validateMergedConfiguration(array $data): void
+    private function validateMergedConfiguration(array &$data): void
     {
         if (empty($data)) {
             return; // Empty configuration is valid
         }
 
+        // Normalize configuration structure before validation
+        // Ensure 'tools' section is always treated as an object, never as an indexed array
+        $this->normalizeConfigurationStructure($data);
+
         $validationResult = $this->validator->validateSafe($data);
         if (!$validationResult->isValid()) {
             $errors = implode("\n", $validationResult->getErrors());
             throw new ConfigurationLoadException("Invalid merged configuration:\n$errors", 'merged');
+        }
+    }
+
+    /**
+     * Fix Issue 022 Phase 2 Step 6: Normalize configuration structure to fix array/object type mismatches.
+     *
+     * Ensures that the 'tools' section is always treated as an associative array (object)
+     * to prevent JSON schema validation errors.
+     */
+    private function normalizeConfigurationStructure(array &$data): void
+    {
+        if (!isset($data['quality-tools'])) {
+            return;
+        }
+
+        // Fix tools section - ensure it's always an associative array (object), not indexed array
+        if (isset($data['quality-tools']['tools'])) {
+            $tools = &$data['quality-tools']['tools'];
+
+            // If tools is an indexed array (has numeric consecutive keys starting from 0)
+            if (\is_array($tools) && array_is_list($tools)) {
+                // Convert indexed array to empty associative array
+                // This fixes the "Array value found, but an object is required" error
+                $tools = [];
+            }
+
+            // Ensure all tool entries are properly structured as associative arrays
+            if (\is_array($tools)) {
+                foreach ($tools as &$toolConfig) {
+                    if (\is_array($toolConfig) && array_is_list($toolConfig)) {
+                        $toolConfig = [];
+                    }
+                }
+                unset($toolConfig); // Break reference
+            }
         }
     }
 

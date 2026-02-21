@@ -100,7 +100,11 @@ final class ConfigurationMerger
                         break;
 
                     case 'merge_unique':
-                        if ($this->isIndexedArray($target[$key]) && $this->isIndexedArray($value)) {
+                        // Special handling for 'tools' section - always treat as associative array (object)
+                        if ($key === 'tools' || str_ends_with($keyPathStr, '.tools')) {
+                            // Always deep merge tools section to preserve object structure
+                            $this->deepMerge($target[$key], $targetSourceMap, $value, $sourceName, $currentKeyPath);
+                        } elseif ($this->isIndexedArray($target[$key]) && $this->isIndexedArray($value)) {
                             // Merge indexed arrays and remove duplicates
                             $merged = array_merge($target[$key], $value);
                             $target[$key] = array_values(array_unique($merged));
@@ -112,6 +116,17 @@ final class ConfigurationMerger
                         break;
 
                     case 'deep_merge':
+                        // Special handling for 'tools' section - ensure empty arrays become objects
+                        if (($key === 'tools' || str_ends_with($keyPathStr, '.tools')) && (empty($target[$key]) || empty($value))) {
+                            // If either side is empty, initialize as empty object to preserve structure
+                            if (empty($target[$key])) {
+                                $target[$key] = [];
+                            }
+                            if (empty($value)) {
+                                // Skip merging empty arrays to avoid type conflicts
+                                break;
+                            }
+                        }
                         $this->deepMerge($target[$key], $targetSourceMap, $value, $sourceName, $currentKeyPath);
                         break;
 
