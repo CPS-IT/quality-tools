@@ -1,9 +1,13 @@
 # Issue 022: Configuration File Replacement Schema Validation Bug
 
 ## Status
-**In Progress** - Phase 1, Step 1 completed. Schema validation fails with `config_file is not defined` errors.
+**Partially Resolved** - Core user-facing Issue 022 RESOLVED. Additional technical debt discovered and planned for resolution.
 
-### Implementation Progress
+**Core Achievement**: Schema now supports `config_file` properties - users can specify `config_file` in YAML configurations without validation errors.
+
+**Remaining Work**: ConfigurationDiscovery metadata injection still causes integration test failures.
+
+## Implementation Progress
 - [x] **Phase 1, Step 1: Build Configuration Test Infrastructure** - Completed
   - Integration test with dataProvider pattern demonstrating Issue 022 behavior
   - Static fixture files for multiple test scenarios
@@ -17,7 +21,18 @@
   - Security boundary validation prevents directory traversal attacks
   - Performance impact measurement ensures loading remains under 100ms
   - Memory usage validation keeps overhead under 1MB
-- [ ] **Phase 2: Enhanced Schema and Validation** - Pending  
+- [x] **Phase 2, Step 4: Update JSON Schema** - Completed
+  - Added `config_file` property to all tool configurations (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
+  - Schema validation now passes for configurations with custom config files
+  - Core Issue 022 schema validation conflict RESOLVED
+- [ ] **Phase 2, Step 5: Resolve ConfigurationDiscovery Metadata Injection** - Pending
+  - `tool_config_file` and `custom_config` properties still undefined in schema
+  - ConfigurationDiscovery.php:165,178 still injects metadata not defined in schema
+  - Integration tests reveal "Wrong type for quality-tools.tools: Array value found, but an object is required"
+- [ ] **Phase 2, Step 6: Fix Configuration Structure Validation** - Pending
+  - Address array vs object type validation issues in merged configurations
+  - Ensure consistent configuration structure across discovery and validation processes
+- [ ] **Phase 2: Remaining Enhanced Schema and Validation Steps** - Pending  
 - [ ] **Phase 3: Configuration Resolution Logic** - Pending
 - [ ] **Phase 4: Tool Integration and Commands** - Pending
 - [ ] **Phase 5: Documentation** - Pending
@@ -234,10 +249,10 @@ qt config:show
    - [x] Performance impact measurement - Loading under 100ms, memory under 1MB
 
 #### Phase 2: Enhanced Schema and Validation (Priority: Critical)  
-4. **Update JSON Schema** (`config/schema/quality-tools.json`)
-   - Add `config_file` property to all tool configurations
-   - Define path validation rules with examples
-   - Maintain backward compatibility
+4. **[x] Update JSON Schema** (`config/schema/quality-tools.json`) - Completed
+   - Added `config_file` property to all tool configurations
+   - Defined path validation rules with examples
+   - Maintained backward compatibility
 
 5. **Configuration File Validation Logic**
    ```php
@@ -351,7 +366,36 @@ qt config:show
 
 **Total**: 6-8 days for robust implementation with comprehensive validation
 
-## Investigation Notes
-- The loadPhpFile() and loadNeonFile() methods in ConfigurationDiscovery intentionally add metadata keys not defined in schema
-- This appears to be a design oversight where configuration discovery was implemented without corresponding schema updates
-- The issue affects all tools that support custom configuration files (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
+## Current Investigation Findings
+
+### Core Issue 022 Resolution - COMPLETED
+**Achievement**: Schema now supports `config_file` properties for all tools (rector, phpstan, fractor, php-cs-fixer, typoscript-lint).
+
+**Validation Results**:
+- Unit tests (15/15): All CustomConfigSchemaTest scenarios pass
+- Schema validation: User-specified `config_file` properties validate successfully  
+- User impact: Core Issue 022 resolved - users can specify config_file without validation errors
+
+### Additional Issues Discovered During Implementation
+
+**Issue 1: ConfigurationDiscovery Metadata Injection**
+- Location: `src/Configuration/ConfigurationDiscovery.php:165,178`
+- Problem: `tool_config_file` and `custom_config` properties still injected but undefined in schema
+- Integration test errors: "The property tool_config_file is not defined and the definition does not allow additional properties"
+
+**Issue 2: Configuration Structure Type Mismatch** 
+- Integration test errors: "Wrong type for quality-tools.tools: Array value found, but an object is required"
+- Root cause: Configuration merging/discovery process produces inconsistent data structures
+- Impact: Prevents successful configuration loading even when schema validation passes
+
+**Issue 3: Test Infrastructure Validation**
+- Fixed: Updated all test expectations to reflect that Issue 022 core problem is resolved
+- Updated: Changed `expects_schema_failure: true` to `false` for scenarios with config_file properties
+- Result: Unit tests now pass, integration tests reveal deeper structural issues
+
+### Architecture Decision Required
+Two approaches for handling discovery metadata:
+1. **Schema Addition**: Add `tool_config_file` and `custom_config` to schema (maintains current architecture)
+2. **Metadata Removal**: Refactor to avoid runtime metadata injection (cleaner architecture, more work)
+
+**Recommendation**: Approach 2 for cleaner long-term architecture.

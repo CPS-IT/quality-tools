@@ -37,40 +37,24 @@ final class CustomConfigSchemaTest extends TestCase
     }
 
     /**
-     * Test that configurations with config_file properties fail schema validation.
+     * Test that configurations with config_file properties pass schema validation.
      * 
-     * This test documents Issue 022 where config_file is not defined in the schema
-     * but is added by the configuration discovery process.
+     * Issue 022 RESOLVED: config_file is now properly defined in the schema
+     * and configurations with these properties validate successfully.
      */
     #[DataProvider('configFileSchemaProvider')]
-    public function testConfigFilePropertyCausesSchemaValidationFailure(
+    public function testConfigFilePropertyPassesSchemaValidation(
         array $configData,
         string $tool,
         string $scenarioDescription
     ): void {
-        // This test documents the current failing behavior until Issue 022 is fixed
+        // Issue 022 is now resolved - config_file properties should validate successfully
         $validationResult = $this->validator->validateSafe($configData);
         
-        $this->assertFalse(
-            $validationResult->isValid(),
-            "Configuration with config_file should fail validation (Issue 022): {$scenarioDescription}"
-        );
-        
-        $errors = $validationResult->getErrors();
-        $this->assertNotEmpty($errors, "Validation should produce error messages");
-        
-        $hasConfigFileError = false;
-        foreach ($errors as $error) {
-            if (str_contains($error, 'config_file is not defined')) {
-                $hasConfigFileError = true;
-                break;
-            }
-        }
-        
         $this->assertTrue(
-            $hasConfigFileError,
-            "Should have specific 'config_file is not defined' error in scenario: {$scenarioDescription}. " .
-            "Actual errors: " . implode('; ', $errors)
+            $validationResult->isValid(),
+            "Configuration with config_file should pass validation (Issue 022 resolved): {$scenarioDescription}. " .
+            "Errors: " . implode('; ', $validationResult->getErrors())
         );
     }
 
@@ -175,9 +159,9 @@ final class CustomConfigSchemaTest extends TestCase
     }
 
     /**
-     * Test that config_file is NOT currently defined in schema (documenting Issue 022).
+     * Test that config_file is defined in schema (Issue 022 RESOLVED).
      */
-    public function testConfigFileNotDefinedInCurrentSchema(): void
+    public function testConfigFileIsDefinedInSchema(): void
     {
         $schemaPath = __DIR__ . '/../../../config/schema/quality-tools.json';
         $schemaContent = file_get_contents($schemaPath);
@@ -186,8 +170,8 @@ final class CustomConfigSchemaTest extends TestCase
         // Navigate to the tool definitions
         $toolsDefinition = $schemaData['definitions']['tools']['properties'];
         
-        // This test documents Issue 022 - config_file should NOT be in current schema
-        foreach (['rector', 'phpstan', 'fractor'] as $tool) {
+        // Issue 022 is resolved - config_file should now be in the schema
+        foreach (['rector', 'phpstan', 'fractor', 'php-cs-fixer', 'typoscript-lint'] as $tool) {
             // Each tool references its own definition
             $toolRef = $toolsDefinition[$tool]['$ref'];
             $definitionName = str_replace('#/definitions/', '', $toolRef);
@@ -195,14 +179,19 @@ final class CustomConfigSchemaTest extends TestCase
             if (isset($schemaData['definitions'][$definitionName]['properties'])) {
                 $toolProperties = $schemaData['definitions'][$definitionName]['properties'];
                 
-                $this->assertArrayNotHasKey(
+                $this->assertArrayHasKey(
                     'config_file',
                     $toolProperties,
-                    "Schema should NOT currently define config_file for {$tool} (Issue 022 documentation)"
+                    "Schema should now define config_file for {$tool} (Issue 022 resolved)"
                 );
+                
+                // Verify config_file property structure
+                $configFileProperty = $toolProperties['config_file'];
+                $this->assertEquals('string', $configFileProperty['type']);
+                $this->assertArrayHasKey('description', $configFileProperty);
+                $this->assertEquals(1, $configFileProperty['minLength']);
             } else {
-                // If no properties defined, config_file is definitely not there
-                $this->addToAssertionCount(1);
+                $this->fail("Tool {$tool} should have properties defined in schema");
             }
         }
     }
@@ -368,7 +357,7 @@ final class CustomConfigSchemaTest extends TestCase
                         ],
                     ],
                 ],
-                false, // Should fail - config_file not defined in schema
+                true, // Should pass - config_file is now defined in schema (Issue 022 resolved)
                 'Absolute path config_file'
             ],
             'relative_path_config_file' => [
@@ -383,7 +372,7 @@ final class CustomConfigSchemaTest extends TestCase
                         ],
                     ],
                 ],
-                false, // Should fail - config_file not defined in schema
+                true, // Should pass - config_file is now defined in schema (Issue 022 resolved)
                 'Relative path config_file'
             ],
         ];

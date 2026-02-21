@@ -193,7 +193,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('no-custom')->build(),
                     'custom_files' => [],
-                    'expects_schema_failure' => true, // Even empty configs fail due to schema structure
+                    'expects_schema_failure' => false, // Issue 022 resolved - empty configs should validate
                     'expected_tool_configs' => [
                         'rector' => ['uses_default' => true],
                         'phpstan' => ['uses_default' => true],
@@ -205,7 +205,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('rector-custom')->build(),
                     'custom_files' => ['rector.php'],
-                    'expects_schema_failure' => true, // Due to Issue 022
+                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
                     'expected_tool_configs' => [
                         'rector' => ['should_use_custom' => true],
                         'phpstan' => ['uses_default' => true],
@@ -217,7 +217,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('phpstan-custom')->build(),
                     'custom_files' => ['phpstan.neon'],
-                    'expects_schema_failure' => true, // Due to Issue 022
+                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
                     'expected_tool_configs' => [
                         'rector' => ['uses_default' => true],
                         'phpstan' => ['should_use_custom' => true],
@@ -229,7 +229,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('multi-custom')->build(),
                     'custom_files' => ['rector.php', 'phpstan.neon', 'fractor.php'],
-                    'expects_schema_failure' => true, // Due to Issue 022
+                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
                     'expected_tool_configs' => [
                         'rector' => ['should_use_custom' => true],
                         'phpstan' => ['should_use_custom' => true],
@@ -245,7 +245,7 @@ final class ConfigurationRegressionTest extends TestCase
                         ['rector' => 'custom-configs/rector.php']
                     )->build(),
                     'custom_files' => ['custom-configs/rector.php'],
-                    'expects_schema_failure' => true, // Due to Issue 022
+                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
                     'expected_tool_configs' => [
                         'rector' => ['should_use_explicit' => 'custom-configs/rector.php'],
                     ],
