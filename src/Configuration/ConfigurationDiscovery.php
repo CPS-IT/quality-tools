@@ -159,11 +159,20 @@ final class ConfigurationDiscovery
      */
     private function loadPhpFile(string $path): array
     {
-        // PHP configuration files are tool-specific and don't follow our YAML schema
-        // We just mark them as existing and let the tool handle them
+        // Determine which tool this PHP config file belongs to and set config_file property
+        $tool = $this->getToolFromConfigFile($path);
+        if ($tool === null) {
+            return [];
+        }
+
         return [
-            'tool_config_file' => $path,
-            'custom_config' => true,
+            'quality-tools' => [
+                'tools' => [
+                    $tool => [
+                        'config_file' => $path,
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -172,11 +181,20 @@ final class ConfigurationDiscovery
      */
     private function loadNeonFile(string $path): array
     {
-        // Neon configuration files are tool-specific
-        // We just mark them as existing and let PHPStan handle them
+        // Determine which tool this Neon config file belongs to and set config_file property
+        $tool = $this->getToolFromConfigFile($path);
+        if ($tool === null) {
+            return [];
+        }
+
         return [
-            'tool_config_file' => $path,
-            'custom_config' => true,
+            'quality-tools' => [
+                'tools' => [
+                    $tool => [
+                        'config_file' => $path,
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -284,5 +302,21 @@ final class ConfigurationDiscovery
             'global_config_path' => $this->getHomeDirectory() ? $this->getHomeDirectory() . '/.quality-tools.yaml' : null,
             'existing_files_by_level' => $this->hierarchy->getExistingConfigurationFiles(),
         ];
+    }
+
+    /**
+     * Determine which tool a configuration file belongs to based on its filename.
+     */
+    private function getToolFromConfigFile(string $path): ?string
+    {
+        $filename = basename($path);
+        
+        foreach (ConfigurationHierarchy::TOOL_CONFIG_FILES as $tool => $configFiles) {
+            if (in_array($filename, $configFiles, true)) {
+                return $tool;
+            }
+        }
+
+        return null;
     }
 }
