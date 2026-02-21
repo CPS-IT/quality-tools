@@ -91,6 +91,14 @@ The following issues have been identified and prioritized for improvement:
 
 **Production Testing Results:** [2025-12-18 Review](review/2025-12-18/README.md)
 
+## Current Active Issues
+
+**High Priority:**
+- [ ] [019 - Configuration Class Hierarchy Simplification](issue/019-configuration-class-hierarchy-simplification.md)
+- [ ] [020 - DI Configuration Inconsistency](issue/020-di-configuration-inconsistency.md)
+- [ ] [021 - Missing Integration Test Coverage](issue/021-missing-integration-test-coverage.md)
+- [ ] [022 - Configuration File Replacement Schema Validation](issue/022-configuration-file-replacement-schema-validation.md)
+
 ## Active Development Features
 
 The MVP is complete. The following features are organized into implementation iterations:

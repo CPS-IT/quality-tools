@@ -1,4 +1,4 @@
-# Issue 020: Configuration File Replacement Schema Validation Bug
+# Issue 022: Configuration File Replacement Schema Validation Bug
 
 ## Status
 **Open** - Identified during refactoring work on issue 019
@@ -135,64 +135,93 @@ This issue reveals broader problems in the configuration system:
 - Issue 019: Configuration class hierarchy simplification (current refactoring)
 - Configuration override test scenarios (documented in tmp/configuration-override-test-scenarios.md)
 
-## Implementation Plan
+## Refined Solution: Configuration File Key Approach
 
-### Analysis Results
+### Root Cause Re-Analysis
+The original approach of adding runtime metadata keys to the schema was architecturally flawed. The real issue is trying to validate user YAML configuration mixed with runtime discovery metadata against a single schema.
 
-#### 1. Test Coverage Assessment
-**Current State:** 
-- **MAJOR GAP**: Zero test coverage for custom configuration file replacement scenarios
-- No tests for `tool_config_file` and `custom_config` metadata keys 
-- ConfigValidateCommand and ConfigShowCommand tests exist but don't cover custom tool configs
-- Tool command tests focus on default configurations only
+### Proposed Solution: Explicit `configuration_file` Key
 
-**Impact:** Critical functionality untested, explaining why the bug went undetected.
+**Architecture:**
+- Add optional `configuration_file` key to each tool in user YAML schema
+- Use clear precedence: User-specified > Auto-discovered > Package defaults  
+- No runtime metadata pollution - everything is user-visible and schema-compliant
 
-#### 2. Test Cases Definition
-**Required Test Scenarios:**
+**Schema Addition:**
+```json
+{
+  "rector_config": {
+    "properties": {
+      "enabled": {"type": "boolean"},
+      "level": {"type": "string"},
+      "configuration_file": {
+        "type": "string",
+        "description": "Path to custom configuration file (relative to project root or absolute)"
+      }
+    }
+  }
+}
+```
 
-**Schema Validation Tests:**
-- Custom tool config files should validate successfully 
-- Merged configuration with tool metadata should pass validation
-- Schema should reject invalid tool_config_file paths
-- Schema should handle multiple custom tool configs
+**Configuration Precedence:**
+1. **Explicit User Setting**: `configuration_file: "custom/rector.php"` (highest priority)
+2. **Auto-Discovery**: Files found in `<projectRoot>/<tool>.php` or `<projectRoot>/config/<tool>.php`
+3. **Package Defaults**: `cpsit/quality-tools/config/<tool>.php` (lowest priority)
 
-**Configuration Discovery Tests:**
-- Detect custom rector.php, phpstan.neon, fractor.php files
-- Handle precedence: custom files override YAML configuration
-- Support both project root and config/ directory placement
-- Validate tool-specific configuration loading
+**User Experience:**
+```yaml
+# .quality-tools.yaml
+quality-tools:
+  tools:
+    rector:
+      configuration_file: "custom-rector.php"  # Explicit override
+    phpstan:
+      # No configuration_file = auto-discovery + defaults
+```
 
-**Command Integration Tests:**
-- `qt config:validate` should report valid for custom configs
-- `qt config:show` should display merged config without errors
-- `qt lint:*` commands should use custom configuration files
-- Tool execution should respect custom config precedence
+**Auto-Discovery Display:**
+```bash
+qt config:show
+# quality-tools:
+#   tools:
+#     rector:
+#       configuration_file: "custom-rector.php" (auto-discovered)
+#       enabled: true
+```
 
-#### 3. Documentation Assessment
-**Current State:** 
-- Configuration override concept documented in feature/015 plan
-- User guide mentions "custom configuration" but lacks specific examples
-- Tool-specific docs mention config files but not replacement behavior
-- **MISSING**: Step-by-step custom config file setup examples
+### Implementation Plan
 
-**Required Updates:**
-- Add custom tool config file examples to user guide
-- Document configuration precedence rules clearly
-- Update troubleshooting guide with validation scenarios
-
-### Implementation Phases
-
-#### Phase 1: Schema and Validation Fix (Priority: Critical)
+#### Phase 1: Schema Enhancement (Priority: Critical)
 1. **Update JSON Schema** (`config/schema/quality-tools.json`)
-   - Add `tool_config_file` and `custom_config` properties to quality-tools section
-   - Define validation rules for tool config file paths
-   - Ensure backward compatibility with existing configurations
+   - Add `configuration_file` property to all tool configurations
+   - Define path validation rules (relative to project root or absolute)
+   - Maintain backward compatibility
 
-2. **Fix Configuration Validation** (`src/Configuration/ConfigurationValidator.php`)
-   - Handle tool metadata keys in validation process
-   - Ensure merged configurations validate correctly
-   - Add specific error messages for tool config issues
+2. **Configuration Resolution Logic** (`src/Configuration/ConfigurationDiscovery.php`)
+   ```php
+   public function resolveToolConfigurationFile(string $tool, array $userConfig): string 
+   {
+       // 1. User-specified path takes precedence
+       $userPath = $userConfig['quality-tools']['tools'][$tool]['configuration_file'] ?? null;
+       if ($userPath) {
+           return $this->resolveConfigPath($userPath);
+       }
+       
+       // 2. Auto-discover in standard locations  
+       $discoveredPath = $this->discoverToolConfig($tool);
+       if ($discoveredPath) {
+           return $discoveredPath;
+       }
+       
+       // 3. Package default
+       return $this->getDefaultConfigPath($tool);
+   }
+   ```
+
+3. **Configuration Display Enhancement**
+   - Show auto-discovered files with "(auto-discovered)" indicator
+   - Display effective configuration file paths in all commands
+   - Provide clear feedback about configuration source
 
 #### Phase 2: Test Implementation (Priority: High)
 3. **Create Configuration File Replacement Test Suite**
