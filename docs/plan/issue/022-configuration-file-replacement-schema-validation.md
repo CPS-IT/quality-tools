@@ -62,7 +62,7 @@ These keys are not defined in the JSON schema at `config/schema/quality-tools.js
    # Actual: Uses default quality-tools rector config, ignoring custom file
    ```
 
-### Test Case 2: Config Directory Override  
+### Test Case 2: Config Directory Override
 1. Create configuration in config directory:
    ```bash
    mkdir -p config
@@ -114,7 +114,7 @@ These keys are not defined in the JSON schema at `config/schema/quality-tools.js
 **Priority:** High - Core functionality broken
 
 **User Impact:**
-- Users cannot override default tool configurations 
+- Users cannot override default tool configurations
 - False positive validation results create confusion
 - Configuration introspection commands fail
 - Reduced flexibility in tool customization
@@ -127,7 +127,7 @@ These keys are not defined in the JSON schema at `config/schema/quality-tools.js
 ## Technical Debt
 This issue reveals broader problems in the configuration system:
 1. Schema validation and configuration discovery are not properly integrated
-2. Tool-specific configuration handling is inconsistent 
+2. Tool-specific configuration handling is inconsistent
 3. Missing test coverage for configuration file replacement scenarios
 4. Validation feedback mechanisms need improvement
 
@@ -144,7 +144,7 @@ The original approach of adding runtime metadata keys to the schema was architec
 
 **Architecture:**
 - Add optional `configuration_file` key to each tool in user YAML schema
-- Use clear precedence: User-specified > Auto-discovered > Package defaults  
+- Use clear precedence: User-specified > Auto-discovered > Package defaults
 - No runtime metadata pollution - everything is user-visible and schema-compliant
 
 **Schema Addition:**
@@ -199,20 +199,20 @@ qt config:show
 
 2. **Configuration Resolution Logic** (`src/Configuration/ConfigurationDiscovery.php`)
    ```php
-   public function resolveToolConfigurationFile(string $tool, array $userConfig): string 
+   public function resolveToolConfigurationFile(string $tool, array $userConfig): string
    {
        // 1. User-specified path takes precedence
        $userPath = $userConfig['quality-tools']['tools'][$tool]['configuration_file'] ?? null;
        if ($userPath) {
            return $this->resolveConfigPath($userPath);
        }
-       
-       // 2. Auto-discover in standard locations  
+
+       // 2. Auto-discover in standard locations
        $discoveredPath = $this->discoverToolConfig($tool);
        if ($discoveredPath) {
            return $discoveredPath;
        }
-       
+
        // 3. Package default
        return $this->getDefaultConfigPath($tool);
    }
@@ -253,7 +253,7 @@ qt config:show
    - Ensure fallback behavior when custom configs are invalid
    - Test configuration precedence in tool execution
 
-#### Phase 4: Documentation Update (Priority: Medium) 
+#### Phase 4: Documentation Update (Priority: Medium)
 8. **Update User Guide** (`docs/user-guide/configuration.md`)
    - Add "Custom Tool Configuration Files" section
    - Include step-by-step examples for each tool
@@ -277,7 +277,7 @@ qt config:show
 
 ### Success Criteria
 - [ ] All test suites pass without regression
-- [ ] Custom tool config files validate successfully 
+- [ ] Custom tool config files validate successfully
 - [ ] `qt config:validate` reports accurate validation status
 - [ ] `qt config:show` displays merged configuration correctly
 - [ ] Tool commands use custom configuration files when present
