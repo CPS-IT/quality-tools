@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests service dependency behavior parity between wrapper and unified approaches.
- * 
+ *
  * Problem: Different default value handling when services missing/present.
  */
 final class ServiceDependencyBehaviorTest extends TestCase
@@ -57,7 +57,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
         // Test 2: Unified without services (should provide same defaults)
         $unifiedWithoutServices = Configuration::createSimple(
             projectRoot: $this->tempDir,
-            data: $configData
+            data: $configData,
         );
 
         // Test 3: Unified with explicit services
@@ -66,7 +66,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // All should provide identical basic functionality
@@ -108,14 +108,14 @@ final class ServiceDependencyBehaviorTest extends TestCase
         // Unified without PathResolutionService
         $unifiedWithoutService = Configuration::createSimple(
             projectRoot: $this->tempDir,
-            data: $configData
+            data: $configData,
         );
 
         // Unified with PathResolutionService
         $unifiedWithService = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // Path resolution should be consistent
@@ -160,12 +160,12 @@ final class ServiceDependencyBehaviorTest extends TestCase
         // Unified approaches
         $unifiedWithoutService = Configuration::createSimple(
             projectRoot: getcwd(),
-            data: $configData
+            data: $configData,
         );
         $unifiedWithService = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $configData,
-            projectConfigService: new ProjectConfigService()
+            projectConfigService: new ProjectConfigService(),
         );
 
         // Project information should be identical
@@ -202,12 +202,12 @@ final class ServiceDependencyBehaviorTest extends TestCase
         // Unified approaches
         $unifiedWithoutService = Configuration::createSimple(
             projectRoot: getcwd(),
-            data: $configData
+            data: $configData,
         );
         $unifiedWithService = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $configData,
-            toolConfigService: new ToolConfigService()
+            toolConfigService: new ToolConfigService(),
         );
 
         // Tool configurations should be identical
@@ -240,7 +240,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
         // Test that unified config works even when no services are provided
         $unifiedConfig = Configuration::createSimple(
             projectRoot: $this->tempDir,
-            data: $configData
+            data: $configData,
         );
 
         // Basic functionality should work without services
@@ -273,7 +273,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
 
         $unifiedConfig = Configuration::createSimple(
             projectRoot: getcwd(),
-            data: $configData
+            data: $configData,
         );
 
         // Methods that don't require services should work in both
@@ -287,18 +287,21 @@ final class ServiceDependencyBehaviorTest extends TestCase
 
         try {
             $wrapper->getVendorPath();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $wrapperWorked = false;
         }
 
         try {
             $unifiedConfig->getVendorPath();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $unifiedWorked = false;
         }
 
         // Both should succeed or both should fail
-        $this->assertEquals($wrapperWorked, $unifiedWorked, 
-            'Service-dependent methods should behave consistently between wrapper and unified');
+        $this->assertEquals(
+            $wrapperWorked,
+            $unifiedWorked,
+            'Service-dependent methods should behave consistently between wrapper and unified',
+        );
     }
 }

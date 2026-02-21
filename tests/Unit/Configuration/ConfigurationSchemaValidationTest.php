@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests configuration schema validation differences between wrapper and unified approaches.
- * 
+ *
  * Problem: Wrapper approach more permissive than unified approach with unknown properties.
  */
 final class ConfigurationSchemaValidationTest extends TestCase
@@ -48,7 +48,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
         $unifiedConfig = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $configWithUnknownProperties,
-            validator: null // Skip validation to match wrapper behavior
+            validator: null, // Skip validation to match wrapper behavior
         );
 
         // Should behave identically to wrapper
@@ -80,7 +80,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
         $unifiedConfig = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $malformedConfig,
-            validator: null // Skip validation to match wrapper permissiveness
+            validator: null, // Skip validation to match wrapper permissiveness
         );
 
         // Both should handle malformed data gracefully
@@ -114,7 +114,7 @@ final class ConfigurationSchemaValidationTest extends TestCase
         $unifiedConfig = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $validConfig,
-            validator: null // Skip validation for timing comparison
+            validator: null, // Skip validation for timing comparison
         );
 
         // Should behave identically - no immediate validation errors
@@ -146,13 +146,13 @@ final class ConfigurationSchemaValidationTest extends TestCase
         // Wrapper should be permissive
         $simpleConfig = new SimpleConfiguration($configWithExtraFields);
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
-        
+
         $wrapperWorked = false;
         try {
             $wrapper->getProjectName();
             $wrapper->getScanPaths();
             $wrapperWorked = true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Document if wrapper throws
         }
 
@@ -162,20 +162,20 @@ final class ConfigurationSchemaValidationTest extends TestCase
             $unifiedConfig = Configuration::createSimple(
                 projectRoot: getcwd(),
                 data: $configWithExtraFields,
-                validator: null // Skip validation to match wrapper
+                validator: null, // Skip validation to match wrapper
             );
             $unifiedConfig->getProjectName();
             $unifiedConfig->getScanPaths();
             $unifiedWorked = true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Should not throw if wrapper doesn't throw
         }
 
         // Both should succeed or both should fail
         $this->assertEquals(
-            $wrapperWorked, 
+            $wrapperWorked,
             $unifiedWorked,
-            'Wrapper and unified approaches should handle strict validation identically'
+            'Wrapper and unified approaches should handle strict validation identically',
         );
     }
 }
