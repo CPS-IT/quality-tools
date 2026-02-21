@@ -376,11 +376,45 @@ return static function (FractorConfig $fractorConfig): void {
                 return false;
             }
             
-            // Basic YAML indentation check
+            // Basic YAML structure validation
             $lines = explode("\n", $content);
-            foreach ($lines as $line) {
-                if (trim($line) && !preg_match('/^(\t+|  +|\s*[-#]|\s*[a-zA-Z_])/', $line)) {
-                    return false; // Invalid indentation
+            $inParametersBlock = false;
+            $parametersIndentLevel = null;
+            $rootLevelSections = ['parameters', 'extensions', 'includes', 'rules'];
+            
+            foreach ($lines as $lineNum => $line) {
+                if (empty(trim($line)) || str_starts_with(trim($line), '#')) {
+                    continue; // Skip empty lines and comments
+                }
+                
+                $currentIndent = strlen($line) - strlen(ltrim($line));
+                $trimmed = trim($line);
+                
+                // Check for root-level sections
+                $isRootSection = false;
+                foreach ($rootLevelSections as $section) {
+                    if (str_starts_with($trimmed, $section . ':')) {
+                        $isRootSection = true;
+                        if ($section === 'parameters') {
+                            $inParametersBlock = true;
+                            $parametersIndentLevel = $currentIndent;
+                        } else {
+                            $inParametersBlock = false; // We're in a different root section
+                        }
+                        break;
+                    }
+                }
+                
+                if ($isRootSection) {
+                    continue; // Root sections are valid
+                }
+                
+                // If we're in parameters block, validate indentation
+                if ($inParametersBlock && str_contains($trimmed, ':') && !str_starts_with($trimmed, '-')) {
+                    // Properties under parameters must be indented more than parameters:
+                    if ($currentIndent <= $parametersIndentLevel) {
+                        return false; // Invalid indentation - should be indented under parameters
+                    }
                 }
             }
             
