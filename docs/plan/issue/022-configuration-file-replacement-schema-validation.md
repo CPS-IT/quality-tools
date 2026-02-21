@@ -140,12 +140,14 @@ This issue reveals broader problems in the configuration system:
 ### Root Cause Re-Analysis
 The original approach of adding runtime metadata keys to the schema was architecturally flawed. The real issue is trying to validate user YAML configuration mixed with runtime discovery metadata against a single schema.
 
-### Proposed Solution: Explicit `configuration_file` Key
+### Proposed Solution: Explicit `config_file` Key
 
 **Architecture:**
-- Add optional `configuration_file` key to each tool in user YAML schema
+- Add optional `config_file` key to each tool in user YAML schema
 - Use clear precedence: User-specified > Auto-discovered > Package defaults
 - No runtime metadata pollution - everything is user-visible and schema-compliant
+- Implement secure path resolution with validation and boundary checks
+- Add configuration file validation to ensure tool compatibility
 
 **Schema Addition:**
 ```json
@@ -154,9 +156,10 @@ The original approach of adding runtime metadata keys to the schema was architec
     "properties": {
       "enabled": {"type": "boolean"},
       "level": {"type": "string"},
-      "configuration_file": {
+      "config_file": {
         "type": "string",
-        "description": "Path to custom configuration file (relative to project root or absolute)"
+        "description": "Path to custom configuration file (relative to project root or absolute)",
+        "examples": ["rector.php", "config/rector.php", "/absolute/path/rector.php"]
       }
     }
   }
@@ -164,7 +167,7 @@ The original approach of adding runtime metadata keys to the schema was architec
 ```
 
 **Configuration Precedence:**
-1. **Explicit User Setting**: `configuration_file: "custom/rector.php"` (highest priority)
+1. **Explicit User Setting**: `config_file: "custom/rector.php"` (highest priority)
 2. **Auto-Discovery**: Files found in `<projectRoot>/<tool>.php` or `<projectRoot>/config/<tool>.php`
 3. **Package Defaults**: `cpsit/quality-tools/config/<tool>.php` (lowest priority)
 
@@ -174,9 +177,9 @@ The original approach of adding runtime metadata keys to the schema was architec
 quality-tools:
   tools:
     rector:
-      configuration_file: "custom-rector.php"  # Explicit override
+      config_file: "custom-rector.php"  # Explicit override
     phpstan:
-      # No configuration_file = auto-discovery + defaults
+      # No config_file = auto-discovery + defaults
 ```
 
 **Auto-Discovery Display:**
@@ -185,117 +188,148 @@ qt config:show
 # quality-tools:
 #   tools:
 #     rector:
-#       configuration_file: "custom-rector.php" (auto-discovered)
+#       config_file: "custom-rector.php" (auto-discovered)
 #       enabled: true
 ```
 
 ### Implementation Plan
 
-#### Phase 1: Schema Enhancement (Priority: Critical)
-1. **Update JSON Schema** (`config/schema/quality-tools.json`)
-   - Add `configuration_file` property to all tool configurations
-   - Define path validation rules (relative to project root or absolute)
+#### Phase 1: Comprehensive Testing Infrastructure (Priority: Critical)
+1. **Build Configuration Test Infrastructure**
+   - `tests/Support/ConfigurationTestFixtures.php` - Reusable test fixtures
+   - `tests/Support/ConfigurationBuilder.php` - Test configuration builders
+   - `tests/Support/ConfigurationAssertions.php` - Specialized assertions
+
+2. **Create Comprehensive Test Coverage**
+   - `tests/Unit/Configuration/ConfigurationFileValidationTest.php` - Validate config file syntax
+   - `tests/Unit/Configuration/CustomConfigSchemaTest.php` - Schema validation with `config_file`
+   - `tests/Integration/Configuration/CustomToolConfigurationTest.php` - End-to-end config replacement
+   - `tests/Integration/Configuration/ConfigurationRegressionTest.php` - Regression protection matrix
+
+3. **Add Edge Case and Error Testing**
+   - File permission edge cases (unreadable, missing files)
+   - Concurrent configuration file access scenarios
+   - Invalid configuration file formats per tool
+   - Security boundary validation (directory traversal prevention)
+   - Performance impact measurement
+
+#### Phase 2: Enhanced Schema and Validation (Priority: Critical)  
+4. **Update JSON Schema** (`config/schema/quality-tools.json`)
+   - Add `config_file` property to all tool configurations
+   - Define path validation rules with examples
    - Maintain backward compatibility
 
-2. **Configuration Resolution Logic** (`src/Configuration/ConfigurationDiscovery.php`)
+5. **Configuration File Validation Logic**
    ```php
-   public function resolveToolConfigurationFile(string $tool, array $userConfig): string
+   private function validateToolConfigurationFile(string $tool, string $path): bool
+   {
+       if (!file_exists($path) || !is_readable($path)) {
+           return false;
+       }
+       
+       return match($tool) {
+           'rector' => $this->validateRectorConfig($path),
+           'phpstan' => $this->validatePhpstanConfig($path),
+           default => true
+       };
+   }
+   ```
+
+6. **Secure Path Resolution** 
+   - Implement secure path resolution with boundary checks
+   - Prevent directory traversal attacks
+   - Validate file permissions and accessibility
+   - Handle absolute vs relative path resolution
+
+#### Phase 3: Configuration Resolution Logic (Priority: High)
+7. **Enhanced Configuration Discovery** (`src/Configuration/ConfigurationDiscovery.php`)
+   ```php
+   public function resolveToolConfigurationFile(string $tool, array $userConfig): string 
    {
        // 1. User-specified path takes precedence
-       $userPath = $userConfig['quality-tools']['tools'][$tool]['configuration_file'] ?? null;
-       if ($userPath) {
-           return $this->resolveConfigPath($userPath);
+       $userPath = $userConfig['quality-tools']['tools'][$tool]['config_file'] ?? null;
+       if ($userPath && $this->validateToolConfigurationFile($tool, $userPath)) {
+           return $this->resolveSecurePath($userPath);
        }
-
+       
        // 2. Auto-discover in standard locations
        $discoveredPath = $this->discoverToolConfig($tool);
-       if ($discoveredPath) {
+       if ($discoveredPath && $this->validateToolConfigurationFile($tool, $discoveredPath)) {
            return $discoveredPath;
        }
-
+       
        // 3. Package default
        return $this->getDefaultConfigPath($tool);
    }
    ```
 
-3. **Configuration Display Enhancement**
-   - Show auto-discovered files with "(auto-discovered)" indicator
-   - Display effective configuration file paths in all commands
-   - Provide clear feedback about configuration source
+8. **Enhanced Error Reporting**
+   - Clear messages when config files not found
+   - Specific validation errors for each tool
+   - Debug information for configuration discovery process
 
-#### Phase 2: Test Implementation (Priority: High)
-3. **Create Configuration File Replacement Test Suite**
-   - `tests/Integration/Configuration/CustomToolConfigTest.php`
-   - Test all supported custom config files (rector.php, phpstan.neon, etc.)
-   - Validate configuration discovery and precedence rules
-   - Test schema validation for custom configs
-
-4. **Extend Command Integration Tests**
-   - Update `ConfigValidateCommandTest` with custom config scenarios
-   - Update `ConfigShowCommandTest` with merged configuration display
-   - Add tool command tests with custom configuration files
-   - Test error scenarios and edge cases
-
-5. **Add Schema Validation Tests**
-   - `tests/Unit/Configuration/CustomConfigSchemaTest.php`
-   - Test schema validation for tool metadata keys
-   - Validate error handling for invalid tool config paths
-   - Test schema evolution and backward compatibility
-
-#### Phase 3: Configuration Discovery Enhancement (Priority: Medium)
-6. **Enhance ConfigurationDiscovery**
-   - Ensure proper validation of discovered tool config files
-   - Improve error reporting for invalid custom configurations
-   - Add debug information for tool config detection
-
-7. **Tool Executor Integration**
-   - Verify tool commands properly use custom configuration files
+#### Phase 4: Tool Integration and Commands (Priority: High)
+9. **Tool Executor Integration**
+   - Update all tool commands to use new configuration resolution
    - Ensure fallback behavior when custom configs are invalid
-   - Test configuration precedence in tool execution
+   - Test configuration precedence in all tool executions
 
-#### Phase 4: Documentation Update (Priority: Medium)
-8. **Update User Guide** (`docs/user-guide/configuration.md`)
-   - Add "Custom Tool Configuration Files" section
-   - Include step-by-step examples for each tool
-   - Document configuration precedence rules
+10. **Command Enhancement**
+    - Update `ConfigValidateCommandTest` with comprehensive custom config scenarios
+    - Update `ConfigShowCommandTest` with auto-discovery indicators
+    - Enhance user feedback for configuration source information
 
-9. **Update Tool-Specific Documentation**
-   - Add custom config examples to Rector, PHPStan, Fractor docs
-   - Document troubleshooting for configuration issues
-   - Add migration guide from default to custom configs
+#### Phase 5: Documentation (Priority: Medium)
+11. **User Guide Updates** (`docs/user-guide/configuration.md`)
+    - Add "Custom Tool Configuration Files" section
+    - Document configuration precedence rules clearly
+    - Include step-by-step examples for each tool
 
-#### Phase 5: Quality Assurance (Priority: High)
-10. **Regression Testing**
-    - Run full test suite to ensure no breaking changes
-    - Test backward compatibility with existing projects
-    - Validate performance impact of schema changes
+12. **Tool-Specific Documentation**
+    - Add `config_file` examples to each tool guide
+    - Update troubleshooting guide with configuration scenarios
+    - Document security considerations for custom config files
 
-11. **Integration Validation**
-    - Test with real-world project scenarios
-    - Validate configuration hierarchy behavior
-    - Test error recovery and user feedback
+#### Phase 6: Integration Validation (Priority: High)
+13. **Comprehensive Integration Testing**
+    - Test with real-world project structures
+    - Validate backward compatibility with existing configurations
+    - Performance impact assessment and optimization
+    - Cross-platform compatibility testing
+
+14. **Regression Protection**
+    - Complete regression test matrix for all tool commands
+    - Validation of existing behavior preservation
+    - Error recovery and user feedback quality assurance
 
 ### Success Criteria
 - [ ] All test suites pass without regression
-- [ ] Custom tool config files validate successfully
+- [ ] Custom tool config files validate successfully with proper error messages
 - [ ] `qt config:validate` reports accurate validation status
-- [ ] `qt config:show` displays merged configuration correctly
+- [ ] `qt config:show` displays configuration with auto-discovery indicators
 - [ ] Tool commands use custom configuration files when present
-- [ ] Documentation provides clear guidance for custom config setup
-- [ ] Schema validation provides helpful error messages
+- [ ] Configuration file validation prevents invalid configurations
+- [ ] Secure path resolution prevents security vulnerabilities
+- [ ] Documentation provides clear examples and troubleshooting guidance
+- [ ] Performance impact is minimal and measured
+- [ ] Edge cases and error conditions are handled gracefully
 
 ### Risk Mitigation
-- **Schema Changes**: Maintain backward compatibility with existing configs
-- **Test Coverage**: Implement comprehensive test scenarios before fixing code
-- **Documentation**: Update docs alongside implementation to prevent user confusion
-- **Performance**: Monitor validation performance impact with custom configs
+- **Test-First Approach**: Comprehensive testing before implementation prevents regressions
+- **Schema Changes**: Maintain strict backward compatibility
+- **Security**: Implement secure path resolution with boundary validation
+- **Performance**: Monitor and optimize configuration discovery overhead
+- **Tool Integration**: Systematic testing of all tool command integrations
 
 ### Estimated Effort
-- **Phase 1 & 2**: 2-3 days (critical path)
-- **Phase 3 & 4**: 1-2 days (parallel with testing)
-- **Phase 5**: 1 day (validation and cleanup)
+- **Phase 1**: 2 days (test infrastructure and comprehensive coverage)
+- **Phase 2**: 2 days (schema, validation, and security implementation)
+- **Phase 3**: 1-2 days (configuration resolution logic)  
+- **Phase 4**: 1-2 days (tool integration and command updates)
+- **Phase 5**: 1 day (documentation updates)
+- **Phase 6**: 1 day (integration validation and final testing)
 
-**Total**: 4-6 days for complete implementation and validation
+**Total**: 6-8 days for robust implementation with comprehensive validation
 
 ## Investigation Notes
 - The loadPhpFile() and loadNeonFile() methods in ConfigurationDiscovery intentionally add metadata keys not defined in schema
