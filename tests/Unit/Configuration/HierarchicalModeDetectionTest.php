@@ -77,18 +77,18 @@ final class HierarchicalModeDetectionTest extends TestCase
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem())
+            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService()
+            new FilesystemService(),
         );
         $wrapperLoader = new ConfigurationLoaderWrapper(
             $simpleLoader,
             $hierarchicalLoader,
-            'hierarchical' // Use hierarchical mode instead of 'auto'
+            'hierarchical', // Use hierarchical mode instead of 'auto'
         );
 
         // Test 2: Unified approach (should detect hierarchical structure automatically)
@@ -98,7 +98,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new FilesystemService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService()
+            new PathResolutionService(),
         );
 
         // Load from child directory - both should detect hierarchical structure
@@ -177,11 +177,11 @@ final class HierarchicalModeDetectionTest extends TestCase
         // Tool configurations should be identical
         $this->assertEquals(
             $configFromWrapper->isToolEnabled('rector'),
-            $configFromUnified->isToolEnabled('rector')
+            $configFromUnified->isToolEnabled('rector'),
         );
         $this->assertEquals(
             $configFromWrapper->isToolEnabled('phpstan'),
-            $configFromUnified->isToolEnabled('phpstan')
+            $configFromUnified->isToolEnabled('phpstan'),
         );
     }
 
@@ -240,7 +240,7 @@ final class HierarchicalModeDetectionTest extends TestCase
         // Both should behave identically with missing hierarchy
         $this->assertEquals(
             $configFromWrapper->toArray(),
-            $configFromUnified->toArray()
+            $configFromUnified->toArray(),
         );
     }
 
@@ -249,19 +249,19 @@ final class HierarchicalModeDetectionTest extends TestCase
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem())
+            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService()
+            new FilesystemService(),
         );
 
         return new ConfigurationLoaderWrapper(
             $simpleLoader,
             $hierarchicalLoader,
-            'hierarchical' // Use hierarchical mode
+            'hierarchical', // Use hierarchical mode
         );
     }
 
@@ -273,7 +273,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new FilesystemService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService()
+            new PathResolutionService(),
         );
     }
 }

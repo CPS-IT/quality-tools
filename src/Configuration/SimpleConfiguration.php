@@ -48,7 +48,7 @@ class SimpleConfiguration implements ConfigurationInterface
      */
     private function ensureArray(mixed $value): array
     {
-        if (is_array($value)) {
+        if (\is_array($value)) {
             return $value;
         }
 
@@ -80,13 +80,15 @@ class SimpleConfiguration implements ConfigurationInterface
     public function getScanPaths(): array
     {
         $scanPaths = $this->pathsConfig['scan'] ?? ['packages/', 'config/system/'];
-        return array_map([$this, 'normalizePath'], $scanPaths);
+
+        return array_map($this->normalizePath(...), $scanPaths);
     }
 
     public function getExcludePaths(): array
     {
         $excludePaths = $this->pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
-        return array_map([$this, 'normalizePath'], $excludePaths);
+
+        return array_map($this->normalizePath(...), $excludePaths);
     }
 
     public function getToolPaths(string $tool): array
@@ -507,7 +509,7 @@ class SimpleConfiguration implements ConfigurationInterface
     {
         // Remove leading "./"
         $path = preg_replace('#^\./+#', '', $path);
-        
+
         return $path;
     }
 }

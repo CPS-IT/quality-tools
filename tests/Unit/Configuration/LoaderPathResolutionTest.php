@@ -31,7 +31,7 @@ final class LoaderPathResolutionTest extends TestCase
     protected function setUp(): void
     {
         $this->tempDir = sys_get_temp_dir() . '/loader_test_' . uniqid();
-        mkdir($this->tempDir, 0755, true);
+        mkdir($this->tempDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -59,19 +59,19 @@ final class LoaderPathResolutionTest extends TestCase
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new Filesystem())
+            new FilesystemService(new Filesystem()),
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService()
+            new FilesystemService(),
         );
 
         return new ConfigurationLoaderWrapper(
             $simpleLoader,
             $hierarchicalLoader,
-            'hierarchical'
+            'hierarchical',
         );
     }
 
@@ -83,7 +83,7 @@ final class LoaderPathResolutionTest extends TestCase
             new FilesystemService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService()
+            new PathResolutionService(),
         );
     }
 
@@ -92,11 +92,11 @@ final class LoaderPathResolutionTest extends TestCase
         array $directoriesToCreate,
         array $configFilesToCreate,
         array $expectedWrapperPaths,
-        ?array $expectedUnifiedPaths
+        ?array $expectedUnifiedPaths,
     ): void {
         // Create a test directory structure
         foreach ($directoriesToCreate as $dir) {
-            mkdir($this->tempDir . '/' . $dir, 0755, true);
+            mkdir($this->tempDir . '/' . $dir, 0o755, true);
         }
 
         // Create configuration files
@@ -115,7 +115,7 @@ final class LoaderPathResolutionTest extends TestCase
         $wrapperPaths = $wrapperConfig->getResolvedPathsForTool('composer');
         $unifiedPaths = $unifiedConfig->getResolvedPathsForTool('composer');
 
-        /**
+        /*
          * Note: the unified loader is considered correct
          * Unified loader: Uses PathResolutionService with existence checks -> returns absolute paths to existing dirs
          * Wrapper loader: Falls back to getScanPaths() -> returns default relative paths regardless of existence
@@ -125,7 +125,7 @@ final class LoaderPathResolutionTest extends TestCase
         $this->assertIsArray($unifiedPaths);
 
         // Verify wrapper paths match expected values
-        $this->assertEquals($expectedWrapperPaths, $wrapperPaths, "Wrapper loader paths should match expected values");
+        $this->assertEquals($expectedWrapperPaths, $wrapperPaths, 'Wrapper loader paths should match expected values');
 
         // Convert unified absolute paths to relative for comparison
         $relativeUnifiedPaths = array_map(function ($path) {
@@ -137,17 +137,16 @@ final class LoaderPathResolutionTest extends TestCase
                 $relativePath = str_replace($realTempDir, '', $path);
                 $relativePath = ltrim($relativePath, '/');
             }
+
             return $relativePath;
         }, $unifiedPaths);
 
         // Verify unified paths match expected values (relative form)
-        $this->assertEquals($expectedUnifiedPaths, $relativeUnifiedPaths, "Unified loader should find existing directories");
+        $this->assertEquals($expectedUnifiedPaths, $relativeUnifiedPaths, 'Unified loader should find existing directories');
 
         // The unified loader should return absolute paths when directories exist
-        if (!empty($unifiedPaths)) {
-            foreach ($unifiedPaths as $path) {
-                $this->assertStringStartsWith('/', $path, 'Unified loader should return absolute paths');
-            }
+        foreach ($unifiedPaths as $path) {
+            $this->assertStringStartsWith('/', $path, 'Unified loader should return absolute paths');
         }
     }
 
@@ -190,7 +189,7 @@ final class LoaderPathResolutionTest extends TestCase
             'with_config_file' => [
                 'directoriesToCreate' => ['packages', 'config/system'],
                 'configFilesToCreate' => [
-                    '.quality-tools.yaml' => "quality-tools:\n  paths:\n    scan:\n      - packages/\n      - config/system/\n"
+                    '.quality-tools.yaml' => "quality-tools:\n  paths:\n    scan:\n      - packages/\n      - config/system/\n",
                 ],
                 'expectedWrapperPaths' => ['packages/', 'config/system/'], // Config paths merged with defaults
                 'expectedUnifiedPaths' => ['config/system', 'packages'], // Hierarchical finds both existing dirs
@@ -200,13 +199,11 @@ final class LoaderPathResolutionTest extends TestCase
             'custom_paths' => [
                 'directoriesToCreate' => ['src', 'lib'],
                 'configFilesToCreate' => [
-                    '.quality-tools.yaml' => "quality-tools:\n  paths:\n    scan:\n      - src/\n      - lib/\n"
+                    '.quality-tools.yaml' => "quality-tools:\n  paths:\n    scan:\n      - src/\n      - lib/\n",
                 ],
                 'expectedWrapperPaths' => ['packages/', 'config/system/', 'src/', 'lib/'], // Config paths merged with defaults
                 'expectedUnifiedPaths' => ['lib', 'src'], // Hierarchical finds both custom existing dirs
             ],
         ];
     }
-
-
 }

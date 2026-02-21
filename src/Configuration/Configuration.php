@@ -15,21 +15,21 @@ use Cpsit\QualityTools\Service\ToolConfigService;
  * providing all capabilities through a single, unified interface.
  * Business logic is delegated to specialized services for maintainability.
  */
-final class Configuration implements ConfigurationInterface
+final readonly class Configuration implements ConfigurationInterface
 {
     public function __construct(
-        private readonly string $projectRoot,
-        private readonly array $data = [],
-        private readonly array $sourceMap = [],
-        private readonly array $conflicts = [],
-        private readonly array $mergeSummary = [],
-        private readonly bool $hierarchicalMode = false,
-        private readonly ?ConfigurationValidator $validator = null,
-        private readonly ?ProjectConfigService $projectConfigService = null,
-        private readonly ?ToolConfigService $toolConfigService = null,
-        private readonly ?PathResolutionService $pathResolutionService = null,
-        private readonly ?ConfigurationHierarchy $hierarchy = null,
-        private readonly ?ConfigurationDiscovery $discovery = null,
+        private string $projectRoot,
+        private array $data = [],
+        private array $sourceMap = [],
+        private array $conflicts = [],
+        private array $mergeSummary = [],
+        private bool $hierarchicalMode = false,
+        private ?ConfigurationValidator $validator = null,
+        private ?ProjectConfigService $projectConfigService = null,
+        private ?ToolConfigService $toolConfigService = null,
+        private ?PathResolutionService $pathResolutionService = null,
+        private ?ConfigurationHierarchy $hierarchy = null,
+        private ?ConfigurationDiscovery $discovery = null,
     ) {
         // Store validator but don't validate immediately to match wrapper behavior
         // Validation will happen through wrapper or explicit calls
@@ -62,9 +62,7 @@ final class Configuration implements ConfigurationInterface
         // Since projectRoot is readonly, we cannot modify it after construction
         // This method exists to satisfy the interface but throws an exception
         if ($this->projectRoot !== $projectRoot) {
-            throw new \InvalidArgumentException(
-                'Cannot change project root after construction. Project root is immutable in this implementation.'
-            );
+            throw new \InvalidArgumentException('Cannot change project root after construction. Project root is immutable in this implementation.');
         }
         // If the same project root is set, do nothing (idempotent)
     }
@@ -229,7 +227,6 @@ final class Configuration implements ConfigurationInterface
 
     public function getResolvedPathsForTool(string $tool): array
     {
-
         if ($this->pathResolutionService !== null) {
             return $this->pathResolutionService->getResolvedPathsForTool($this->data, $tool, $this->projectRoot);
         }
@@ -585,6 +582,7 @@ final class Configuration implements ConfigurationInterface
     private function getPhpStanConfig(array $config = []): array
     {
         $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['phpstan'];
+
         return array_merge($defaults, $config);
     }
 
@@ -593,24 +591,28 @@ final class Configuration implements ConfigurationInterface
         $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['rector'];
         // Add dynamic php_version for backward compatibility
         $defaults['php_version'] = $this->getProjectPhpVersion();
+
         return array_merge($defaults, $config);
     }
 
     private function getFractorConfig(array $config = []): array
     {
         $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['fractor'];
+
         return array_merge($defaults, $config);
     }
 
     private function getPhpCsFixerConfig(array $config = []): array
     {
         $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['php-cs-fixer'];
+
         return array_merge($defaults, $config);
     }
 
     private function getTypoScriptLintConfig(array $config = []): array
     {
         $defaults = self::DEFAULT_CONFIGURATION['quality-tools']['tools']['typoscript-lint'];
+
         return array_merge($defaults, $config);
     }
 }

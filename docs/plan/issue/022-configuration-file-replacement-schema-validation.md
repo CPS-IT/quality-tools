@@ -14,7 +14,7 @@
   - ConfigurationBuilder and ConfigurationAssertions support classes
 - [x] **Phase 1, Step 2: Create Comprehensive Test Coverage** - Completed
   - ConfigurationFileValidationTest.php validates config file syntax across tools
-  - CustomConfigSchemaTest.php documents Issue 022 schema validation conflicts  
+  - CustomConfigSchemaTest.php documents Issue 022 schema validation conflicts
   - ConfigurationRegressionTest.php provides comprehensive regression protection matrix
 - [x] **Phase 1, Step 3: Add Edge Case and Error Testing** - Completed
   - ConfigurationEdgeCaseTest.php covers file permissions, concurrent access, invalid formats
@@ -32,7 +32,7 @@
 - [ ] **Phase 2, Step 6: Fix Configuration Structure Validation** - Pending
   - Address array vs object type validation issues in merged configurations
   - Ensure consistent configuration structure across discovery and validation processes
-- [ ] **Phase 2: Remaining Enhanced Schema and Validation Steps** - Pending  
+- [ ] **Phase 2: Remaining Enhanced Schema and Validation Steps** - Pending
 - [ ] **Phase 3: Configuration Resolution Logic** - Pending
 - [ ] **Phase 4: Tool Integration and Commands** - Pending
 - [ ] **Phase 5: Documentation** - Pending
@@ -248,7 +248,7 @@ qt config:show
    - [x] Security boundary validation (directory traversal prevention) - Comprehensive coverage
    - [x] Performance impact measurement - Loading under 100ms, memory under 1MB
 
-#### Phase 2: Enhanced Schema and Validation (Priority: Critical)  
+#### Phase 2: Enhanced Schema and Validation (Priority: Critical)
 4. **[x] Update JSON Schema** (`config/schema/quality-tools.json`) - Completed
    - Added `config_file` property to all tool configurations
    - Defined path validation rules with examples
@@ -261,7 +261,7 @@ qt config:show
        if (!file_exists($path) || !is_readable($path)) {
            return false;
        }
-       
+
        return match($tool) {
            'rector' => $this->validateRectorConfig($path),
            'phpstan' => $this->validatePhpstanConfig($path),
@@ -270,7 +270,7 @@ qt config:show
    }
    ```
 
-6. **Secure Path Resolution** 
+6. **Secure Path Resolution**
    - Implement secure path resolution with boundary checks
    - Prevent directory traversal attacks
    - Validate file permissions and accessibility
@@ -279,20 +279,20 @@ qt config:show
 #### Phase 3: Configuration Resolution Logic (Priority: High)
 7. **Enhanced Configuration Discovery** (`src/Configuration/ConfigurationDiscovery.php`)
    ```php
-   public function resolveToolConfigurationFile(string $tool, array $userConfig): string 
+   public function resolveToolConfigurationFile(string $tool, array $userConfig): string
    {
        // 1. User-specified path takes precedence
        $userPath = $userConfig['quality-tools']['tools'][$tool]['config_file'] ?? null;
        if ($userPath && $this->validateToolConfigurationFile($tool, $userPath)) {
            return $this->resolveSecurePath($userPath);
        }
-       
+
        // 2. Auto-discover in standard locations
        $discoveredPath = $this->discoverToolConfig($tool);
        if ($discoveredPath && $this->validateToolConfigurationFile($tool, $discoveredPath)) {
            return $discoveredPath;
        }
-       
+
        // 3. Package default
        return $this->getDefaultConfigPath($tool);
    }
@@ -359,7 +359,7 @@ qt config:show
 ### Estimated Effort
 - **Phase 1**: 2 days (test infrastructure and comprehensive coverage)
 - **Phase 2**: 2 days (schema, validation, and security implementation)
-- **Phase 3**: 1-2 days (configuration resolution logic)  
+- **Phase 3**: 1-2 days (configuration resolution logic)
 - **Phase 4**: 1-2 days (tool integration and command updates)
 - **Phase 5**: 1 day (documentation updates)
 - **Phase 6**: 1 day (integration validation and final testing)
@@ -373,7 +373,7 @@ qt config:show
 
 **Validation Results**:
 - Unit tests (15/15): All CustomConfigSchemaTest scenarios pass
-- Schema validation: User-specified `config_file` properties validate successfully  
+- Schema validation: User-specified `config_file` properties validate successfully
 - User impact: Core Issue 022 resolved - users can specify config_file without validation errors
 
 ### Additional Issues Discovered During Implementation
@@ -383,7 +383,7 @@ qt config:show
 - Problem: `tool_config_file` and `custom_config` properties still injected but undefined in schema
 - Integration test errors: "The property tool_config_file is not defined and the definition does not allow additional properties"
 
-**Issue 2: Configuration Structure Type Mismatch** 
+**Issue 2: Configuration Structure Type Mismatch**
 - Integration test errors: "Wrong type for quality-tools.tools: Array value found, but an object is required"
 - Root cause: Configuration merging/discovery process produces inconsistent data structures
 - Impact: Prevents successful configuration loading even when schema validation passes

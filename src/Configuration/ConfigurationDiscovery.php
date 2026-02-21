@@ -310,9 +310,9 @@ final class ConfigurationDiscovery
     private function getToolFromConfigFile(string $path): ?string
     {
         $filename = basename($path);
-        
+
         foreach (ConfigurationHierarchy::TOOL_CONFIG_FILES as $tool => $configFiles) {
-            if (in_array($filename, $configFiles, true)) {
+            if (\in_array($filename, $configFiles, true)) {
                 return $tool;
             }
         }

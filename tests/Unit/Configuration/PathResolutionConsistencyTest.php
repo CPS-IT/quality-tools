@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Tests path resolution consistency between wrapper and unified approaches.
- * 
+ *
  * Problem: Different path algorithms may discover different files.
  */
 final class PathResolutionConsistencyTest extends TestCase
@@ -65,7 +65,7 @@ final class PathResolutionConsistencyTest extends TestCase
         file_put_contents($this->tempDir . '/vendor/bin/rector', $rectorScript);
         chmod($this->tempDir . '/vendor/bin/rector', 0o755);
 
-        // Create phpstan executable  
+        // Create phpstan executable
         $phpstanScript = "#!/bin/bash\necho 'PHPStan analysis completed'\nexit 0\n";
         file_put_contents($this->tempDir . '/vendor/bin/phpstan', $phpstanScript);
         chmod($this->tempDir . '/vendor/bin/phpstan', 0o755);
@@ -100,7 +100,7 @@ final class PathResolutionConsistencyTest extends TestCase
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         $tools = ['rector', 'phpstan', 'php-cs-fixer'];
@@ -113,7 +113,7 @@ final class PathResolutionConsistencyTest extends TestCase
             $this->assertEquals(
                 $wrapperScanPaths,
                 $unifiedScanPaths,
-                "Scan paths should be identical for $tool"
+                "Scan paths should be identical for $tool",
             );
 
             $wrapperExcludePaths = $wrapper->getExcludePaths();
@@ -122,7 +122,7 @@ final class PathResolutionConsistencyTest extends TestCase
             $this->assertEquals(
                 $wrapperExcludePaths,
                 $unifiedExcludePaths,
-                "Exclude paths should be identical for $tool"
+                "Exclude paths should be identical for $tool",
             );
 
             // Test tool-specific path resolution if methods exist
@@ -133,7 +133,7 @@ final class PathResolutionConsistencyTest extends TestCase
                 $this->assertEquals(
                     $wrapperResolvedPaths,
                     $unifiedResolvedPaths,
-                    "Resolved paths should be identical for $tool"
+                    "Resolved paths should be identical for $tool",
                 );
             }
         }
@@ -161,7 +161,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // Test vendor path discovery
@@ -172,7 +172,7 @@ final class PathResolutionConsistencyTest extends TestCase
             $this->assertEquals(
                 $wrapperVendorPath,
                 $unifiedVendorPath,
-                'Vendor path discovery should be consistent'
+                'Vendor path discovery should be consistent',
             );
         } else {
             // Both should return null if vendor path not discoverable
@@ -201,20 +201,20 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithGlobs,
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // Path resolution should be identical
         $this->assertEquals(
             $wrapper->getScanPaths(),
             $unified->getScanPaths(),
-            'Glob pattern resolution should be consistent for scan paths'
+            'Glob pattern resolution should be consistent for scan paths',
         );
 
         $this->assertEquals(
             $wrapper->getExcludePaths(),
             $unified->getExcludePaths(),
-            'Glob pattern resolution should be consistent for exclude paths'
+            'Glob pattern resolution should be consistent for exclude paths',
         );
     }
 
@@ -246,7 +246,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithMixedPaths,
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // Path normalization should be consistent
@@ -256,7 +256,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $this->assertEquals(
             $wrapperPaths,
             $unifiedPaths,
-            'Path normalization should be identical'
+            'Path normalization should be identical',
         );
 
         // All paths should be normalized (no ./ prefixes, consistent trailing slashes)
@@ -295,14 +295,14 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithAbsolutePaths,
-            pathResolutionService: new PathResolutionService()
+            pathResolutionService: new PathResolutionService(),
         );
 
         // Absolute path handling should be consistent
         $this->assertEquals(
             $wrapper->getScanPaths(),
             $unified->getScanPaths(),
-            'Absolute path handling should be identical'
+            'Absolute path handling should be identical',
         );
     }
 
@@ -320,7 +320,7 @@ final class PathResolutionConsistencyTest extends TestCase
         // Test without PathResolutionService injection
         $unifiedWithoutService = Configuration::createSimple(
             projectRoot: $this->tempDir,
-            data: $configData
+            data: $configData,
         );
 
         // Test with PathResolutionService injection
@@ -328,7 +328,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unifiedWithService = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: $pathService
+            pathResolutionService: $pathService,
         );
 
         // Basic path resolution should work in both cases

@@ -435,7 +435,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         // Simple export
         $simpleConfig = Configuration::createSimple(
             projectRoot: getcwd(),
-            data: $data
+            data: $data,
         );
         $export = $simpleConfig->exportWithMetadata();
 

@@ -60,7 +60,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
-        
+
         // Clean up environment variables after each test to prevent pollution
         $envVariablesToClean = [
             'PROJECT_NAME',

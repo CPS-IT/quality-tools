@@ -10,7 +10,7 @@ namespace Cpsit\QualityTools\Tests\Support;
 final class ConfigurationBuilder
 {
     private array $config = [];
-    
+
     public function __construct()
     {
         $this->reset();
@@ -38,7 +38,7 @@ final class ConfigurationBuilder
                 'tools' => [],
             ],
         ];
-        
+
         return $this;
     }
 
@@ -51,7 +51,7 @@ final class ConfigurationBuilder
             'name' => $name,
             'php_version' => $phpVersion,
         ];
-        
+
         return $this;
     }
 
@@ -61,7 +61,7 @@ final class ConfigurationBuilder
     public function withTool(string $tool, array $config): self
     {
         $this->config['quality-tools']['tools'][$tool] = $config;
-        
+
         return $this;
     }
 
@@ -73,9 +73,9 @@ final class ConfigurationBuilder
         $defaultConfig = [
             'enabled' => true,
         ];
-        
+
         $this->config['quality-tools']['tools']['rector'] = array_merge($defaultConfig, $config);
-        
+
         return $this;
     }
 
@@ -96,9 +96,9 @@ final class ConfigurationBuilder
             'enabled' => true,
             'level' => 6,
         ];
-        
+
         $this->config['quality-tools']['tools']['phpstan'] = array_merge($defaultConfig, $config);
-        
+
         return $this;
     }
 
@@ -118,27 +118,27 @@ final class ConfigurationBuilder
         if (!empty($scanPaths)) {
             $this->config['quality-tools']['paths']['scan'] = $scanPaths;
         }
-        
+
         if (!empty($excludePatterns)) {
             $this->config['quality-tools']['paths']['exclude_patterns'] = $excludePatterns;
         }
-        
+
         return $this;
     }
 
     /**
      * Add performance configuration.
      */
-    public function withPerformance(int $memoryLimit = null, int $phpstanMemoryLimit = null): self
+    public function withPerformance(?int $memoryLimit = null, ?int $phpstanMemoryLimit = null): self
     {
         if ($memoryLimit !== null) {
             $this->config['quality-tools']['performance']['memory_limit'] = $memoryLimit;
         }
-        
+
         if ($phpstanMemoryLimit !== null) {
             $this->config['quality-tools']['performance']['phpstan_memory_limit'] = $phpstanMemoryLimit;
         }
-        
+
         return $this;
     }
 
@@ -182,14 +182,14 @@ final class ConfigurationBuilder
      */
     public static function withExplicitConfigFiles(
         string $projectName = 'test-explicit',
-        array $configFiles = []
+        array $configFiles = [],
     ): self {
         $builder = self::create()->withProject($projectName);
-        
+
         foreach ($configFiles as $tool => $configFile) {
             $builder->withTool($tool, ['enabled' => true, 'config_file' => $configFile]);
         }
-        
+
         return $builder;
     }
 

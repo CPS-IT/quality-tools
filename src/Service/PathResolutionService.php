@@ -33,7 +33,7 @@ final class PathResolutionService
         $pathsConfig = $qualityTools['paths'] ?? [];
         $scanPaths = $pathsConfig['scan'] ?? ['packages/', 'config/system/'];
 
-        return array_map([$this, 'normalizePath'], $scanPaths);
+        return array_map($this->normalizePath(...), $scanPaths);
     }
 
     /**
@@ -45,7 +45,7 @@ final class PathResolutionService
         $pathsConfig = $qualityTools['paths'] ?? [];
         $excludePaths = $pathsConfig['exclude'] ?? ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
 
-        return array_map([$this, 'normalizePath'], $excludePaths);
+        return array_map($this->normalizePath(...), $excludePaths);
     }
 
     /**
@@ -198,7 +198,7 @@ final class PathResolutionService
     {
         // Remove leading "./"
         $path = preg_replace('#^\./+#', '', $path);
-        
+
         return $path;
     }
 }

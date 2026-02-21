@@ -11,16 +11,16 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Unit tests for schema validation with config_file properties.
- * 
+ *
  * CURRENT BEHAVIOR (Issue 022): Schema validation fails when config_file properties
  * are present because they are not defined in config/schema/quality-tools.json.
- * 
+ *
  * EXPECTED POST-FIX BEHAVIOR: Schema should accept config_file properties and validate:
  * 1. config_file paths are valid strings
- * 2. Relative and absolute paths are handled correctly  
+ * 2. Relative and absolute paths are handled correctly
  * 3. Security validation prevents directory traversal
  * 4. Tool-specific config_file properties are properly typed
- * 
+ *
  * UPDATE INSTRUCTIONS: Once Issue 022 is fixed:
  * 1. Update schema to include config_file properties for all tools
  * 2. Change failing test assertions to expect validation success
@@ -38,7 +38,7 @@ final class CustomConfigSchemaTest extends TestCase
 
     /**
      * Test that configurations with config_file properties pass schema validation.
-     * 
+     *
      * Issue 022 RESOLVED: config_file is now properly defined in the schema
      * and configurations with these properties validate successfully.
      */
@@ -46,15 +46,15 @@ final class CustomConfigSchemaTest extends TestCase
     public function testConfigFilePropertyPassesSchemaValidation(
         array $configData,
         string $tool,
-        string $scenarioDescription
+        string $scenarioDescription,
     ): void {
         // Issue 022 is now resolved - config_file properties should validate successfully
         $validationResult = $this->validator->validateSafe($configData);
-        
+
         $this->assertTrue(
             $validationResult->isValid(),
             "Configuration with config_file should pass validation (Issue 022 resolved): {$scenarioDescription}. " .
-            "Errors: " . implode('; ', $validationResult->getErrors())
+            'Errors: ' . implode('; ', $validationResult->getErrors()),
         );
     }
 
@@ -64,14 +64,14 @@ final class CustomConfigSchemaTest extends TestCase
     #[DataProvider('validConfigurationProvider')]
     public function testConfigurationsWithoutConfigFilePassValidation(
         array $configData,
-        string $scenarioDescription
+        string $scenarioDescription,
     ): void {
         $validationResult = $this->validator->validateSafe($configData);
-        
+
         $this->assertTrue(
             $validationResult->isValid(),
             "Configuration without config_file should pass validation: {$scenarioDescription}. " .
-            "Errors: " . implode('; ', $validationResult->getErrors())
+            'Errors: ' . implode('; ', $validationResult->getErrors()),
         );
     }
 
@@ -82,20 +82,20 @@ final class CustomConfigSchemaTest extends TestCase
     public function testConfigFileEdgeCases(
         array $configData,
         bool $shouldBeValid,
-        string $scenarioDescription
+        string $scenarioDescription,
     ): void {
         $validationResult = $this->validator->validateSafe($configData);
-        
+
         if ($shouldBeValid) {
             $this->assertTrue(
                 $validationResult->isValid(),
                 "Edge case should pass validation: {$scenarioDescription}. " .
-                "Errors: " . implode('; ', $validationResult->getErrors())
+                'Errors: ' . implode('; ', $validationResult->getErrors()),
             );
         } else {
             $this->assertFalse(
                 $validationResult->isValid(),
-                "Edge case should fail validation: {$scenarioDescription}"
+                "Edge case should fail validation: {$scenarioDescription}",
             );
         }
     }
@@ -106,13 +106,13 @@ final class CustomConfigSchemaTest extends TestCase
     public function testSchemaFileIsValid(): void
     {
         $schemaPath = __DIR__ . '/../../../config/schema/quality-tools.json';
-        
+
         $this->assertFileExists($schemaPath, 'Schema file should exist');
         $this->assertIsReadable($schemaPath, 'Schema file should be readable');
-        
+
         $schemaContent = file_get_contents($schemaPath);
         $this->assertNotEmpty($schemaContent, 'Schema file should not be empty');
-        
+
         $schemaData = json_decode($schemaContent, true);
         $this->assertIsArray($schemaData, 'Schema file should contain valid JSON');
         $this->assertArrayHasKey('$schema', $schemaData, 'Schema should have $schema property');
@@ -130,30 +130,30 @@ final class CustomConfigSchemaTest extends TestCase
 
         // Verify that quality-tools section exists
         $this->assertArrayHasKey('quality-tools', $schemaData['properties']);
-        
+
         $qualityToolsSchema = $schemaData['properties']['quality-tools'];
         $this->assertArrayHasKey('properties', $qualityToolsSchema);
         $this->assertArrayHasKey('tools', $qualityToolsSchema['properties']);
-        
+
         // Tools section references definitions
         $toolsRef = $qualityToolsSchema['properties']['tools'];
         $this->assertArrayHasKey('$ref', $toolsRef);
         $this->assertEquals('#/definitions/tools', $toolsRef['$ref']);
-        
+
         // Check definitions section exists
         $this->assertArrayHasKey('definitions', $schemaData);
         $this->assertArrayHasKey('tools', $schemaData['definitions']);
-        
+
         $toolsDefinition = $schemaData['definitions']['tools'];
         $this->assertArrayHasKey('properties', $toolsDefinition);
-        
+
         // Check specific tools exist in schema definitions
         $expectedTools = ['rector', 'phpstan', 'fractor', 'php-cs-fixer'];
         foreach ($expectedTools as $tool) {
             $this->assertArrayHasKey(
-                $tool, 
+                $tool,
                 $toolsDefinition['properties'],
-                "Schema should define {$tool} tool configuration"
+                "Schema should define {$tool} tool configuration",
             );
         }
     }
@@ -169,22 +169,22 @@ final class CustomConfigSchemaTest extends TestCase
 
         // Navigate to the tool definitions
         $toolsDefinition = $schemaData['definitions']['tools']['properties'];
-        
+
         // Issue 022 is resolved - config_file should now be in the schema
         foreach (['rector', 'phpstan', 'fractor', 'php-cs-fixer', 'typoscript-lint'] as $tool) {
             // Each tool references its own definition
             $toolRef = $toolsDefinition[$tool]['$ref'];
             $definitionName = str_replace('#/definitions/', '', $toolRef);
-            
+
             if (isset($schemaData['definitions'][$definitionName]['properties'])) {
                 $toolProperties = $schemaData['definitions'][$definitionName]['properties'];
-                
+
                 $this->assertArrayHasKey(
                     'config_file',
                     $toolProperties,
-                    "Schema should now define config_file for {$tool} (Issue 022 resolved)"
+                    "Schema should now define config_file for {$tool} (Issue 022 resolved)",
                 );
-                
+
                 // Verify config_file property structure
                 $configFileProperty = $toolProperties['config_file'];
                 $this->assertEquals('string', $configFileProperty['type']);
@@ -215,7 +215,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 'rector',
-                'Rector configuration with custom config_file'
+                'Rector configuration with custom config_file',
             ],
             'phpstan_with_config_file' => [
                 [
@@ -231,7 +231,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 'phpstan',
-                'PHPStan configuration with custom config_file'
+                'PHPStan configuration with custom config_file',
             ],
             'fractor_with_config_file' => [
                 [
@@ -246,7 +246,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 'fractor',
-                'Fractor configuration with custom config_file'
+                'Fractor configuration with custom config_file',
             ],
             'multiple_tools_with_config_files' => [
                 [
@@ -266,7 +266,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 'multiple',
-                'Multiple tools with custom config_file properties'
+                'Multiple tools with custom config_file properties',
             ],
         ];
     }
@@ -282,14 +282,14 @@ final class CustomConfigSchemaTest extends TestCase
                     ->withProject('test-basic-rector')
                     ->withRector()
                     ->build(),
-                'Basic Rector configuration without config_file'
+                'Basic Rector configuration without config_file',
             ],
             'basic_phpstan_config' => [
                 ConfigurationBuilder::create()
                     ->withProject('test-basic-phpstan')
                     ->withPhpstan()
                     ->build(),
-                'Basic PHPStan configuration without config_file'
+                'Basic PHPStan configuration without config_file',
             ],
             'multiple_tools_without_config_files' => [
                 ConfigurationBuilder::create()
@@ -297,14 +297,14 @@ final class CustomConfigSchemaTest extends TestCase
                     ->withRector()
                     ->withPhpstan()
                     ->build(),
-                'Multiple tools without custom config_file properties'
+                'Multiple tools without custom config_file properties',
             ],
             'minimal_project_config' => [
                 ConfigurationBuilder::create()
                     ->withProject('test-minimal')
                     ->withRector()  // Add at least one tool to make it valid
                     ->build(),
-                'Minimal project configuration with one tool'
+                'Minimal project configuration with one tool',
             ],
         ];
     }
@@ -328,7 +328,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 false, // Should fail - config_file not defined in schema
-                'Empty config_file string'
+                'Empty config_file string',
             ],
             'null_config_file' => [
                 [
@@ -343,7 +343,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 false, // Should fail - config_file not defined in schema
-                'Null config_file value'
+                'Null config_file value',
             ],
             'absolute_path_config_file' => [
                 [
@@ -358,7 +358,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 true, // Should pass - config_file is now defined in schema (Issue 022 resolved)
-                'Absolute path config_file'
+                'Absolute path config_file',
             ],
             'relative_path_config_file' => [
                 [
@@ -373,7 +373,7 @@ final class CustomConfigSchemaTest extends TestCase
                     ],
                 ],
                 true, // Should pass - config_file is now defined in schema (Issue 022 resolved)
-                'Relative path config_file'
+                'Relative path config_file',
             ],
         ];
     }

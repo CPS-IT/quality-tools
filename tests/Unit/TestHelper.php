@@ -232,132 +232,132 @@ final class TestHelper
     {
         // PHP CS Fixer configuration
         $phpCsFixerConfig = <<<'PHP'
-<?php
+            <?php
 
-declare(strict_types=1);
+            declare(strict_types=1);
 
-use PhpCsFixer\Config;
+            use PhpCsFixer\Config;
 
-return (new Config())
-    ->setRules([
-        '@PSR12' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'binary_operator_spaces' => true,
-        'blank_line_after_namespace' => true,
-        'blank_line_after_opening_tag' => true,
-        'blank_line_before_statement' => [
-            'statements' => ['return'],
-        ],
-        'cast_spaces' => true,
-        'concat_space' => ['spacing' => 'one'],
-        'declare_equal_normalize' => true,
-        'function_typehint_space' => true,
-        'include' => true,
-        'lowercase_cast' => true,
-        'no_blank_lines_after_class_opening' => true,
-        'no_blank_lines_after_phpdoc' => true,
-        'no_empty_statement' => true,
-        'no_extra_blank_lines' => true,
-        'no_leading_import_slash' => true,
-        'no_leading_namespace_whitespace' => true,
-        'no_trailing_comma_in_singleline_array' => true,
-        'no_unused_imports' => true,
-        'no_whitespace_in_blank_line' => true,
-        'object_operator_without_whitespace' => true,
-        'ordered_imports' => ['sort_algorithm' => 'alpha'],
-        'return_type_declaration' => true,
-        'short_scalar_cast' => true,
-        'single_blank_line_before_namespace' => true,
-        'single_quote' => true,
-        'ternary_operator_spaces' => true,
-        'trailing_comma_in_multiline' => true,
-        'trim_array_spaces' => true,
-        'unary_operator_spaces' => true,
-        'whitespace_after_comma_in_array' => true,
-    ])
-    ->setFinder(
-        \PhpCsFixer\Finder::create()
-            ->in(__DIR__ . '/../../..')
-            ->exclude(['var', 'vendor', 'public', '_assets', 'fileadmin', 'typo3'])
-            ->name('*.php')
-            ->ignoreDotFiles(true)
-            ->ignoreVCS(true)
-    );
-PHP;
+            return (new Config())
+                ->setRules([
+                    '@PSR12' => true,
+                    'array_syntax' => ['syntax' => 'short'],
+                    'binary_operator_spaces' => true,
+                    'blank_line_after_namespace' => true,
+                    'blank_line_after_opening_tag' => true,
+                    'blank_line_before_statement' => [
+                        'statements' => ['return'],
+                    ],
+                    'cast_spaces' => true,
+                    'concat_space' => ['spacing' => 'one'],
+                    'declare_equal_normalize' => true,
+                    'function_typehint_space' => true,
+                    'include' => true,
+                    'lowercase_cast' => true,
+                    'no_blank_lines_after_class_opening' => true,
+                    'no_blank_lines_after_phpdoc' => true,
+                    'no_empty_statement' => true,
+                    'no_extra_blank_lines' => true,
+                    'no_leading_import_slash' => true,
+                    'no_leading_namespace_whitespace' => true,
+                    'no_trailing_comma_in_singleline_array' => true,
+                    'no_unused_imports' => true,
+                    'no_whitespace_in_blank_line' => true,
+                    'object_operator_without_whitespace' => true,
+                    'ordered_imports' => ['sort_algorithm' => 'alpha'],
+                    'return_type_declaration' => true,
+                    'short_scalar_cast' => true,
+                    'single_blank_line_before_namespace' => true,
+                    'single_quote' => true,
+                    'ternary_operator_spaces' => true,
+                    'trailing_comma_in_multiline' => true,
+                    'trim_array_spaces' => true,
+                    'unary_operator_spaces' => true,
+                    'whitespace_after_comma_in_array' => true,
+                ])
+                ->setFinder(
+                    \PhpCsFixer\Finder::create()
+                        ->in(__DIR__ . '/../../..')
+                        ->exclude(['var', 'vendor', 'public', '_assets', 'fileadmin', 'typo3'])
+                        ->name('*.php')
+                        ->ignoreDotFiles(true)
+                        ->ignoreVCS(true)
+                );
+            PHP;
 
         // Rector configuration
         $rectorConfig = <<<'PHP'
-<?php
+            <?php
 
-declare(strict_types=1);
+            declare(strict_types=1);
 
-use Rector\Config\RectorConfig;
+            use Rector\Config\RectorConfig;
 
-return RectorConfig::configure()
-    ->withPaths([
-        __DIR__ . '/../../..',
-    ])
-    ->withSkip([
-        __DIR__ . '/../../../var',
-        __DIR__ . '/../../../vendor',
-        __DIR__ . '/../../../public',
-        __DIR__ . '/../../../_assets',
-        __DIR__ . '/../../../fileadmin',
-        __DIR__ . '/../../../typo3',
-    ])
-    ->withPhpSets(php83: true)
-    ->withPreparedSets(
-        deadCode: true,
-        codeQuality: true,
-        typeDeclarations: true,
-        earlyReturn: true,
-        strictBooleans: true
-    );
-PHP;
+            return RectorConfig::configure()
+                ->withPaths([
+                    __DIR__ . '/../../..',
+                ])
+                ->withSkip([
+                    __DIR__ . '/../../../var',
+                    __DIR__ . '/../../../vendor',
+                    __DIR__ . '/../../../public',
+                    __DIR__ . '/../../../_assets',
+                    __DIR__ . '/../../../fileadmin',
+                    __DIR__ . '/../../../typo3',
+                ])
+                ->withPhpSets(php83: true)
+                ->withPreparedSets(
+                    deadCode: true,
+                    codeQuality: true,
+                    typeDeclarations: true,
+                    earlyReturn: true,
+                    strictBooleans: true
+                );
+            PHP;
 
         // PHPStan configuration
         $phpstanConfig = <<<'NEON'
-parameters:
-    level: 6
-    paths:
-        - %currentWorkingDirectory%/packages
-        - %currentWorkingDirectory%/config/system
-    excludePaths:
-        - %currentWorkingDirectory%/packages/*/Tests/*
-        - %currentWorkingDirectory%/packages/*/tests/*
-        - %currentWorkingDirectory%/var/*
-        - %currentWorkingDirectory%/vendor/*
-        - %currentWorkingDirectory%/public/*
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false
-    treatPhpDocTypesAsCertain: false
-    ignoreErrors: []
-NEON;
+            parameters:
+                level: 6
+                paths:
+                    - %currentWorkingDirectory%/packages
+                    - %currentWorkingDirectory%/config/system
+                excludePaths:
+                    - %currentWorkingDirectory%/packages/*/Tests/*
+                    - %currentWorkingDirectory%/packages/*/tests/*
+                    - %currentWorkingDirectory%/var/*
+                    - %currentWorkingDirectory%/vendor/*
+                    - %currentWorkingDirectory%/public/*
+                checkGenericClassInNonGenericObjectType: false
+                checkMissingIterableValueType: false
+                treatPhpDocTypesAsCertain: false
+                ignoreErrors: []
+            NEON;
 
         // TypoScript Lint configuration
         $typoscriptLintConfig = <<<'YAML'
-paths:
-  - packages/
-  - config/sites/
-excludePatterns:
-  - "*.backup"
-  - "*~"
-  - "*.orig"
-  - "*.rej"
-  - "*.swp"
-sniffs:
-  - class: Indentation
-    parameters:
-      indentPerLevel: 2
-      useSpaces: true
-  - class: RepeatingRValue
-  - class: DeadCode
-  - class: OperatorWhitespace
-  - class: DuplicateAssignment
-  - class: EmptySection
-  - class: InvalidCommentPosition
-  - class: MissingVendorPrefix
-YAML;
+            paths:
+              - packages/
+              - config/sites/
+            excludePatterns:
+              - "*.backup"
+              - "*~"
+              - "*.orig"
+              - "*.rej"
+              - "*.swp"
+            sniffs:
+              - class: Indentation
+                parameters:
+                  indentPerLevel: 2
+                  useSpaces: true
+              - class: RepeatingRValue
+              - class: DeadCode
+              - class: OperatorWhitespace
+              - class: DuplicateAssignment
+              - class: EmptySection
+              - class: InvalidCommentPosition
+              - class: MissingVendorPrefix
+            YAML;
 
         // Write configuration files
         file_put_contents($configDir . '/php-cs-fixer.php', $phpCsFixerConfig);
@@ -394,10 +394,11 @@ YAML;
         // Handle cases where a hyphen is split from a word by line break (preserve hyphen)
         $output = preg_replace('/(\w)-\s*\n\s*(\w)/', '$1-$2', $output);
         // Remove line breaks that split words without hyphens (like .quality)
-        $output = preg_replace('/(\w|\.)\s*\n\s*(\w)/', '$1$2', $output);
+        $output = preg_replace('/(\w|\.)\s*\n\s*(\w)/', '$1$2', (string) $output);
         // Compress whitespace
-        $output = preg_replace('/\s+/', ' ', $output);
+        $output = preg_replace('/\s+/', ' ', (string) $output);
+
         // Trim result
-        return trim($output);
+        return trim((string) $output);
     }
 }

@@ -64,15 +64,15 @@ QUALITY_TOOLS_DIR="' . __DIR__ . '/../../../"
 if [ "$1" = "normalize" ]; then
     # Run normalize in quality-tools project directory with system composer (suppress xdebug)
     cd "$QUALITY_TOOLS_DIR"
-    
+
     # Use system composer with xdebug disabled to avoid warnings and connection errors
     # Capture output and exit code to preserve real composer behavior
     COMPOSER_OUTPUT=$(XDEBUG_MODE=off /usr/local/bin/composer.phar "$@" 2>&1)
     COMPOSER_EXIT_CODE=$?
-    
+
     # Show the real composer output
     echo "$COMPOSER_OUTPUT"
-    
+
     # Exit with the real composer exit code (preserves actual normalization status)
     exit $COMPOSER_EXIT_CODE
 else
@@ -115,7 +115,7 @@ fi
 
         file_put_contents(
             $this->tempDir . '/quality-tools.yaml',
-            Yaml::dump($config, 4, 2)
+            Yaml::dump($config, 4, 2),
         );
     }
 
@@ -149,20 +149,20 @@ fi
                 $this->assertSame(
                     $wrapperExitCode,
                     $unifiedExitCode,
-                    sprintf(
+                    \sprintf(
                         "Exit codes should match for %s. Wrapper: %d, Unified: %d\nWrapper output: %s\nUnified output: %s",
                         $commandClass,
                         $wrapperExitCode,
                         $unifiedExitCode,
                         $wrapperTester->getDisplay(),
-                        $unifiedTester->getDisplay()
-                    )
+                        $unifiedTester->getDisplay(),
+                    ),
                 );
 
                 // Both should succeed (exit code 0) for successful operations
-                $this->assertEquals(0, $wrapperExitCode, "Wrapper command should succeed");
-                $this->assertEquals(0, $unifiedExitCode, "Unified command should succeed");
-            }
+                $this->assertEquals(0, $wrapperExitCode, 'Wrapper command should succeed');
+                $this->assertEquals(0, $unifiedExitCode, 'Unified command should succeed');
+            },
         );
     }
 
@@ -194,9 +194,9 @@ fi
                 $this->assertSame(
                     $wrapperExitCode,
                     $unifiedExitCode,
-                    "Error handling should produce same exit codes"
+                    'Error handling should produce same exit codes',
                 );
-            }
+            },
         );
     }
 
@@ -208,7 +208,7 @@ fi
         int $expectedWrapperExitCode,
         int $expectedUnifiedExitCode,
         string $wrapperExpectedMessage,
-        string $unifiedExpectedMessage
+        string $unifiedExpectedMessage,
     ): void {
         // Copy fixture directory to temp directory for testing
         $this->copyFixtureToTempDir($fixtureDirectory);
@@ -256,13 +256,13 @@ fi
                 $this->assertEquals(
                     $expectedWrapperExitCode,
                     $wrapperExitCode,
-                    "Wrapper command should return exit code $expectedWrapperExitCode for scenario: $scenarioName"
+                    "Wrapper command should return exit code $expectedWrapperExitCode for scenario: $scenarioName",
                 );
 
                 $this->assertEquals(
                     $expectedUnifiedExitCode,
                     $unifiedExitCode,
-                    "Unified command should return exit code $expectedUnifiedExitCode for scenario: $scenarioName"
+                    "Unified command should return exit code $expectedUnifiedExitCode for scenario: $scenarioName",
                 );
 
                 // Validate expected output messages
@@ -270,7 +270,7 @@ fi
                     $this->assertStringContainsString(
                         $wrapperExpectedMessage,
                         $wrapperOutput,
-                        "Wrapper output should contain expected message for scenario: $scenarioName"
+                        "Wrapper output should contain expected message for scenario: $scenarioName",
                     );
                 }
 
@@ -278,10 +278,10 @@ fi
                     $this->assertStringContainsString(
                         $unifiedExpectedMessage,
                         $unifiedOutput,
-                        "Unified output should contain expected message for scenario: $scenarioName"
+                        "Unified output should contain expected message for scenario: $scenarioName",
                     );
                 }
-            }
+            },
         );
     }
 
@@ -386,18 +386,18 @@ fi
             'ComposerFixCommand' => ComposerFixCommand::class,
             'ComposerLintCommand' => ComposerLintCommand::class,
         ];
-        
+
         $scenarios = self::composerScenarioProvider();
         $result = [];
-        
+
         foreach ($commands as $commandName => $commandClass) {
             foreach ($scenarios as $scenarioKey => $scenario) {
                 $key = "{$commandName}__{$scenarioKey}";
-                
+
                 // Adjust expected messages based on command type
                 $wrapperMessage = $scenario['wrapperExpectedMessage'];
                 $unifiedMessage = $scenario['unifiedExpectedMessage'];
-                
+
                 // Both commands now show real composer output, so we expect consistent messages
                 // that reflect the actual state of composer.json files
                 if ($unifiedMessage === 'composer.json has been normalized') {
@@ -405,10 +405,10 @@ fi
                     $unifiedMessage = 'is already normalized';
                 }
                 if ($wrapperMessage === 'composer.json has been normalized') {
-                    // Update to match real composer normalize output  
+                    // Update to match real composer normalize output
                     $wrapperMessage = 'is already normalized';
                 }
-                
+
                 $result[$key] = [
                     $commandClass, // Command class
                     $scenario['scenarioName'],
@@ -420,7 +420,7 @@ fi
                 ];
             }
         }
-        
+
         return $result;
     }
 
@@ -439,19 +439,19 @@ fi
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem())
+            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService()
+            new FilesystemService(),
         );
 
         return new ConfigurationLoaderWrapper(
             $simpleLoader,
             $hierarchicalLoader,
-            $mode
+            $mode,
         );
     }
 
@@ -463,7 +463,7 @@ fi
             new FilesystemService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService()
+            new PathResolutionService(),
         );
     }
 
@@ -488,7 +488,7 @@ fi
     {
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
+            \RecursiveIteratorIterator::SELF_FIRST,
         );
 
         foreach ($iterator as $item) {
@@ -496,12 +496,12 @@ fi
 
             if ($item->isDir()) {
                 if (!is_dir($destPath)) {
-                    mkdir($destPath, 0755, true);
+                    mkdir($destPath, 0o755, true);
                 }
             } else {
-                $destDir = dirname($destPath);
+                $destDir = \dirname($destPath);
                 if (!is_dir($destDir)) {
-                    mkdir($destDir, 0755, true);
+                    mkdir($destDir, 0o755, true);
                 }
                 copy($item->getRealPath(), $destPath);
             }
@@ -545,7 +545,7 @@ fi
             0, // Wrapper expected exit code - now finds it with quality-tools.yaml including '.'
             0, // Unified expected exit code
             'is already normalized', // Wrapper expected message - updated to match real composer output
-            'is already normalized' // Unified expected message - updated to match real composer output
+            'is already normalized', // Unified expected message - updated to match real composer output
         );
     }
 }

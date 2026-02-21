@@ -27,7 +27,7 @@ interface ConfigurationInterface
         'tests/',
         'typo3conf/',
     ];
-    
+
     // Tool configuration defaults
     public const string DEFAULT_RECTOR_LEVEL = 'typo3-13';
     public const int DEFAULT_FRACTOR_INDENTATION = 2;
@@ -35,17 +35,17 @@ interface ConfigurationInterface
     public const string DEFAULT_PHPSTAN_MEMORY_LIMIT = '1G';
     public const string DEFAULT_PHP_CS_FIXER_PRESET = 'typo3';
     public const int DEFAULT_TYPOSCRIPT_LINT_INDENTATION = 2;
-    
+
     // Output configuration defaults
     public const string DEFAULT_VERBOSITY = 'normal';
     public const bool DEFAULT_COLORS_ENABLED = true;
     public const bool DEFAULT_PROGRESS_ENABLED = true;
-    
+
     // Performance configuration defaults
     public const bool DEFAULT_PARALLEL_ENABLED = true;
     public const int DEFAULT_MAX_PROCESSES = 4;
     public const bool DEFAULT_CACHE_ENABLED = true;
-    
+
     // Complete default configuration array
     public const array DEFAULT_CONFIGURATION = [
         'quality-tools' => [
@@ -92,6 +92,7 @@ interface ConfigurationInterface
             ],
         ],
     ];
+
     // Core data access methods
     public function toArray(): array;
 

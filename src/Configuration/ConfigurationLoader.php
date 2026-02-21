@@ -48,6 +48,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
     {
         // Auto-detect hierarchical configuration for consistency with wrapper approach
         $useHierarchical = $this->hasHierarchicalConfiguration($projectRoot);
+
         return $this->loadWithMode($projectRoot, $commandLineOverrides, $useHierarchical);
     }
 
@@ -323,7 +324,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
             $configurations = $discovery->discoverConfigurations();
 
-            return array_map(static fn ($config) => [
+            return array_map(static fn ($config): array => [
                 'source' => $config['source'],
                 'file_path' => $config['file_path'],
                 'file_type' => $config['file_type'],

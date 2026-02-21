@@ -14,10 +14,10 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Unit test to isolate path resolution fallback behavior differences.
- * 
+ *
  * This test focuses specifically on the getResolvedPathsForTool() method behavior when project root
  * is NOT set, reproducing the issue found in CommandExitCodeConsistencyTest.
- * 
+ *
  * Issue: Configuration.getResolvedPathsForTool() returns relative paths while
  * EnhancedConfiguration.getResolvedPathsForTool() may return absolute paths from parent project.
  */
@@ -69,7 +69,7 @@ final class PathResolutionFallbackTest extends TestCase
         // it returns an empty array (which is correct behavior)
         self::assertIsArray($resolvedPaths);
         // Note: May return empty array if paths don't exist in current directory
-        
+
         // Debug output to match the original issue
         fwrite(STDERR, "\nConfiguration without project root: " . print_r($resolvedPaths, true));
     }
@@ -101,18 +101,18 @@ final class PathResolutionFallbackTest extends TestCase
 
         self::assertIsArray($resolvedPaths);
         self::assertNotEmpty($resolvedPaths, 'Should return fallback paths even without project root');
-        
+
         // Debug output to match the original issue
         fwrite(STDERR, "\nEnhancedConfiguration without project root: " . print_r($resolvedPaths, true));
     }
 
     /**
      * This test documents the intended architectural difference between configurations.
-     * 
+     *
      * EXPECTED BEHAVIOR DIFFERENCE:
      * - Configuration: Always requires projectRoot, uses PathResolutionService with existence checks
      * - EnhancedConfiguration: Falls back to raw getScanPaths() when actualProjectRoot not set
-     * 
+     *
      * This difference explains different command exit codes:
      * - Configuration returns [] -> no files to scan -> exit 0 (no issues in empty set)
      * - EnhancedConfiguration returns raw paths -> may scan real files -> exit 1 (issues found)
@@ -153,8 +153,8 @@ final class PathResolutionFallbackTest extends TestCase
 
         // Debug output to see the difference
         fwrite(STDERR, "\n=== REPRODUCING PATH RESOLUTION BUG ===\n");
-        fwrite(STDERR, "Unified configuration paths (returns exit code 1): " . print_r($unifiedPaths, true));
-        fwrite(STDERR, "Enhanced configuration paths (returns exit code 0): " . print_r($enhancedPaths, true));
+        fwrite(STDERR, 'Unified configuration paths (returns exit code 1): ' . print_r($unifiedPaths, true));
+        fwrite(STDERR, 'Enhanced configuration paths (returns exit code 0): ' . print_r($enhancedPaths, true));
         fwrite(STDERR, "===========================================\n");
 
         // This assertion documents the INTENDED architectural difference
@@ -164,9 +164,9 @@ final class PathResolutionFallbackTest extends TestCase
             $enhancedPaths,
             $unifiedPaths,
             'ARCHITECTURAL DIFFERENCE: Configuration and EnhancedConfiguration have different fallback behaviors. ' .
-            'This is intentional - Configuration always uses path resolution, EnhancedConfiguration falls back to raw paths.'
+            'This is intentional - Configuration always uses path resolution, EnhancedConfiguration falls back to raw paths.',
         );
-        
+
         // Verify the specific expected behaviors
         $this->assertEmpty($unifiedPaths, 'Configuration should return empty array when paths do not exist');
         $this->assertNotEmpty($enhancedPaths, 'EnhancedConfiguration should return configured paths as fallback');
@@ -189,9 +189,9 @@ final class PathResolutionFallbackTest extends TestCase
 
         // Test what PathResolutionService returns directly
         $scanPaths = $this->pathResolutionService->getScanPaths($data);
-        
+
         fwrite(STDERR, "\nPathResolutionService.getScanPaths() returns: " . print_r($scanPaths, true));
-        
+
         self::assertIsArray($scanPaths);
         self::assertNotEmpty($scanPaths);
     }
@@ -204,10 +204,9 @@ final class PathResolutionFallbackTest extends TestCase
     {
         // Set up temporary directory like in the failing test
         $tempDir = sys_get_temp_dir() . '/path_resolution_env_test_' . uniqid('', true);
-        mkdir($tempDir, 0755, true);
-        
-        try {
+        mkdir($tempDir, 0o755, true);
 
+        try {
             $data = [
                 'quality-tools' => [
                     'paths' => [
@@ -230,7 +229,7 @@ final class PathResolutionFallbackTest extends TestCase
                 pathResolutionService: $this->pathResolutionService,
                 validator: $this->validator,
             );
-            
+
             // Set project root explicitly to match Configuration behavior
             $enhancedConfiguration->setProjectRoot($tempDir);
 
@@ -240,16 +239,15 @@ final class PathResolutionFallbackTest extends TestCase
 
             fwrite(STDERR, "\n=== WITH EXPLICIT PROJECT ROOT SETTING ===\n");
             fwrite(STDERR, "Project Root: $tempDir\n");
-            fwrite(STDERR, "Unified paths: " . print_r($unifiedPaths, true));
-            fwrite(STDERR, "Enhanced paths: " . print_r($enhancedPaths, true));
+            fwrite(STDERR, 'Unified paths: ' . print_r($unifiedPaths, true));
+            fwrite(STDERR, 'Enhanced paths: ' . print_r($enhancedPaths, true));
             fwrite(STDERR, "===========================================\n");
 
             $this->assertEquals(
                 $enhancedPaths,
                 $unifiedPaths,
-                'With explicit project root set, both configurations should behave identically'
+                'With explicit project root set, both configurations should behave identically',
             );
-
         } finally {
             // Clean up
             if (is_dir($tempDir)) {
