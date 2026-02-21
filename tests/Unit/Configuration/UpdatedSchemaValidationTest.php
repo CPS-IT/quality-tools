@@ -62,8 +62,7 @@ final class UpdatedSchemaValidationTest extends TestCase
      */
     public function testConfigFileDefinedInUpdatedSchema(): void
     {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update to add config_file properties');
-
+        // Schema has been updated in Phase 2, Step 4 - test should now work
         $schemaPath = __DIR__ . '/../../../config/schema/quality-tools.json';
         $schemaContent = file_get_contents($schemaPath);
         $schemaData = json_decode($schemaContent, true);
@@ -132,7 +131,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $tool,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update to support config_file validation');
+        // Schema has been updated in Phase 2, Step 4 - test should now work
 
         $validationResult = $this->validator->validateSafe($configData);
 
@@ -148,7 +147,7 @@ final class UpdatedSchemaValidationTest extends TestCase
      */
     public function testBackwardCompatibilityWithoutConfigFile(): void
     {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Verify backward compatibility is maintained');
+        // Schema has been updated in Phase 2, Step 4 - test should now work
 
         $configurationsWithoutConfigFile = [
             'basic_rector' => ConfigurationBuilder::create()
@@ -163,14 +162,14 @@ final class UpdatedSchemaValidationTest extends TestCase
 
             'basic_fractor' => ConfigurationBuilder::create()
                 ->withProject('test-backwards-compat-fractor')
-                ->withFractor()
+                ->withTool('fractor', ['enabled' => true])
                 ->build(),
 
             'multiple_tools' => ConfigurationBuilder::create()
                 ->withProject('test-backwards-compat-multiple')
                 ->withRector()
                 ->withPhpstan()
-                ->withFractor()
+                ->withTool('fractor', ['enabled' => true])
                 ->build(),
         ];
 
@@ -219,7 +218,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         $errors = $validationResult->getErrors();
         $hasExpectedError = false;
         foreach ($errors as $error) {
-            if (str_contains($error, $expectedValidationError)) {
+            if (str_contains((string) $error, $expectedValidationError)) {
                 $hasExpectedError = true;
                 break;
             }
