@@ -1,8 +1,8 @@
 # Issue 020: Inconsistent Dependency Injection Configuration for Command ConfigurationLoader
 
-**Status:** Open  
-**Priority:** Medium  
-**Effort:** Low (1-2h)  
+**Status:** Open
+**Priority:** Medium
+**Effort:** Low (1-2h)
 **Impact:** Medium
 
 ## Description
@@ -20,14 +20,14 @@ After the Step 6.1 refactoring that unified the configuration system, not all co
 No explicit error - this is an architectural inconsistency
 ```
 
-**Location:** `config/services.yaml`  
+**Location:** `config/services.yaml`
 **Trigger:** Command instantiation and configuration loading
 
 ## Impact Analysis
 
 **Affected Components:**
 - PhpCsFixerLintCommand, PhpCsFixerFixCommand
-- ComposerLintCommand, ComposerFixCommand  
+- ComposerLintCommand, ComposerFixCommand
 - FractorLintCommand, FractorFixCommand
 - TypoScriptLintCommand
 
@@ -52,7 +52,7 @@ No explicit error - this is an architectural inconsistency
 
 ### Solution 2: Remove DI Configuration and Use BaseCommand Default
 - **Description:** Remove explicit ConfigurationLoader DI and let all commands use BaseCommand's default mechanism
-- **Effort:** Low  
+- **Effort:** Low
 - **Impact:** Medium - creates consistency but moves away from DI best practices
 - **Pros:** Less configuration needed
 - **Cons:** Reduces control over dependency injection; harder to test; less explicit
@@ -65,7 +65,7 @@ This maintains consistency with the existing architecture and follows dependency
 
 **Implementation Steps:**
 1. Add ConfigurationLoader DI configuration for PhpCsFixerLintCommand and PhpCsFixerFixCommand
-2. Add ConfigurationLoader DI configuration for ComposerLintCommand and ComposerFixCommand  
+2. Add ConfigurationLoader DI configuration for ComposerLintCommand and ComposerFixCommand
 3. Add ConfigurationLoader DI configuration for FractorLintCommand and FractorFixCommand
 4. Add ConfigurationLoader DI configuration for TypoScriptLintCommand
 5. Verify all commands now use consistent DI pattern
