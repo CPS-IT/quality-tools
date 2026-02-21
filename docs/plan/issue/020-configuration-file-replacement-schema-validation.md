@@ -135,12 +135,138 @@ This issue reveals broader problems in the configuration system:
 - Issue 019: Configuration class hierarchy simplification (current refactoring)
 - Configuration override test scenarios (documented in tmp/configuration-override-test-scenarios.md)
 
-## Next Steps
-1. Update JSON schema to allow tool configuration metadata
-2. Fix configuration discovery to properly handle custom tool configs
-3. Ensure tool executors respect custom configuration files
-4. Add comprehensive test coverage for configuration override scenarios
-5. Update documentation with configuration override examples
+## Implementation Plan
+
+### Analysis Results
+
+#### 1. Test Coverage Assessment
+**Current State:** 
+- **MAJOR GAP**: Zero test coverage for custom configuration file replacement scenarios
+- No tests for `tool_config_file` and `custom_config` metadata keys 
+- ConfigValidateCommand and ConfigShowCommand tests exist but don't cover custom tool configs
+- Tool command tests focus on default configurations only
+
+**Impact:** Critical functionality untested, explaining why the bug went undetected.
+
+#### 2. Test Cases Definition
+**Required Test Scenarios:**
+
+**Schema Validation Tests:**
+- Custom tool config files should validate successfully 
+- Merged configuration with tool metadata should pass validation
+- Schema should reject invalid tool_config_file paths
+- Schema should handle multiple custom tool configs
+
+**Configuration Discovery Tests:**
+- Detect custom rector.php, phpstan.neon, fractor.php files
+- Handle precedence: custom files override YAML configuration
+- Support both project root and config/ directory placement
+- Validate tool-specific configuration loading
+
+**Command Integration Tests:**
+- `qt config:validate` should report valid for custom configs
+- `qt config:show` should display merged config without errors
+- `qt lint:*` commands should use custom configuration files
+- Tool execution should respect custom config precedence
+
+#### 3. Documentation Assessment
+**Current State:** 
+- Configuration override concept documented in feature/015 plan
+- User guide mentions "custom configuration" but lacks specific examples
+- Tool-specific docs mention config files but not replacement behavior
+- **MISSING**: Step-by-step custom config file setup examples
+
+**Required Updates:**
+- Add custom tool config file examples to user guide
+- Document configuration precedence rules clearly
+- Update troubleshooting guide with validation scenarios
+
+### Implementation Phases
+
+#### Phase 1: Schema and Validation Fix (Priority: Critical)
+1. **Update JSON Schema** (`config/schema/quality-tools.json`)
+   - Add `tool_config_file` and `custom_config` properties to quality-tools section
+   - Define validation rules for tool config file paths
+   - Ensure backward compatibility with existing configurations
+
+2. **Fix Configuration Validation** (`src/Configuration/ConfigurationValidator.php`)
+   - Handle tool metadata keys in validation process
+   - Ensure merged configurations validate correctly
+   - Add specific error messages for tool config issues
+
+#### Phase 2: Test Implementation (Priority: High)
+3. **Create Configuration File Replacement Test Suite**
+   - `tests/Integration/Configuration/CustomToolConfigTest.php`
+   - Test all supported custom config files (rector.php, phpstan.neon, etc.)
+   - Validate configuration discovery and precedence rules
+   - Test schema validation for custom configs
+
+4. **Extend Command Integration Tests**
+   - Update `ConfigValidateCommandTest` with custom config scenarios
+   - Update `ConfigShowCommandTest` with merged configuration display
+   - Add tool command tests with custom configuration files
+   - Test error scenarios and edge cases
+
+5. **Add Schema Validation Tests**
+   - `tests/Unit/Configuration/CustomConfigSchemaTest.php`
+   - Test schema validation for tool metadata keys
+   - Validate error handling for invalid tool config paths
+   - Test schema evolution and backward compatibility
+
+#### Phase 3: Configuration Discovery Enhancement (Priority: Medium)
+6. **Enhance ConfigurationDiscovery**
+   - Ensure proper validation of discovered tool config files
+   - Improve error reporting for invalid custom configurations
+   - Add debug information for tool config detection
+
+7. **Tool Executor Integration**
+   - Verify tool commands properly use custom configuration files
+   - Ensure fallback behavior when custom configs are invalid
+   - Test configuration precedence in tool execution
+
+#### Phase 4: Documentation Update (Priority: Medium) 
+8. **Update User Guide** (`docs/user-guide/configuration.md`)
+   - Add "Custom Tool Configuration Files" section
+   - Include step-by-step examples for each tool
+   - Document configuration precedence rules
+
+9. **Update Tool-Specific Documentation**
+   - Add custom config examples to Rector, PHPStan, Fractor docs
+   - Document troubleshooting for configuration issues
+   - Add migration guide from default to custom configs
+
+#### Phase 5: Quality Assurance (Priority: High)
+10. **Regression Testing**
+    - Run full test suite to ensure no breaking changes
+    - Test backward compatibility with existing projects
+    - Validate performance impact of schema changes
+
+11. **Integration Validation**
+    - Test with real-world project scenarios
+    - Validate configuration hierarchy behavior
+    - Test error recovery and user feedback
+
+### Success Criteria
+- [ ] All test suites pass without regression
+- [ ] Custom tool config files validate successfully 
+- [ ] `qt config:validate` reports accurate validation status
+- [ ] `qt config:show` displays merged configuration correctly
+- [ ] Tool commands use custom configuration files when present
+- [ ] Documentation provides clear guidance for custom config setup
+- [ ] Schema validation provides helpful error messages
+
+### Risk Mitigation
+- **Schema Changes**: Maintain backward compatibility with existing configs
+- **Test Coverage**: Implement comprehensive test scenarios before fixing code
+- **Documentation**: Update docs alongside implementation to prevent user confusion
+- **Performance**: Monitor validation performance impact with custom configs
+
+### Estimated Effort
+- **Phase 1 & 2**: 2-3 days (critical path)
+- **Phase 3 & 4**: 1-2 days (parallel with testing)
+- **Phase 5**: 1 day (validation and cleanup)
+
+**Total**: 4-6 days for complete implementation and validation
 
 ## Investigation Notes
 - The loadPhpFile() and loadNeonFile() methods in ConfigurationDiscovery intentionally add metadata keys not defined in schema
