@@ -1,0 +1,8 @@
+quality-tools:
+  project:
+    name: 'test-explicit-config-override'
+    php_version: '8.3'
+  tools:
+    rector:
+      config_file: 'custom/rector.php'
+      enabled: true
