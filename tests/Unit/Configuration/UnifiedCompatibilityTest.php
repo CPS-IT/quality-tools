@@ -12,6 +12,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
 use Cpsit\QualityTools\Configuration\EnhancedConfiguration;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Yaml;
@@ -259,6 +260,7 @@ final class UnifiedCompatibilityTest extends TestCase
             new FilesystemService(),
             new SecurityService(),
             new ConfigurationValidator(),
+            new ToolConfigurationValidationService(),
         );
 
         $configurations = $discovery->discoverConfigurations();

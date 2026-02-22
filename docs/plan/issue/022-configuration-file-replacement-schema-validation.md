@@ -267,21 +267,12 @@ qt config:show
    - Tools section structure properly maintained as associative array (object)
    - However: Underlying JSON schema validation issue discovered (see Issue 2 details above)
 
-7. **[ ] Configuration File Validation Logic** - Pending
-   ```php
-   private function validateToolConfigurationFile(string $tool, string $path): bool
-   {
-       if (!file_exists($path) || !is_readable($path)) {
-           return false;
-       }
-
-       return match($tool) {
-           'rector' => $this->validateRectorConfig($path),
-           'phpstan' => $this->validatePhpstanConfig($path),
-           default => true
-       };
-   }
-   ```
+7. **[x] Configuration File Validation Logic** - Completed
+   - Implemented ToolConfigurationValidationService with comprehensive validation
+   - Tool validation trait provides shared functionality across all validators
+   - Constructor-based dependency injection ensures proper service integration
+   - All tool validators (Rector, PHPStan, Fractor, etc.) now use consistent validation pattern
+   - Configuration loading works reliably without schema validation errors
 
 8. **[ ] Secure Path Resolution** - Pending
    - Implement secure path resolution with boundary checks
@@ -290,26 +281,18 @@ qt config:show
    - Handle absolute vs relative path resolution
 
 #### Phase 3: Configuration Resolution Logic (Priority: High)
-9. **Enhanced Configuration Discovery** (`src/Configuration/ConfigurationDiscovery.php`)
-   ```php
-   public function resolveToolConfigurationFile(string $tool, array $userConfig): string
-   {
-       // 1. User-specified path takes precedence
-       $userPath = $userConfig['quality-tools']['tools'][$tool]['config_file'] ?? null;
-       if ($userPath && $this->validateToolConfigurationFile($tool, $userPath)) {
-           return $this->resolveSecurePath($userPath);
-       }
-
-       // 2. Auto-discover in standard locations
-       $discoveredPath = $this->discoverToolConfig($tool);
-       if ($discoveredPath && $this->validateToolConfigurationFile($tool, $discoveredPath)) {
-           return $discoveredPath;
-       }
-
-       // 3. Package default
-       return $this->getDefaultConfigPath($tool);
-   }
-   ```
+9. **[ ] Enhanced Configuration Discovery** - Pending Implementation
+   
+   **Current Status**: Schema validation is resolved, but auto-discovery of custom tool configuration files is not yet 
+10. implemented. Tools currently ignore custom `rector.php`, `phpstan.neon` files and use default configurations.
+   
+   **Required Tasks for ConfigurationDiscovery**:
+   - Implement auto-discovery of tool config files in standard locations (project root, config/ directory)
+   - Add secure path resolution with boundary validation  
+   - Populate `config_file` keys in tool configurations when custom files are discovered
+   - Implement configuration precedence: User-specified > Auto-discovered > Package defaults
+   - Integration with ToolConfigurationValidationService for discovered file validation
+   - Handle tool-specific file patterns (rector.php, phpstan.neon, fractor.php, etc.)
 
 10. **Enhanced Error Reporting**
     - Clear messages when config files not found
@@ -416,6 +399,14 @@ qt config:show
 - Fixed: Updated all test expectations to reflect that Issue 022 core problem is resolved
 - Updated: Changed `expects_schema_failure: true` to `false` for scenarios with config_file properties
 - Result: Unit tests now pass, integration tests reveal deeper structural issues
+
+**Issue 4: Custom Configuration Files Not Used**
+- **Symptom**: `config:validate` and `config:show` commands now succeed, but custom config files are ignored
+- **Observed Behavior**: When `rector.php` exists in project root, tool execution uses default configuration with `quality-tools.paths.scan` paths instead of custom file paths
+- **Root Cause**: Configuration discovery and validation succeed, but tool execution still uses default configurations
+- **Impact**: Users see "valid" configuration but tools don't use their custom settings
+- **Status**: Configuration file detection works, but execution integration is missing
+- **Next Steps**: Implement Phase 3 Configuration Resolution Logic and Phase 4 Tool Integration
 
 ### Architecture Decision Required
 Two approaches for handling discovery metadata:

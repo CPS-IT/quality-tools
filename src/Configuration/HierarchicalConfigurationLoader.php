@@ -7,6 +7,7 @@ namespace Cpsit\QualityTools\Configuration;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 
 /**
  * Advanced configuration loader with hierarchical support and source tracking.
@@ -19,6 +20,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
         private ConfigurationValidator $validator,
         private SecurityService $securityService,
         private FilesystemService $filesystemService,
+        private ToolConfigurationValidationService $toolValidator,
     ) {
     }
 
@@ -33,6 +35,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
         $merger = new ConfigurationMerger();
 
@@ -84,6 +87,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         // Get configurations that affect this tool
@@ -219,6 +223,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         // Trigger discovery to collect errors
@@ -238,6 +243,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         return [
@@ -259,6 +265,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         $configurations = $discovery->discoverConfigurations();
@@ -291,6 +298,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         $configurations = $discovery->discoverConfigurations();

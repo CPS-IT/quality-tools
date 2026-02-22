@@ -10,6 +10,8 @@ use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -31,11 +33,12 @@ final class ConfigurationMergingTest extends TestCase
         $this->tempDir = TestHelper::createTempDirectory('config_merging_test_');
 
         $validator = new ConfigurationValidator();
-        $securityService = new \Cpsit\QualityTools\Service\SecurityService();
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService();
+        $toolValidator = new ToolConfigurationValidationService();
 
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);
-        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService);
+        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService, $toolValidator);
 
         // Test both simple and hierarchical modes via wrapper
         $this->loaders = [

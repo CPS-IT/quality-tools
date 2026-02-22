@@ -7,6 +7,7 @@ namespace Cpsit\QualityTools\Configuration;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Traits\ConfigurationFileReaderTrait;
 use Cpsit\QualityTools\Traits\EnvironmentVariableInterpolationTrait;
 use Cpsit\QualityTools\Traits\YamlFileLoaderTrait;
@@ -29,6 +30,7 @@ final class ConfigurationDiscovery
         private readonly FilesystemService $filesystemService,
         private readonly SecurityService $securityService,
         private readonly ConfigurationValidator $validator,
+        private readonly ToolConfigurationValidationService $toolValidator,
     ) {
     }
 
@@ -165,6 +167,12 @@ final class ConfigurationDiscovery
             return [];
         }
 
+        // Validate the tool configuration file
+        if (!$this->validateToolConfigurationFile($tool, $path)) {
+            $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
+            return [];
+        }
+
         return [
             'quality-tools' => [
                 'tools' => [
@@ -184,6 +192,12 @@ final class ConfigurationDiscovery
         // Determine which tool this Neon config file belongs to and set config_file property
         $tool = $this->getToolFromConfigFile($path);
         if ($tool === null) {
+            return [];
+        }
+
+        // Validate the tool configuration file
+        if (!$this->validateToolConfigurationFile($tool, $path)) {
+            $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
             return [];
         }
 
@@ -303,6 +317,18 @@ final class ConfigurationDiscovery
             'existing_files_by_level' => $this->hierarchy->getExistingConfigurationFiles(),
         ];
     }
+
+    /**
+     * Validate a tool-specific configuration file.
+     */
+     private function validateToolConfigurationFile(string $tool, string $path): bool
+     {
+         if (!$this->filesystemService->fileExists($path) || !$this->filesystemService->isReadable($path)) {
+             return false;
+         }
+
+         return $this->toolValidator->validateConfigurationFile($tool, $path);
+     }
 
     /**
      * Determine which tool a configuration file belongs to based on its filename.

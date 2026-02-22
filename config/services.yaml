@@ -36,6 +36,17 @@ services:
       - '../src/Configuration/ConfigurationLoaderWrapper.php'
       - '../src/Configuration/Configuration.php'
 
+  # Tool Configuration Validators
+  Cpsit\QualityTools\Configuration\Validator\:
+    resource: '../src/Configuration/Validator/*'
+    exclude:
+      - '../src/Configuration/Validator/ToolConfigurationValidatorInterface.php'
+      - '../src/Configuration/Validator/ToolValidationTrait.php'
+    arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+    tags:
+      - { name: 'tool_configuration_validator' }
+
   # Console Commands
   Cpsit\QualityTools\Console\Command\:
     resource: '../src/Console/Command/*'
@@ -131,6 +142,15 @@ services:
       $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
       $securityService: '@Cpsit\QualityTools\Service\SecurityService'
       $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $toolValidator: '@Cpsit\QualityTools\Service\ToolConfigurationValidationService'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoader:
+    arguments:
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $toolValidator: '@Cpsit\QualityTools\Service\ToolConfigurationValidationService'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationValidator:
@@ -161,6 +181,11 @@ services:
   Cpsit\QualityTools\Service\PathResolutionService:
     arguments:
       $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
+    public: true
+
+  Cpsit\QualityTools\Service\ToolConfigurationValidationService:
+    arguments:
+      $validators: !tagged_iterator tool_configuration_validator
     public: true
 
   # Wrapper classes for evolutionary refactoring (Issue 019 - Step 4.2)

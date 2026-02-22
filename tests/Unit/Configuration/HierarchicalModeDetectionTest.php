@@ -14,6 +14,7 @@ use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Yaml;
@@ -84,6 +85,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
         $wrapperLoader = new ConfigurationLoaderWrapper(
             $simpleLoader,
@@ -96,6 +98,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
             new PathResolutionService(),
@@ -256,6 +259,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
 
         return new ConfigurationLoaderWrapper(
@@ -271,6 +275,7 @@ final class HierarchicalModeDetectionTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
             new PathResolutionService(),

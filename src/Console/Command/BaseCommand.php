@@ -20,6 +20,7 @@ use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
@@ -561,6 +562,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
     }
 }

@@ -19,6 +19,7 @@ use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -139,6 +140,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
 
         $wrapperLoader = new ConfigurationLoaderWrapper(
@@ -152,6 +154,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
             new PathResolutionService(),
@@ -191,6 +194,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
 
         $wrapperLoader = new ConfigurationLoaderWrapper(
@@ -214,6 +218,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
                     new ConfigurationValidator(),
                     new SecurityService(),
                     new FilesystemService(),
+                    new ToolConfigurationValidationService(),
                     new ProjectConfigService(),
                     new ToolConfigService(),
                     new PathResolutionService(),
@@ -277,6 +282,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
 
         $simpleLoader = new SimpleConfigurationLoader(
@@ -296,6 +302,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
             new PathResolutionService(),

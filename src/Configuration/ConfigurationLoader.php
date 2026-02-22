@@ -10,6 +10,7 @@ use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Traits\ConfigurationFileReaderTrait;
 use Cpsit\QualityTools\Traits\EnvironmentVariableInterpolationTrait;
 use Cpsit\QualityTools\Traits\YamlFileLoaderTrait;
@@ -36,6 +37,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         private ConfigurationValidator $validator,
         private SecurityService $securityService,
         private FilesystemService $filesystemService,
+        private ToolConfigurationValidationService $toolValidator,
         private ?ProjectConfigService $projectConfigService = null,
         private ?ToolConfigService $toolConfigService = null,
         private ?PathResolutionService $pathResolutionService = null,
@@ -113,6 +115,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
         $merger = new ConfigurationMerger();
 
@@ -187,6 +190,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             $this->filesystemService,
             $this->securityService,
             $this->validator,
+            $this->toolValidator,
         );
 
         // Get configurations that affect this tool

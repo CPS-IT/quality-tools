@@ -8,12 +8,11 @@ use Cpsit\QualityTools\Exception\FileSystemException;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
-final readonly class FilesystemService
+readonly class FilesystemService
 {
     public function __construct(
         private Filesystem $filesystem = new Filesystem(),
-    ) {
-    }
+    ) {}
 
     public function fileExists(string $path): bool
     {
@@ -99,6 +98,19 @@ final readonly class FilesystemService
             $this->filesystem->remove($path);
         } catch (IOException $e) {
             throw new FileSystemException('Failed to remove directory: ' . $e->getMessage(), FileSystemException::ERROR_PERMISSION_DENIED, $e, [], [], $path);
+        }
+    }
+
+    public function removeFile(string $path): void
+    {
+        if (!$this->fileExists($path)) {
+            return;
+        }
+
+        try {
+            $this->filesystem->remove($path);
+        } catch (IOException $e) {
+            throw new FileSystemException('Failed to remove file: ' . $e->getMessage(), FileSystemException::ERROR_PERMISSION_DENIED, $e, [], [], $path);
         }
     }
 

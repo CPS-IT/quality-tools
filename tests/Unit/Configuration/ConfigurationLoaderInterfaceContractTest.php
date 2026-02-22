@@ -12,6 +12,7 @@ use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\FilesystemTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 
@@ -39,9 +40,10 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         $validator = new ConfigurationValidator();
         $securityService = new SecurityService();
         $filesystemService = new FilesystemService();
+        $toolValidator = new ToolConfigurationValidationService();
 
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);
-        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService);
+        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService, $toolValidator);
 
         return [
             'SimpleConfigurationLoader' => [$simpleLoader],
@@ -267,9 +269,10 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         $validator = new ConfigurationValidator();
         $securityService = new SecurityService();
         $filesystemService = new FilesystemService();
+        $toolValidator = new ToolConfigurationValidationService();
 
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);
-        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService);
+        $hierarchicalLoader = new HierarchicalConfigurationLoader($validator, $securityService, $filesystemService, $toolValidator);
 
         // Test simple mode
         $simpleWrapper = new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple');

@@ -8,6 +8,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
@@ -25,6 +26,7 @@ final class HierarchicalConfigurationTest extends TestCase
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(),
+            new ToolConfigurationValidationService(),
         );
 
         // Create a temporary home directory for global config tests
