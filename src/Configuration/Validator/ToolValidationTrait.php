@@ -27,8 +27,8 @@ trait ToolValidationTrait
 
     public function getToolName(): string
     {
-        if (!defined('static::TOOL_NAME')) {
-            throw new \LogicException(sprintf('Class %s must define TOOL_NAME constant', static::class));
+        if (!\defined('static::TOOL_NAME')) {
+            throw new \LogicException(\sprintf('Class %s must define TOOL_NAME constant', static::class));
         }
 
         return static::TOOL_NAME;
@@ -36,8 +36,8 @@ trait ToolValidationTrait
 
     public function getSupportedExtensions(): array
     {
-        if (!defined('static::SUPPORTED_EXTENSIONS')) {
-            throw new \LogicException(sprintf('Class %s must define SUPPORTED_EXTENSIONS constant', static::class));
+        if (!\defined('static::SUPPORTED_EXTENSIONS')) {
+            throw new \LogicException(\sprintf('Class %s must define SUPPORTED_EXTENSIONS constant', static::class));
         }
 
         return static::SUPPORTED_EXTENSIONS;
@@ -61,7 +61,7 @@ trait ToolValidationTrait
             $this->filesystemService->writeFile($tempFile, $content);
 
             // Check PHP syntax
-            $command = sprintf('php -l %s 2>&1', escapeshellarg($tempFile));
+            $command = \sprintf('php -l %s 2>&1', escapeshellarg((string) $tempFile));
             $output = [];
             $returnCode = 0;
 
@@ -69,22 +69,25 @@ trait ToolValidationTrait
 
             if ($returnCode !== 0) {
                 $this->lastError = 'PHP syntax error: ' . implode(' ', $output);
+
                 return false;
             }
 
             return true;
         } catch (FileSystemException $e) {
             $this->lastError = "File operation failed: {$e->getMessage()}";
+
             return false;
         } catch (\Throwable $e) {
             $this->lastError = "Syntax validation failed: {$e->getMessage()}";
+
             return false;
         } finally {
             // Clean up temporary file
             if ($tempFile !== null) {
                 try {
                     $this->filesystemService->removeFile($tempFile);
-                } catch (FileSystemException $e) {
+                } catch (FileSystemException) {
                     // Log but don't fail the validation for cleanup issues
                 }
             }
@@ -97,7 +100,7 @@ trait ToolValidationTrait
     protected function containsAnyPattern(string $content, array $patterns): bool
     {
         foreach ($patterns as $pattern) {
-            if (str_contains($content, $pattern)) {
+            if (str_contains($content, (string) $pattern)) {
                 return true;
             }
         }
@@ -113,17 +116,20 @@ trait ToolValidationTrait
         try {
             if (!$this->filesystemService->fileExists($path)) {
                 $this->lastError = "Configuration file does not exist: {$path}";
+
                 return false;
             }
 
             if (!$this->filesystemService->isReadable($path)) {
                 $this->lastError = "Configuration file is not readable: {$path}";
+
                 return false;
             }
 
             return true;
         } catch (FileSystemException $e) {
             $this->lastError = "File check failed: {$e->getMessage()}";
+
             return false;
         }
     }

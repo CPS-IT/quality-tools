@@ -10,6 +10,11 @@ use Cpsit\QualityTools\Traits\ConfigurationFileReaderTrait;
 use Cpsit\QualityTools\Traits\EnvironmentVariableInterpolationTrait;
 use Cpsit\QualityTools\Traits\YamlFileLoaderTrait;
 
+/**
+ * Simple configuration loader supporting only the most basic loading mode.
+ *
+ * @deprecated use ConfigurationLoader instead
+ */
 final readonly class SimpleConfigurationLoader implements ConfigurationLoaderInterface
 {
     use ConfigurationFileReaderTrait;

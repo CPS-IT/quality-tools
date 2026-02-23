@@ -28,7 +28,6 @@ final class FractorConfigurationValidator implements ToolConfigurationValidatorI
         'typoscript',
     ];
 
-
     public function validateConfigurationFile(string $path): bool
     {
         $this->lastError = null;
@@ -59,6 +58,7 @@ final class FractorConfigurationValidator implements ToolConfigurationValidatorI
             // Check for Fractor-specific content using shared method
             if (!$this->containsAnyPattern($content, self::FRACTOR_PATTERNS)) {
                 $this->lastError = 'File does not appear to be a valid Fractor configuration';
+
                 return false;
             }
 
@@ -67,16 +67,19 @@ final class FractorConfigurationValidator implements ToolConfigurationValidatorI
                 $config = include $path;
                 if (!\is_callable($config) && !\is_array($config)) {
                     $this->lastError = 'Fractor configuration must return a callable or configuration array';
+
                     return false;
                 }
             } catch (\Throwable $e) {
                 $this->lastError = "Error including configuration file: {$e->getMessage()}";
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "Structure validation failed: {$e->getMessage()}";
+
             return false;
         }
     }

@@ -25,7 +25,6 @@ final class TyposcriptLintConfigurationValidator implements ToolConfigurationVal
         'fileExtensions',
     ];
 
-
     public function validateConfigurationFile(string $path): bool
     {
         $this->lastError = null;
@@ -53,8 +52,9 @@ final class TyposcriptLintConfigurationValidator implements ToolConfigurationVal
             $content = $this->filesystemService->readFile($path);
 
             $data = Yaml::parse($content);
-            if (!is_array($data)) {
+            if (!\is_array($data)) {
                 $this->lastError = 'YAML file must contain configuration data';
+
                 return false;
             }
 
@@ -63,12 +63,14 @@ final class TyposcriptLintConfigurationValidator implements ToolConfigurationVal
 
             if (!$hasTyposcriptLintContent) {
                 $this->lastError = 'File does not appear to be a valid TypoScript-Lint configuration';
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "YAML validation failed: {$e->getMessage()}";
+
             return false;
         }
     }
@@ -85,12 +87,14 @@ final class TyposcriptLintConfigurationValidator implements ToolConfigurationVal
             // Basic check for TypoScript-Lint related content using shared method
             if (!$this->containsAnyPattern($content, self::TYPOSCRIPT_PATTERNS)) {
                 $this->lastError = 'File does not appear to be a valid TypoScript-Lint configuration';
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "Generic format validation failed: {$e->getMessage()}";
+
             return false;
         }
     }
@@ -117,10 +121,6 @@ final class TyposcriptLintConfigurationValidator implements ToolConfigurationVal
         }
 
         // Check nested structure
-        if (isset($data['typoscript-lint']) || isset($data['typoscriptlint'])) {
-            return true;
-        }
-
-        return false;
+        return isset($data['typoscript-lint']) || isset($data['typoscriptlint']);
     }
 }

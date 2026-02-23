@@ -10,6 +10,8 @@ namespace Cpsit\QualityTools\Configuration;
  * This wrapper implements the complete ConfigurationLoaderInterface by delegating
  * to the appropriate loader based on the configured mode.
  * Part of the evolutionary refactoring strategy in Issue 019.
+ *
+ * @deprecated use ConfigurationLoader instead
  */
 final readonly class ConfigurationLoaderWrapper implements ConfigurationLoaderInterface
 {

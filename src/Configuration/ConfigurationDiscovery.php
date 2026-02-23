@@ -170,6 +170,7 @@ final class ConfigurationDiscovery
         // Validate the tool configuration file
         if (!$this->validateToolConfigurationFile($tool, $path)) {
             $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
+
             return [];
         }
 
@@ -198,6 +199,7 @@ final class ConfigurationDiscovery
         // Validate the tool configuration file
         if (!$this->validateToolConfigurationFile($tool, $path)) {
             $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
+
             return [];
         }
 
@@ -321,14 +323,14 @@ final class ConfigurationDiscovery
     /**
      * Validate a tool-specific configuration file.
      */
-     private function validateToolConfigurationFile(string $tool, string $path): bool
-     {
-         if (!$this->filesystemService->fileExists($path) || !$this->filesystemService->isReadable($path)) {
-             return false;
-         }
+    private function validateToolConfigurationFile(string $tool, string $path): bool
+    {
+        if (!$this->filesystemService->fileExists($path) || !$this->filesystemService->isReadable($path)) {
+            return false;
+        }
 
-         return $this->toolValidator->validateConfigurationFile($tool, $path);
-     }
+        return $this->toolValidator->validateConfigurationFile($tool, $path);
+    }
 
     /**
      * Determine which tool a configuration file belongs to based on its filename.

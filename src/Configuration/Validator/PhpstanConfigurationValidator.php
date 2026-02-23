@@ -17,7 +17,6 @@ final class PhpstanConfigurationValidator implements ToolConfigurationValidatorI
     public const string TOOL_NAME = 'phpstan';
     public const array SUPPORTED_EXTENSIONS = ['neon', 'neon.dist', 'php', 'yml', 'yaml'];
 
-
     public function validateConfigurationFile(string $path): bool
     {
         $this->lastError = null;
@@ -49,12 +48,14 @@ final class PhpstanConfigurationValidator implements ToolConfigurationValidatorI
             $neonPatterns = ['parameters:', 'level:', 'paths:', 'phpstan', 'includes:', 'rules:'];
             if (!$this->containsAnyPattern($content, $neonPatterns)) {
                 $this->lastError = 'File does not appear to be a valid PHPStan NEON configuration';
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "NEON validation failed: {$e->getMessage()}";
+
             return false;
         }
     }
@@ -77,12 +78,14 @@ final class PhpstanConfigurationValidator implements ToolConfigurationValidatorI
             $phpstanPatterns = ['phpstan', 'PHPStan', 'level', 'paths'];
             if (!$this->containsAnyPattern($content, $phpstanPatterns)) {
                 $this->lastError = 'File does not appear to be a valid PHPStan PHP configuration';
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "PHP format validation failed: {$e->getMessage()}";
+
             return false;
         }
     }
@@ -100,8 +103,9 @@ final class PhpstanConfigurationValidator implements ToolConfigurationValidatorI
                 $content = $this->filesystemService->readFile($path);
 
                 $data = Yaml::parse($content);
-                if (!is_array($data)) {
+                if (!\is_array($data)) {
                     $this->lastError = 'YAML file must contain configuration data';
+
                     return false;
                 }
 
@@ -112,6 +116,7 @@ final class PhpstanConfigurationValidator implements ToolConfigurationValidatorI
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "Generic format validation failed: {$e->getMessage()}";
+
             return false;
         }
     }

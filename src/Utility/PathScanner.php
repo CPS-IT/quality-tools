@@ -258,7 +258,7 @@ final class PathScanner
     }
 
     /**
-     * Build absolute pattern for glob operations (without realpath normalization).
+     * Build an absolute pattern for glob operations (without realpath normalization).
      */
     private function buildAbsolutePattern(string $pattern): string
     {

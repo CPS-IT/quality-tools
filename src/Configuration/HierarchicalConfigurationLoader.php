@@ -13,6 +13,8 @@ use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
  * Advanced configuration loader with hierarchical support and source tracking.
  *
  * Implements the complete configuration override system for Feature 015.
+ *
+ * @deprecated use ConfigurationLoader instead
  */
 final readonly class HierarchicalConfigurationLoader implements ConfigurationLoaderInterface
 {

@@ -25,7 +25,6 @@ final class RectorConfigurationValidator implements ToolConfigurationValidatorIn
         'sets(',
     ];
 
-
     public function validateConfigurationFile(string $path): bool
     {
         $this->lastError = null;
@@ -52,8 +51,9 @@ final class RectorConfigurationValidator implements ToolConfigurationValidatorIn
         try {
             // Check if file returns a callable (standard Rector config pattern)
             $config = include $path;
-            if (!is_callable($config)) {
+            if (!\is_callable($config)) {
                 $this->lastError = 'Rector configuration must return a callable';
+
                 return false;
             }
 
@@ -62,12 +62,14 @@ final class RectorConfigurationValidator implements ToolConfigurationValidatorIn
 
             if (!$this->containsAnyPattern($content, self::RECTOR_PATTERNS)) {
                 $this->lastError = 'File does not appear to be a valid Rector configuration';
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "Structure validation failed: {$e->getMessage()}";
+
             return false;
         }
     }

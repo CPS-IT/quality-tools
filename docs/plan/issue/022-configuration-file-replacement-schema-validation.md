@@ -282,13 +282,13 @@ qt config:show
 
 #### Phase 3: Configuration Resolution Logic (Priority: High)
 9. **[ ] Enhanced Configuration Discovery** - Pending Implementation
-   
-   **Current Status**: Schema validation is resolved, but auto-discovery of custom tool configuration files is not yet 
+
+   **Current Status**: Schema validation is resolved, but auto-discovery of custom tool configuration files is not yet
 10. implemented. Tools currently ignore custom `rector.php`, `phpstan.neon` files and use default configurations.
-   
+
    **Required Tasks for ConfigurationDiscovery**:
    - Implement auto-discovery of tool config files in standard locations (project root, config/ directory)
-   - Add secure path resolution with boundary validation  
+   - Add secure path resolution with boundary validation
    - Populate `config_file` keys in tool configurations when custom files are discovered
    - Implement configuration precedence: User-specified > Auto-discovered > Package defaults
    - Integration with ToolConfigurationValidationService for discovered file validation

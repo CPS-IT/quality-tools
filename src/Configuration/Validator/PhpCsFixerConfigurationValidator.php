@@ -28,7 +28,6 @@ final class PhpCsFixerConfigurationValidator implements ToolConfigurationValidat
         'new Config(',
     ];
 
-
     public function validateConfigurationFile(string $path): bool
     {
         $this->lastError = null;
@@ -59,6 +58,7 @@ final class PhpCsFixerConfigurationValidator implements ToolConfigurationValidat
             // Check for PHP-CS-Fixer specific content using shared method
             if (!$this->containsAnyPattern($content, self::PHP_CS_FIXER_PATTERNS)) {
                 $this->lastError = 'File does not appear to be a valid PHP-CS-Fixer configuration';
+
                 return false;
             }
 
@@ -67,16 +67,19 @@ final class PhpCsFixerConfigurationValidator implements ToolConfigurationValidat
                 $config = include $path;
                 if (!$config instanceof \PhpCsFixer\Config && !\is_array($config) && !\is_callable($config)) {
                     $this->lastError = 'PHP-CS-Fixer configuration must return a Config instance, array, or callable';
+
                     return false;
                 }
             } catch (\Throwable $e) {
                 $this->lastError = "Error including configuration file: {$e->getMessage()}";
+
                 return false;
             }
 
             return true;
         } catch (\Throwable $e) {
             $this->lastError = "Structure validation failed: {$e->getMessage()}";
+
             return false;
         }
     }
