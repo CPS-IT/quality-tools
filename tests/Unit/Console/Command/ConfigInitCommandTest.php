@@ -7,11 +7,12 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Console\Command\ConfigInitCommand
@@ -21,11 +22,14 @@ final class ConfigInitCommandTest extends TestCase
     private ConfigInitCommand $command;
     private CommandTester $commandTester;
     private string $tempDir;
+    private FilesystemService $filesystemService;
+    private SecurityService $securityService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_init_test_');
-
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
         // Create a basic project structure
         TestHelper::createComposerJson($this->tempDir, [
             'name' => 'test/project',
@@ -37,7 +41,7 @@ final class ConfigInitCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ConfigInitCommand(new FilesystemService());
+                $this->command = new ConfigInitCommand($this->filesystemService);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
             },
@@ -47,6 +51,7 @@ final class ConfigInitCommandTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testConfigureCommand(): void
@@ -318,7 +323,7 @@ final class ConfigInitCommandTest extends TestCase
                 ['QT_PROJECT_ROOT' => $testDir],
                 function () use ($template, $testDir): void {
                     $app = new QualityToolsApplication();
-                    $command = new ConfigInitCommand(new FilesystemService());
+                    $command = new ConfigInitCommand($this->filesystemService);
                     $command->setApplication($app);
                     $commandTester = new CommandTester($command);
 

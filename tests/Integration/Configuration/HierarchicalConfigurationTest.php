@@ -11,6 +11,7 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class HierarchicalConfigurationTest extends TestCase
 {
@@ -18,14 +19,21 @@ final class HierarchicalConfigurationTest extends TestCase
     private string $projectRoot;
     private string $globalConfigPath;
     private string $originalHome;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
 
     protected function setUp(): void
     {
         $this->projectRoot = TestHelper::createTempDirectory('hierarchical_config_test_');
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(
+            new Filesystem(),
+            $this->securityService,
+        );
         $this->loader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
         );
 

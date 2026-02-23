@@ -15,6 +15,7 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\FilesystemTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Contract test ensuring all ConfigurationLoaderInterface implementations
@@ -39,7 +40,8 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         $validator = new ConfigurationValidator();
         $securityService = new SecurityService();
-        $filesystemService = new FilesystemService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
         $toolValidator = new ToolConfigurationValidationService();
 
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);
@@ -268,7 +270,10 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         $validator = new ConfigurationValidator();
         $securityService = new SecurityService();
-        $filesystemService = new FilesystemService();
+        $filesystemService = new FilesystemService(
+            new Filesystem(),
+            $securityService,
+        );
         $toolValidator = new ToolConfigurationValidationService();
 
         $simpleLoader = new SimpleConfigurationLoader($validator, $securityService, $filesystemService);

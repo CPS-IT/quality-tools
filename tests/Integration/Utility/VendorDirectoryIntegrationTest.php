@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Utility;
 
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integration tests for vendor directory detection with configuration system.
@@ -15,12 +18,20 @@ use PHPUnit\Framework\TestCase;
 final class VendorDirectoryIntegrationTest extends TestCase
 {
     private string $tempProjectRoot;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
     private SimpleConfigurationLoader $loader;
 
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('vendor_integration_test_');
-        $this->loader = new SimpleConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new \Cpsit\QualityTools\Service\SecurityService(), new FilesystemService());
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
+        $this->loader = new SimpleConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            $this->filesystemService,
+        );
     }
 
     protected function tearDown(): void

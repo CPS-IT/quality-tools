@@ -13,6 +13,7 @@ use Cpsit\QualityTools\Tests\Support\ConfigurationBuilder;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integration tests for configuration regression protection.
@@ -25,6 +26,8 @@ final class ConfigurationRegressionTest extends TestCase
 {
     private string $tempDir;
     private HierarchicalConfigurationLoader $configurationLoader;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
 
     protected function setUp(): void
     {
@@ -32,14 +35,17 @@ final class ConfigurationRegressionTest extends TestCase
 
         // Create required services for HierarchicalConfigurationLoader
         $validator = new ConfigurationValidator();
-        $securityService = new SecurityService();
-        $filesystemService = new FilesystemService();
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(
+            new Filesystem(),
+            $this->securityService,
+        );
         $toolValidator = new ToolConfigurationValidationService();
 
         $this->configurationLoader = new HierarchicalConfigurationLoader(
             $validator,
-            $securityService,
-            $filesystemService,
+            $this->securityService,
+            $this->filesystemService,
             $toolValidator,
         );
     }

@@ -6,8 +6,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 
 use Cpsit\QualityTools\Configuration\Validator\RectorConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -19,7 +21,9 @@ final class RectorConfigurationValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $filesystemService = new FilesystemService();
+        $filesystem = new Filesystem();
+        $securityService = new SecurityService($filesystem);
+        $filesystemService = new FilesystemService($filesystem, $securityService);
         $this->validator = new RectorConfigurationValidator($filesystemService);
     }
 
@@ -45,12 +49,12 @@ final class RectorConfigurationValidatorTest extends TestCase
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'rector_test');
         file_put_contents($tempFile, '<?php return function() {};');
-        chmod($tempFile, 0000);
+        chmod($tempFile, 0o000);
 
         $result = $this->validator->validateConfigurationFile($tempFile);
 
         // Clean up
-        chmod($tempFile, 0644);
+        chmod($tempFile, 0o644);
         unlink($tempFile);
 
         // Note: On some systems, files might still be readable even with 0000 permissions

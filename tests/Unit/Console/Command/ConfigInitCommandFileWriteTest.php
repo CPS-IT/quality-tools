@@ -8,11 +8,13 @@ use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[CoversClass(ConfigInitCommand::class)]
 #[CoversClass(ConfigurationFileWriteException::class)]
@@ -21,16 +23,21 @@ final class ConfigInitCommandFileWriteTest extends TestCase
     private ConfigInitCommand $command;
     private CommandTester $commandTester;
     private string $tempDir;
+    private FilesystemService $filesystemService;
+    private SecurityService $securityService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_init_write_test_');
+        $this->securityService = new SecurityService();
+        $fileSystem = new Filesystem();
+        $this->filesystemService = new FilesystemService($fileSystem, $this->securityService);
 
         TestHelper::withEnvironment(
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ConfigInitCommand(new FilesystemService());
+                $this->command = new ConfigInitCommand($this->filesystemService);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
             },
@@ -40,6 +47,7 @@ final class ConfigInitCommandFileWriteTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testFileWritePreventsPHPWarnings(): void

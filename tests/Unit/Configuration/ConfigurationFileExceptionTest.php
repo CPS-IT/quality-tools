@@ -15,6 +15,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[CoversClass(ConfigurationFileNotFoundException::class)]
 #[CoversClass(ConfigurationFileNotReadableException::class)]
@@ -30,13 +31,17 @@ final class ConfigurationFileExceptionTest extends TestCase
         $this->loader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(),
+            new FilesystemService(
+                new Filesystem(),
+                new SecurityService(),
+            ),
         );
     }
 
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     #[Test]

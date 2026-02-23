@@ -29,6 +29,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 abstract class BaseCommand extends Command implements ContainerAwareInterface
 {
@@ -544,10 +545,14 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         }
 
         // Fallback for tests and scenarios without DI container
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         return new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $securityService,
+            $filesystemService,
         );
     }
 
@@ -558,10 +563,14 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         }
 
         // Fallback for tests and scenarios without DI container
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         return new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
         );
     }

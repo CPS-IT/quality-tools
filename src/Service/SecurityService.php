@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
+use Cpsit\QualityTools\Exception\SecurityException;
+
 class SecurityService
 {
     /**
@@ -85,6 +87,74 @@ class SecurityService
         'VENDOR_PATH',
         'NODE_MODULES_PATH',
     ];
+
+    // Configuration validation constants moved to FilesystemService
+
+    // validateConfigurationPath() moved to FilesystemService
+
+    /**
+     * Sanitizes a file path by removing dangerous patterns.
+     *
+     * @param string $path Path to sanitize
+     *
+     * @throws SecurityException If path contains dangerous content
+     *
+     * @return string Sanitized path
+     */
+    public function sanitizePath(string $path): string
+    {
+        if (!$this->isPathContentSafe($path)) {
+            throw new SecurityException(\sprintf('Path contains potentially unsafe content: %s', $path), SecurityException::ERROR_UNSAFE_PATH_CONTENT, null, ['Check path for directory traversal patterns', 'Use relative paths within project'], ['path' => $path]);
+        }
+
+        return $path;
+    }
+
+    // resolvePath() moved to FilesystemService
+
+    // validatePathBoundaries() moved to FilesystemService
+
+    // validateConfigurationFile() moved to FilesystemService
+
+    // validateFileSize() moved to FilesystemService
+
+    // validateFileType() moved to FilesystemService
+
+    /**
+     * Checks if path content is safe from security threats.
+     *
+     * @param string $path Path content to validate
+     *
+     * @return bool True if path is safe
+     */
+    private function isPathContentSafe(string $path): bool
+    {
+        if (str_contains($path, "\0")) {
+            return false;
+        }
+
+        if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $path)) {
+            return false;
+        }
+
+        $dangerousPatterns = [
+            '/\.\.\//',           // Directory traversal forward slash
+            '/\.\.\\\\/',         // Directory traversal backslash
+            '/\$\{.*\}/',         // Variable expansion
+            '/\$\(.*\)/',         // Command substitution
+            '/`.*`/',             // Backtick execution
+            '/\|\s*\w+/',         // Pipe commands
+            '/>\s*\//',          // Redirect paths
+        ];
+
+        foreach ($dangerousPatterns as $pattern) {
+            if (preg_match($pattern, $path)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Validates and sanitizes environment variable access.
@@ -183,44 +253,7 @@ class SecurityService
         return self::ALLOWED_ENV_VARS;
     }
 
-    /**
-     * Validates file permissions are secure.
-     *
-     * @param string $filePath Path to the file to check
-     *
-     * @return bool True if the file has secure permissions
-     */
-    public function hasSecureFilePermissions(string $filePath): bool
-    {
-        if (!file_exists($filePath)) {
-            return false;
-        }
+    // hasSecureFilePermissions() moved to FilesystemService
 
-        $permissions = fileperms($filePath);
-        $mode = $permissions & 0o777;
-
-        // File should be readable/writable by owner only (0600 or stricter)
-        // Allow read for a group in some cases (0640) but not world-readable (0604, 0644, etc.)
-        $securePermissions = [0o600, 0o640];
-
-        return \in_array($mode, $securePermissions, true);
-    }
-
-    /**
-     * Sets secure permissions on a file.
-     *
-     * @param string $filePath Path to the file
-     *
-     * @throws \RuntimeException If permissions cannot be set
-     */
-    public function setSecureFilePermissions(string $filePath): void
-    {
-        if (!file_exists($filePath)) {
-            throw new \RuntimeException(\sprintf('File does not exist: %s', $filePath));
-        }
-
-        if (!chmod($filePath, 0o600)) {
-            throw new \RuntimeException(\sprintf('Failed to set secure permissions on file: %s', $filePath));
-        }
-    }
+    // setSecureFilePermissions() moved to FilesystemService
 }

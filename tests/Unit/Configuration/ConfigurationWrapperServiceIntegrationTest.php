@@ -6,11 +6,14 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
-use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Test for Step 4.2: Verify service integration in ConfigurationWrapper.
@@ -22,11 +25,19 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
 {
     private array $testData;
     private string $tempDir;
+    private PathResolutionService $pathResolutionService;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('wrapper_service_test_');
-
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
+        $this->pathResolutionService = new PathResolutionService(
+            $this->filesystemService,
+            new VendorDirectoryDetector(),
+        );
         $this->testData = [
             'quality-tools' => [
                 'project' => [
@@ -55,6 +66,7 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testWrapperWithServicesProvidesToolConfigWithDefaults(): void
@@ -62,16 +74,14 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $simpleConfig = new SimpleConfiguration($this->testData);
         $simpleConfig->setProjectRoot($this->tempDir);
 
-        // Create wrapper with services
-        $projectService = new ProjectConfigService();
+        // Create a wrapper with services
         $toolService = new ToolConfigService();
-        $pathService = new PathResolutionService();
 
         $wrapperWithServices = new ConfigurationWrapper(
             $simpleConfig,
             'simple',
             $toolService,
-            $pathService,
+            $this->pathResolutionService,
         );
 
         // Create wrapper without services (for comparison)
@@ -97,15 +107,13 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $simpleConfig->setProjectRoot($this->tempDir);
 
         // Create wrapper with services
-        $projectService = new ProjectConfigService();
         $toolService = new ToolConfigService();
-        $pathService = new PathResolutionService();
 
         $wrapperWithServices = new ConfigurationWrapper(
             $simpleConfig,
             'simple',
             $toolService,
-            $pathService,
+            $this->pathResolutionService,
         );
 
         $phpstanConfig = $wrapperWithServices->getPhpStanConfig();
@@ -143,12 +151,11 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
         $simpleConfig->setProjectRoot($this->tempDir);
 
         // Create wrapper with path service
-        $pathService = new PathResolutionService();
         $wrapperWithServices = new ConfigurationWrapper(
             $simpleConfig,
             'simple',
             null,
-            $pathService,
+            $this->pathResolutionService,
         );
 
         // Should be able to resolve paths using service
@@ -206,7 +213,7 @@ final class ConfigurationWrapperServiceIntegrationTest extends TestCase
             $simpleConfig,
             'simple',
             new ToolConfigService(),
-            new PathResolutionService(),
+            $this->pathResolutionService,
         );
 
         // Basic delegation should still work

@@ -15,6 +15,7 @@ use Cpsit\QualityTools\Service\ProjectConfigService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -40,6 +41,7 @@ final class LoaderPathResolutionTest extends TestCase
         if (is_dir($this->tempDir)) {
             $this->removeDirectory($this->tempDir);
         }
+        parent::tearDown();
     }
 
     private function removeDirectory(string $dir): void
@@ -57,16 +59,20 @@ final class LoaderPathResolutionTest extends TestCase
      */
     private function createWrapperLoader(): ConfigurationLoaderWrapper
     {
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new Filesystem()),
+            $securityService,
+            $filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
         );
 
@@ -79,14 +85,21 @@ final class LoaderPathResolutionTest extends TestCase
 
     private function createUnifiedLoader(): ConfigurationLoader
     {
+        $filesystem = new Filesystem();
+        $securityService = new SecurityService();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         return new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            new PathResolutionService(
+                $filesystemService,
+                new VendorDirectoryDetector(),
+            ),
         );
     }
 

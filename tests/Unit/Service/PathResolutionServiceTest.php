@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Service;
 
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Unit test for PathResolutionService.
@@ -14,11 +18,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class PathResolutionServiceTest extends TestCase
 {
-    private PathResolutionService $service;
+    private PathResolutionService $pathResolutionService;
 
     protected function setUp(): void
     {
-        $this->service = new PathResolutionService();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $this->pathResolutionService = new PathResolutionService($filesystemService, new VendorDirectoryDetector());
     }
 
     public function testGetScanPathsWithConfiguredValue(): void
@@ -31,7 +38,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getScanPaths($data);
+        $result = $this->pathResolutionService->getScanPaths($data);
 
         self::assertSame(['src/', 'lib/'], $result);
     }
@@ -40,7 +47,7 @@ final class PathResolutionServiceTest extends TestCase
     {
         $data = [];
 
-        $result = $this->service->getScanPaths($data);
+        $result = $this->pathResolutionService->getScanPaths($data);
 
         self::assertSame(['packages/', 'config/system/'], $result);
     }
@@ -55,7 +62,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getExcludePaths($data);
+        $result = $this->pathResolutionService->getExcludePaths($data);
 
         self::assertSame(['tmp/', 'cache/'], $result);
     }
@@ -64,7 +71,7 @@ final class PathResolutionServiceTest extends TestCase
     {
         $data = [];
 
-        $result = $this->service->getExcludePaths($data);
+        $result = $this->pathResolutionService->getExcludePaths($data);
 
         $expected = ['var/', 'vendor/', 'public/', '_assets/', 'fileadmin/', 'typo3/', 'Tests/', 'tests/', 'typo3conf/'];
         self::assertSame($expected, $result);
@@ -82,7 +89,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getToolPaths($data, 'rector');
+        $result = $this->pathResolutionService->getToolPaths($data, 'rector');
 
         self::assertSame(['src/', 'packages/'], $result);
     }
@@ -91,7 +98,7 @@ final class PathResolutionServiceTest extends TestCase
     {
         $data = [];
 
-        $result = $this->service->getToolPaths($data, 'rector');
+        $result = $this->pathResolutionService->getToolPaths($data, 'rector');
 
         self::assertSame([], $result);
     }
@@ -108,7 +115,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getResolvedPathsForTool($data, 'rector', '/project/root');
+        $result = $this->pathResolutionService->getResolvedPathsForTool($data, 'rector', '/project/root');
 
         // Should return configured paths directly without scanning
         self::assertSame(['custom/', 'special/'], $result);
@@ -125,7 +132,7 @@ final class PathResolutionServiceTest extends TestCase
         ];
 
         $projectRoot = __DIR__ . '/../../..';
-        $result = $this->service->getResolvedPathsForTool($data, 'rector', $projectRoot);
+        $result = $this->pathResolutionService->getResolvedPathsForTool($data, 'rector', $projectRoot);
 
         // Should scan and resolve paths
         self::assertIsArray($result);
@@ -135,7 +142,7 @@ final class PathResolutionServiceTest extends TestCase
     public function testGetVendorPathWithCurrentProject(): void
     {
         // Use the actual project directory for testing
-        $result = $this->service->getVendorPath(__DIR__ . '/../../..');
+        $result = $this->pathResolutionService->getVendorPath(__DIR__ . '/../../..');
 
         // Should find vendor directory in the actual project
         self::assertNotNull($result);
@@ -145,7 +152,7 @@ final class PathResolutionServiceTest extends TestCase
     public function testGetVendorPathWithNonExistentDirectory(): void
     {
         // Use a non-existent directory
-        $result = $this->service->getVendorPath('/non/existent/directory');
+        $result = $this->pathResolutionService->getVendorPath('/non/existent/directory');
 
         self::assertNull($result);
     }
@@ -153,7 +160,7 @@ final class PathResolutionServiceTest extends TestCase
     public function testGetVendorBinPathWithCurrentProject(): void
     {
         // Use the actual project directory for testing
-        $result = $this->service->getVendorBinPath(__DIR__ . '/../../..');
+        $result = $this->pathResolutionService->getVendorBinPath(__DIR__ . '/../../..');
 
         // Should find vendor/bin directory in the actual project
         self::assertNotNull($result);
@@ -163,7 +170,7 @@ final class PathResolutionServiceTest extends TestCase
     public function testGetVendorBinPathWithNonExistentDirectory(): void
     {
         // Use a non-existent directory
-        $result = $this->service->getVendorBinPath('/non/existent/directory');
+        $result = $this->pathResolutionService->getVendorBinPath('/non/existent/directory');
 
         self::assertNull($result);
     }
@@ -179,7 +186,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getPathsConfig($data);
+        $result = $this->pathResolutionService->getPathsConfig($data);
 
         $expected = [
             'scan' => ['src/'],
@@ -199,7 +206,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getAdditionalPaths($data);
+        $result = $this->pathResolutionService->getAdditionalPaths($data);
 
         self::assertSame(['custom/', 'extra/'], $result);
     }
@@ -214,7 +221,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getExcludePatterns($data);
+        $result = $this->pathResolutionService->getExcludePatterns($data);
 
         self::assertSame(['*.backup', 'temp/*'], $result);
     }
@@ -233,7 +240,7 @@ final class PathResolutionServiceTest extends TestCase
             ],
         ];
 
-        $result = $this->service->getToolPathOverrides($data, 'rector');
+        $result = $this->pathResolutionService->getToolPathOverrides($data, 'rector');
 
         $expected = [
             'additional' => ['custom/'],
@@ -247,14 +254,14 @@ final class PathResolutionServiceTest extends TestCase
         $projectRoot = __DIR__ . '/../../..';
 
         // First call
-        $result1 = $this->service->getVendorPath($projectRoot);
+        $result1 = $this->pathResolutionService->getVendorPath($projectRoot);
 
         // Clear cache
-        $this->service->clearVendorPathCache();
+        $this->pathResolutionService->clearVendorPathCache();
 
         // Second call should work - can't easily test caching without mocking,
         // but we can test that the method exists and doesn't break anything
-        $result2 = $this->service->getVendorPath($projectRoot);
+        $result2 = $this->pathResolutionService->getVendorPath($projectRoot);
 
         self::assertSame($result1, $result2);
     }
@@ -264,13 +271,13 @@ final class PathResolutionServiceTest extends TestCase
         $projectRoot = __DIR__ . '/../../..';
 
         // Call some methods to potentially populate cache
-        $this->service->getVendorPath($projectRoot);
+        $this->pathResolutionService->getVendorPath($projectRoot);
 
         // Clear all caches - should not throw any errors
-        $this->service->clearAllCaches();
+        $this->pathResolutionService->clearAllCaches();
 
         // Methods should still work after clearing cache
-        $result = $this->service->getVendorPath($projectRoot);
+        $result = $this->pathResolutionService->getVendorPath($projectRoot);
         self::assertNotNull($result);
     }
 }

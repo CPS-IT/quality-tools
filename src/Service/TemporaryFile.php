@@ -25,7 +25,7 @@ final class TemporaryFile
 
         // Set secure file permissions (readable/writable by owner only)
         try {
-            $this->securityService->setSecureFilePermissions($this->filePath);
+            $this->filesystemService->setSecureFilePermissions($this->filePath);
         } catch (\RuntimeException $e) {
             // If we can't set secure permissions, clean up and fail
             unlink($this->filePath);

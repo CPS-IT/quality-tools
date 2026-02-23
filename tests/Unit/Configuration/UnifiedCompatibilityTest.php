@@ -15,6 +15,7 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -39,6 +40,7 @@ final class UnifiedCompatibilityTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     /**
@@ -253,11 +255,15 @@ final class UnifiedCompatibilityTest extends TestCase
         file_put_contents($parentDir . '/quality-tools.yaml', Yaml::dump($parentConfig, 4, 2));
         file_put_contents($childDir . '/quality-tools.yaml', Yaml::dump($childConfig, 4, 2));
 
+        $fileSystem = new Filesystem();
+        $securityService = new SecurityService($fileSystem);
+        $filesystemService = new FilesystemService($fileSystem, $securityService);
+
         // Should work without throwing validation errors
         $hierarchy = new ConfigurationHierarchy($childDir);
         $discovery = new ConfigurationDiscovery(
             $hierarchy,
-            new FilesystemService(),
+            $filesystemService,
             new SecurityService(),
             new ConfigurationValidator(),
             new ToolConfigurationValidationService(),

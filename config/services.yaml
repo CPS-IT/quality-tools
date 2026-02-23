@@ -180,6 +180,7 @@ services:
 
   Cpsit\QualityTools\Service\PathResolutionService:
     arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
     public: true
 

@@ -6,9 +6,13 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\EnhancedConfiguration;
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Test for Step 4.3: Verify unified capabilities across both configuration variants.
@@ -61,6 +65,7 @@ final class UnifiedCapabilitiesTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testBothVariantsProvideBasicProjectConfiguration(): void
@@ -304,10 +309,13 @@ final class UnifiedCapabilitiesTest extends TestCase
 
     public function testEnhancedConfigurationWithPathResolutionService(): void
     {
-        $pathService = new PathResolutionService();
+        $fileSystem = new Filesystem();
+        $securityService = new SecurityService($fileSystem);
+        $filesystemService = new FilesystemService($fileSystem, $securityService);
+        $pathResolutionService = new PathResolutionService($filesystemService, new VendorDirectoryDetector());
         $enhancedConfig = new EnhancedConfiguration(
             data: $this->testData,
-            pathResolutionService: $pathService,
+            pathResolutionService: $pathResolutionService,
         );
 
         $enhancedConfig->setProjectRoot($this->tempDir);

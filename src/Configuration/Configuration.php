@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Configuration;
 
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Unified configuration class supporting both simple and hierarchical modes.
@@ -574,7 +578,12 @@ final readonly class Configuration implements ConfigurationInterface
 
     private static function createDefaultPathResolutionService(): PathResolutionService
     {
-        return new PathResolutionService();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $vendorDirectoryDetector = new VendorDirectoryDetector();
+
+        return new PathResolutionService($filesystemService, $vendorDirectoryDetector);
     }
 
     // Tool-specific configuration methods (use ConfigurationInterface defaults)

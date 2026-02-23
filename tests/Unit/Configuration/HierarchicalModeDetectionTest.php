@@ -16,7 +16,9 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -27,15 +29,24 @@ use Symfony\Component\Yaml\Yaml;
 final class HierarchicalModeDetectionTest extends TestCase
 {
     private string $tempDir;
+    private PathResolutionService $pathResolutionService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('hierarchical_detection_test_');
+        $this->pathResolutionService = new PathResolutionService(
+            new FilesystemService(
+                new Filesystem(),
+                new SecurityService(),
+            ),
+            new VendorDirectoryDetector(),
+        );
     }
 
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testHierarchicalModeDetectionAndActivation(): void
@@ -74,17 +85,23 @@ final class HierarchicalModeDetectionTest extends TestCase
         file_put_contents($parentDir . '/quality-tools.yaml', Yaml::dump($parentConfig, 4, 2));
         file_put_contents($childDir . '/quality-tools.yaml', Yaml::dump($childConfig, 4, 2));
 
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService(
+            $filesystem,
+            new SecurityService(),
+        );
         // Test 1: Wrapper approach with auto-detection
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $securityService,
+            $filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
         );
         $wrapperLoader = new ConfigurationLoaderWrapper(
@@ -96,12 +113,12 @@ final class HierarchicalModeDetectionTest extends TestCase
         // Test 2: Unified approach (should detect hierarchical structure automatically)
         $unifiedLoader = new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            $this->pathResolutionService,
         );
 
         // Load from child directory - both should detect hierarchical structure
@@ -249,16 +266,23 @@ final class HierarchicalModeDetectionTest extends TestCase
 
     private function createWrapperLoader(): ConfigurationLoaderWrapper
     {
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService(
+            $filesystem,
+            $securityService,
+        );
+
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $securityService,
+            $filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
         );
 
@@ -271,14 +295,21 @@ final class HierarchicalModeDetectionTest extends TestCase
 
     private function createUnifiedLoader(): ConfigurationLoader
     {
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService(
+            $filesystem,
+            $securityService,
+        );
+
         return new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            $this->pathResolutionService,
         );
     }
 }

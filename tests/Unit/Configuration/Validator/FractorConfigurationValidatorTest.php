@@ -6,8 +6,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 
 use Cpsit\QualityTools\Configuration\Validator\FractorConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -19,7 +21,9 @@ final class FractorConfigurationValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $filesystemService = new FilesystemService();
+        $filesystem = new Filesystem();
+        $securityService = new SecurityService($filesystem);
+        $filesystemService = new FilesystemService($filesystem, $securityService);
         $this->validator = new FractorConfigurationValidator($filesystemService);
     }
 

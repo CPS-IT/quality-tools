@@ -31,6 +31,7 @@ final class PathScannerPropertyBasedTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     /**

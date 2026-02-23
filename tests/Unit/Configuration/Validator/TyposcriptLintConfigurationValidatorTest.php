@@ -6,8 +6,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 
 use Cpsit\QualityTools\Configuration\Validator\TyposcriptLintConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -19,7 +21,10 @@ final class TyposcriptLintConfigurationValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $filesystemService = new FilesystemService();
+        $filesystemService = new FilesystemService(
+            new Filesystem(),
+            new SecurityService(),
+        );
         $this->validator = new TyposcriptLintConfigurationValidator($filesystemService);
     }
 

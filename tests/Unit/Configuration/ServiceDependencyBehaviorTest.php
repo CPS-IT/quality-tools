@@ -7,11 +7,15 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Tests service dependency behavior parity between wrapper and unified approaches.
@@ -21,9 +25,17 @@ use PHPUnit\Framework\TestCase;
 final class ServiceDependencyBehaviorTest extends TestCase
 {
     private string $tempDir;
+    private PathResolutionService $pathResolutionService;
 
     protected function setUp(): void
     {
+        $this->pathResolutionService = new PathResolutionService(
+            new FilesystemService(
+                new Filesystem(),
+                new SecurityService(),
+            ),
+            new VendorDirectoryDetector(),
+        );
         $this->tempDir = TestHelper::createTempDirectory('service_dependency_test_');
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
         TestHelper::createVendorStructure($this->tempDir);
@@ -32,6 +44,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testServiceDependencyBehaviorParity(): void
@@ -66,7 +79,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // All should provide identical basic functionality
@@ -115,7 +128,7 @@ final class ServiceDependencyBehaviorTest extends TestCase
         $unifiedWithService = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Path resolution should be consistent

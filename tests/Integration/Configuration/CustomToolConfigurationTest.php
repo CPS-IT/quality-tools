@@ -15,6 +15,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integration tests for custom tool configuration file replacement.
@@ -33,6 +34,8 @@ final class CustomToolConfigurationTest extends TestCase
 {
     private string $tempDir;
     private HierarchicalConfigurationLoader $configurationLoader;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
 
     protected function setUp(): void
     {
@@ -40,14 +43,14 @@ final class CustomToolConfigurationTest extends TestCase
 
         // Create required services for HierarchicalConfigurationLoader
         $validator = new ConfigurationValidator();
-        $securityService = new SecurityService();
-        $filesystemService = new FilesystemService();
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
         $toolValidator = new ToolConfigurationValidationService();
 
         $this->configurationLoader = new HierarchicalConfigurationLoader(
             $validator,
-            $securityService,
-            $filesystemService,
+            $this->securityService,
+            $this->filesystemService,
             $toolValidator,
         );
     }
@@ -75,9 +78,6 @@ final class CustomToolConfigurationTest extends TestCase
 
         // Configuration loading should now work (Issue 022 resolved)
         $config = $this->configurationLoader->load($this->tempDir);
-
-        // Verify basic configuration works
-        $this->assertInstanceOf(\Cpsit\QualityTools\Configuration\ConfigurationInterface::class, $config);
 
         // Test tool configurations exist and have expected structure
         foreach ($expectedToolConfigs as $tool => $expectedConfig) {
@@ -118,9 +118,9 @@ final class CustomToolConfigurationTest extends TestCase
 
         // Run config:validate - should now work correctly (Issue 022 resolved)
         $exitCode = $commandTester->execute([], ['cwd' => $this->tempDir]);
-        
+
         $this->assertEquals(0, $exitCode, "config:validate should succeed for scenario: {$scenarioName}");
-        
+
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString(
             '[OK] Configuration is valid',

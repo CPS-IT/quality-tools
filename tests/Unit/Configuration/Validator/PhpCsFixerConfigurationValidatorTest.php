@@ -6,8 +6,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 
 use Cpsit\QualityTools\Configuration\Validator\PhpCsFixerConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -19,7 +21,12 @@ final class PhpCsFixerConfigurationValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $filesystemService = new FilesystemService();
+        $fileSystem = new Filesystem();
+        $securityService = new SecurityService();
+        $filesystemService = new FilesystemService(
+            $fileSystem,
+            $securityService,
+        );
         $this->validator = new PhpCsFixerConfigurationValidator($filesystemService);
     }
 

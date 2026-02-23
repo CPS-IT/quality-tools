@@ -13,6 +13,7 @@ use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\FilesystemTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[CoversClass(SimpleConfigurationLoader::class)]
 final class SimpleConfigurationLoaderTest extends FilesystemTestCase
@@ -25,10 +26,15 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
     {
         parent::setUp();
         $this->projectRoot = $this->createConfigurationStructure();
+
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         $this->loader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $securityService,
+            $filesystemService,
         );
     }
 

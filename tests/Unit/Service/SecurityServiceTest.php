@@ -197,70 +197,28 @@ final class SecurityServiceTest extends TestCase
         self::assertNotContains('SECRET_KEY', $allowed);
     }
 
-    /**
+    /*
      * @test
      */
-    public function hasSecureFilePermissionsReturnsTrueForSecureFile(): void
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0o600);
+    // hasSecureFilePermissions() test moved to FilesystemService
 
-        $result = $this->securityService->hasSecureFilePermissions($tempFile);
-
-        self::assertTrue($result);
-
-        unlink($tempFile);
-    }
-
-    /**
+    /*
      * @test
      */
-    public function hasSecureFilePermissionsReturnsFalseForInsecureFile(): void
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0o644); // World-readable
+    // hasSecureFilePermissions() test moved to FilesystemService
 
-        $result = $this->securityService->hasSecureFilePermissions($tempFile);
-
-        self::assertFalse($result);
-
-        unlink($tempFile);
-    }
-
-    /**
+    /*
      * @test
      */
-    public function hasSecureFilePermissionsReturnsFalseForNonexistentFile(): void
-    {
-        $result = $this->securityService->hasSecureFilePermissions('/nonexistent/file');
+    // hasSecureFilePermissions() test moved to FilesystemService
 
-        self::assertFalse($result);
-    }
-
-    /**
+    /*
      * @test
      */
-    public function setSecureFilePermissionsSetsCorrectPermissions(): void
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'security_test_');
-        chmod($tempFile, 0o644); // Start with insecure permissions
+    // setSecureFilePermissions() test moved to FilesystemService
 
-        $this->securityService->setSecureFilePermissions($tempFile);
-
-        $permissions = fileperms($tempFile) & 0o777;
-        self::assertSame(0o600, $permissions);
-
-        unlink($tempFile);
-    }
-
-    /**
+    /*
      * @test
      */
-    public function setSecureFilePermissionsThrowsExceptionForNonexistentFile(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('File does not exist');
-
-        $this->securityService->setSecureFilePermissions('/nonexistent/file');
-    }
+    // setSecureFilePermissions() test moved to FilesystemService
 }

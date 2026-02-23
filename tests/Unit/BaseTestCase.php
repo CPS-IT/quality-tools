@@ -36,9 +36,6 @@ abstract class BaseTestCase extends TestCase
 
     protected function tearDown(): void
     {
-        // Verify no resource leaks before cleanup
-        $this->performCleanupVerification();
-
         // Cleanup mocks
         foreach ($this->mockRegistry as $mock) {
             if ($mock instanceof MockObject) {
@@ -58,7 +55,11 @@ abstract class BaseTestCase extends TestCase
         // Force garbage collection to ensure cleanup
         gc_collect_cycles();
 
+        // Call parent tearDown to allow child classes to clean up
         parent::tearDown();
+
+        // Verify no resource leaks after all cleanup is complete
+        $this->performCleanupVerification();
     }
 
     /**
@@ -188,9 +189,10 @@ abstract class BaseTestCase extends TestCase
     {
         $tempDir = sys_get_temp_dir();
         $patterns = [
-            $tempDir . '/qt_*',           // Quality tools temp files
+            $tempDir . '/qt_temp_*',      // Quality tools service temp files (not test directories)
             $tempDir . '/yaml_loader_*',  // YAML loader temp files
             $tempDir . '/phpunit_*',      // PHPUnit temp files
+            // Note: qt_test_* directories are managed by TestHelper and should not be detected
         ];
 
         $temporaryFiles = [];

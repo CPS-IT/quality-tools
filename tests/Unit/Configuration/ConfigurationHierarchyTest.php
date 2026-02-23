@@ -29,6 +29,7 @@ final class ConfigurationHierarchyTest extends TestCase
         if (is_dir($this->tempDir)) {
             $this->removeDirectory($this->tempDir);
         }
+        parent::tearDown();
     }
 
     public function testPrecedenceLevelsAreCorrectlyOrdered(): void

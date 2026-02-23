@@ -51,6 +51,7 @@ final class BaseCommandTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testConfigureAddsExpectedOptions(): void

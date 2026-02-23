@@ -7,11 +7,15 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationWrapper;
 use Cpsit\QualityTools\Configuration\SimpleConfiguration;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Tests path resolution consistency between wrapper and unified approaches.
@@ -21,9 +25,18 @@ use PHPUnit\Framework\TestCase;
 final class PathResolutionConsistencyTest extends TestCase
 {
     private string $tempDir;
+    private PathResolutionService $pathResolutionService;
 
     protected function setUp(): void
     {
+        $this->pathResolutionService = new PathResolutionService(
+            new FilesystemService(
+                new Filesystem(),
+                new SecurityService(),
+            ),
+            new VendorDirectoryDetector(),
+        );
+
         $this->tempDir = TestHelper::createTempDirectory('path_resolution_test_');
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
         TestHelper::createVendorStructure($this->tempDir);
@@ -33,6 +46,7 @@ final class PathResolutionConsistencyTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     private function createProjectStructure(): void
@@ -94,13 +108,17 @@ final class PathResolutionConsistencyTest extends TestCase
         $simpleConfig->setProjectRoot($this->tempDir);
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
+        $filesystem = new Filesystem();
+        $securityService = new SecurityService();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         // Create unified configuration
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         $tools = ['rector', 'phpstan', 'php-cs-fixer'];
@@ -158,10 +176,14 @@ final class PathResolutionConsistencyTest extends TestCase
         $simpleConfig->setProjectRoot($this->tempDir);
         $wrapper = new ConfigurationWrapper($simpleConfig, 'simple');
 
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Test vendor path discovery
@@ -201,7 +223,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithGlobs,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Path resolution should be identical
@@ -246,7 +268,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithMixedPaths,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Path normalization should be consistent
@@ -295,7 +317,7 @@ final class PathResolutionConsistencyTest extends TestCase
         $unified = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configWithAbsolutePaths,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Absolute path handling should be consistent
@@ -324,11 +346,10 @@ final class PathResolutionConsistencyTest extends TestCase
         );
 
         // Test with PathResolutionService injection
-        $pathService = new PathResolutionService();
         $unifiedWithService = Configuration::createSimple(
             projectRoot: $this->tempDir,
             data: $configData,
-            pathResolutionService: $pathService,
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Basic path resolution should work in both cases

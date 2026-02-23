@@ -7,8 +7,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 use Cpsit\QualityTools\Configuration\Validator\ToolConfigurationValidatorInterface;
 use Cpsit\QualityTools\Configuration\Validator\ToolValidationTrait;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -16,9 +18,16 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ToolValidationTrait::class)]
 final class ToolValidationTraitTest extends TestCase
 {
+    private FilesystemService $filesystemService;
+
+    public function setUp(): void
+    {
+        $this->filesystemService = new FilesystemService(new Filesystem(), new SecurityService());
+    }
+
     public function testGetToolNameThrowsExceptionWhenConstantMissing(): void
     {
-        $validator = new class (new FilesystemService()) implements ToolConfigurationValidatorInterface {
+        $validator = new class($this->filesystemService) implements ToolConfigurationValidatorInterface {
             use ToolValidationTrait;
 
             public function validateConfigurationFile(string $path): bool
@@ -35,7 +44,7 @@ final class ToolValidationTraitTest extends TestCase
 
     public function testGetSupportedExtensionsThrowsExceptionWhenConstantMissing(): void
     {
-        $validator = new class (new FilesystemService()) implements ToolConfigurationValidatorInterface {
+        $validator = new class($this->filesystemService) implements ToolConfigurationValidatorInterface {
             use ToolValidationTrait;
 
             public function validateConfigurationFile(string $path): bool
@@ -52,7 +61,7 @@ final class ToolValidationTraitTest extends TestCase
 
     public function testGetToolNameReturnsConstantValue(): void
     {
-        $validator = new class (new FilesystemService()) implements ToolConfigurationValidatorInterface {
+        $validator = new class($this->filesystemService) implements ToolConfigurationValidatorInterface {
             use ToolValidationTrait;
 
             public const string TOOL_NAME = 'test-tool';
@@ -69,7 +78,7 @@ final class ToolValidationTraitTest extends TestCase
 
     public function testGetSupportedExtensionsReturnsConstantValue(): void
     {
-        $validator = new class (new FilesystemService()) implements ToolConfigurationValidatorInterface {
+        $validator = new class($this->filesystemService) implements ToolConfigurationValidatorInterface {
             use ToolValidationTrait;
 
             public const string TOOL_NAME = 'test-tool';

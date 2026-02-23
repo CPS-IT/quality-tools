@@ -55,7 +55,7 @@ if ($phpVersion === '8.3' &&
 // Test YamlConfigurationLoader implements ConfigurationLoaderInterface
 echo "3. Testing YamlConfigurationLoader implements ConfigurationLoaderInterface: ";
 $validator = new ConfigurationValidator();
-$security = new SecurityService();
+$security = new SecurityService(new FilesystemService(new Filesystem()));
 $filesystem = new FilesystemService(new Filesystem());
 $loader = new YamlConfigurationLoader($validator, $security, $filesystem);
 

@@ -20,7 +20,8 @@ final class PathResolutionService
     private ?PathScanner $pathScanner = null;
 
     public function __construct(
-        private readonly ?VendorDirectoryDetector $vendorDetector = null,
+        private readonly FilesystemService $filesystemService,
+        private readonly VendorDirectoryDetector $vendorDetector,
     ) {
     }
 
@@ -84,8 +85,7 @@ final class PathResolutionService
     {
         if ($this->vendorPath === null) {
             try {
-                $detector = $this->getVendorDetector();
-                $this->vendorPath = $detector->detectVendorPath($projectRoot);
+                $this->vendorPath = $this->vendorDetector->detectVendorPath($projectRoot);
             } catch (VendorDirectoryNotFoundException) {
                 // Return null if detection fails - calling code can handle this
                 return null;
@@ -141,14 +141,6 @@ final class PathResolutionService
     }
 
     /**
-     * Get or create vendor directory detector instance.
-     */
-    private function getVendorDetector(): VendorDirectoryDetector
-    {
-        return $this->vendorDetector ?? new VendorDirectoryDetector();
-    }
-
-    /**
      * Get or create path scanner instance.
      */
     private function getPathScanner(string $projectRoot): PathScanner
@@ -189,6 +181,61 @@ final class PathResolutionService
         $toolOverrides = $pathsConfig['tool_overrides'] ?? [];
 
         return $toolOverrides[$tool] ?? [];
+    }
+
+    /**
+     * Discovers tool configuration files in standard locations with security validation.
+     *
+     * @param string $toolName    Tool name to discover configuration for
+     * @param string $projectRoot Project root directory
+     *
+     * @return ?string Discovered configuration file path or null if not found
+     */
+    public function discoverSecureToolConfiguration(string $toolName, string $projectRoot): ?string
+    {
+        $candidates = $this->getConfigurationCandidates($toolName, $projectRoot);
+
+        foreach ($candidates as $candidate) {
+            if (
+                $this->filesystemService->fileExists($candidate)
+                && $this->filesystemService->isReadable($candidate)
+            ) {
+                try {
+                    return $this->filesystemService->validateConfigurationPath($candidate, $projectRoot, $toolName);
+                } catch (\RuntimeException) {
+                    continue;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get configuration file candidates for a tool.
+     *
+     * @param string $toolName    Tool name
+     * @param string $projectRoot Project root directory
+     *
+     * @return array List of candidate paths
+     */
+    private function getConfigurationCandidates(string $toolName, string $projectRoot): array
+    {
+        $extensions = match ($toolName) {
+            'rector', 'fractor', 'php-cs-fixer' => ['php'],
+            'phpstan' => ['neon', 'neon.dist'],
+            'typoscript-lint' => ['yml', 'yaml'],
+            default => ['php'],
+        };
+
+        $candidates = [];
+
+        foreach ($extensions as $extension) {
+            $candidates[] = $projectRoot . DIRECTORY_SEPARATOR . $toolName . '.' . $extension;
+            $candidates[] = $projectRoot . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . $toolName . '.' . $extension;
+        }
+
+        return $candidates;
     }
 
     /**

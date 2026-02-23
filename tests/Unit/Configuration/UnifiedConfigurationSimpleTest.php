@@ -6,11 +6,15 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Simplified tests for unified Configuration class that don't require mocking.
@@ -19,6 +23,19 @@ use PHPUnit\Framework\TestCase;
  */
 final class UnifiedConfigurationSimpleTest extends TestCase
 {
+    private PathResolutionService $pathResolutionService;
+
+    public function setUp(): void
+    {
+        $this->pathResolutionService = new PathResolutionService(
+            new FilesystemService(
+                new Filesystem(),
+                new SecurityService(),
+            ),
+            new VendorDirectoryDetector(),
+        );
+    }
+
     public function testImplementsConfigurationInterface(): void
     {
         $config = new Configuration(getcwd());
@@ -259,10 +276,13 @@ final class UnifiedConfigurationSimpleTest extends TestCase
             ],
         ];
 
+        $fileSystem = new Filesystem();
+        $securityService = new SecurityService($fileSystem);
+        $filesystemService = new FilesystemService($fileSystem, $securityService);
         $config = Configuration::createSimple(
             projectRoot: getcwd(),
             data: $data,
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         self::assertSame(['src/', 'config/'], $config->getScanPaths());
@@ -403,13 +423,16 @@ final class UnifiedConfigurationSimpleTest extends TestCase
 
     public function testDebugInfo(): void
     {
+        $fileSystem = new Filesystem();
+        $securityService = new SecurityService();
+        $filesystemService = new FilesystemService($fileSystem, $securityService);
         $config = Configuration::createHierarchical(
             projectRoot: '/project',
             data: ['quality-tools' => ['project' => ['name' => 'test']]],
             sourceMap: ['quality-tools.project.name' => 'source'],
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         $debugInfo = $config->getComprehensiveDebugInfo();

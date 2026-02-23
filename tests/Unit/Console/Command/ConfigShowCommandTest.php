@@ -40,6 +40,7 @@ final class ConfigShowCommandTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testConfigureCommand(): void

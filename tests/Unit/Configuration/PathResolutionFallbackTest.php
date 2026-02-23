@@ -7,10 +7,14 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 use Cpsit\QualityTools\Configuration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\EnhancedConfiguration;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\PathResolutionService;
 use Cpsit\QualityTools\Service\ProjectConfigService;
+use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Unit test to isolate path resolution fallback behavior differences.
@@ -30,7 +34,14 @@ final class PathResolutionFallbackTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->pathResolutionService = new PathResolutionService();
+        $filesystem = new Filesystem();
+        $securityService = new SecurityService($filesystem);
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
+        $this->pathResolutionService = new PathResolutionService(
+            $filesystemService,
+            new VendorDirectoryDetector(),
+        );
         $this->projectConfigService = new ProjectConfigService();
         $this->toolConfigService = new ToolConfigService();
         $this->validator = new ConfigurationValidator();

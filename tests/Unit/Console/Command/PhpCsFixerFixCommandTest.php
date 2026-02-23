@@ -62,6 +62,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testCommandHasCorrectConfiguration(): void

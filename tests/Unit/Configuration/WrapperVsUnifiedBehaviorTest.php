@@ -21,8 +21,10 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -40,11 +42,19 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
 {
     private string $tempDir;
     private array $testConfigData;
+    private FilesystemService $filesystemService;
+    private SecurityService $securityService;
+    private PathResolutionService $pathResolutionService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('wrapper_vs_unified_test_');
-
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
+        $this->pathResolutionService = new PathResolutionService(
+            $this->filesystemService,
+            new VendorDirectoryDetector(),
+        );
         // Create project structure for proper testing
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
         TestHelper::createVendorStructure($this->tempDir);
@@ -93,6 +103,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testSimpleConfigurationVsUnifiedConfiguration(): void
@@ -111,7 +122,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
             validator: null,  // Skip validation to match wrapper permissiveness
             projectConfigService: new ProjectConfigService(),
             toolConfigService: new ToolConfigService(),
-            pathResolutionService: new PathResolutionService(),
+            pathResolutionService: $this->pathResolutionService,
         );
 
         // Compare basic project properties
@@ -133,13 +144,13 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $this->filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
         );
 
@@ -152,12 +163,12 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         // Test 2: Unified ConfigurationLoader
         $unifiedLoader = new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            $this->pathResolutionService,
         );
 
         // Load configurations
@@ -187,13 +198,13 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $this->filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
         );
 
@@ -216,12 +227,12 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
                 // Test 2: Command with unified configuration loader
                 $unifiedLoader = new ConfigurationLoader(
                     new ConfigurationValidator(),
-                    new SecurityService(),
-                    new FilesystemService(),
+                    $this->securityService,
+                    $this->filesystemService,
                     new ToolConfigurationValidationService(),
                     new ProjectConfigService(),
                     new ToolConfigService(),
-                    new PathResolutionService(),
+                    $this->pathResolutionService,
                 );
 
                 $command2 = new ComposerFixCommand(configurationLoader: $unifiedLoader);
@@ -280,15 +291,15 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         // Test 1: HierarchicalConfigurationLoader with wrapper
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
         );
 
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $this->securityService,
+            $this->filesystemService,
         );
 
         $wrapperLoader = new ConfigurationLoaderWrapper(
@@ -300,12 +311,12 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         // Test 2: Unified loader in hierarchical mode
         $unifiedLoader = new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            $this->pathResolutionService,
         );
 
         // Load configurations from child directory (should merge parent + child)

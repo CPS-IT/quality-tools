@@ -6,8 +6,10 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration\Validator;
 
 use Cpsit\QualityTools\Configuration\Validator\PhpstanConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -19,7 +21,9 @@ final class PhpstanConfigurationValidatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $filesystemService = new FilesystemService();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
         $this->validator = new PhpstanConfigurationValidator($filesystemService);
     }
 

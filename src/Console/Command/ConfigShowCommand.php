@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationHierarchy;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
+use Cpsit\QualityTools\Service\SecurityService;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -141,7 +143,7 @@ final class ConfigShowCommand extends BaseCommand
      */
     private function validateCriticalConfigurationFiles(string $projectRoot): void
     {
-        $hierarchy = new \Cpsit\QualityTools\Configuration\ConfigurationHierarchy($projectRoot);
+        $hierarchy = new ConfigurationHierarchy($projectRoot);
         $existingFiles = $hierarchy->getExistingConfigurationFiles();
 
         // Check project_root and config_dir configuration files
@@ -153,8 +155,7 @@ final class ConfigShowCommand extends BaseCommand
             foreach ($existingFiles[$criticalLevel] as $fileInfo) {
                 try {
                     // Try to load the configuration file directly
-                    $securityService = new \Cpsit\QualityTools\Service\SecurityService();
-                    $validator = new \Cpsit\QualityTools\Configuration\ConfigurationValidator();
+                    $securityService = new SecurityService();
 
                     // Load the file content
                     $content = file_get_contents($fileInfo['path']);

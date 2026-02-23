@@ -21,9 +21,11 @@ use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -34,10 +36,15 @@ use Symfony\Component\Yaml\Yaml;
 final class CommandExitCodeConsistencyTest extends TestCase
 {
     private string $tempDir;
+    private FilesystemService $filesystemService;
+    private SecurityService $securityService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('command_exit_code_test_');
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
+
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
         TestHelper::createVendorStructure($this->tempDir, false, true); // Include config files for tool testing
         $this->createMockExecutables();
@@ -439,14 +446,14 @@ fi
     {
         $simpleLoader = new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(new \Symfony\Component\Filesystem\Filesystem()),
+            $this->securityService,
+            $this->filesystemService,
         );
 
         $hierarchicalLoader = new HierarchicalConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
         );
 
@@ -461,12 +468,12 @@ fi
     {
         return new ConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            new FilesystemService(),
+            $this->securityService,
+            $this->filesystemService,
             new ToolConfigurationValidationService(),
             new ProjectConfigService(),
             new ToolConfigService(),
-            new PathResolutionService(),
+            new PathResolutionService($this->filesystemService, new VendorDirectoryDetector()),
         );
     }
 

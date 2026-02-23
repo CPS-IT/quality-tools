@@ -8,6 +8,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Base test case for filesystem-related tests with virtual filesystem support.
@@ -19,10 +20,16 @@ abstract class FilesystemTestCase extends BaseTestCase
      */
     protected function createConfigurationLoader(?FilesystemService $filesystemService = null): SimpleConfigurationLoader
     {
+        $securityService = new SecurityService();
+        if ($filesystemService === null) {
+            $filesystem = new Filesystem();
+            $filesystemService = new FilesystemService($filesystem, $securityService);
+        }
+
         return new SimpleConfigurationLoader(
             new ConfigurationValidator(),
-            new SecurityService(),
-            $filesystemService ?? new FilesystemService(),
+            $securityService,
+            $filesystemService,
         );
     }
 
