@@ -255,6 +255,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                 $this->filesystemService,
                 $this->securityService,
                 $this->validator,
+                $this->toolValidator,
             );
 
             $configurations = $discovery->discoverConfigurations();
@@ -275,6 +276,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                 $this->filesystemService,
                 $this->securityService,
                 $this->validator,
+                $this->toolValidator,
             );
 
             // Try to discover configurations to collect errors
@@ -303,6 +305,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                 $this->filesystemService,
                 $this->securityService,
                 $this->validator,
+                $this->toolValidator,
             );
 
             $debugInfo['hierarchy_info'] = $hierarchy->getDebugInfo();
@@ -324,6 +327,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
                 $this->filesystemService,
                 $this->securityService,
                 $this->validator,
+                $this->toolValidator,
             );
 
             $configurations = $discovery->discoverConfigurations();
