@@ -161,28 +161,7 @@ final class ConfigurationDiscovery
      */
     private function loadPhpFile(string $path): array
     {
-        // Determine which tool this PHP config file belongs to and set config_file property
-        $tool = $this->getToolFromConfigFile($path);
-        if ($tool === null) {
-            return [];
-        }
-
-        // Validate the tool configuration file
-        if (!$this->validateToolConfigurationFile($tool, $path)) {
-            $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
-
-            return [];
-        }
-
-        return [
-            'quality-tools' => [
-                'tools' => [
-                    $tool => [
-                        'config_file' => $path,
-                    ],
-                ],
-            ],
-        ];
+        return $this->loadToolConfigurationFile($path);
     }
 
     /**
@@ -190,14 +169,37 @@ final class ConfigurationDiscovery
      */
     private function loadNeonFile(string $path): array
     {
-        // Determine which tool this Neon config file belongs to and set config_file property
+        return $this->loadToolConfigurationFile($path);
+    }
+
+    /**
+     * Load a tool-specific configuration file (PHP, Neon, etc.).
+     *
+     * @param string $path Path to the tool configuration file
+     * @return array Configuration array with tool's config_file property set
+     */
+    private function loadToolConfigurationFile(string $path): array
+    {
+        // Determine which tool this config file belongs to
         $tool = $this->getToolFromConfigFile($path);
         if ($tool === null) {
             return [];
         }
 
+        // Validate and secure the configuration path
+        try {
+            $validatedPath = $this->filesystemService->validateConfigurationPath(
+                $path,
+                $this->hierarchy->getProjectRoot(),
+                $tool
+            );
+        } catch (\Exception $e) {
+            $this->configurationErrors[$path] = "Security validation failed for {$tool} configuration file: " . $e->getMessage();
+            return [];
+        }
+
         // Validate the tool configuration file
-        if (!$this->validateToolConfigurationFile($tool, $path)) {
+        if (!$this->validateToolConfigurationFile($tool, $validatedPath)) {
             $this->configurationErrors[$path] = "Invalid {$tool} configuration file: " . ($this->toolValidator->getLastError($tool) ?? 'Unknown validation error');
 
             return [];
@@ -207,7 +209,7 @@ final class ConfigurationDiscovery
             'quality-tools' => [
                 'tools' => [
                     $tool => [
-                        'config_file' => $path,
+                        'config_file' => $validatedPath,
                     ],
                 ],
             ],
@@ -322,6 +324,7 @@ final class ConfigurationDiscovery
 
     /**
      * Validate a tool-specific configuration file.
+     * Note: Path should already be validated via validateConfigurationPath before calling this method.
      */
     private function validateToolConfigurationFile(string $tool, string $path): bool
     {

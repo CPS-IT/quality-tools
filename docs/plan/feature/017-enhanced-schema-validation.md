@@ -53,10 +53,10 @@ Advanced JSON schema validation patterns for `config_file` properties to ensure 
   "pattern": "^(?!.*\\.\\./|.*\\\\\\.\\.\\\\)(?!\\s*$).*\\.php$"
 }
 
-// PHPStan config validation  
+// PHPStan config validation
 "config_file": {
   "type": "string",
-  "minLength": 1, 
+  "minLength": 1,
   "maxLength": 1000,
   "pattern": "^(?!.*\\.\\./|.*\\\\\\.\\.\\\\)(?!\\s*$).*\\.neon(\\.dist)?$"
 }

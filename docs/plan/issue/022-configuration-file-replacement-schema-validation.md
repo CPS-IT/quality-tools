@@ -258,7 +258,7 @@ qt config:show
    - Apply SecurityService path sanitization to custom config file paths
    - Use PathResolutionService::discoverSecureToolConfiguration() for auto-discovery
    - Ensure ConfigurationDiscovery uses secure path resolution for custom config files
-   
+
    **Integration Points**:
    - ConfigurationDiscovery: Use FilesystemService::validateConfigurationPath() for discovered files
    - BaseCommand: Apply secure path resolution to --config option values
