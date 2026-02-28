@@ -70,7 +70,7 @@ This iteration focuses on implementing a comprehensive configuration system that
 - Project-specific override support
 - Environment variable integration
 
-### Feature 016: Fail on Warnings Configuration (4–6 hours)
+### Feature 026: Fail on Warnings Configuration (4–6 hours)
 **Goal**: Configurable exit code behavior for linting tools to ensure CI/CD reliability
 **Dependencies**: Feature 010 (YAML configuration)
 **Deliverables**:

@@ -137,19 +137,19 @@ This issue reveals broader problems in the configuration system:
 
 ## Related Issues
 - Issue 019: Configuration class hierarchy simplification (current refactoring)
-- Feature 017: Enhanced schema validation (extracted advanced patterns)
+- Feature 031: Enhanced schema validation (extracted advanced patterns)
 - Configuration override test scenarios (documented in tmp/configuration-override-test-scenarios.md)
 
 ## Scope Clarification
 **Current Focus**: Integration of refactored secure path resolution services for configuration file discovery and validation.
 
-**Moved to Feature 017**: Advanced schema validation patterns including:
+**Moved to Feature 031**: Advanced schema validation patterns including:
 - Security patterns for directory traversal prevention
 - Tool-specific file extension validation
 - Advanced edge case handling (whitespace, length limits)
 - Complex JSON schema patterns
 
-**Note**: UpdatedSchemaValidationTest advanced validation scenarios re-skipped until Feature 017 implementation.
+**Note**: UpdatedSchemaValidationTest advanced validation scenarios re-skipped until Feature 031 implementation.
 
 ## Refined Solution: Configuration File Key Approach
 
@@ -229,7 +229,7 @@ qt config:show
    - [x] Performance impact measurement ensures loading remains under 100ms
    - [x] Memory usage validation keeps overhead under 1MB
 
-#### Phase 2: Enhanced Schema and Validation (Priority: Critical) - PARTIALLY COMPLETED
+#### Phase 2: Enhanced Schema and Validation (Priority: Critical) - COMPLETED
 1. **[x] Update JSON Schema** (`config/schema/quality-tools.json`) - Completed
    - Added `config_file` property to all tool configurations (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
    - Schema validation now passes for configurations with custom config files
@@ -253,21 +253,42 @@ qt config:show
    - All tool validators (Rector, PHPStan, Fractor, etc.) now use consistent validation pattern
    - Configuration loading works reliably without schema validation errors
 
-5. **[ ] Secure Path Resolution Integration** - Pending
-   - Integrate refactored FilesystemService::validateConfigurationPath() for configuration overrides
-   - Apply SecurityService path sanitization to custom config file paths
-   - Use PathResolutionService::discoverSecureToolConfiguration() for auto-discovery
-   - Ensure ConfigurationDiscovery uses secure path resolution for custom config files
+5. **[x] Secure Path Resolution Integration** - Completed
+   - Integrated FilesystemService::validateConfigurationPath() for configuration overrides
+   - Applied SecurityService path sanitization to custom config file paths  
+   - Implemented context-aware validation in BaseCommand for tool configs
+   - ConfigurationDiscovery now uses secure path resolution for custom config files
 
-   **Integration Points**:
-   - ConfigurationDiscovery: Use FilesystemService::validateConfigurationPath() for discovered files
-   - BaseCommand: Apply secure path resolution to --config option values
-   - Tool validators: Ensure consistent security validation across all tool config loading
+   **Completed Integration Points**:
+   - ConfigurationDiscovery: Integrated FilesystemService::validateConfigurationPath() with refactoring
+   - BaseCommand: Context-aware validation - strict for tools, flexible for generic configs
+   - Tool validators: Already secure through ToolValidationTrait and FilesystemService
+   - Tool commands: Inherit security from BaseCommand automatically
 
-6. **[ ] Remaining Enhanced Schema and Validation Steps** - Moved to Feature 017
-   - Advanced schema validation patterns extracted to Feature 017
+6. **[ ] Remaining Enhanced Schema and Validation Steps** - Moved to Feature 031
+   - Advanced schema validation patterns extracted to Feature 031
    - Security patterns, tool-specific validation, and edge cases are now separate scope
    - Current Issue 022 focuses on integration points and secure path resolution
+
+### Architectural Decisions During Integration
+
+The following architectural decisions were made during the implementation of Phase 2, Step 5. These decisions have been documented as Architecture Decision Records (ADRs) for long-term reference:
+
+1. **[ADR-0001: Context-Aware Security Validation](../../architecture/0001-context-aware-security-validation.md)**
+   - Smart validation distinguishing between tool configs and generic test configs
+   - Prevents breaking test scenarios while maintaining production security
+
+2. **[ADR-0002: Security at Entry Points](../../architecture/0002-security-at-entry-points.md)**
+   - Security validation at system boundaries rather than throughout codebase
+   - Reduces complexity while ensuring consistent enforcement
+
+3. **[ADR-0003: Code Duplication Elimination Through Refactoring](../../architecture/0003-code-duplication-elimination-through-refactoring.md)**
+   - Eliminated duplicate code between loadPhpFile() and loadNeonFile()
+   - Improves maintainability and ensures consistent behavior
+
+4. **[ADR-0004: Inheritance-Based Security Propagation](../../architecture/0004-inheritance-based-security-propagation.md)**
+   - Leverages existing class hierarchy for automatic security
+   - No modifications needed to individual tool commands
 
 #### Phase 3: Configuration Resolution Logic (Priority: High) - PENDING
 1. **[ ] Enhanced Configuration Discovery** - Pending Implementation
@@ -322,16 +343,16 @@ qt config:show
    - Error recovery and user feedback quality assurance
 
 ### Success Criteria
-- [ ] All test suites pass without regression
-- [ ] Custom tool config files validate successfully with proper error messages
-- [ ] `qt config:validate` reports accurate validation status
-- [ ] `qt config:show` displays configuration with auto-discovery indicators
-- [ ] Tool commands use custom configuration files when present
-- [ ] Configuration file validation prevents invalid configurations
-- [ ] Secure path resolution prevents security vulnerabilities
-- [ ] Documentation provides clear examples and troubleshooting guidance
-- [ ] Performance impact is minimal and measured
-- [ ] Edge cases and error conditions are handled gracefully
+- [x] All test suites pass without regression (Phase 1-2 complete, no new failures)
+- [x] Custom tool config files validate successfully with proper error messages (Schema and validation complete)
+- [ ] `qt config:validate` reports accurate validation status (Pending Phase 3)
+- [ ] `qt config:show` displays configuration with auto-discovery indicators (Pending Phase 3)
+- [ ] Tool commands use custom configuration files when present (Pending Phase 3)
+- [x] Configuration file validation prevents invalid configurations (Validation service complete)
+- [x] Secure path resolution prevents security vulnerabilities (Security integration complete)
+- [ ] Documentation provides clear examples and troubleshooting guidance (Pending Phase 5)
+- [x] Performance impact is minimal and measured (Test infrastructure validates <100ms)
+- [x] Edge cases and error conditions are handled gracefully (Edge case tests complete)
 
 ### Risk Mitigation
 - **Test-First Approach**: Comprehensive testing before implementation prevents regressions

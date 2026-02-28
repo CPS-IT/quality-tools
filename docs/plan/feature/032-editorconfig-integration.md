@@ -1,9 +1,9 @@
-# Feature 017: EditorConfig CLI Integration
+# Feature 032: EditorConfig CLI Integration
 
 **Status:** Not Started
 **Estimated Time:** 6–8 hours
 **Layer:** to be defined
-**Dependencies:** 010-unified-yaml-configuration-system (Completed), 016-fail-on-warnings-configuration (Not Started)
+**Dependencies:** 010-unified-yaml-configuration-system (Completed), 026-fail-on-warnings-configuration (Not Started)
 
 ## Description
 

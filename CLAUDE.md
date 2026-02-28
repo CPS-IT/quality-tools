@@ -167,6 +167,42 @@ quality-tools:
   - Group related constants logically within classes
   - Always use descriptive, SCREAMING_SNAKE_CASE names for constants
 
+## Architecture Decision Records (ADRs)
+
+**Purpose**: Document significant architectural decisions to maintain project knowledge and rationale over time.
+
+**Location**: `docs/architecture/` - All ADRs are stored here with sequential numbering (0001-, 0002-, etc.)
+
+**Template**: Use `docs/.templates/adr.md` as the starting point for new ADRs
+
+**When to Create an ADR**:
+- Making a significant architectural choice with multiple alternatives
+- Choosing between different design patterns or approaches
+- Decisions that affect system-wide behavior or structure
+- Trade-offs that future maintainers need to understand
+- Deviations from standard practices that require justification
+
+**ADR Structure**:
+1. **Status**: Proposed, Accepted, Deprecated, or Superseded
+2. **Context**: The issue or situation motivating the decision
+3. **Decision**: The chosen approach stated clearly
+4. **Consequences**: Positive, negative, and neutral impacts
+5. **Alternatives Considered**: Other options evaluated and why they were rejected
+
+**Naming Convention**: `NNNN-descriptive-title.md` where NNNN is a zero-padded sequential number
+
+**Examples**:
+- `0001-context-aware-security-validation.md`
+- `0002-security-at-entry-points.md`
+- `0003-code-duplication-elimination-through-refactoring.md`
+
+**Best Practices**:
+- Write ADRs at the time of decision, not retroactively
+- Keep ADRs concise but complete (1-2 pages typical)
+- Use clear, technical language without jargon
+- Link to related ADRs and external documentation
+- Never delete ADRs - mark them as Deprecated or Superseded instead
+
 ## Implementation Completion Standards
 
 **CRITICAL:** Implementation of features and bug fixing is **NOT** finished before any failing tests and linting issues are fixed.

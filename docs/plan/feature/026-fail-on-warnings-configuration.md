@@ -1,4 +1,4 @@
-# Feature 016: Fail on Warnings Configuration
+# Feature 026: Fail on Warnings Configuration
 
 **Status:** Not Started
 **Estimated Time:** 4-6 hours
