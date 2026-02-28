@@ -115,6 +115,8 @@ The MVP is complete. The following features are organized into implementation it
   Hierarchical configuration override system for project customization
 - [ ] **[016 - Fail on Warnings Configuration](feature/016-fail-on-warnings-configuration.md)** *(4–6 hours)*
   Configurable exit code behavior for linting tools to ensure CI/CD reliability
+- [ ] **[017 - Enhanced Schema Validation](feature/017-enhanced-schema-validation.md)** *(4–6 hours)*
+  Advanced schema validation patterns for configuration security and tool-specific validation
 
 ### Iteration 3: Report Generation Features
 - **[005 - Report Format Research and Standards](feature/005-report-format-research-and-standards.md)** *(3–4 hours)*

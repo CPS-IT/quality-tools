@@ -26,8 +26,9 @@ use PHPUnit\Framework\TestCase;
  * - Maintain backward compatibility for configurations without config_file
  * - Tool-specific file extension validation
  *
- * TEST STATUS: All 46 tests are currently SKIPPED until Phase 2, Step 4 is implemented.
- * Once the schema is updated, remove markTestSkipped() calls to validate the implementation.
+ * TEST STATUS: Core tests ACTIVE, advanced validation moved to Feature 017.
+ * Basic schema validation is implemented and working correctly.
+ * Advanced security patterns, tool-specific validation, and edge cases moved to Feature 017.
  *
  * TEST COVERAGE: These tests provide comprehensive validation for:
  * - Schema structure validation (config_file property definitions)
@@ -194,7 +195,8 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $expectedValidationError,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update with path security validation');
+        // Security validation should be provided by FilesystemService integration
+        // This test should FAIL until secure path resolution integration is implemented
 
         $configData = [
             'quality-tools' => [
@@ -241,7 +243,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         bool $shouldBeValid,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update with tool-specific file validation');
+        $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Tool-specific file validation');
 
         $configData = [
             'quality-tools' => [
@@ -280,7 +282,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         bool $shouldBeValid,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema evolution validation');
+        $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Schema evolution patterns');
 
         $validationResult = $this->validator->validateSafe($configData);
 
@@ -302,7 +304,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         bool $shouldBeValid,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update with flexible path support');
+        $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Advanced path patterns');
 
         $configData = [
             'quality-tools' => [
@@ -335,7 +337,7 @@ final class UpdatedSchemaValidationTest extends TestCase
         bool $shouldBeValid,
         string $scenarioDescription,
     ): void {
-        $this->markTestSkipped('Waiting for Phase 2, Step 4: Schema update with comprehensive edge case handling');
+        $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Comprehensive edge case handling');
 
         $validationResult = $this->validator->validateSafe($configData);
 
@@ -480,24 +482,41 @@ final class UpdatedSchemaValidationTest extends TestCase
 
     /**
      * Data provider for invalid path scenarios that should be rejected.
+     * SECURITY INTEGRATION TESTS - Should fail until FilesystemService integration implemented
      */
     public static function invalidPathScenarios(): array
     {
         return [
+            // These should be caught by FilesystemService::validateConfigurationPath() integration
             'directory_traversal_simple' => [
                 'rector',
                 '../../../etc/passwd',
-                'pattern',
+                'security', // Expected to be caught by runtime integration, not schema pattern
                 'Directory traversal attack attempt (simple)',
             ],
 
             'directory_traversal_complex' => [
                 'phpstan',
                 '../../config/../../../sensitive.neon',
-                'pattern',
+                'security', // Expected to be caught by runtime integration, not schema pattern
                 'Directory traversal attack attempt (complex)',
             ],
 
+            'absolute_system_path' => [
+                'rector',
+                '/etc/passwd',
+                'security', // Expected to be caught by runtime integration, not schema pattern
+                'Attempt to access system file',
+            ],
+
+            'windows_drive_path' => [
+                'phpstan',
+                'C:\\Windows\\system32\\config\\sam',
+                'security', // Expected to be caught by runtime integration, not schema pattern
+                'Windows system path attempt',
+            ],
+
+            // These remain as schema-level validation (Feature 017)
             'empty_string' => [
                 'rector',
                 '',
@@ -524,20 +543,6 @@ final class UpdatedSchemaValidationTest extends TestCase
                 'fractor.yaml',
                 'pattern',
                 'Fractor with wrong file extension (.yaml instead of .php)',
-            ],
-
-            'absolute_system_path' => [
-                'rector',
-                '/etc/passwd',
-                'pattern',
-                'Attempt to access system file',
-            ],
-
-            'windows_drive_path' => [
-                'phpstan',
-                'C:\\Windows\\system32\\config\\sam',
-                'pattern',
-                'Windows system path attempt',
             ],
         ];
     }

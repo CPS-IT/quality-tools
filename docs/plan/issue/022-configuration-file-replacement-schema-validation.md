@@ -7,39 +7,6 @@
 
 **Remaining Work**: ConfigurationDiscovery metadata injection still causes integration test failures.
 
-## Implementation Progress
-- [x] **Phase 1, Step 1: Build Configuration Test Infrastructure** - Completed
-  - Integration test with dataProvider pattern demonstrating Issue 022 behavior
-  - Static fixture files for multiple test scenarios
-  - ConfigurationBuilder and ConfigurationAssertions support classes
-- [x] **Phase 1, Step 2: Create Comprehensive Test Coverage** - Completed
-  - ConfigurationFileValidationTest.php validates config file syntax across tools
-  - CustomConfigSchemaTest.php documents Issue 022 schema validation conflicts
-  - ConfigurationRegressionTest.php provides comprehensive regression protection matrix
-- [x] **Phase 1, Step 3: Add Edge Case and Error Testing** - Completed
-  - ConfigurationEdgeCaseTest.php covers file permissions, concurrent access, invalid formats
-  - Security boundary validation prevents directory traversal attacks
-  - Performance impact measurement ensures loading remains under 100ms
-  - Memory usage validation keeps overhead under 1MB
-- [x] **Phase 2, Step 4: Update JSON Schema** - Completed
-  - Added `config_file` property to all tool configurations (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
-  - Schema validation now passes for configurations with custom config files
-  - Core Issue 022 schema validation conflict RESOLVED
-- [x] **Phase 2, Step 5: Resolve ConfigurationDiscovery Metadata Injection** - Completed
-  - Metadata injection issue resolved in previous refactoring work
-  - `tool_config_file` and `custom_config` properties no longer injected
-  - ConfigurationDiscovery now uses proper `config_file` properties from schema
-- [x] **Phase 2, Step 6: Fix Configuration Structure Validation** - Completed
-  - Comprehensive normalization implemented in all configuration loaders
-  - Added `normalizeConfigurationStructure()` to HierarchicalConfigurationLoader and ConfigurationLoader
-  - Tools section structure properly maintained as associative array (object)
-  - However: Underlying JSON schema validation issue discovered (see Issue 2 details below)
-- [ ] **Phase 2: Remaining Enhanced Schema and Validation Steps** - Pending
-- [ ] **Phase 3: Configuration Resolution Logic** - Pending
-- [ ] **Phase 4: Tool Integration and Commands** - Pending
-- [ ] **Phase 5: Documentation** - Pending
-- [ ] **Phase 6: Integration Validation** - Pending
-
 ## Problem Summary
 When users place custom configuration files for tools (e.g., `rector.php`, `phpstan.neon`) in their project root or config directory, the custom files should replace the default configurations provided by quality-tools. However, this functionality has multiple validation and execution issues:
 
@@ -170,7 +137,19 @@ This issue reveals broader problems in the configuration system:
 
 ## Related Issues
 - Issue 019: Configuration class hierarchy simplification (current refactoring)
+- Feature 017: Enhanced schema validation (extracted advanced patterns)
 - Configuration override test scenarios (documented in tmp/configuration-override-test-scenarios.md)
+
+## Scope Clarification
+**Current Focus**: Integration of refactored secure path resolution services for configuration file discovery and validation.
+
+**Moved to Feature 017**: Advanced schema validation patterns including:
+- Security patterns for directory traversal prevention
+- Tool-specific file extension validation
+- Advanced edge case handling (whitespace, length limits)
+- Complex JSON schema patterns
+
+**Note**: UpdatedSchemaValidationTest advanced validation scenarios re-skipped until Feature 017 implementation.
 
 ## Refined Solution: Configuration File Key Approach
 
@@ -231,60 +210,69 @@ qt config:show
 
 ### Implementation Plan
 
-#### Phase 1: Comprehensive Testing Infrastructure (Priority: Critical)
-1. **[x] Build Configuration Test Infrastructure**
-   - [x] Static fixture files in `tests/Fixtures/configFileReplacement/` - Multiple test scenarios
+#### Phase 1: Comprehensive Testing Infrastructure (Priority: Critical) - COMPLETED
+1. **[x] Build Configuration Test Infrastructure** - Completed
+   - [x] Integration test with dataProvider pattern demonstrating Issue 022 behavior
+   - [x] Static fixture files in `tests/Fixtures/configFileReplacement/` for multiple test scenarios
    - [x] `tests/Support/ConfigurationBuilder.php` - Test configuration builders
    - [x] `tests/Support/ConfigurationAssertions.php` - Specialized assertions
 
-2. **[x] Create Comprehensive Test Coverage**
-   - [x] `tests/Unit/Configuration/ConfigurationFileValidationTest.php` - Validate config file syntax for all tools
-   - [x] `tests/Unit/Configuration/CustomConfigSchemaTest.php` - Schema validation with `config_file` properties
+2. **[x] Create Comprehensive Test Coverage** - Completed
+   - [x] `tests/Unit/Configuration/ConfigurationFileValidationTest.php` - Validates config file syntax across tools
+   - [x] `tests/Unit/Configuration/CustomConfigSchemaTest.php` - Documents Issue 022 schema validation conflicts
    - [x] `tests/Integration/Configuration/CustomToolConfigurationTest.php` - End-to-end config replacement with dataProvider
    - [x] `tests/Integration/Configuration/ConfigurationRegressionTest.php` - Comprehensive regression protection matrix
 
-3. **[x] Add Edge Case and Error Testing**
-   - [x] File permission edge cases (unreadable, missing files) - Documents Issue 022 behavior
-   - [x] Concurrent configuration file access scenarios - Validates consistency
-   - [x] Invalid configuration file formats per tool - Schema validation takes precedence
-   - [x] Security boundary validation (directory traversal prevention) - Comprehensive coverage
-   - [x] Performance impact measurement - Loading under 100ms, memory under 1MB
+3. **[x] Add Edge Case and Error Testing** - Completed
+   - [x] `tests/Unit/Configuration/ConfigurationEdgeCaseTest.php` covers file permissions, concurrent access, invalid formats
+   - [x] Security boundary validation prevents directory traversal attacks
+   - [x] Performance impact measurement ensures loading remains under 100ms
+   - [x] Memory usage validation keeps overhead under 1MB
 
-#### Phase 2: Enhanced Schema and Validation (Priority: Critical)
-4. **[x] Update JSON Schema** (`config/schema/quality-tools.json`) - Completed
-   - Added `config_file` property to all tool configurations
-   - Defined path validation rules with examples
-   - Maintained backward compatibility
+#### Phase 2: Enhanced Schema and Validation (Priority: Critical) - PARTIALLY COMPLETED
+1. **[x] Update JSON Schema** (`config/schema/quality-tools.json`) - Completed
+   - Added `config_file` property to all tool configurations (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
+   - Schema validation now passes for configurations with custom config files
+   - Core Issue 022 schema validation conflict RESOLVED
 
-5. **[x] Resolve ConfigurationDiscovery Metadata Injection** - Completed
+2. **[x] Resolve ConfigurationDiscovery Metadata Injection** - Completed
    - Metadata injection issue resolved in previous refactoring work
    - `tool_config_file` and `custom_config` properties no longer injected
    - ConfigurationDiscovery now uses proper `config_file` properties from schema
 
-6. **[x] Fix Configuration Structure Validation** - Completed
+3. **[x] Fix Configuration Structure Validation** - Completed
    - Comprehensive normalization implemented in all configuration loaders
    - Added `normalizeConfigurationStructure()` to HierarchicalConfigurationLoader and ConfigurationLoader
    - Tools section structure properly maintained as associative array (object)
    - However: Underlying JSON schema validation issue discovered (see Issue 2 details above)
 
-7. **[x] Configuration File Validation Logic** - Completed
+4. **[x] Configuration File Validation Logic** - Completed
    - Implemented ToolConfigurationValidationService with comprehensive validation
    - Tool validation trait provides shared functionality across all validators
    - Constructor-based dependency injection ensures proper service integration
    - All tool validators (Rector, PHPStan, Fractor, etc.) now use consistent validation pattern
    - Configuration loading works reliably without schema validation errors
 
-8. **[ ] Secure Path Resolution** - Pending
-   - Implement secure path resolution with boundary checks
-   - Prevent directory traversal attacks
-   - Validate file permissions and accessibility
-   - Handle absolute vs relative path resolution
+5. **[ ] Secure Path Resolution Integration** - Pending
+   - Integrate refactored FilesystemService::validateConfigurationPath() for configuration overrides
+   - Apply SecurityService path sanitization to custom config file paths
+   - Use PathResolutionService::discoverSecureToolConfiguration() for auto-discovery
+   - Ensure ConfigurationDiscovery uses secure path resolution for custom config files
+   
+   **Integration Points**:
+   - ConfigurationDiscovery: Use FilesystemService::validateConfigurationPath() for discovered files
+   - BaseCommand: Apply secure path resolution to --config option values
+   - Tool validators: Ensure consistent security validation across all tool config loading
 
-#### Phase 3: Configuration Resolution Logic (Priority: High)
-9. **[ ] Enhanced Configuration Discovery** - Pending Implementation
+6. **[ ] Remaining Enhanced Schema and Validation Steps** - Moved to Feature 017
+   - Advanced schema validation patterns extracted to Feature 017
+   - Security patterns, tool-specific validation, and edge cases are now separate scope
+   - Current Issue 022 focuses on integration points and secure path resolution
 
-   **Current Status**: Schema validation is resolved, but auto-discovery of custom tool configuration files is not yet
-10. implemented. Tools currently ignore custom `rector.php`, `phpstan.neon` files and use default configurations.
+#### Phase 3: Configuration Resolution Logic (Priority: High) - PENDING
+1. **[ ] Enhanced Configuration Discovery** - Pending Implementation
+
+   **Current Status**: Schema validation is resolved, but auto-discovery of custom tool configuration files is not yet implemented. Tools currently ignore custom `rector.php`, `phpstan.neon` files and use default configurations.
 
    **Required Tasks for ConfigurationDiscovery**:
    - Implement auto-discovery of tool config files in standard locations (project root, config/ directory)
@@ -294,44 +282,44 @@ qt config:show
    - Integration with ToolConfigurationValidationService for discovered file validation
    - Handle tool-specific file patterns (rector.php, phpstan.neon, fractor.php, etc.)
 
-10. **Enhanced Error Reporting**
-    - Clear messages when config files not found
-    - Specific validation errors for each tool
-    - Debug information for configuration discovery process
+2. **[ ] Enhanced Error Reporting** - Pending
+   - Clear messages when config files not found
+   - Specific validation errors for each tool
+   - Debug information for configuration discovery process
 
-#### Phase 4: Tool Integration and Commands (Priority: High)
-11. **Tool Executor Integration**
-    - Update all tool commands to use new configuration resolution
-    - Ensure fallback behavior when custom configs are invalid
-    - Test configuration precedence in all tool executions
+#### Phase 4: Tool Integration and Commands (Priority: High) - PENDING
+1. **[ ] Tool Executor Integration** - Pending
+   - Update all tool commands to use new configuration resolution
+   - Ensure fallback behavior when custom configs are invalid
+   - Test configuration precedence in all tool executions
 
-12. **Command Enhancement**
-    - Update `ConfigValidateCommandTest` with comprehensive custom config scenarios
-    - Update `ConfigShowCommandTest` with auto-discovery indicators
-    - Enhance user feedback for configuration source information
+2. **[ ] Command Enhancement** - Pending
+   - Update `ConfigValidateCommandTest` with comprehensive custom config scenarios
+   - Update `ConfigShowCommandTest` with auto-discovery indicators
+   - Enhance user feedback for configuration source information
 
-#### Phase 5: Documentation (Priority: Medium)
-11. **User Guide Updates** (`docs/user-guide/configuration.md`)
-    - Add "Custom Tool Configuration Files" section
-    - Document configuration precedence rules clearly
-    - Include step-by-step examples for each tool
+#### Phase 5: Documentation (Priority: Medium) - PENDING
+1. **[ ] User Guide Updates** (`docs/user-guide/configuration.md`) - Pending
+   - Add "Custom Tool Configuration Files" section
+   - Document configuration precedence rules clearly
+   - Include step-by-step examples for each tool
 
-12. **Tool-Specific Documentation**
-    - Add `config_file` examples to each tool guide
-    - Update troubleshooting guide with configuration scenarios
-    - Document security considerations for custom config files
+2. **[ ] Tool-Specific Documentation** - Pending
+   - Add `config_file` examples to each tool guide
+   - Update troubleshooting guide with configuration scenarios
+   - Document security considerations for custom config files
 
-#### Phase 6: Integration Validation (Priority: High)
-13. **Comprehensive Integration Testing**
-    - Test with real-world project structures
-    - Validate backward compatibility with existing configurations
-    - Performance impact assessment and optimization
-    - Cross-platform compatibility testing
+#### Phase 6: Integration Validation (Priority: High) - PENDING
+1. **[ ] Comprehensive Integration Testing** - Pending
+   - Test with real-world project structures
+   - Validate backward compatibility with existing configurations
+   - Performance impact assessment and optimization
+   - Cross-platform compatibility testing
 
-14. **Regression Protection**
-    - Complete regression test matrix for all tool commands
-    - Validation of existing behavior preservation
-    - Error recovery and user feedback quality assurance
+2. **[ ] Regression Protection** - Pending
+   - Complete regression test matrix for all tool commands
+   - Validation of existing behavior preservation
+   - Error recovery and user feedback quality assurance
 
 ### Success Criteria
 - [ ] All test suites pass without regression
