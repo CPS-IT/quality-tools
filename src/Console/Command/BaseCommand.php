@@ -88,6 +88,35 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
                 throw ErrorFactory::configFileNotFound($customConfigPath, $customConfigPath);
             }
 
+            // Only apply strict tool validation if we can identify a known tool
+            // This allows BaseCommand to work with generic config files while
+            // tool commands get security validation
+            $toolName = $this->getToolNameForConfig($customConfigPath);
+            $knownTools = ['rector', 'phpstan', 'fractor', 'php-cs-fixer', 'typoscript-lint'];
+            
+            if (in_array($toolName, $knownTools, true)) {
+                // Apply secure path validation for known tool config paths
+                try {
+                    $filesystemService = $this->getFilesystemService();
+                    $projectRoot = $this->getProjectRoot();
+                    
+                    $validatedPath = $filesystemService->validateConfigurationPath(
+                        $customConfigPath,
+                        $projectRoot,
+                        $toolName
+                    );
+                    
+                    return $validatedPath;
+                } catch (\Exception $e) {
+                    throw new \RuntimeException(
+                        sprintf('Security validation failed for custom config file "%s": %s', $customConfigPath, $e->getMessage()),
+                        0,
+                        $e
+                    );
+                }
+            }
+            
+            // For non-tool configs, just return the realpath (previous behavior)
             return realpath($customConfigPath);
         }
 
@@ -554,6 +583,50 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
             $securityService,
             $filesystemService,
         );
+    }
+
+    protected function getFilesystemService(): FilesystemService
+    {
+        if ($this->hasService(FilesystemService::class)) {
+            return $this->getService(FilesystemService::class);
+        }
+
+        // Fallback for tests and scenarios without DI container
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        
+        return new FilesystemService($filesystem, $securityService);
+    }
+
+    protected function getToolNameForConfig(string $configFile): string
+    {
+        // Get just the filename from the path
+        $basename = basename($configFile);
+        
+        // Handle special cases first
+        if (strpos($basename, 'php-cs-fixer') !== false) {
+            return 'php-cs-fixer';
+        }
+        
+        if (strpos($basename, 'typoscript-lint') !== false) {
+            return 'typoscript-lint';
+        }
+        
+        if (strpos($basename, 'rector') !== false) {
+            return 'rector';
+        }
+        
+        if (strpos($basename, 'phpstan') !== false) {
+            return 'phpstan';
+        }
+        
+        if (strpos($basename, 'fractor') !== false) {
+            return 'fractor';
+        }
+        
+        // Fallback: extract tool name from config file name
+        // e.g., "rector.php" -> "rector", "phpstan.neon" -> "phpstan"
+        return pathinfo($basename, PATHINFO_FILENAME);
     }
 
     protected function getHierarchicalConfigurationLoader(): HierarchicalConfigurationLoader
