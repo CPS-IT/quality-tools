@@ -135,29 +135,8 @@ final class BaseCommandIntegrationTest extends TestCase
         $this->assertStringContainsString('normal output', $outputContent);
     }
 
-    public function testConfigurationPathResolutionWithRealFiles(): void
-    {
-        $customConfigPath = $this->tempProjectRoot . '/custom-config.php';
-        file_put_contents($customConfigPath, '<?php return ["custom" => true];');
-
-        $input = new ArrayInput(['--config' => $customConfigPath], $this->command->getDefinition());
-
-        $resolvedPath = $this->command->testResolveConfigPath('default.php', $input->getOption('config'));
-
-        $this->assertEquals(realpath($customConfigPath), $resolvedPath);
-        $this->assertFileExists($resolvedPath);
-    }
-
-    public function testDefaultConfigurationPathResolution(): void
-    {
-        $input = new ArrayInput([], $this->command->getDefinition());
-
-        $resolvedPath = $this->command->testResolveConfigPath('test-config.php');
-
-        $expectedPath = $this->tempProjectRoot . '/vendor/cpsit/quality-tools/config/test-config.php';
-        $this->assertEquals(realpath($expectedPath), $resolvedPath);
-        $this->assertFileExists($resolvedPath);
-    }
+    // Tests for resolveConfigPath moved to AbstractToolCommandIntegrationTest
+    // since resolveConfigPath is now in AbstractToolCommand
 
     public function testTargetPathResolutionWithCustomPath(): void
     {
@@ -189,44 +168,8 @@ final class BaseCommandIntegrationTest extends TestCase
         $this->assertFileExists($projectRoot . '/composer.json');
     }
 
-    public function testCompleteWorkflowWithAllOptions(): void
-    {
-        // Create a custom config and target path
-        $customConfig = $this->tempProjectRoot . '/workflow-config.php';
-        $customTarget = $this->tempProjectRoot . '/workflow-target';
-
-        file_put_contents($customConfig, '<?php return ["workflow" => true];');
-        mkdir($customTarget, 0o777, true);
-
-        $input = new ArrayInput([
-            '--config' => $customConfig,
-            '--path' => $customTarget,
-        ], $this->command->getDefinition());
-        $output = new BufferedOutput();
-        $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
-
-        // Test the complete workflow
-        $projectRoot = $this->command->testGetProjectRoot();
-        $configPath = $this->command->testResolveConfigPath('default.php', $input->getOption('config'));
-        $targetPath = $this->command->testGetTargetPath($input);
-
-        $exitCode = $this->command->testExecuteProcess(
-            ['echo', 'Workflow test complete'],
-            $input,
-            $output,
-        );
-
-        // Verify all components work together
-        $this->assertEquals(realpath($this->tempProjectRoot), $projectRoot);
-        $this->assertEquals(realpath($customConfig), $configPath);
-        $this->assertEquals(realpath($customTarget), $targetPath);
-        $this->assertEquals(0, $exitCode);
-
-        $outputContent = $output->fetch();
-        $this->assertStringContainsString('Executing:', $outputContent);
-        $this->assertStringContainsString('echo', $outputContent);
-        $this->assertStringContainsString('Workflow test complete', $outputContent);
-    }
+    // Test for testCompleteWorkflowWithAllOptions moved to AbstractToolCommandIntegrationTest
+    // since it uses resolveConfigPath which is now in AbstractToolCommand
 
     public function testProcessExecutionInCorrectWorkingDirectory(): void
     {
@@ -280,7 +223,6 @@ final class TestableIntegrationCommand extends BaseCommand
         parent::__construct('test:integration');
         $this->setDescription('Test integration command for BaseCommand testing');
     }
-
     #[\Override]
     protected function configure(): void
     {
@@ -297,10 +239,8 @@ final class TestableIntegrationCommand extends BaseCommand
         return $this->getProjectRoot();
     }
 
-    public function testResolveConfigPath(string $configFile, ?string $customConfigPath = null): string
-    {
-        return $this->resolveConfigPath($configFile, $customConfigPath);
-    }
+    // resolveConfigPath method moved to AbstractToolCommand
+    // Test method removed as it's no longer in BaseCommand
 
     public function testExecuteProcess(
         array $command,

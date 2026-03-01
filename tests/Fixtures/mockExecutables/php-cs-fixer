@@ -1,0 +1,27 @@
+#!/bin/bash
+# Mock php-cs-fixer executable for testing
+# This mock simulates php-cs-fixer using the configuration file passed via --config flag
+# and outputs the paths configured in that file
+
+# Parse arguments to find config file
+CONFIG_FILE=""
+for arg in "$@"; do
+    if [[ "$arg" == --config=* ]]; then
+        CONFIG_FILE="${arg#--config=}"
+    elif [[ "$prev_arg" == "--config" ]]; then
+        CONFIG_FILE="$arg"
+    fi
+    prev_arg="$arg"
+done
+
+# If a config file is specified and exists, extract the path from it
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Extract the path from the php-cs-fixer config file
+    # Look for paths like 'custom-php-cs-fixer-root-path'
+    PATH_VALUE=$(grep -o "'[^']*php-cs-fixer[^']*-path[^']*'" "$CONFIG_FILE" | tr -d "'" | head -1)
+    if [[ -n "$PATH_VALUE" ]]; then
+        echo "$PATH_VALUE"
+    fi
+fi
+
+exit 0

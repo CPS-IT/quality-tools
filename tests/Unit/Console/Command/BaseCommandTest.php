@@ -94,47 +94,8 @@ final class BaseCommandTest extends TestCase
         $this->command->getProjectRootPublic();
     }
 
-    public function testResolveConfigPathWithCustomPath(): void
-    {
-        $customConfigFile = $this->tempDir . '/custom-config.php';
-        file_put_contents($customConfigFile, '<?php return [];');
-
-        $result = $this->command->resolveConfigPathPublic('default.php', $customConfigFile);
-
-        $this->assertEquals(realpath($customConfigFile), $result);
-    }
-
-    public function testResolveConfigPathWithCustomPathThrowsExceptionWhenFileNotFound(): void
-    {
-        $nonExistentFile = $this->tempDir . '/non-existent.php';
-
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage("Configuration file not found: {$nonExistentFile}");
-
-        $this->command->resolveConfigPathPublic('default.php', $nonExistentFile);
-    }
-
-    public function testResolveConfigPathWithDefaultPath(): void
-    {
-        // Create vendor directory structure with cpsit/quality-tools package
-        $vendorDir = TestHelper::createVendorStructure($this->tempDir);
-        $configDir = $vendorDir . '/cpsit/quality-tools/config';
-
-        $defaultConfigFile = $configDir . '/test-config.php';
-        file_put_contents($defaultConfigFile, '<?php return [];');
-
-        $result = $this->command->resolveConfigPathPublic('test-config.php');
-
-        $this->assertEquals(realpath($defaultConfigFile), $result);
-    }
-
-    public function testResolveConfigPathWithDefaultPathThrowsExceptionWhenFileNotFound(): void
-    {
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Could not detect vendor directory\. Automatic detection failed: .*/');
-
-        $this->command->resolveConfigPathPublic('non-existent.php');
-    }
+    // Note: resolveConfigPath tests have been moved to AbstractToolCommandTest
+    // since that method was moved from BaseCommand to AbstractToolCommand
 
     public function testExecuteProcessWithVerboseMode(): void
     {
@@ -304,11 +265,6 @@ final class TestableBaseCommand extends BaseCommand
     public function getProjectRootPublic(): string
     {
         return $this->getProjectRoot();
-    }
-
-    public function resolveConfigPathPublic(string $configFile, ?string $customConfigPath = null): string
-    {
-        return $this->resolveConfigPath($configFile, $customConfigPath);
     }
 
     public function executeProcessPublic(

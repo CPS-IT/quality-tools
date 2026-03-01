@@ -247,7 +247,7 @@ final class FractorLintCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException');
     }
 
     public function testExecuteHandlesConfigPathException(): void

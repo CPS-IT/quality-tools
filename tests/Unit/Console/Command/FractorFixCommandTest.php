@@ -246,12 +246,25 @@ final class FractorFixCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+                // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput) {
+                $actualOutput[] = $message;
+            });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(2, $result);
+                // ConfigurationException returns exit code 2 based on getSuggestedExitCode()
+        $this->assertEquals(2, $result, 'Expected exit code 2 for ConfigurationException (config file not found)');
+        
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Configuration Error (1001)', $errorOutput, 'Should show configuration error code 1001');
+        $this->assertStringContainsString('Configuration file not found', $errorOutput, 'Should show config file not found message');
+        $this->assertStringContainsString($nonExistentConfigFile, $errorOutput, 'Should include the problematic config path');
     }
 
     public function testExecuteHandlesTargetPathException(): void
@@ -272,7 +285,7 @@ final class FractorFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(4, $result);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void

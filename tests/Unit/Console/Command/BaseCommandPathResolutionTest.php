@@ -29,6 +29,11 @@ final class BaseCommandPathResolutionTest extends TestCase
     {
         // Create a test command that extends BaseCommand
         $command = new class extends BaseCommand {
+            protected function getToolName(): ?string
+            {
+                return null; // This is a test command
+            }
+
             public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
                 return $this->getTargetPathForTool($input, $tool);
@@ -154,6 +159,11 @@ final class BaseCommandPathResolutionTest extends TestCase
             ]);
 
         $command = new class extends BaseCommand {
+            protected function getToolName(): ?string
+            {
+                return null; // This is a test command
+            }
+
             public function setMockConfiguration(ConfigurationInterface $config): void
             {
                 $this->configuration = $config;

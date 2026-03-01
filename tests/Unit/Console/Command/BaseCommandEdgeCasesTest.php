@@ -53,54 +53,8 @@ final class BaseCommandEdgeCasesTest extends TestCase
         parent::tearDown();
     }
 
-    public function testResolveConfigPathWithEmptyCustomPath(): void
-    {
-        $projectRoot = $this->tempDir;
-        $configDir = $projectRoot . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0o777, true);
-
-        $defaultConfigFile = $configDir . '/test.php';
-        file_put_contents($defaultConfigFile, '<?php return [];');
-
-        // Empty string is treated as a file path and will fail - this tests error handling
-        $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('Configuration file not found: ');
-
-        $this->command->testResolveConfigPath('test.php', '');
-    }
-
-    public function testResolveConfigPathWithSymlinkConfigFile(): void
-    {
-        $actualConfigFile = $this->tempDir . '/actual-config.php';
-        $symlinkConfigFile = $this->tempDir . '/symlink-config.php';
-
-        file_put_contents($actualConfigFile, '<?php return [];');
-        symlink($actualConfigFile, $symlinkConfigFile);
-
-        $result = $this->command->testResolveConfigPath('test.php', $symlinkConfigFile);
-
-        $this->assertEquals(realpath($symlinkConfigFile), $result);
-        $this->assertEquals(realpath($actualConfigFile), $result);
-    }
-
-    public function testResolveConfigPathWithRelativeCustomPath(): void
-    {
-        $currentDir = getcwd();
-        $relativeConfigFile = 'relative-config.php';
-
-        // Create config file in current directory
-        file_put_contents($currentDir . '/' . $relativeConfigFile, '<?php return [];');
-
-        try {
-            $result = $this->command->testResolveConfigPath('test.php', $relativeConfigFile);
-            $this->assertEquals(realpath($currentDir . '/' . $relativeConfigFile), $result);
-        } finally {
-            // Clean up
-            if (file_exists($currentDir . '/' . $relativeConfigFile)) {
-                unlink($currentDir . '/' . $relativeConfigFile);
-            }
-        }
-    }
+    // Note: resolveConfigPath tests have been moved to AbstractToolCommandEdgeCasesTest
+    // since resolveConfigPath method was moved from BaseCommand to AbstractToolCommand
 
     public function testExecuteProcessWithEmptyCommand(): void
     {
@@ -336,11 +290,6 @@ final class EdgeCaseTestCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         return 0;
-    }
-
-    public function testResolveConfigPath(string $configFile, ?string $customConfigPath = null): string
-    {
-        return $this->resolveConfigPath($configFile, $customConfigPath);
     }
 
     public function testExecuteProcess(

@@ -9,6 +9,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RectorLintCommand extends AbstractToolCommand
 {
+    public const TOOL_NAME = 'rector';
+
     #[\Override]
     protected function configure(): void
     {
@@ -24,9 +26,9 @@ class RectorLintCommand extends AbstractToolCommand
             );
     }
 
-    protected function getToolName(): string
+    public function getToolName(): string
     {
-        return 'rector';
+        return self::TOOL_NAME;
     }
 
     protected function getDefaultConfigFileName(): string

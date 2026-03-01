@@ -7,8 +7,15 @@ namespace Cpsit\QualityTools\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class ComposerLintCommand extends BaseCommand
+final class ComposerLintCommand extends BaseCommand implements ToolCommandInterface
 {
+    public const string TOOL_NAME = 'composer-normalize';
+
+    public function getToolName(): string
+    {
+        return self::TOOL_NAME;
+    }
+
     #[\Override]
     protected function configure(): void
     {
@@ -29,10 +36,11 @@ final class ComposerLintCommand extends BaseCommand
         try {
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
-                if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
+                $filesystemService = $this->getFilesystemService();
+                if (!$filesystemService->directoryExists($customPath)) {
+                    throw new \Cpsit\QualityTools\Exception\FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
                 }
-                $targetPaths = [realpath($customPath)];
+                $targetPaths = [$filesystemService->realpath($customPath)];
             } else {
                 // Use resolved paths from configuration - check all paths for composer.json files
                 $targetPaths = $this->getResolvedPathsForTool($input, 'composer');
@@ -45,7 +53,8 @@ final class ComposerLintCommand extends BaseCommand
                 $composerJsonPath = $targetPath . '/composer.json';
 
                 // Check if composer.json exists in this path
-                if (!file_exists($composerJsonPath)) {
+                $filesystemService = $this->getFilesystemService();
+                if (!$filesystemService->fileExists($composerJsonPath)) {
                     if ($output->isVerbose()) {
                         $output->writeln(\sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
                     }
@@ -58,7 +67,7 @@ final class ComposerLintCommand extends BaseCommand
                 // Check if composer exists in vendor/bin (for tests), otherwise use system composer
                 $composerExecutable = 'composer';
                 $vendorComposer = $this->getVendorBinPath() . '/composer';
-                if (file_exists($vendorComposer)) {
+                if ($filesystemService->fileExists($vendorComposer)) {
                     $composerExecutable = $vendorComposer;
                 }
 
@@ -85,10 +94,10 @@ final class ComposerLintCommand extends BaseCommand
             }
 
             return $totalExitCode;
-        } catch (\Exception $e) {
-            $output->writeln(\sprintf('<error>Error: %s</error>', $e->getMessage()));
-
-            return 1;
+        } catch (\Throwable $e) {
+            // Use the same error handler as AbstractToolCommand for consistency
+            $errorHandler = new \Cpsit\QualityTools\Service\ErrorHandler();
+            return $errorHandler->handleException($e, $output, $output->isVerbose());
         }
     }
 }

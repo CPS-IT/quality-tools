@@ -207,12 +207,25 @@ final class RectorLintCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+                // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput) {
+                $actualOutput[] = $message;
+            });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+                // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
+        
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
+        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
+        $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
     }
 
     public function testExecuteHandlesConfigPathException(): void

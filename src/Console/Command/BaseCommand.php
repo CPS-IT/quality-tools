@@ -13,6 +13,7 @@ use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareTrait;
+use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Exception\VendorDirectoryNotFoundException;
 use Cpsit\QualityTools\Service\CommandBuilder;
 use Cpsit\QualityTools\Service\ErrorFactory;
@@ -81,61 +82,12 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return $application->getProjectRoot();
     }
 
-    protected function resolveConfigPath(string $configFile, ?string $customConfigPath = null): string
-    {
-        if ($customConfigPath !== null) {
-            if (!file_exists($customConfigPath)) {
-                throw ErrorFactory::configFileNotFound($customConfigPath, $customConfigPath);
-            }
-
-            // Only apply strict tool validation if we can identify a known tool
-            // This allows BaseCommand to work with generic config files while
-            // tool commands get security validation
-            $toolName = $this->getToolNameForConfig($customConfigPath);
-            $knownTools = ['rector', 'phpstan', 'fractor', 'php-cs-fixer', 'typoscript-lint'];
-            
-            if (in_array($toolName, $knownTools, true)) {
-                // Apply secure path validation for known tool config paths
-                try {
-                    $filesystemService = $this->getFilesystemService();
-                    $projectRoot = $this->getProjectRoot();
-                    
-                    $validatedPath = $filesystemService->validateConfigurationPath(
-                        $customConfigPath,
-                        $projectRoot,
-                        $toolName
-                    );
-                    
-                    return $validatedPath;
-                } catch (\Exception $e) {
-                    throw new \RuntimeException(
-                        sprintf('Security validation failed for custom config file "%s": %s', $customConfigPath, $e->getMessage()),
-                        0,
-                        $e
-                    );
-                }
-            }
-            
-            // For non-tool configs, just return the realpath (previous behavior)
-            return realpath($customConfigPath);
-        }
-
-        $vendorPath = $this->findVendorPath();
-        $defaultConfigPath = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
-
-        if (!file_exists($defaultConfigPath)) {
-            throw ErrorFactory::configFileNotFound($defaultConfigPath);
-        }
-
-        return $defaultConfigPath;
-    }
-
     protected function getVendorBinPath(): string
     {
         return $this->findVendorPath() . '/bin';
     }
 
-    private function findVendorPath(): string
+    protected function findVendorPath(): string
     {
         $projectRoot = $this->getProjectRoot();
         $detector = $this->getVendorDirectoryDetector();
@@ -144,7 +96,8 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
             $vendorPath = $detector->detectVendorPath($projectRoot);
 
             // Validate that cpsit/quality-tools is installed in detected vendor directory
-            if (!is_dir($vendorPath . '/cpsit/quality-tools')) {
+            $filesystemService = $this->getFilesystemService();
+            if (!$filesystemService->directoryExists($vendorPath . '/cpsit/quality-tools')) {
                 throw new \RuntimeException(\sprintf('cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.', $vendorPath));
             }
 
@@ -156,8 +109,9 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
                 $projectRoot . '/vendor',      // Standard composer structure
             ];
 
+            $filesystemService = $this->getFilesystemService();
             foreach ($vendorPaths as $vendorPath) {
-                if (is_dir($vendorPath) && is_dir($vendorPath . '/cpsit/quality-tools')) {
+                if ($filesystemService->directoryExists($vendorPath) && $filesystemService->directoryExists($vendorPath . '/cpsit/quality-tools')) {
                     return $vendorPath;
                 }
             }
@@ -199,10 +153,11 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
             $customPath = $input->getOption('path');
 
             if ($customPath !== null) {
-                if (!is_dir($customPath)) {
+                $filesystemService = $this->getFilesystemService();
+                if (!$filesystemService->directoryExists($customPath)) {
                     throw ErrorFactory::directoryNotFound($customPath);
                 }
-                $this->cachedTargetPath = realpath($customPath);
+                $this->cachedTargetPath = $filesystemService->realpath($customPath);
             } else {
                 $this->cachedTargetPath = $this->getProjectRoot();
             }
@@ -245,8 +200,9 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         $analyzer = $this->getProjectAnalyzer();
         $aggregatedMetrics = null;
 
+        $filesystemService = $this->getFilesystemService();
         foreach ($resolvedPaths as $path) {
-            if (!is_dir($path)) {
+            if (!$filesystemService->directoryExists($path)) {
                 continue;
             }
 
@@ -432,10 +388,11 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         if ($this->cachedTargetPath === null) {
             $customPath = $input->getOption('path');
             if ($customPath !== null) {
-                if (!is_dir($customPath)) {
+                $filesystemService = $this->getFilesystemService();
+                if (!$filesystemService->directoryExists($customPath)) {
                     throw ErrorFactory::directoryNotFound($customPath);
                 }
-                $this->cachedTargetPath = realpath($customPath);
+                $this->cachedTargetPath = $filesystemService->realpath($customPath);
             } else {
                 // Use configuration-based path resolution
                 $configuration = $this->getConfiguration($input);
@@ -461,11 +418,13 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     {
         $customPath = $input->getOption('path');
         if ($customPath !== null) {
-            if (!is_dir($customPath)) {
-                throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
+            $filesystemService = $this->getFilesystemService();
+            if (!$filesystemService->directoryExists($customPath)) {
+                throw new FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
+                //throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
             }
 
-            return [realpath($customPath)];
+            return [$filesystemService->realpath($customPath)];
         }
 
         // Use configuration-based path resolution
@@ -489,7 +448,8 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
             // Override with a custom config path if provided
             $customConfigPath = $input->getOption('config');
-            if ($customConfigPath && file_exists($customConfigPath)) {
+            $filesystemService = $this->getFilesystemService();
+            if ($customConfigPath && $filesystemService->fileExists($customConfigPath)) {
                 // For now, we'll use the loaded configuration
                 // TODO: Implement config override logic if needed
             }
@@ -522,7 +482,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         );
     }
 
-    private function getVendorDirectoryDetector(): VendorDirectoryDetector
+    protected function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
         if ($this->hasService(VendorDirectoryDetector::class)) {
             return $this->getService(VendorDirectoryDetector::class);
@@ -594,39 +554,8 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         // Fallback for tests and scenarios without DI container
         $securityService = new SecurityService();
         $filesystem = new Filesystem();
-        
-        return new FilesystemService($filesystem, $securityService);
-    }
 
-    protected function getToolNameForConfig(string $configFile): string
-    {
-        // Get just the filename from the path
-        $basename = basename($configFile);
-        
-        // Handle special cases first
-        if (strpos($basename, 'php-cs-fixer') !== false) {
-            return 'php-cs-fixer';
-        }
-        
-        if (strpos($basename, 'typoscript-lint') !== false) {
-            return 'typoscript-lint';
-        }
-        
-        if (strpos($basename, 'rector') !== false) {
-            return 'rector';
-        }
-        
-        if (strpos($basename, 'phpstan') !== false) {
-            return 'phpstan';
-        }
-        
-        if (strpos($basename, 'fractor') !== false) {
-            return 'fractor';
-        }
-        
-        // Fallback: extract tool name from config file name
-        // e.g., "rector.php" -> "rector", "phpstan.neon" -> "phpstan"
-        return pathinfo($basename, PATHINFO_FILENAME);
+        return new FilesystemService($filesystem, $securityService);
     }
 
     protected function getHierarchicalConfigurationLoader(): HierarchicalConfigurationLoader

@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class FractorLintCommand extends AbstractToolCommand
 {
+    public const string TOOL_NAME = 'fractor';
+
     private array $yamlValidationResults = [];
 
     #[\Override]
@@ -27,9 +29,9 @@ final class FractorLintCommand extends AbstractToolCommand
             );
     }
 
-    protected function getToolName(): string
+    public function getToolName(): string
     {
-        return 'fractor';
+        return self::TOOL_NAME;
     }
 
     protected function getDefaultConfigFileName(): string

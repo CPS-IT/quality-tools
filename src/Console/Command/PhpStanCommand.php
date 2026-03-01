@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 final class PhpStanCommand extends AbstractToolCommand
 {
+    public const string TOOL_NAME = 'phpstan';
+
     private ?DisposableTemporaryFile $temporaryConfig = null;
 
     #[\Override]
@@ -40,9 +42,9 @@ final class PhpStanCommand extends AbstractToolCommand
             );
     }
 
-    protected function getToolName(): string
+    public function getToolName(): string
     {
-        return 'phpstan';
+        return self::TOOL_NAME;
     }
 
     protected function getDefaultConfigFileName(): string
@@ -152,7 +154,10 @@ final class PhpStanCommand extends AbstractToolCommand
         }
 
         // Create a disposable temporary file
-        $this->temporaryConfig = new DisposableTemporaryFile(new \Cpsit\QualityTools\Service\SecurityService(), new \Cpsit\QualityTools\Service\FilesystemService(), 'phpstan_', '.neon');
+        $securityService = new \Cpsit\QualityTools\Service\SecurityService();
+        $filesystem = new \Symfony\Component\Filesystem\Filesystem();
+        $filesystemService = new \Cpsit\QualityTools\Service\FilesystemService($filesystem, $securityService);
+        $this->temporaryConfig = new DisposableTemporaryFile($securityService, $filesystemService, 'phpstan_', '.neon');
         $this->temporaryConfig->write($pathsSection);
 
         return $this->temporaryConfig->getPath();

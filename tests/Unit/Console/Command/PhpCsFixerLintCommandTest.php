@@ -207,6 +207,8 @@ final class PhpCsFixerLintCommandTest extends TestCase
 
     public function testExecuteHandlesTargetPathException(): void
     {
+        // Test that non-existent target directory throws FileSystemException
+        // FileSystemException returns exit code 4 (filesystem error)
         $nonExistentTargetDir = $this->tempDir . '/non-existent-target';
 
         $this->mockInput
@@ -217,16 +219,32 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+        // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput) {
+                $actualOutput[] = $message;
+            });
 
+        // Run command which should fail with directory not found
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
+        
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
+        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
+        $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
     }
 
     public function testExecuteHandlesConfigPathException(): void
     {
+        // Test that non-existent config file throws ConfigurationException
+        // ConfigurationException returns exit code 2 (configuration error)
         $nonExistentConfigPath = $this->tempDir . '/non-existent-config.php';
 
         $this->mockInput
@@ -237,12 +255,26 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+        // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput) {
+                $actualOutput[] = $message;
+            });
 
+        // Run command which should fail with configuration file not found
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        // ConfigurationException returns exit code 2 based on getSuggestedExitCode()
+        $this->assertEquals(2, $result, 'Expected exit code 2 for ConfigurationException (config file not found)');
+        
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Configuration Error (1001)', $errorOutput, 'Should show configuration error code 1001');
+        $this->assertStringContainsString('Configuration file not found', $errorOutput, 'Should show config file not found message');
+        $this->assertStringContainsString($nonExistentConfigPath, $errorOutput, 'Should include the problematic config path');
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void
@@ -302,7 +334,8 @@ final class PhpCsFixerLintCommandTest extends TestCase
 
     public function testCommandHandlesMissingExecutable(): void
     {
-        // Remove php-cs-fixer executable to simulate missing dependency
+        // Test that missing php-cs-fixer executable throws ProcessException
+        // ProcessException returns exit code 3 (process error)
         $phpCsFixerExecutable = $this->tempDir . '/vendor/bin/php-cs-fixer';
         unlink($phpCsFixerExecutable);
 
@@ -314,15 +347,17 @@ final class PhpCsFixerLintCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+        // ErrorHandler will output error details to console
         $this->mockOutput
+            ->expects($this->atLeastOnce())
             ->method('writeln');
 
-        // Since the executable doesn't exist, this will fail at the process level
-        // and the executeProcess method will return a non-zero exit code
+        // Run command which should fail with missing executable
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        // Command should return non-zero exit code due to missing executable
-        $this->assertNotEquals(0, $result);
+        // ProcessException returns exit code 3 based on getSuggestedExitCode()
+        // (or raw exit code 127 for "command not found" from shell)
+        $this->assertNotEquals(0, $result, 'Expected non-zero exit code for missing executable');
     }
 
     public function testCommandUsesCorrectProcessArguments(): void

@@ -1,0 +1,33 @@
+#!/bin/bash
+# Mock rector executable for testing configuration discovery
+# This mock simulates rector and outputs paths based on the config file used
+
+# Parse arguments to find config file
+CONFIG_FILE=""
+for arg in "$@"; do
+    # Handle separate flags: -c file or --config file
+    if [[ "$prev_arg" == "-c" ]] || [[ "$prev_arg" == "--config" ]]; then
+        CONFIG_FILE="$arg"
+    # Handle combined flag: --config=file
+    elif [[ "$arg" =~ ^--config=(.+)$ ]]; then
+        CONFIG_FILE="${BASH_REMATCH[1]}"
+    fi
+    prev_arg="$arg"
+done
+
+# Check if we're using a custom config (contains "custom-rector")
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    if grep -q "custom-rector" "$CONFIG_FILE" 2>/dev/null; then
+        # Extract the custom path from the config file
+        PATH_VALUE=$(grep -o "'[^']*custom-rector[^']*-path[^']*'" "$CONFIG_FILE" | tr -d "'" | head -1)
+        if [[ -n "$PATH_VALUE" ]]; then
+            echo "$PATH_VALUE"
+            exit 0
+        fi
+    fi
+fi
+
+# Default behavior when not using custom config
+# (This simulates the current behavior where custom configs are ignored)
+echo "No custom config detected - using package defaults"
+exit 0

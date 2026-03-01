@@ -111,7 +111,7 @@ final class ComposerLintCommandTest extends TestCase
         $this->mockInput
             ->expects($this->atLeast(1))
             ->method('getOption')
-            ->willReturnCallback(fn ($option): ?false => match ($option) {
+            ->willReturnCallback(fn ($option) => match ($option) {
                 'path' => null,
                 'config' => null,
                 'no-optimization' => false,
@@ -197,19 +197,31 @@ final class ComposerLintCommandTest extends TestCase
         $nonExistentTargetDir = $this->tempDir . '/non-existent-target';
 
         $this->mockInput
-            ->expects($this->once())
             ->method('getOption')
-            ->with('path')
-            ->willReturn($nonExistentTargetDir);
+            ->willReturnMap([
+                ['path', $nonExistentTargetDir],
+                ['config', null],
+                ['no-optimization', false],
+            ]);
 
+        // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->with($this->matchesRegularExpression('/<error>Error:.*Target path does not exist.*<\/error>/'));
+            ->willReturnCallback(function ($message) use (&$actualOutput) {
+                $actualOutput[] = $message;
+            });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        // FileSystemException returns exit code 4
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException');
+        
+        // Verify error message
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput);
+        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void

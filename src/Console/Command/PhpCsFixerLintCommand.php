@@ -7,12 +7,13 @@ namespace Cpsit\QualityTools\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PhpCsFixerLintCommand extends BaseCommand
+final class PhpCsFixerLintCommand extends AbstractToolCommand
 {
-    #[\Override]
-    protected function getTargetPath(InputInterface $input): string
+    public const string TOOL_NAME = 'php-cs-fixer';
+
+    public function getToolName(): string
     {
-        return $this->getTargetPathForTool($input, 'php-cs-fixer');
+        return self::TOOL_NAME;
     }
 
     #[\Override]
@@ -31,68 +32,35 @@ final class PhpCsFixerLintCommand extends BaseCommand
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function getDefaultConfigFileName(): string
     {
-        try {
-            // Show optimization details by default unless disabled
-            if (!$this->isOptimizationDisabled($input)) {
-                $this->showOptimizationDetails($input, $output, 'php-cs-fixer');
-            }
+        return 'php-cs-fixer.php';
+    }
 
-            $configPath = $this->resolveConfigPath('php-cs-fixer.php', $input->getOption('config'));
+    protected function buildToolCommand(
+        InputInterface $input,
+        OutputInterface $output,
+        string $configPath,
+        array $targetPaths,
+    ): array {
+        $command = [
+            $this->getVendorBinPath() . '/php-cs-fixer',
+            'fix',
+            '--dry-run',
+            '--diff',
+            '--config=' . $configPath,
+        ];
 
-            $command = [
-                $this->getVendorBinPath() . '/php-cs-fixer',
-                'fix',
-                '--dry-run',
-                '--diff',
-                '--config=' . $configPath,
-            ];
-
-            // Enable parallel processing if beneficial
-            if ($this->shouldEnableParallelProcessing($input, 'php-cs-fixer')) {
-                $command[] = '--using-cache=yes';
-            }
-
-            // Handle path arguments - get option only once
-            $customPath = $input->getOption('path');
-            if ($customPath !== null) {
-                if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
-                }
-                $command[] = realpath($customPath);
-                if ($output->isVerbose()) {
-                    $output->writeln(\sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
-                }
-            } else {
-                // Use resolved paths from configuration - pass all paths to php-cs-fixer
-                $resolvedPaths = $this->getResolvedPathsForTool($input, 'php-cs-fixer');
-
-                if (!empty($resolvedPaths)) {
-                    foreach ($resolvedPaths as $path) {
-                        $command[] = $path;
-                    }
-                    if ($output->isVerbose()) {
-                        $output->writeln(\sprintf('<comment>Analyzing resolved paths: %s</comment>', implode(', ', $resolvedPaths)));
-                    }
-                } else {
-                    if ($output->isVerbose()) {
-                        $output->writeln('<comment>Using default path discovery</comment>');
-                    }
-                }
-            }
-
-            // Get optimal memory limit only if optimization is enabled
-            $memoryLimit = null;
-            if (!$this->isOptimizationDisabled($input)) {
-                $memoryLimit = $this->getOptimalMemoryLimit($input, 'php-cs-fixer');
-            }
-
-            return $this->executeProcess($command, $input, $output, $memoryLimit);
-        } catch (\Exception $e) {
-            $output->writeln(\sprintf('<error>Error: %s</error>', $e->getMessage()));
-
-            return 1;
+        // Enable parallel processing if beneficial
+        if ($this->shouldEnableParallelProcessing($input, 'php-cs-fixer')) {
+            $command[] = '--using-cache=yes';
         }
+
+        // Add target paths to command
+        foreach ($targetPaths as $path) {
+            $command[] = $path;
+        }
+
+        return $command;
     }
 }
