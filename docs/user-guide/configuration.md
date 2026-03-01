@@ -39,9 +39,8 @@ vendor\bin\qt --version
 - Docker container environments
 
 **Requirements:**
-- Path must exist and be readable
-- Path must be a directory
-- Directory should contain a valid TYPO3 project
+- Path must exist and be a directory
+- The tool will use this path as the project root without TYPO3 validation
 
 ### QT_DEBUG
 
@@ -95,16 +94,16 @@ Control output detail with the verbose option:
 
 ```bash
 # Normal output
-vendor/bin/qt --version
+vendor/bin/qt lint:rector
 
 # Verbose output (-v)
-vendor/bin/qt --version -v
+vendor/bin/qt lint:rector -v
 
 # Very verbose output (-vv)
-vendor/bin/qt --version -vv
+vendor/bin/qt lint:rector -vv
 
 # Debug level output (-vvv)
-vendor/bin/qt --version -vvv
+vendor/bin/qt lint:rector -vvv
 ```
 
 **Verbosity Levels:**
@@ -167,21 +166,52 @@ The system looks for YAML configuration files in the following locations:
 
 ### Tool-Specific Configuration Files
 
-Tool-specific configuration files take precedence over unified YAML configuration for their respective tools:
+Tool-specific configuration files provide advanced configuration options for each tool. There are two ways to use them:
 
-#### Project Root
+#### Auto-Discovery
+The system automatically discovers tool configuration files in standard locations:
+
+**Project Root:**
 - `rector.php` (Rector)
 - `phpstan.neon`, `phpstan.neon.dist` (PHPStan)
 - `.php-cs-fixer.dist.php`, `.php-cs-fixer.php` (PHP CS Fixer)
 - `typoscript-lint.yml` (TypoScript Lint)
 - `fractor.php` (Fractor)
 
-#### Config Directory
+**Config Directory:**
 - `config/rector.php`
 - `config/phpstan.neon`
 - `config/.php-cs-fixer.dist.php`
 - `config/.php-cs-fixer.php`
 - `config/typoscript-lint.yml`
+- `config/fractor.php`
+
+#### Custom Configuration Files
+You can also specify custom configuration file paths in your `.quality-tools.yaml`:
+
+```yaml
+quality-tools:
+  tools:
+    rector:
+      enabled: true
+      config_file: "custom/my-rector-config.php"
+
+    phpstan:
+      enabled: true
+      config_file: "config/custom/phpstan.neon"
+
+    php-cs-fixer:
+      enabled: true
+      config_file: ".php-cs-fixer.custom.php"
+```
+
+#### Configuration Precedence
+The system follows this precedence order (highest to lowest):
+1. Command-line `--config` option
+2. Custom `config_file` in YAML configuration
+3. Auto-discovered tool configuration files
+4. Tool settings in YAML configuration
+5. Package default configurations
 
 ### Configuration Usage Examples
 
@@ -316,20 +346,17 @@ The system uses different merging strategies based on the type of configuration 
 
 #### Configuration Show Command
 
-Display current configuration and sources:
+Display current configuration:
 
 ```bash
-# Show current configuration
+# Show current configuration as YAML
 vendor/bin/qt config:show
 
-# Show configuration with sources
-vendor/bin/qt config:show --with-sources
+# Show configuration as JSON
+vendor/bin/qt config:show --format=json
 
-# Show configuration for specific tool
-vendor/bin/qt config:show --tool=phpstan
-
-# Show configuration debug information
-vendor/bin/qt config:show --debug
+# Show configuration with verbose output (includes sources)
+vendor/bin/qt config:show -v
 ```
 
 #### Configuration Validate Command
@@ -340,11 +367,8 @@ Validate configuration files:
 # Validate configuration
 vendor/bin/qt config:validate
 
-# Validate specific configuration file
-vendor/bin/qt config:validate config/quality-tools.yaml
-
-# Show validation warnings
-vendor/bin/qt config:validate --warnings
+# Validate with verbose output
+vendor/bin/qt config:validate -v
 ```
 
 #### Configuration Initialize Command
@@ -473,22 +497,20 @@ services:
 The tool validates environment variables at runtime:
 
 ```bash
-# Valid path
-export QT_PROJECT_ROOT=/valid/typo3/project
-vendor/bin/qt --version  # Works
+# Valid directory path
+export QT_PROJECT_ROOT=/existing/directory
+vendor/bin/qt --version  # Works - uses the specified directory as project root
 
-# Invalid path
+# Non-existent path
 export QT_PROJECT_ROOT=/nonexistent/path
-vendor/bin/qt --version  # Error: Directory doesn't exist
+vendor/bin/qt --version  # Falls back to automatic TYPO3 project detection
 
-# Not a directory
+# File path instead of directory
 export QT_PROJECT_ROOT=/path/to/file.txt
-vendor/bin/qt --version  # Error: Not a directory
-
-# No TYPO3 project
-export QT_PROJECT_ROOT=/valid/but/not/typo3
-vendor/bin/qt --version  # Error: No TYPO3 project found
+vendor/bin/qt --version  # Falls back to automatic TYPO3 project detection
 ```
+
+**Note:** When QT_PROJECT_ROOT is set but invalid (non-existent or not a directory), the tool falls back to automatic TYPO3 project detection from the current working directory.
 
 ### Debug Configuration Validation
 
@@ -498,11 +520,18 @@ Test your configuration with debug mode:
 QT_DEBUG=true vendor/bin/qt --version
 ```
 
-Expected debug output:
+Expected debug output when QT_PROJECT_ROOT is set:
 ```
 Project root detection started
-Environment variable QT_PROJECT_ROOT: /path/to/project
-Validating project root: /path/to/project
+Environment variable QT_PROJECT_ROOT: /path/to/directory
+Using project root from QT_PROJECT_ROOT: /path/to/directory
+CPSIT Quality Tools 1.0.0-dev
+```
+
+Expected debug output with automatic detection:
+```
+Project root detection started
+Searching for TYPO3 project from: /current/working/directory
 Found composer.json: /path/to/project/composer.json
 TYPO3 dependencies found: typo3/cms-core
 Project root confirmed: /path/to/project
@@ -521,20 +550,20 @@ CPSIT Quality Tools 1.0.0-dev
 ### Debug Commands
 
 ```bash
-# Show all configuration sources
-vendor/bin/qt config:show --debug
+# Show configuration with verbose output (includes sources)
+vendor/bin/qt config:show -v
 
-# Validate configuration files
-vendor/bin/qt config:validate --warnings
+# Validate configuration with verbose output
+vendor/bin/qt config:validate -v
 
-# Show which source provides specific values
-vendor/bin/qt config:show --with-sources
+# Show configuration as JSON for debugging
+vendor/bin/qt config:show --format=json
 ```
 
 ### Getting Help
 
 1. Use `--help` flag with any command for detailed usage information
-2. Use `--debug` flag to see detailed configuration loading information
+2. Use `-v` or `--verbose` flag to see detailed configuration loading information
 3. Check file permissions and syntax if configuration isn't loading
 4. Refer to tool-specific documentation for advanced configuration options
 
@@ -577,10 +606,3 @@ vendor/bin/qt config:show --with-sources
 4. **Test Thoroughly**: Verify that tools behave as expected
 5. **Clean Up**: Remove redundant configuration files
 
-#### Best Migration Strategy
-
-1. Start with global configuration for common defaults
-2. Keep project-specific overrides minimal
-3. Use config directory only for environment differences
-4. Migrate tool-specific configs only when needed
-5. Test each step to ensure tools work correctly

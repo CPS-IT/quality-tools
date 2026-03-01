@@ -57,6 +57,7 @@ quality-tools:
     rector:
       enabled: boolean              # Enable/disable Rector
       level: string                 # Rector level: "typo3-13", "typo3-12", "typo3-11"
+      config_file: string           # Custom configuration file path
       php_version: string           # Override project PHP version
       dry_run: boolean              # Always run in dry-run mode
       paths:                        # Tool-specific path overrides
@@ -67,6 +68,7 @@ quality-tools:
 
     fractor:
       enabled: boolean              # Enable/disable Fractor
+      config_file: string           # Custom configuration file path
       indentation: integer          # Indentation spaces (1-8)
       skip_files:                   # Files to skip
         - string                    # File pattern
@@ -79,6 +81,7 @@ quality-tools:
     phpstan:
       enabled: boolean              # Enable/disable PHPStan
       level: integer                # Analysis level (0-9)
+      config_file: string           # Custom configuration file path  
       memory_limit: string          # Memory limit (e.g., "1G", "512M")
       paths:                        # Tool-specific path overrides
         scan:                       # Additional scan paths for this tool
@@ -89,6 +92,7 @@ quality-tools:
     php-cs-fixer:
       enabled: boolean              # Enable/disable PHP CS Fixer
       preset: string                # Preset: "typo3", "psr12", "symfony"
+      config_file: string           # Custom configuration file path
       cache: boolean                # Enable caching
       paths:                        # Tool-specific path overrides
         scan:                       # Additional scan paths for this tool
@@ -98,6 +102,7 @@ quality-tools:
 
     typoscript-lint:
       enabled: boolean              # Enable/disable TypoScript Lint
+      config_file: string           # Custom configuration file path
       indentation: integer          # Indentation spaces (1-8)
       ignore_patterns:              # Patterns to ignore
         - string                    # Pattern

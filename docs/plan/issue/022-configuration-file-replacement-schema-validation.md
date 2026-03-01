@@ -354,16 +354,19 @@ The following architectural decisions were made during the implementation of Pha
    - [x] All 51 tests in ConfigValidateCommandTest and ConfigShowCommandTest passing with 0 skipped
    - [x] Fixed YamlConfigurationWorkflowTest integration test for JSON output behavior
 
-#### Phase 5: Documentation (Priority: Medium) - PENDING
-1. **[ ] User Guide Updates** (`docs/user-guide/configuration.md`) - Pending
-   - Add "Custom Tool Configuration Files" section
-   - Document configuration precedence rules clearly
-   - Include step-by-step examples for each tool
+#### Phase 5: Documentation (Priority: Medium) - COMPLETED
+1. **[x] User Guide Updates** (`docs/user-guide/configuration.md`) - Completed
+   - [x] Added "Custom Tool Configuration Files" section with config_file examples
+   - [x] Documented configuration precedence rules clearly
+   - [x] Included step-by-step examples for each tool
 
-2. **[ ] Tool-Specific Documentation** - Pending
-   - Add `config_file` examples to each tool guide
-   - Update troubleshooting guide with configuration scenarios
-   - Document security considerations for custom config files
+2. **[x] Tool-Specific Documentation** - Completed
+   - [x] Added `config_file` examples to yaml-configuration.md tool guide
+   - [x] Updated troubleshooting guide with Section 8 for configuration scenarios
+   - [x] Documented security considerations for custom config files
+   - [x] Updated configuration reference.md with config_file properties
+   - [x] Updated README.md with Custom Tool Configs and Auto-Discovery features
+   - [x] Updated user-guide/index.md for consistency
 
 #### Phase 6: Integration Validation (Priority: High) - PENDING
 1. **[ ] Comprehensive Integration Testing** - Pending

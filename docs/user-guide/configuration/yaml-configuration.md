@@ -85,15 +85,21 @@ quality-tools:
     rector:
       enabled: true
       level: "typo3-13"
+      # Optional: Use custom configuration file
+      # config_file: "custom/rector.php"
 
     phpstan:
       enabled: true
       level: 6
       memory_limit: "1G"
+      # Optional: Use custom configuration file
+      # config_file: "config/custom/phpstan.neon"
 
     php-cs-fixer:
       enabled: true
       preset: "typo3"
+      # Optional: Use custom configuration file
+      # config_file: ".php-cs-fixer.custom.php"
 
     typoscript-lint:
       enabled: true
@@ -128,7 +134,7 @@ vendor/bin/qt config:show
 vendor/bin/qt config:show --format=json
 
 # Show configuration sources (verbose)
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 ```
 
 ### Step 5: Run Quality Tools
@@ -365,7 +371,7 @@ Use the configuration debugging tools to understand path resolution:
 
 ```bash
 # Show resolved paths for all tools
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Debug path resolution for specific tools (details shown by default)
 vendor/bin/qt lint:rector
@@ -652,7 +658,7 @@ quality-tools:
    vendor/bin/qt config:validate
 
    # Show resolved config
-   vendor/bin/qt config:show --verbose
+   vendor/bin/qt config:show -v
    ```
 
 3. **Environment variables not working**
@@ -670,7 +676,7 @@ Use these commands to debug configuration issues:
 
 ```bash
 # Show all configuration sources
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Validate configuration
 vendor/bin/qt config:validate

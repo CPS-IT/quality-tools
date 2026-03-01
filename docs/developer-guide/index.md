@@ -225,10 +225,10 @@ XDEBUG_MODE=profile vendor/bin/qt lint:phpstan
 vendor/bin/qt --verbose lint:phpstan
 
 # Configuration debugging
-vendor/bin/qt config:validate --verbose
+vendor/bin/qt config:validate -v
 
 # Path resolution debugging
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 ```
 
 ## Release Process

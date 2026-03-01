@@ -17,6 +17,13 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
 * [x] TYPO3 project root detection via composer.json traversal (up to 10 levels)
 * [x] Environment variable configuration support
 * [x] Comprehensive error handling and debug mode
+* [x] **Unified YAML Configuration System:**
+  * [x] Centralized configuration in `.quality-tools.yaml`
+  * [x] Hierarchical configuration merge (global -> project -> CLI)
+  * [x] Custom tool configuration files via `config_file` option
+  * [x] Auto-discovery of tool configurations in standard locations
+  * [x] Environment variable interpolation with defaults
+  * [x] JSON Schema validation with helpful error messages
 * [x] **Dynamic Resource Optimization (Feature 004):**
   * [x] Automatic project analysis (file counting, complexity analysis)
   * [x] Dynamic memory limit calculation (552M PHPStan, 460M PHP CS Fixer, 690M Rector)
@@ -34,6 +41,11 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
   * [x] `qt lint:typoscript` - TypoScript Lint validation
   * [x] `qt lint:composer` - Composer.json validation
   * [x] `qt fix:composer` - Composer.json normalization
+* [x] **Configuration Commands:**
+  * [x] `qt config:init` - Initialize configuration with project templates
+  * [x] `qt config:validate` - Validate YAML configuration
+  * [x] `qt config:show` - Display resolved configuration
+* [x] **Flexible Path Configuration** with glob patterns and vendor namespace support
 * [x] **Configuration path resolution** with custom override support (`--config` option)
 * [x] **Target path specification** (`--path` option)
 * [x] **Process output forwarding** with proper exit codes
@@ -52,6 +64,14 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
 
 The hierarchical configuration system provides powerful yet simple configuration management:
 
+### Unified YAML Configuration
+- **Single Configuration File**: Manage all tools from `.quality-tools.yaml`
+- **Custom Tool Configs**: Support for custom tool configuration files via `config_file` option
+- **Auto-Discovery**: Automatic detection of tool configs in standard locations (project root, config/)
+- **Configuration Hierarchy**: Package defaults -> global config -> project config -> CLI overrides
+- **Environment Variables**: Support for `${VAR:-default}` syntax with type-safe interpolation
+
+### Documentation
 7. [Configuration Reference](configuration/reference.md) - Complete reference for all configuration options and hierarchy
 8. [YAML Configuration Guide](configuration/yaml-configuration.md) - Complete guide to the unified YAML configuration system
 9. [Project Templates](configuration/templates.md) - Pre-configured setups for different TYPO3 project types
