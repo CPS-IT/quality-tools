@@ -381,12 +381,12 @@ The following architectural decisions were made during the implementation of Pha
 ### Success Criteria
 - [x] All test suites pass without regression (Phase 1-2 complete, no new failures)
 - [x] Custom tool config files validate successfully with proper error messages (Schema and validation complete)
-- [ ] `qt config:validate` reports accurate validation status (Pending Phase 3)
-- [ ] `qt config:show` displays configuration with auto-discovery indicators (Pending Phase 3)
+- [x] `qt config:validate` reports accurate validation status (Phase 4 complete - validation working)
+- [x] `qt config:show` displays configuration with auto-discovery indicators (Phase 4 complete - verbose mode shows sources)
 - [x] Tool commands use custom configuration files when present (Phase 3 Step 1 complete)
 - [x] Configuration file validation prevents invalid configurations (Validation service complete)
 - [x] Secure path resolution prevents security vulnerabilities (Security integration complete)
-- [ ] Documentation provides clear examples and troubleshooting guidance (Pending Phase 5)
+- [x] Documentation provides clear examples and troubleshooting guidance (Phase 5 complete - comprehensive docs added)
 - [x] Performance impact is minimal and measured (Test infrastructure validates <100ms)
 - [x] Edge cases and error conditions are handled gracefully (Edge case tests complete)
 
