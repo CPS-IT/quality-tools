@@ -7,10 +7,12 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Console\Command\ConfigShowCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Console\Command\ConfigShowCommand
@@ -125,21 +127,12 @@ final class ConfigShowCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();
-        self::assertStringContainsString('Resolved Configuration', $output);
-
-        // Should contain valid JSON
-        $outputLines = explode("\n", $output);
-        $jsonOutput = '';
-        $foundJson = false;
-
-        foreach ($outputLines as $line) {
-            if (str_starts_with($line, '{')) {
-                $foundJson = true;
-            }
-            if ($foundJson) {
-                $jsonOutput .= $line . "\n";
-            }
-        }
+        
+        // JSON format should not contain the title, just pure JSON
+        self::assertStringNotContainsString('Resolved Configuration', $output);
+        
+        // Should be valid JSON from the start
+        $jsonOutput = trim($output);
 
         $jsonOutput = trim($jsonOutput);
         self::assertNotEmpty($jsonOutput);
@@ -443,5 +436,271 @@ final class ConfigShowCommandTest extends TestCase
 
             TestHelper::removeDirectory($testDir);
         }
+    }
+
+    /**
+     * Test that verbose mode shows configuration sources including auto-discovered files.
+     */
+    #[DataProvider('autoDiscoveryProvider')]
+    public function testVerboseShowsAutoDiscoveredConfigs(
+        string $fixtureDirectory,
+        string $description,
+        array $expectedSources,
+        array $expectedWarnings = []
+    ): void {
+        // Copy fixture to temp directory
+        $filesystem = new Filesystem();
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
+        
+        if (!is_dir($fixturePath)) {
+            $this->markTestSkipped("Fixture directory not found: $fixturePath");
+        }
+        
+        $filesystem->mirror($fixturePath, $this->tempDir);
+        
+        // Execute with verbose mode to see configuration sources
+        $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        
+        self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
+        
+        $output = $this->commandTester->getDisplay();
+        
+        // Should show configuration sources in verbose mode
+        self::assertStringContainsString('Configuration Sources', $output);
+        
+        // Check for expected source files
+        foreach ($expectedSources as $source) {
+            self::assertStringContainsString(
+                $source,
+                $output,
+                sprintf('Failed for %s: Should show source "%s"', $description, $source)
+            );
+        }
+        
+        // Check for warnings about invalid configs
+        foreach ($expectedWarnings as $warning) {
+            self::assertStringContainsString(
+                $warning,
+                $output,
+                sprintf('Failed for %s: Should show warning "%s"', $description, $warning)
+            );
+        }
+    }
+
+    /**
+     * Data provider for auto-discovery test scenarios.
+     */
+    public static function autoDiscoveryProvider(): array
+    {
+        return [
+            'rector auto-discovered' => [
+                'fixtureDirectory' => 'rector-root-override',
+                'description' => 'Rector config auto-discovered from root',
+                'expectedSources' => [
+                    'rector.php',
+                    'Tool-specific:',
+                ],
+                'expectedWarnings' => [],
+            ],
+            'phpstan auto-discovered' => [
+                'fixtureDirectory' => 'phpstan-root-override',
+                'description' => 'PHPStan config auto-discovered from root',
+                'expectedSources' => [
+                    'phpstan.neon',
+                    'Tool-specific:',
+                ],
+                'expectedWarnings' => [],
+            ],
+            'multiple tools discovered' => [
+                'fixtureDirectory' => 'multiple-tools-mixed',
+                'description' => 'Multiple tool configs auto-discovered',
+                'expectedSources' => [
+                    'Tool-specific:',
+                ],
+                'expectedWarnings' => [],
+            ],
+            'explicit config override' => [
+                'fixtureDirectory' => 'explicit-config-file-override',
+                'description' => 'Explicit config_file in YAML',
+                'expectedSources' => [
+                    '.quality-tools.yaml',
+                ],
+                'expectedWarnings' => [],
+            ],
+        ];
+    }
+
+    /**
+     * Test that regular (non-verbose) output shows resolved configuration.
+     */
+    #[DataProvider('resolvedConfigurationProvider')]
+    public function testShowsResolvedConfiguration(
+        string $fixtureDirectory,
+        string $description,
+        array $expectedConfigKeys
+    ): void {
+        // Copy fixture to temp directory
+        $filesystem = new Filesystem();
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
+        
+        if (!is_dir($fixturePath)) {
+            $this->markTestSkipped("Fixture directory not found: $fixturePath");
+        }
+        
+        $filesystem->mirror($fixturePath, $this->tempDir);
+        
+        // Execute in normal mode (non-verbose)
+        $exitCode = $this->commandTester->execute([]);
+        
+        self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
+        
+        $output = $this->commandTester->getDisplay();
+        
+        // Should show resolved configuration
+        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('quality-tools:', $output);
+        
+        // Check for expected configuration keys
+        foreach ($expectedConfigKeys as $key) {
+            self::assertStringContainsString(
+                $key,
+                $output,
+                sprintf('Failed for %s: Configuration should contain "%s"', $description, $key)
+            );
+        }
+    }
+
+    /**
+     * Data provider for resolved configuration testing.
+     */
+    public static function resolvedConfigurationProvider(): array
+    {
+        return [
+            'basic configuration' => [
+                'fixtureDirectory' => 'rector-root-override',
+                'description' => 'Basic configuration with rector override',
+                'expectedConfigKeys' => [
+                    'project:',
+                    'tools:',
+                    'rector:',
+                    'enabled: true',
+                ],
+            ],
+            'multiple tools' => [
+                'fixtureDirectory' => 'multiple-tools-mixed',
+                'description' => 'Configuration with multiple tools',
+                'expectedConfigKeys' => [
+                    'project:',
+                    'tools:',
+                    'rector:',
+                    'phpstan:',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test JSON format output with auto-discovered configs.
+     */
+    public function testJsonFormatWithAutoDiscoveredConfigs(): void
+    {
+        // Use a fixture with auto-discovered configs
+        $filesystem = new Filesystem();
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/rector-root-override';
+        
+        if (!is_dir($fixturePath)) {
+            $this->markTestSkipped("Fixture directory not found: $fixturePath");
+        }
+        
+        $filesystem->mirror($fixturePath, $this->tempDir);
+        
+        // Execute with JSON format
+        $exitCode = $this->commandTester->execute(['--format' => 'json']);
+        
+        self::assertSame(Command::SUCCESS, $exitCode);
+        
+        $output = $this->commandTester->getDisplay();
+        
+        // Should be valid JSON
+        $json = json_decode($output, true);
+        self::assertIsArray($json);
+        self::assertArrayHasKey('quality-tools', $json);
+        
+        // Should have resolved configuration
+        $config = $json['quality-tools'];
+        self::assertArrayHasKey('project', $config);
+        self::assertArrayHasKey('tools', $config);
+    }
+
+    /**
+     * Test that config:show handles missing custom config files gracefully.
+     */
+    public function testHandlesMissingCustomConfigFiles(): void
+    {
+        // Create a YAML config that references a non-existent custom config
+        $config = <<<YAML
+            quality-tools:
+              project:
+                name: "test-missing-config"
+              tools:
+                rector:
+                  enabled: true
+                  config_file: "non-existent/rector.php"
+            YAML;
+        
+        file_put_contents($this->tempDir . '/.quality-tools.yaml', $config);
+        
+        // Execute with verbose to see configuration
+        $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        
+        // Should succeed even with non-existent config_file reference
+        self::assertSame(Command::SUCCESS, $exitCode);
+        
+        $output = $this->commandTester->getDisplay();
+        
+        // Should show configuration with the config_file value
+        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('config_file: non-existent/rector.php', $output);
+        // The actual validation of the config_file happens when the tool is executed, not in config:show
+    }
+
+    /**
+     * Test configuration source priority display in verbose mode.
+     */
+    public function testVerboseShowsConfigurationPriority(): void
+    {
+        // Create both YAML config and auto-discovered tool configs
+        $config = <<<YAML
+            quality-tools:
+              project:
+                name: "priority-test"
+              tools:
+                rector:
+                  enabled: true
+                  config_file: "custom/rector.php"
+            YAML;
+        
+        file_put_contents($this->tempDir . '/.quality-tools.yaml', $config);
+        
+        // Create the custom config file
+        mkdir($this->tempDir . '/custom');
+        file_put_contents($this->tempDir . '/custom/rector.php', '<?php return static function ($c): void {};');
+        
+        // Also create an auto-discoverable rector.php (should be ignored due to explicit config)
+        file_put_contents($this->tempDir . '/rector.php', '<?php return static function ($c): void {};');
+        
+        // Execute with verbose
+        $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+        
+        self::assertSame(Command::SUCCESS, $exitCode);
+        
+        $output = $this->commandTester->getDisplay();
+        
+        // Should show configuration sources
+        self::assertStringContainsString('Configuration Sources', $output);
+        self::assertStringContainsString('Project:', $output);
+        
+        // The explicit config_file should take precedence
+        self::assertStringContainsString('custom/rector.php', $output);
     }
 }

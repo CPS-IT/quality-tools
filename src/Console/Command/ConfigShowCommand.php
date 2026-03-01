@@ -61,11 +61,14 @@ final class ConfigShowCommand extends BaseCommand
             $configuration = $loader->load($projectRoot);
             $configData = $configuration->toArray();
 
-            $io->title('Resolved Configuration');
+            // Only show title for non-JSON formats
+            if ($format !== 'json') {
+                $io->title('Resolved Configuration');
 
-            // Show configuration file sources if verbose
-            if ($output->isVerbose()) {
-                $this->showConfigurationSources($io, $loader, $projectRoot);
+                // Show configuration file sources if verbose
+                if ($output->isVerbose()) {
+                    $this->showConfigurationSources($io, $loader, $projectRoot);
+                }
             }
 
             // Output configuration in the requested format

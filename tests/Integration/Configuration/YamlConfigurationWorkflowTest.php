@@ -403,29 +403,17 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         // Show configuration to verify merging
-        $appTester->run(['command' => 'config:show', '--format' => 'json', '--verbose' => true]);
+        $appTester->run(['command' => 'config:show', '--format' => 'json']);
 
         $output = $appTester->getDisplay();
 
-        // Should show both configuration sources
-        self::assertStringContainsString('Global:', $output);
-        self::assertStringContainsString('Project:', $output);
-
-        // Extract and verify merged configuration
-        $lines = explode("\n", $output);
-        $jsonStart = false;
-        $jsonOutput = '';
-
-        foreach ($lines as $line) {
-            if (str_starts_with($line, '{')) {
-                $jsonStart = true;
-            }
-            if ($jsonStart) {
-                $jsonOutput .= $line . "\n";
-            }
-        }
-
-        $config = json_decode(trim($jsonOutput), true);
+        // JSON format should output pure JSON, no configuration sources
+        // The configuration sources can be checked with verbose YAML format if needed
+        
+        // Parse JSON directly since it's pure JSON output
+        $config = json_decode(trim($output), true);
+        
+        self::assertNotNull($config, 'Output should be valid JSON');
 
         // Verify merged values
         self::assertSame('hierarchy-test', $config['quality-tools']['project']['name']); // project
@@ -440,6 +428,16 @@ final class YamlConfigurationWorkflowTest extends TestCase
         // Output settings should be merged
         self::assertTrue($config['quality-tools']['output']['colors']); // project override
         self::assertSame('verbose', $config['quality-tools']['output']['verbosity']); // global
+
+        // Now test verbose mode with YAML format to see configuration sources
+        $appTester->run(['command' => 'config:show', '--verbose' => true]);
+        
+        $verboseOutput = $appTester->getDisplay();
+        
+        // In verbose YAML mode, we should see configuration sources
+        self::assertStringContainsString('Configuration Sources', $verboseOutput);
+        self::assertStringContainsString('Global:', $verboseOutput);
+        self::assertStringContainsString('Project:', $verboseOutput);
 
         // Restore environment variables
         if ($originalHome !== false) {

@@ -321,16 +321,38 @@ The following architectural decisions were made during the implementation of Pha
    - [x] ComposerFixCommand and ComposerLintCommand refactored to extend AbstractToolCommand
    - [x] Consistent error handling across all tool commands
 
-#### Phase 4: Tool Integration and Commands (Priority: High) - PENDING
-1. **[ ] Tool Executor Integration** - Pending
-   - Update all tool commands to use new configuration resolution
-   - Ensure fallback behavior when custom configs are invalid
-   - Test configuration precedence in all tool executions
+#### Phase 4: Tool Integration and Commands (Priority: High) - COMPLETED
+1. **[x] Tool Executor Integration** - Fully Implemented
+   
+   **Completed Tasks**:
+   - [x] All tool commands use new configuration resolution via AbstractToolCommand
+   - [x] Auto-discovery works for all tools (rector, phpstan, fractor, php-cs-fixer, typoscript-lint)
+   - [x] Fallback behavior when custom configs are invalid (falls back to package defaults)
+   - [x] Configuration precedence working correctly: --config > auto-discovered > package defaults
+   
+   **Verified Behavior**:
+   - Tools auto-discover config files from project root and config/ directory
+   - Verbose mode shows discovery process
+   - Error handling provides clear messages and troubleshooting guidance
+   - All integration tests pass
 
-2. **[ ] Command Enhancement** - Pending
-   - Update `ConfigValidateCommandTest` with comprehensive custom config scenarios
-   - Update `ConfigShowCommandTest` with auto-discovery indicators
-   - Enhance user feedback for configuration source information
+2. **[x] Command Enhancement** - Fully Complete
+   
+   **Completed Functionality**:
+   - [x] config:validate correctly validates with custom configs present
+   - [x] config:show displays resolved configuration with all sources
+   - [x] Verbose mode shows configuration sources including auto-discovered files
+   - [x] Clear warnings when tool configs have validation issues
+   - [x] JSON format outputs pure JSON without non-JSON content
+   
+   **Completed Test Updates**:
+   - [x] Updated ConfigValidateCommandTest with comprehensive custom config scenarios using dataProvider pattern
+   - [x] Updated ConfigShowCommandTest with auto-discovery indicators and physical fixtures
+   - [x] Enhanced user feedback for configuration source information in tests
+   - [x] Fixed all fixture paths and added missing .quality-tools.yaml files to fixtures
+   - [x] Refactored ComposerFixCommandTest and ComposerLintCommandTest to use CommandTester
+   - [x] All 51 tests in ConfigValidateCommandTest and ConfigShowCommandTest passing with 0 skipped
+   - [x] Fixed YamlConfigurationWorkflowTest integration test for JSON output behavior
 
 #### Phase 5: Documentation (Priority: Medium) - PENDING
 1. **[ ] User Guide Updates** (`docs/user-guide/configuration.md`) - Pending

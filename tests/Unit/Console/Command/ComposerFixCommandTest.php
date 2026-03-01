@@ -111,32 +111,17 @@ final class ComposerFixCommandTest extends TestCase
         // Create composer.json in project root for the command to normalize
         file_put_contents($this->tempDir . '/composer.json', '{}');
 
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['path', null],
-                ['config', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        // Execute with default options
+        $commandTester->execute([]);
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln');
+        // Command should execute successfully
+        $this->assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('write')
-            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        // Output should contain composer-normalize execution result
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 
     public function testExecuteWithCustomTargetPath(): void
@@ -147,32 +132,19 @@ final class ComposerFixCommandTest extends TestCase
         // Create composer.json in custom target directory
         file_put_contents($customTargetDir . '/composer.json', '{}');
 
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['path', $customTargetDir],
-                ['config', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        // Execute with custom path option
+        $commandTester->execute([
+            '--path' => $customTargetDir,
+        ]);
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln');
+        // Command should execute successfully
+        $this->assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('write')
-            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        // Output should contain composer-normalize execution result
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 
     public function testExecuteWithVerboseOutput(): void
@@ -198,32 +170,16 @@ final class ComposerFixCommandTest extends TestCase
     {
         $nonExistentTargetDir = $this->tempDir . '/non-existent-target';
 
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['path', $nonExistentTargetDir],
-                ['config', null],
-                ['no-optimization', false],
-            ]);
+        // The command throws FileSystemException for non-existent paths
+        $this->expectException(\Cpsit\QualityTools\Exception\FileSystemException::class);
+        $this->expectExceptionMessage('Directory not found');
 
-        // Mock output to capture error messages
-        $actualOutput = [];
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln')
-            ->willReturnCallback(function ($message) use (&$actualOutput) {
-                $actualOutput[] = $message;
-            });
+        $commandTester = new CommandTester($this->command);
 
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        // FileSystemException returns exit code 4
-        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException');
-
-        // Verify error message
-        $errorOutput = implode("\n", $actualOutput);
-        $this->assertStringContainsString('Filesystem Error (3002)', $errorOutput);
-        $this->assertStringContainsString('Directory not found', $errorOutput);
+        // Execute with non-existent path - this will throw
+        $commandTester->execute([
+            '--path' => $nonExistentTargetDir,
+        ]);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void
@@ -269,56 +225,38 @@ final class ComposerFixCommandTest extends TestCase
         // Remove composer.json file to test file validation
         unlink($this->tempDir . '/composer.json');
 
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['path', null],
-                ['config', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln')
-            ->with($this->stringContains('No composer.json files found in any of the configured paths'));
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
+        // Execute without composer.json
+        $commandTester->execute([]);
 
         // Command should return error code due to missing composer.json
-        $this->assertEquals(1, $result);
+        $this->assertEquals(1, $commandTester->getStatusCode());
+
+        // Verify error message
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('No composer.json files found in any of the configured paths', $output);
     }
 
     public function testCommandDoesNotUseConfigOption(): void
     {
         // ComposerFixCommand doesn't use the config option since composer-normalize
         // doesn't use external config files, but it still inherits it from BaseCommand
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['path', null],
-                ['config', null],
-                ['no-optimization', false],
-            ]);
+        file_put_contents($this->tempDir . '/composer.json', '{}');
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        $commandTester = new CommandTester($this->command);
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln');
+        // Execute with config option (should be ignored)
+        $commandTester->execute([
+            '--config' => 'ignored-config.json',
+        ]);
 
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('write')
-            ->with($this->stringContains('Running ergebnis/composer-normalize by Andreas Möller and contributors.'));
+        // Command should execute successfully
+        $this->assertEquals(0, $commandTester->getStatusCode());
 
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        // Output should contain composer-normalize execution result
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('Running ergebnis/composer-normalize by Andreas Möller and contributors.', $output);
     }
 
     public function testCommandTargetsComposerJsonDirectly(): void

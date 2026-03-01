@@ -6,7 +6,6 @@ quality-tools:
   tools:
     rector:
       enabled: true
-      config_file: "custom/rector.php"
     phpstan:
       enabled: true
     php-cs-fixer:

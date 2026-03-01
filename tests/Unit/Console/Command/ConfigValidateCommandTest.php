@@ -7,10 +7,12 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Console\Command\ConfigValidateCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Console\Command\ConfigValidateCommand
@@ -20,10 +22,12 @@ final class ConfigValidateCommandTest extends TestCase
     private ConfigValidateCommand $command;
     private CommandTester $commandTester;
     private string $tempDir;
+    private Filesystem $filesystem;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_validate_test_');
+        $this->filesystem = new Filesystem();
 
         // Set up command with application
         TestHelper::withEnvironment(
@@ -375,5 +379,199 @@ final class ConfigValidateCommandTest extends TestCase
 
         // Restore permissions for cleanup
         chmod($configFile, 0o644);
+    }
+
+    /**
+     * Test validation with custom tool configuration files from fixtures.
+     */
+    #[DataProvider('customConfigurationProvider')]
+    public function testValidateWithCustomConfigurations(
+        string $fixtureDirectory,
+        string $description,
+        int $expectedExitCode,
+        array $expectedOutputContains,
+        array $unexpectedOutputContains = []
+    ): void {
+        // Copy fixture to temp directory
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
+        if (!is_dir($fixturePath)) {
+            $this->markTestSkipped("Fixture directory not found: $fixturePath");
+        }
+
+        // Copy all files from fixture to temp directory
+        $this->filesystem->mirror($fixturePath, $this->tempDir);
+
+        // Execute the validate command
+        $exitCode = $this->commandTester->execute([]);
+
+        // Assert exit code
+        self::assertSame(
+            $expectedExitCode,
+            $exitCode,
+            sprintf('Failed for %s: Expected exit code %d, got %d', $description, $expectedExitCode, $exitCode)
+        );
+
+        $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
+
+        // Assert expected output
+        foreach ($expectedOutputContains as $expected) {
+            self::assertStringContainsString(
+                $expected,
+                $output,
+                sprintf('Failed for %s: Output should contain "%s"', $description, $expected)
+            );
+        }
+
+        // Assert unexpected output
+        foreach ($unexpectedOutputContains as $unexpected) {
+            self::assertStringNotContainsString(
+                $unexpected,
+                $output,
+                sprintf('Failed for %s: Output should not contain "%s"', $description, $unexpected)
+            );
+        }
+    }
+
+    /**
+     * Data provider for custom configuration test scenarios.
+     */
+    public static function customConfigurationProvider(): array
+    {
+        return [
+            'rector root override' => [
+                'fixtureDirectory' => 'rector-root-override',
+                'description' => 'Auto-discovered rector.php in project root',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'rector config directory' => [
+                'fixtureDirectory' => 'rector-config-override',
+                'description' => 'Auto-discovered rector.php in config/ directory',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'phpstan root override' => [
+                'fixtureDirectory' => 'phpstan-root-override',
+                'description' => 'Auto-discovered phpstan.neon in project root',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'phpstan config directory' => [
+                'fixtureDirectory' => 'phpstan-config-override',
+                'description' => 'Auto-discovered phpstan.neon in config/ directory',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'fractor root override' => [
+                'fixtureDirectory' => 'fractor-root-override',
+                'description' => 'Auto-discovered fractor.php in project root',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'php-cs-fixer root override' => [
+                'fixtureDirectory' => 'php-cs-fixer-root-override',
+                'description' => 'Auto-discovered .php-cs-fixer.php in project root',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'explicit config file' => [
+                'fixtureDirectory' => 'explicit-config-file-override',
+                'description' => 'Explicit config_file in YAML configuration',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+            'multiple tools mixed' => [
+                'fixtureDirectory' => 'multiple-tools-mixed',
+                'description' => 'Multiple tools with mixed configuration methods',
+                'expectedExitCode' => Command::SUCCESS,
+                'expectedOutputContains' => ['Configuration is valid'],
+            ],
+        ];
+    }
+
+    /**
+     * Test verbose output shows auto-discovered configuration information.
+     */
+    #[DataProvider('verboseOutputProvider')]
+    public function testVerboseOutputWithCustomConfigurations(
+        string $fixtureDirectory,
+        string $description,
+        array $expectedVerboseOutput
+    ): void {
+        // Copy fixture to temp directory
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
+        if (!is_dir($fixturePath)) {
+            $this->fail("Fixture directory not found: $fixturePath");
+        }
+
+        $this->filesystem->mirror($fixturePath, $this->tempDir);
+
+        // Execute with verbose mode
+        $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
+
+        $output = $this->commandTester->getDisplay();
+
+        // Check for verbose-specific output
+        self::assertStringContainsString('Configuration Summary', $output);
+
+        foreach ($expectedVerboseOutput as $expected) {
+            self::assertStringContainsString(
+                $expected,
+                $output,
+                sprintf('Verbose output for %s should contain "%s"', $description, $expected)
+            );
+        }
+    }
+
+    /**
+     * Data provider for verbose output testing.
+     */
+    public static function verboseOutputProvider(): array
+    {
+        return [
+            'rector with custom config' => [
+                'fixtureDirectory' => 'rector-root-override',
+                'description' => 'Verbose output with rector custom config',
+                'expectedVerboseOutput' => [
+                    'Configuration Summary',
+                    'rector',
+                ],
+            ],
+            'multiple tools verbose' => [
+                'fixtureDirectory' => 'multiple-tools-mixed',
+                'description' => 'Verbose output with multiple tool configs',
+                'expectedVerboseOutput' => [
+                    'Configuration Summary',
+                    'rector',
+                    'phpstan',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test configuration precedence using fixtures.
+     */
+    public function testConfigurationPrecedenceWithFixtures(): void
+    {
+        // Use the explicit-config-file-override fixture which has both
+        // auto-discovered and explicit config_file settings
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/explicit-config-file-override';
+
+        if (!is_dir($fixturePath)) {
+            $this->fail("Fixture directory not found: $fixturePath");
+        }
+
+        $this->filesystem->mirror($fixturePath, $this->tempDir);
+
+        $exitCode = $this->commandTester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $exitCode);
+
+        $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
+        self::assertStringContainsString('Configuration is valid', $output);
+        // The explicit config_file in YAML should take precedence over auto-discovered files
     }
 }
