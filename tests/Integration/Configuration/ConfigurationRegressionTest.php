@@ -75,7 +75,7 @@ final class ConfigurationRegressionTest extends TestCase
             'Project with no custom configuration files (currently fails with schema validation)',
         ];
 
-        if (in_array($scenarioName, $unimplementedScenarios, true)) {
+        if (\in_array($scenarioName, $unimplementedScenarios, true)) {
             $this->markTestSkipped('Configuration file replacement functionality not yet implemented (Issue 022 Phase 3)');
         }
 

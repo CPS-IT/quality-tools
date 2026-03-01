@@ -7,7 +7,7 @@ namespace Cpsit\QualityTools\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RectorLintCommand extends AbstractToolCommand
+class RectorLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const TOOL_NAME = 'rector';
 

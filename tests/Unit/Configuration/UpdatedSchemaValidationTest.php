@@ -484,7 +484,7 @@ final class UpdatedSchemaValidationTest extends TestCase
 
     /**
      * Data provider for invalid path scenarios that should be rejected.
-     * SECURITY INTEGRATION TESTS - Should fail until FilesystemService integration implemented
+     * SECURITY INTEGRATION TESTS - Should fail until FilesystemService integration implemented.
      */
     public static function invalidPathScenarios(): array
     {

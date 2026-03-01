@@ -308,10 +308,18 @@ The following architectural decisions were made during the implementation of Pha
    - [x] Integration with ToolConfigurationValidationService for discovered file validation
    - [x] Handle tool-specific file patterns (rector.php, phpstan.neon, fractor.php, etc.)
 
-2. **[ ] Enhanced Error Reporting** - Pending
-   - Clear messages when config files not found
-   - Specific validation errors for each tool
-   - Debug information for configuration discovery process
+2. **[x] Enhanced Error Reporting** - Fully Implemented
+   
+   **Completed Tasks**:
+   - [x] Clear error messages for missing config files using ErrorFactory
+   - [x] Debug information for configuration discovery process (verbose output)
+   - [x] Tool-specific validation errors where needed (generic errors use generic messages)
+   - [x] Detailed troubleshooting guidance in error messages
+   
+   **Additional Improvements**:
+   - [x] All tool commands now explicitly implement ToolCommandInterface
+   - [x] ComposerFixCommand and ComposerLintCommand refactored to extend AbstractToolCommand
+   - [x] Consistent error handling across all tool commands
 
 #### Phase 4: Tool Integration and Commands (Priority: High) - PENDING
 1. **[ ] Tool Executor Integration** - Pending

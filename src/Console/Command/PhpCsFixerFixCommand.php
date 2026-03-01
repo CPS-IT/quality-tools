@@ -7,7 +7,7 @@ namespace Cpsit\QualityTools\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PhpCsFixerFixCommand extends AbstractToolCommand
+final class PhpCsFixerFixCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'php-cs-fixer';
 

@@ -176,6 +176,7 @@ final class ConfigurationDiscovery
      * Load a tool-specific configuration file (PHP, Neon, etc.).
      *
      * @param string $path Path to the tool configuration file
+     *
      * @return array Configuration array with tool's config_file property set
      */
     private function loadToolConfigurationFile(string $path): array
@@ -191,10 +192,11 @@ final class ConfigurationDiscovery
             $validatedPath = $this->filesystemService->validateConfigurationPath(
                 $path,
                 $this->hierarchy->getProjectRoot(),
-                $tool
+                $tool,
             );
         } catch (\Exception $e) {
             $this->configurationErrors[$path] = "Security validation failed for {$tool} configuration file: " . $e->getMessage();
+
             return [];
         }
 

@@ -222,8 +222,8 @@ final class ComposerFixCommandTest extends TestCase
 
         // Verify error message
         $errorOutput = implode("\n", $actualOutput);
-        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput);
-        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput);
+        $this->assertStringContainsString('Filesystem Error (3002)', $errorOutput);
+        $this->assertStringContainsString('Directory not found', $errorOutput);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void

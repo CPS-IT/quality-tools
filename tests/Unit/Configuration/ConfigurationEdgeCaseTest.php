@@ -281,7 +281,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
             // Verify that errors were recorded for the invalid tool config file
             $hasRelevantError = false;
             foreach ($errors as $errorPath => $errorMessage) {
-                if (str_contains($errorPath, $filename)) {
+                if (str_contains((string) $errorPath, $filename)) {
                     $hasRelevantError = true;
                     $this->assertStringContainsString(
                         $tool,
@@ -388,7 +388,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
             // Verify the error is about the expected tool
             $hasRelevantError = false;
             foreach ($errors as $errorPath => $errorMessage) {
-                if (str_contains($errorPath, $filename)) {
+                if (str_contains((string) $errorPath, $filename)) {
                     $hasRelevantError = true;
                     $this->assertStringContainsString(
                         $tool,
@@ -462,7 +462,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
 
             $hasRectorError = false;
             foreach ($errorsWithHierarchical as $errorPath => $errorMessage) {
-                if (str_contains($errorPath, 'rector.php')) {
+                if (str_contains((string) $errorPath, 'rector.php')) {
                     $hasRectorError = true;
                     break;
                 }

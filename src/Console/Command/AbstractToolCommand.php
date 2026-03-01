@@ -22,9 +22,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function sprintf;
 
-abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInterface
+abstract class AbstractToolCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
+    private ?OutputInterface $output = null;
 
     public function __construct(?string $name = null, ?ConfigurationLoaderInterface $configurationLoader = null)
     {
@@ -39,6 +40,9 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        // Store output for use in helper methods
+        $this->output = $output;
+        
         try {
             // Show optimization details by default unless disabled
             if (!$this->isOptimizationDisabled($input)) {
@@ -209,6 +213,10 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
      */
     protected function resolveConfigPath(string $configFile, ?string $customConfigPath = null): string
     {
+        if ($this->output && $this->output->isVerbose()) {
+            $this->output->writeln(sprintf('<comment>Resolving configuration for file: %s</comment>', $configFile));
+        }
+        
         if ($customConfigPath !== null) {
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($customConfigPath)) {
@@ -243,7 +251,13 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
 
         $filesystemService = $this->getFilesystemService();
         if (!$filesystemService->fileExists($defaultConfigPath)) {
-            throw ErrorFactory::configFileNotFound($defaultConfigPath);
+            // Provide helpful error message with discovery details
+            $searchedLocations = $this->getSearchedConfigLocations($toolName, $configFile);
+            throw $this->createConfigNotFoundError($defaultConfigPath, $toolName, $searchedLocations);
+        }
+        
+        if ($this->output && $this->output->isVerbose()) {
+            $this->output->writeln(sprintf('<info>Using package default configuration: %s</info>', $defaultConfigPath));
         }
 
         return $defaultConfigPath;
@@ -265,11 +279,20 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
                 new ConfigurationValidator(),
                 new ToolConfigurationValidationService(),
             );
+            
+            // Debug output for verbose mode
+            if ($this->output && $this->output->isVerbose()) {
+                $this->output->writeln(sprintf('<comment>Discovering configuration for %s...</comment>', $toolName));
+            }
 
             // Check if tool has a custom configuration file
             if ($discovery->hasToolConfiguration($toolName)) {
                 $configPath = $discovery->getToolConfigurationPath($toolName);
                 if ($configPath !== null) {
+                    if ($this->output && $this->output->isVerbose()) {
+                        $this->output->writeln(sprintf('<info>Found configuration: %s</info>', $configPath));
+                    }
+                    
                     // Validate the path for security
                     return $this->getFilesystemService()->validateConfigurationPath(
                         $configPath,
@@ -277,8 +300,13 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
                         $toolName,
                     );
                 }
+            } else if ($this->output && $this->output->isVerbose()) {
+                $this->output->writeln('<comment>No custom configuration found, using package defaults</comment>');
             }
-        } catch (Exception) {
+        } catch (Exception $e) {
+            if ($this->output && $this->output->isVerbose()) {
+                $this->output->writeln(sprintf('<comment>Configuration discovery failed: %s</comment>', $e->getMessage()));
+            }
             // Silently fail and fall back to default
             // This allows the command to continue with package defaults
         }
@@ -286,6 +314,56 @@ abstract class AbstractToolCommand extends BaseCommand implements ToolCommandInt
         return null;
     }
 
+    /**
+     * Get searched configuration locations for error reporting.
+     */
+    private function getSearchedConfigLocations(string $toolName, string $configFile): array
+    {
+        $locations = [];
+        $projectRoot = $this->getProjectRoot();
+        
+        // Standard locations checked by ConfigurationDiscovery
+        $standardLocations = [
+            $projectRoot . '/' . $configFile,
+            $projectRoot . '/config/' . $configFile,
+            $projectRoot . '/.config/' . $configFile,
+            $projectRoot . '/quality-tools/' . $configFile,
+        ];
+        
+        foreach ($standardLocations as $location) {
+            $locations[] = $location;
+        }
+        
+        // Package default location
+        try {
+            $vendorPath = $this->findVendorPath();
+            $locations[] = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
+        } catch (\Exception $e) {
+            // Vendor path detection failed, skip
+        }
+        
+        return $locations;
+    }
+    
+    /**
+     * Create detailed configuration not found error.
+     */
+    private function createConfigNotFoundError(string $defaultPath, string $toolName, array $searchedLocations): \Exception
+    {
+        // Add searched locations to troubleshooting
+        $troubleshooting = [
+            'Create a custom configuration file in your project root or config/ directory',
+            'Use --config option to specify a custom configuration file',
+            'Ensure cpsit/quality-tools package is properly installed',
+        ];
+        
+        if (!empty($searchedLocations)) {
+            $troubleshooting[] = sprintf('Searched locations: %s', implode(', ', $searchedLocations));
+        }
+        
+        return ErrorFactory::configFileNotFound($defaultPath, null);
+    }
+    
     /**
      * Find vendor path for tool commands.
      */

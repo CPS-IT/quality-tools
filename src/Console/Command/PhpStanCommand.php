@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PhpStanCommand extends AbstractToolCommand
+final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'phpstan';
 

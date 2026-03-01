@@ -115,10 +115,10 @@ Test scenarios:
 ## Risks and Mitigation
 - **Risk:** Tests might not cover all attack vectors
   - **Mitigation:** Use OWASP testing guide and security best practices
-  
+
 - **Risk:** Performance impact of comprehensive testing
   - **Mitigation:** Use test groups to separate security tests from regular CI
-  
+
 - **Risk:** False sense of security from passing tests
   - **Mitigation:** Regular security audits and penetration testing
 

@@ -8,7 +8,7 @@ use Cpsit\QualityTools\Utility\YamlValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class FractorLintCommand extends AbstractToolCommand
+final class FractorLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'fractor';
 
