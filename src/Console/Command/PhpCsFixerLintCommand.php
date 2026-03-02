@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'lint:php-cs-fixer',
+    description: 'Run PHP CS Fixer in dry-run mode to check code style issues',
+    help: 'This command runs PHP CS Fixer in dry-run mode to show what code style issues would be fixed without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.',
+)]
 final class PhpCsFixerLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'php-cs-fixer';
@@ -20,16 +26,6 @@ final class PhpCsFixerLintCommand extends AbstractToolCommand implements ToolCom
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('lint:php-cs-fixer')
-            ->setDescription('Run PHP CS Fixer in dry-run mode to check code style issues')
-            ->setHelp(
-                'This command runs PHP CS Fixer in dry-run mode to show what code style ' .
-                'issues would be fixed without actually modifying your code files. Use ' .
-                '--config to specify a custom configuration file or --path to target ' .
-                'specific directories.',
-            );
     }
 
     protected function getDefaultConfigFileName(): string

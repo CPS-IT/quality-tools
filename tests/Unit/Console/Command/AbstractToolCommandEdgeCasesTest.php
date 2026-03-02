@@ -116,7 +116,7 @@ final class EdgeCaseTestToolCommand extends AbstractToolCommand
 
     public function __construct()
     {
-        parent::__construct('test:tool-edge-cases');
+        parent::__construct();
     }
 
     public function getToolName(): string

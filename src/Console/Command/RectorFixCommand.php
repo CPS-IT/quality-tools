@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'fix:rector',
+    description: 'Run Rector to automatically fix and upgrade code',
+    help: 'This command runs Rector to automatically apply code fixes and upgrades. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.',
+)]
 final class RectorFixCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'rector';
@@ -15,15 +21,6 @@ final class RectorFixCommand extends AbstractToolCommand implements ToolCommandI
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('fix:rector')
-            ->setDescription('Run Rector to automatically fix and upgrade code')
-            ->setHelp(
-                'This command runs Rector to automatically apply code fixes and upgrades. ' .
-                'This will modify your code files! Use --config to specify a custom ' .
-                'configuration file or --path to target specific directories.',
-            );
     }
 
     public function getToolName(): string

@@ -254,7 +254,7 @@ final class TestableBaseCommand extends BaseCommand
 {
     public function __construct()
     {
-        parent::__construct('test:base-command');
+        parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

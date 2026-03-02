@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'lint:typoscript',
+    description: 'Run TypoScript Lint to check TypoScript files for syntax errors',
+    help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.',
+)]
 final class TypoScriptLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'typoscript-lint';
@@ -25,15 +31,6 @@ final class TypoScriptLintCommand extends AbstractToolCommand implements ToolCom
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('lint:typoscript')
-            ->setDescription('Run TypoScript Lint to check TypoScript files for syntax errors')
-            ->setHelp(
-                'This command runs TypoScript Lint to check TypoScript files for syntax errors ' .
-                'and coding standard violations. Use --config to specify a custom configuration ' .
-                'file or --path to target specific directories.',
-            );
     }
 
     protected function buildToolCommand(

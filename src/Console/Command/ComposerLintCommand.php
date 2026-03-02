@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'lint:composer',
+    description: 'Run composer-normalize in dry-run mode to check composer.json formatting',
+    help: 'This command runs composer-normalize in dry-run mode to check if composer.json files are properly formatted without making changes. Use --path to target specific directories.',
+)]
 final class ComposerLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'composer-normalize';
@@ -26,15 +32,6 @@ final class ComposerLintCommand extends AbstractToolCommand implements ToolComma
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('lint:composer')
-            ->setDescription('Run composer-normalize in dry-run mode to check composer.json formatting')
-            ->setHelp(
-                'This command runs composer-normalize in dry-run mode to check if composer.json ' .
-                'files are properly formatted without making changes. Use --path to target ' .
-                'specific directories.',
-            );
     }
 
     protected function buildToolCommand(

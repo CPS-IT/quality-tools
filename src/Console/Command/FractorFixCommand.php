@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Utility\YamlValidator;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'fix:fractor',
+    description: 'Run Fractor to apply TypoScript and code changes',
+    help: 'This command runs Fractor to apply TypoScript and code changes to your files. This will modify your files! Use --config to specify a custom configuration file or --path to target specific directories.',
+)]
 final class FractorFixCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'fractor';
@@ -18,15 +24,6 @@ final class FractorFixCommand extends AbstractToolCommand implements ToolCommand
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('fix:fractor')
-            ->setDescription('Run Fractor to apply TypoScript and code changes')
-            ->setHelp(
-                'This command runs Fractor to apply TypoScript and code changes to your files. ' .
-                'This will modify your files! Use --config to specify a custom configuration ' .
-                'file or --path to target specific directories.',
-            );
     }
 
     public function getToolName(): string

@@ -209,7 +209,7 @@ class TestableToolIntegrationCommand extends AbstractToolCommand
 
     public function __construct()
     {
-        parent::__construct('test:tool-integration');
+        parent::__construct();
         $this->setDescription('Test tool integration command for AbstractToolCommand testing');
     }
 
@@ -235,6 +235,7 @@ class TestableToolIntegrationCommand extends AbstractToolCommand
     #[\Override]
     protected function configure(): void
     {
+        $this->setName('test:tool-integration');
         parent::configure(); // This adds the base options
     }
 

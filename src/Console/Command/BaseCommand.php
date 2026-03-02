@@ -42,9 +42,9 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected ?bool $cachedNoOptimization = null;
     protected ?ConfigurationInterface $configuration = null;
 
-    public function __construct(?string $name = null, protected ?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(protected ?ConfigurationLoaderInterface $configurationLoader = null)
     {
-        parent::__construct($name);
+        parent::__construct();
     }
 
     protected function configure(): void

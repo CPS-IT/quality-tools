@@ -51,8 +51,6 @@ services:
   Cpsit\QualityTools\Console\Command\:
     resource: '../src/Console/Command/*'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -60,45 +58,38 @@ services:
     arguments:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
     arguments:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   Cpsit\QualityTools\Console\Command\ConfigInitCommand:
     arguments:
       $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   # Tool commands prioritize performance with simple configuration
   Cpsit\QualityTools\Console\Command\RectorLintCommand:
     arguments:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   Cpsit\QualityTools\Console\Command\RectorFixCommand:
     arguments:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
     public: true
-    tags:
-      - { name: 'console.command' }
 
   Cpsit\QualityTools\Console\Command\PhpStanCommand:
     arguments:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
     public: true
-    tags:
-      - { name: 'console.command' }
+
+  Cpsit\QualityTools\Console\Command\FractorLintCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
 
   # External Dependencies
   Symfony\Component\Filesystem\Filesystem:

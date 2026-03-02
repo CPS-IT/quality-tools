@@ -220,12 +220,13 @@ final class TestableIntegrationCommand extends BaseCommand
 {
     public function __construct()
     {
-        parent::__construct('test:integration');
+        parent::__construct();
         $this->setDescription('Test integration command for BaseCommand testing');
     }
     #[\Override]
     protected function configure(): void
     {
+        $this->setName('test:integration');
         parent::configure(); // This adds the base options
     }
 

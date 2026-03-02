@@ -4,29 +4,34 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Utility\YamlValidator;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'lint:fractor',
+    description: 'Run Fractor in dry-run mode to analyze TypoScript and code without making changes',
+    help: 'This command runs Fractor in dry-run mode to show what TypoScript and code ' .
+          'changes would be made without actually modifying your files. Use --config ' .
+          'to specify a custom configuration file or --path to target specific directories.',
+)]
 final class FractorLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'fractor';
 
     private array $yamlValidationResults = [];
 
+    public function __construct(ConfigurationLoaderInterface $configurationLoader)
+    {
+        parent::__construct($configurationLoader);
+    }
+
     #[\Override]
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('lint:fractor')
-            ->setDescription('Run Fractor in dry-run mode to analyze TypoScript and code without making changes')
-            ->setHelp(
-                'This command runs Fractor in dry-run mode to show what TypoScript and code ' .
-                'changes would be made without actually modifying your files. Use --config ' .
-                'to specify a custom configuration file or --path to target specific directories.',
-            );
     }
 
     public function getToolName(): string

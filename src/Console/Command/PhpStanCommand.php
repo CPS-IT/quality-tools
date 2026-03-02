@@ -5,10 +5,18 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'lint:phpstan',
+    description: 'Run PHPStan static analysis',
+    help: 'This command runs PHPStan static analysis to find bugs in your code without ' .
+          'running it. Use --config to specify a custom configuration file, --path to ' .
+          'target specific directories, or --level to override the analysis level.',
+)]
 final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'phpstan';
@@ -21,13 +29,6 @@ final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInt
         parent::configure();
 
         $this
-            ->setName('lint:phpstan')
-            ->setDescription('Run PHPStan static analysis')
-            ->setHelp(
-                'This command runs PHPStan static analysis to find bugs in your code without ' .
-                'running it. Use --config to specify a custom configuration file, --path to ' .
-                'target specific directories, or --level to override the analysis level.',
-            )
             ->addOption(
                 'level',
                 'l',

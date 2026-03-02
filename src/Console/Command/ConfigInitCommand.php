@@ -8,18 +8,24 @@ use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
 use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'config:init',
+    description: 'Initialize YAML configuration file',
+    help: 'This command creates a .quality-tools.yaml configuration file in the project root.',
+)]
 final class ConfigInitCommand extends BaseCommand
 {
     public function __construct(
         private readonly FilesystemService $filesystemService,
         ConfigurationLoaderInterface $configurationLoader,
     ) {
-        parent::__construct('config:init', $configurationLoader);
+        parent::__construct($configurationLoader);
     }
 
     private const string TEMPLATE_TYPO3_EXTENSION = 'typo3-extension';
@@ -40,9 +46,6 @@ final class ConfigInitCommand extends BaseCommand
         parent::configure();
 
         $this
-            ->setName('config:init')
-            ->setDescription('Initialize YAML configuration file')
-            ->setHelp('This command creates a .quality-tools.yaml configuration file in the project root.')
             ->addOption(
                 'template',
                 't',

@@ -284,7 +284,7 @@ final class EdgeCaseTestCommand extends BaseCommand
 {
     public function __construct()
     {
-        parent::__construct('test:edge-cases');
+        parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationHierarchy;
-use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
-use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Yaml\Yaml;
 
+#[AsCommand(
+    name: 'config:show',
+    description: 'Show resolved configuration',
+    help: 'This command shows the resolved configuration after merging all sources.',
+)]
 final class ConfigShowCommand extends BaseCommand
 {
     public function __construct(ConfigurationLoaderInterface $configurationLoader)
     {
-        parent::__construct('config:show', $configurationLoader);
+        parent::__construct($configurationLoader);
     }
 
     #[\Override]
@@ -31,9 +32,6 @@ final class ConfigShowCommand extends BaseCommand
         parent::configure();
 
         $this
-            ->setName('config:show')
-            ->setDescription('Show resolved configuration')
-            ->setHelp('This command shows the resolved configuration after merging all sources.')
             ->addOption(
                 'format',
                 'f',

@@ -27,9 +27,9 @@ abstract class AbstractToolCommand extends BaseCommand
     private ?ErrorHandler $errorHandler = null;
     private ?OutputInterface $output = null;
 
-    public function __construct(?string $name = null, ?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(?ConfigurationLoaderInterface $configurationLoader = null)
     {
-        parent::__construct($name, $configurationLoader);
+        parent::__construct($configurationLoader);
     }
 
     abstract public function getToolName(): string;

@@ -6,28 +6,29 @@ namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Service\ErrorHandler;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'config:validate',
+    description: 'Validate YAML configuration file',
+    help: 'This command validates the quality-tools.yaml configuration file against the schema.',
+)]
 final class ConfigValidateCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
 
     public function __construct(ConfigurationLoaderInterface $configurationLoader)
     {
-        parent::__construct('config:validate', $configurationLoader);
+        parent::__construct($configurationLoader);
     }
 
     #[\Override]
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('config:validate')
-            ->setDescription('Validate YAML configuration file')
-            ->setHelp('This command validates the quality-tools.yaml configuration file against the schema.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

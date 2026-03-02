@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'fix:composer',
+    description: 'Run composer-normalize to format composer.json files',
+    help: 'This command runs composer-normalize to format composer.json files according to normalized standards. This will modify your composer.json file! Use --path to target specific directories.',
+)]
 final class ComposerFixCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'composer-normalize';
@@ -26,15 +32,6 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('fix:composer')
-            ->setDescription('Run composer-normalize to format composer.json files')
-            ->setHelp(
-                'This command runs composer-normalize to format composer.json files according ' .
-                'to normalized standards. This will modify your composer.json file! Use --path ' .
-                'to target specific directories.',
-            );
     }
 
     protected function buildToolCommand(

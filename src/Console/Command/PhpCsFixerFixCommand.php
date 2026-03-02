@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'fix:php-cs-fixer',
+    description: 'Run PHP CS Fixer to automatically fix code style issues',
+    help: 'This command runs PHP CS Fixer to automatically fix code style issues. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.',
+)]
 final class PhpCsFixerFixCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'php-cs-fixer';
@@ -25,15 +31,6 @@ final class PhpCsFixerFixCommand extends AbstractToolCommand implements ToolComm
     protected function configure(): void
     {
         parent::configure();
-
-        $this
-            ->setName('fix:php-cs-fixer')
-            ->setDescription('Run PHP CS Fixer to automatically fix code style issues')
-            ->setHelp(
-                'This command runs PHP CS Fixer to automatically fix code style issues. ' .
-                'This will modify your code files! Use --config to specify a custom ' .
-                'configuration file or --path to target specific directories.',
-            );
     }
 
     protected function buildToolCommand(
