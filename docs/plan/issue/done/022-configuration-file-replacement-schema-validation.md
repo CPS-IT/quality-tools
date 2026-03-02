@@ -1,7 +1,7 @@
 # Issue 022: Configuration File Replacement Schema Validation Bug
 
 ## Status
-**Partially Resolved** - Core user-facing Issue 022 RESOLVED. Additional technical debt discovered and planned for resolution.
+**Completed**
 
 **Core Achievement**: Schema now supports `config_file` properties - users can specify `config_file` in YAML configurations without validation errors.
 
@@ -274,19 +274,19 @@ qt config:show
 
 The following architectural decisions were made during the implementation of Phase 2, Step 5. These decisions have been documented as Architecture Decision Records (ADRs) for long-term reference:
 
-1. **[ADR-0001: Context-Aware Security Validation](../../architecture/0001-context-aware-security-validation.md)**
+1. **[ADR-0001: Context-Aware Security Validation](../../../architecture/0001-context-aware-security-validation.md)**
    - Smart validation distinguishing between tool configs and generic test configs
    - Prevents breaking test scenarios while maintaining production security
 
-2. **[ADR-0002: Security at Entry Points](../../architecture/0002-security-at-entry-points.md)**
+2. **[ADR-0002: Security at Entry Points](../../../architecture/0002-security-at-entry-points.md)**
    - Security validation at system boundaries rather than throughout codebase
    - Reduces complexity while ensuring consistent enforcement
 
-3. **[ADR-0003: Code Duplication Elimination Through Refactoring](../../architecture/0003-code-duplication-elimination-through-refactoring.md)**
+3. **[ADR-0003: Code Duplication Elimination Through Refactoring](../../../architecture/0003-code-duplication-elimination-through-refactoring.md)**
    - Eliminated duplicate code between loadPhpFile() and loadNeonFile()
    - Improves maintainability and ensures consistent behavior
 
-4. **[ADR-0004: Inheritance-Based Security Propagation](../../architecture/0004-inheritance-based-security-propagation.md)**
+4. **[ADR-0004: Inheritance-Based Security Propagation](../../../architecture/0004-inheritance-based-security-propagation.md)**
    - Leverages existing class hierarchy for automatic security
    - No modifications needed to individual tool commands
 

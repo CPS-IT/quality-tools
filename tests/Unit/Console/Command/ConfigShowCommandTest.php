@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\ConfigShowCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +37,22 @@ final class ConfigShowCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ConfigShowCommand();
+                
+                // Create ConfigurationLoader with dependencies
+                $validator = new ConfigurationValidator();
+                $securityService = new SecurityService();
+                $filesystem = new Filesystem();
+                $filesystemService = new FilesystemService($filesystem, $securityService);
+                $toolValidator = new ToolConfigurationValidationService([]);
+                
+                $configurationLoader = new ConfigurationLoader(
+                    $validator,
+                    $securityService,
+                    $filesystemService,
+                    $toolValidator
+                );
+                
+                $this->command = new ConfigShowCommand($configurationLoader);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
             },
@@ -420,7 +440,22 @@ final class ConfigShowCommandTest extends TestCase
                 ['QT_PROJECT_ROOT' => $testDir],
                 function () use ($configFile): void {
                     $app = new QualityToolsApplication();
-                    $command = new ConfigShowCommand();
+                    
+                    // Create ConfigurationLoader with dependencies
+                    $validator = new ConfigurationValidator();
+                    $securityService = new SecurityService();
+                    $filesystem = new Filesystem();
+                    $filesystemService = new FilesystemService($filesystem, $securityService);
+                    $toolValidator = new ToolConfigurationValidationService([]);
+                    
+                    $configurationLoader = new ConfigurationLoader(
+                        $validator,
+                        $securityService,
+                        $filesystemService,
+                        $toolValidator
+                    );
+                    
+                    $command = new ConfigShowCommand($configurationLoader);
                     $command->setApplication($app);
                     $commandTester = new CommandTester($command);
 

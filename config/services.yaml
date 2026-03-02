@@ -58,14 +58,14 @@ services:
   # Config commands benefit from hierarchical configuration features
   Cpsit\QualityTools\Console\Command\ConfigShowCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
     tags:
       - { name: 'console.command' }
 
   Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
     tags:
       - { name: 'console.command' }

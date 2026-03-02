@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationHierarchy;
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,7 +20,7 @@ use Symfony\Component\Yaml\Yaml;
 
 final class ConfigShowCommand extends BaseCommand
 {
-    public function __construct(?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(ConfigurationLoaderInterface $configurationLoader)
     {
         parent::__construct('config:show', $configurationLoader);
     }
@@ -57,8 +61,7 @@ final class ConfigShowCommand extends BaseCommand
             $this->validateCriticalConfigurationFiles($projectRoot);
 
             // Use hierarchical configuration loader specifically for config:show
-            $loader = $this->getConfigurationLoaderInHierarchicalMode();
-            $configuration = $loader->load($projectRoot);
+            $configuration = $this->configurationLoader->load($projectRoot);
             $configData = $configuration->toArray();
 
             // Only show title for non-JSON formats
@@ -67,7 +70,7 @@ final class ConfigShowCommand extends BaseCommand
 
                 // Show configuration file sources if verbose
                 if ($output->isVerbose()) {
-                    $this->showConfigurationSources($io, $loader, $projectRoot);
+                    $this->showConfigurationSources($io, $this->configurationLoader, $projectRoot);
                 }
             }
 
@@ -196,31 +199,5 @@ final class ConfigShowCommand extends BaseCommand
                 }
             }
         }
-    }
-
-    /**
-     * Get configuration loader specifically configured for hierarchical mode.
-     * ConfigShowCommand needs hierarchical features for source tracking.
-     */
-    private function getConfigurationLoaderInHierarchicalMode(): ConfigurationLoaderInterface
-    {
-        if ($this->hasService(ConfigurationLoaderInterface::class)) {
-            $loader = $this->getService(ConfigurationLoaderInterface::class);
-
-            // If it's a wrapper, switch to hierarchical mode
-            if ($loader instanceof ConfigurationLoaderWrapper) {
-                return $loader->withMode('hierarchical');
-            }
-
-            return $loader;
-        }
-
-        // Fallback for tests and scenarios without DI container
-        // Force hierarchical mode for ConfigShowCommand
-        return new ConfigurationLoaderWrapper(
-            $this->getYamlConfigurationLoader(),
-            $this->getHierarchicalConfigurationLoader(),
-            'hierarchical',
-        );
     }
 }

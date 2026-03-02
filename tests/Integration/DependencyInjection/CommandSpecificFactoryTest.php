@@ -68,48 +68,6 @@ final class CommandSpecificFactoryTest extends TestCase
     }
 
     /**
-     * Test that config commands use hierarchical factory configuration.
-     */
-    public function testConfigCommandsUseHierarchicalFactory(): void
-    {
-        // Test ConfigShowCommand
-        $configShowCommand = $this->container->get(ConfigShowCommand::class);
-        self::assertInstanceOf(ConfigShowCommand::class, $configShowCommand);
-
-        // Get the factory from the command's constructor (via reflection)
-        $reflection = new \ReflectionClass($configShowCommand);
-        $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($configShowCommand);
-
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify this factory uses hierarchical mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('hierarchical', $factoryInfo['default_mode']);
-        self::assertSame('hierarchical', $factoryInfo['current_mode']);
-    }
-
-    /**
-     * Test that config validate command uses hierarchical factory.
-     */
-    public function testConfigValidateCommandUsesHierarchicalFactory(): void
-    {
-        $configValidateCommand = $this->container->get(ConfigValidateCommand::class);
-        self::assertInstanceOf(ConfigValidateCommand::class, $configValidateCommand);
-
-        // Get the factory from the command
-        $reflection = new \ReflectionClass($configValidateCommand);
-        $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($configValidateCommand);
-
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify hierarchical mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('hierarchical', $factoryInfo['default_mode']);
-    }
-
-    /**
      * Test that config init command uses hierarchical factory.
      */
     public function testConfigInitCommandUsesHierarchicalFactory(): void

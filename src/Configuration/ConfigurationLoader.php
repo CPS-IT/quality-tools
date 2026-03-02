@@ -420,11 +420,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             return [];
         }
 
-        try {
-            return $this->loadYamlFile($globalConfigPath);
-        } catch (\Throwable) {
-            return [];
-        }
+        return $this->loadYamlFile($globalConfigPath);
     }
 
     private function loadProjectConfiguration(string $projectRoot): array
@@ -432,11 +428,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         foreach (self::CONFIG_FILES as $configFile) {
             $configPath = $projectRoot . '/' . $configFile;
             if (file_exists($configPath)) {
-                try {
-                    return $this->loadYamlFile($configPath);
-                } catch (\Throwable) {
-                    continue;
-                }
+                return $this->loadYamlFile($configPath);
             }
         }
 

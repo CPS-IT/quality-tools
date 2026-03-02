@@ -9,13 +9,12 @@ use Cpsit\QualityTools\Service\ErrorHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Yaml\Yaml;
 
 final class ConfigValidateCommand extends BaseCommand
 {
     private ?ErrorHandler $errorHandler = null;
 
-    public function __construct(?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(ConfigurationLoaderInterface $configurationLoader)
     {
         parent::__construct('config:validate', $configurationLoader);
     }
@@ -35,10 +34,9 @@ final class ConfigValidateCommand extends BaseCommand
     {
         $io = new SymfonyStyle($input, $output);
         $projectRoot = $this->getProjectRoot();
-        $loader = $this->getYamlConfigurationLoader();
 
         // Check if YAML configuration exists
-        $configFile = $loader->findConfigurationFile($projectRoot);
+        $configFile = $this->configurationLoader->findConfigurationFile($projectRoot);
         if ($configFile === null) {
             $io->warning('No YAML configuration file found in project root.');
             $io->note([
@@ -57,7 +55,7 @@ final class ConfigValidateCommand extends BaseCommand
 
         try {
             // Load and validate configuration
-            $configuration = $loader->load($projectRoot);
+            $configuration = $this->configurationLoader->load($projectRoot);
 
             $io->success('Configuration is valid.');
 
