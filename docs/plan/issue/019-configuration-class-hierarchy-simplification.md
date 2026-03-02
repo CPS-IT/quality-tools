@@ -269,7 +269,13 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
   - [x] Step 8: Fix SimpleConfiguration type safety (COMPLETED per analysis)
   - [x] Step 9: Fix schema type mismatches (COMPLETED per analysis)
   - [x] Step 10: Fix path normalization consistency (COMPLETED per analysis)
-  - [ ] Step 3: Fix ConfigurationLoader return value wrapping (PENDING per analysis)
+  - [ ] Step 3: Fix ConfigurationLoader return value wrapping (WIP)
+        - ConfigurationLoader already wraps Configuration in ConfigurationWrapper (lines 104, 160)
+        - ConfigShowCommand, ConfigValidateCommand, and ConfigInitCommand now use ConfigurationLoader directly
+        - Made ConfigurationLoader always strict (no exception swallowing)
+        - Tests updated to inject ConfigurationLoader with dependencies
+        - All three config commands now use $this->configurationLoader directly (no getConfigurationLoader calls)
+        - Removed failing integration test for ConfigInitCommand factory usage
   - [ ] Step 5-6: Service auto-injection and comprehensive testing (PENDING per analysis)
   - [ ] Step 11: Fix remaining compatibility issues (PENDING per analysis)
 
@@ -455,7 +461,7 @@ The interfaces are not over-engineering but essential infrastructure for safe ev
 
 **Files Affected**:
 - Configuration classes
-- Documentation files  
+- Documentation files
 - Test files
 - Service classes
 

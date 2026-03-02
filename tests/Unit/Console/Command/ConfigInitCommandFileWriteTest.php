@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Exception\ConfigurationFileWriteException;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -37,7 +40,18 @@ final class ConfigInitCommandFileWriteTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ConfigInitCommand($this->filesystemService);
+                
+                // Create ConfigurationLoader with dependencies
+                $validator = new ConfigurationValidator();
+                $toolValidator = new ToolConfigurationValidationService([]);
+                $configurationLoader = new ConfigurationLoader(
+                    $validator,
+                    $this->securityService,
+                    $this->filesystemService,
+                    $toolValidator
+                );
+                
+                $this->command = new ConfigInitCommand($this->filesystemService, $configurationLoader);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
             },

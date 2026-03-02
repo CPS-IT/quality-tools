@@ -6,7 +6,6 @@ namespace Cpsit\QualityTools\Tests\Integration\DependencyInjection;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
 use Cpsit\QualityTools\Console\Command\ConfigShowCommand;
 use Cpsit\QualityTools\Console\Command\ConfigValidateCommand;
 use Cpsit\QualityTools\Console\Command\PhpStanCommand;
@@ -65,26 +64,6 @@ final class CommandSpecificFactoryTest extends TestCase
         $container->compile();
 
         return $container;
-    }
-
-    /**
-     * Test that config init command uses hierarchical factory.
-     */
-    public function testConfigInitCommandUsesHierarchicalFactory(): void
-    {
-        $configInitCommand = $this->container->get(ConfigInitCommand::class);
-        self::assertInstanceOf(ConfigInitCommand::class, $configInitCommand);
-
-        // Get the factory from the command
-        $reflection = new \ReflectionClass($configInitCommand);
-        $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($configInitCommand);
-
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify hierarchical mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('hierarchical', $factoryInfo['default_mode']);
     }
 
     /**

@@ -73,7 +73,7 @@ services:
   Cpsit\QualityTools\Console\Command\ConfigInitCommand:
     arguments:
       $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.hierarchical'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
     tags:
       - { name: 'console.command' }

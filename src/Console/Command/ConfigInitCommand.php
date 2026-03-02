@@ -17,7 +17,7 @@ final class ConfigInitCommand extends BaseCommand
 {
     public function __construct(
         private readonly FilesystemService $filesystemService,
-        ?ConfigurationLoaderInterface $configurationLoader = null,
+        ConfigurationLoaderInterface $configurationLoader,
     ) {
         parent::__construct('config:init', $configurationLoader);
     }
@@ -78,8 +78,7 @@ final class ConfigInitCommand extends BaseCommand
         $configFile = $projectRoot . '/.quality-tools.yaml';
 
         // Check if a configuration file already exists
-        $loader = $this->getYamlConfigurationLoader();
-        $existingConfig = $loader->findConfigurationFile($projectRoot);
+        $existingConfig = $this->configurationLoader->findConfigurationFile($projectRoot);
 
         if ($existingConfig !== null && !$force) {
             $io->warning(\sprintf('Configuration file already exists: %s', $existingConfig));
