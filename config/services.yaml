@@ -96,6 +96,11 @@ services:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
+  Cpsit\QualityTools\Console\Command\PhpCsFixerLintCommand:
+    arguments:
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
+
   # External Dependencies
   Symfony\Component\Filesystem\Filesystem:
     public: false

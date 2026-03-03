@@ -283,6 +283,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         - Created FractorCommandTrait to extract common code between FractorLintCommand and FractorFixCommand (COMPLETED 2026-03-03)
         - RectorLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
         - RectorFixCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
+        - PhpCsFixerLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
   - [ ] Step 5-6: Service auto-injection and comprehensive testing (PENDING per analysis)
   - [ ] Step 11: Fix remaining compatibility issues (PENDING per analysis)
 

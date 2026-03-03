@@ -135,8 +135,16 @@ final class MultiPathScanningTest extends TestCase
         $this->createPhpFileNeedingCsFixerFix($this->tempProjectRoot . '/vendor/cpsit/package1/Classes/Test.php');
         $this->createPhpFileNeedingCsFixerFix($this->tempProjectRoot . '/vendor/fr/package2/Classes/Test.php');
 
+        // Create ConfigurationLoader for PHP CS Fixer command
+        $configLoader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            new FilesystemService(new Filesystem(), $this->securityService),
+            new ToolConfigurationValidationService([])
+        );
+        
         // Execute PHP CS Fixer command
-        $command = new PhpCsFixerLintCommand();
+        $command = new PhpCsFixerLintCommand($configLoader);
         // Skip application setup for now - focus on testing the path resolution logic
 
         $input = new ArrayInput([]);
