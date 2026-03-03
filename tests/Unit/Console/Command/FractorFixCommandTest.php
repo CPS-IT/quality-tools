@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\FractorFixCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +54,17 @@ final class FractorFixCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new FractorFixCommand();
+                
+                // Create ConfigurationLoader with all dependencies
+                $securityService = new SecurityService();
+                $configurationLoader = new ConfigurationLoader(
+                    new ConfigurationValidator(),
+                    $securityService,
+                    new FilesystemService(new \Symfony\Component\Filesystem\Filesystem(), $securityService),
+                    new ToolConfigurationValidationService([])
+                );
+                
+                $this->command = new FractorFixCommand($configurationLoader);
                 $this->command->setApplication($app);
             },
         );

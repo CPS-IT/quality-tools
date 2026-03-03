@@ -269,13 +269,17 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
   - [x] Step 8: Fix SimpleConfiguration type safety (COMPLETED per analysis)
   - [x] Step 9: Fix schema type mismatches (COMPLETED per analysis)
   - [x] Step 10: Fix path normalization consistency (COMPLETED per analysis)
-  - [ ] Step 3: Fix ConfigurationLoader return value wrapping (WIP)
+  - [ ] Step 3: Fix ConfigurationLoader return value wrapping (IN PROGRESS)
         - ConfigurationLoader already wraps Configuration in ConfigurationWrapper (lines 104, 160)
         - ConfigShowCommand, ConfigValidateCommand, and ConfigInitCommand now use ConfigurationLoader directly
         - Made ConfigurationLoader always strict (no exception swallowing)
         - Tests updated to inject ConfigurationLoader with dependencies
         - All three config commands now use $this->configurationLoader directly (no getConfigurationLoader calls)
         - Removed failing integration test for ConfigInitCommand factory usage
+        - FractorLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
+        - All commands refactored to use #[AsCommand] attribute pattern (COMPLETED 2026-03-03)
+        - FractorFixCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
+        - Fixed Fractor commands to always pass resolved paths as arguments (COMPLETED 2026-03-03)
   - [ ] Step 5-6: Service auto-injection and comprehensive testing (PENDING per analysis)
   - [ ] Step 11: Fix remaining compatibility issues (PENDING per analysis)
 
