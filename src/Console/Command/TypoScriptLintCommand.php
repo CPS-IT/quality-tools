@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,6 +17,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class TypoScriptLintCommand extends AbstractToolCommand implements ToolCommandInterface
 {
     public const string TOOL_NAME = 'typoscript-lint';
+
+    public function __construct(ConfigurationLoaderInterface $configurationLoader)
+    {
+        parent::__construct($configurationLoader);
+    }
 
     public function getToolName(): string
     {

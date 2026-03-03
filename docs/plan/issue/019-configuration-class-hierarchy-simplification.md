@@ -286,6 +286,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         - PhpCsFixerLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
         - PhpStanCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
         - PhpCsFixerFixCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
+        - TypoScriptLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
   - [ ] Step 5-6: Service auto-injection and comprehensive testing (PENDING per analysis)
   - [ ] Step 11: Fix remaining compatibility issues (PENDING per analysis)
 
