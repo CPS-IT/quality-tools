@@ -96,13 +96,10 @@ final class CommandSpecificFactoryTest extends TestCase
         // Get the factory from the command
         $reflection = new \ReflectionClass($rectorFixCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($rectorFixCommand);
+        $loader = $loaderProperty->getValue($rectorFixCommand);
 
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify simple mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('simple', $factoryInfo['default_mode']);
+        // RectorFixCommand now uses ConfigurationLoader directly
+        self::assertInstanceOf(ConfigurationLoader::class, $loader);
     }
 
     /**

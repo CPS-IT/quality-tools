@@ -78,7 +78,7 @@ services:
 
   Cpsit\QualityTools\Console\Command\RectorFixCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
   Cpsit\QualityTools\Console\Command\PhpStanCommand:
