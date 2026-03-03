@@ -34,7 +34,6 @@ services:
       - '../src/Configuration/ConfigurationLoaderInterface.php'
       - '../src/Configuration/ConfigurationWrapper.php'
       - '../src/Configuration/ConfigurationLoaderWrapper.php'
-      - '../src/Configuration/Configuration.php'
 
   # Tool Configuration Validators
   Cpsit\QualityTools\Configuration\Validator\:
@@ -167,6 +166,23 @@ services:
   Cpsit\QualityTools\Configuration\ConfigurationValidator:
     public: true
 
+  # Unified Configuration class with dependencies
+  Cpsit\QualityTools\Configuration\Configuration:
+    arguments:
+      $projectRoot: ''  # Will be set at runtime
+      $data: []        # Will be set at runtime
+      $sourceMap: []   # Will be set at runtime
+      $conflicts: []   # Will be set at runtime
+      $mergeSummary: [] # Will be set at runtime
+      $hierarchicalMode: false # Will be set at runtime
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $projectConfigService: '@Cpsit\QualityTools\Service\ProjectConfigService'
+      $toolConfigService: '@Cpsit\QualityTools\Service\ToolConfigService'
+      $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
+      $hierarchy: null  # Will be set at runtime if needed
+      $discovery: null  # Will be set at runtime if needed
+    public: true
+
   Cpsit\QualityTools\Service\ProcessEnvironmentPreparer:
     public: true
 
@@ -243,9 +259,9 @@ services:
 
   # Interface bindings for dependency injection - now using factory (Step 3.2)
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
-    alias: 'Cpsit\QualityTools\Configuration\ConfigurationWrapper'
+    alias: 'Cpsit\QualityTools\Configuration\Configuration'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
-    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory'
+    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true

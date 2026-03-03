@@ -12,6 +12,7 @@ use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
  * Enhanced configuration with source tracking and hierarchical support.
  *
  * Extends the base Configuration class with Feature 015 capabilities.
+ * @deprecated Use Configuration instead.
  */
 final class EnhancedConfiguration implements ConfigurationInterface
 {
