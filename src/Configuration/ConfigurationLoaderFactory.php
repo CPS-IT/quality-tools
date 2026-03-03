@@ -17,6 +17,7 @@ namespace Cpsit\QualityTools\Configuration;
  * - Allow explicit override via environment variables or configuration
  *
  * Part of Step 3.1 in Issue 019: Configuration Class Hierarchy Simplification
+ * @deprecated use ConfigurationLoader instead
  */
 final readonly class ConfigurationLoaderFactory implements ConfigurationLoaderInterface
 {

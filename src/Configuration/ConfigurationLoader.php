@@ -51,25 +51,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         // Auto-detect hierarchical configuration for consistency with wrapper approach
         $useHierarchical = $this->hasHierarchicalConfiguration($projectRoot);
 
-        return $this->loadWithMode($projectRoot, $commandLineOverrides, $useHierarchical);
-    }
-
-    public function loadHierarchical(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
-    {
-        return $this->loadWithMode($projectRoot, $commandLineOverrides, true);
-    }
-
-    public function loadSimple(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
-    {
-        return $this->loadWithMode($projectRoot, $commandLineOverrides, false);
-    }
-
-    /**
-     * Load configuration with specified mode (simple or hierarchical).
-     */
-    private function loadWithMode(string $projectRoot, array $commandLineOverrides, bool $hierarchical): ConfigurationInterface
-    {
-        if ($hierarchical) {
+        if ($useHierarchical) {
             return $this->loadWithHierarchy($projectRoot, $commandLineOverrides);
         }
 
@@ -100,8 +82,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             pathResolutionService: $this->pathResolutionService,
         );
 
-        // Return wrapped instance to maintain compatibility
-        return new ConfigurationWrapper($configuration, 'simple');
+        return $configuration;
     }
 
     /**
@@ -156,8 +137,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             discovery: $discovery,
         );
 
-        // Return wrapped instance to maintain compatibility
-        return new ConfigurationWrapper($configuration, 'enhanced');
+        return $configuration;
     }
 
     // Configuration discovery methods
@@ -372,7 +352,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
     public function createSimpleConfiguration(string $projectRoot): ConfigurationInterface
     {
-        return $this->loadSimple($projectRoot);
+        return $this->loadWithoutHierarchy($projectRoot, []);
     }
 
     // Private helper methods (from SimpleConfigurationLoader)
@@ -517,6 +497,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         ConfigurationValidator $validator,
         SecurityService $securityService,
         FilesystemService $filesystemService,
+        ToolConfigurationValidationService $toolValidator,
         ?ProjectConfigService $projectConfigService = null,
         ?ToolConfigService $toolConfigService = null,
         ?PathResolutionService $pathResolutionService = null,
@@ -525,6 +506,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             validator: $validator,
             securityService: $securityService,
             filesystemService: $filesystemService,
+            toolValidator: $toolValidator,
             projectConfigService: $projectConfigService,
             toolConfigService: $toolConfigService,
             pathResolutionService: $pathResolutionService,
@@ -535,6 +517,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         ConfigurationValidator $validator,
         SecurityService $securityService,
         FilesystemService $filesystemService,
+        ToolConfigurationValidationService $toolValidator,
         ?ProjectConfigService $projectConfigService = null,
         ?ToolConfigService $toolConfigService = null,
         ?PathResolutionService $pathResolutionService = null,
@@ -543,6 +526,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             validator: $validator,
             securityService: $securityService,
             filesystemService: $filesystemService,
+            toolValidator: $toolValidator,
             projectConfigService: $projectConfigService,
             toolConfigService: $toolConfigService,
             pathResolutionService: $pathResolutionService,

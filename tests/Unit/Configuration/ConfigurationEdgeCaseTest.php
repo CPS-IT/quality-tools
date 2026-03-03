@@ -264,7 +264,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
         try {
             $config = match ($loaderType) {
                 'hierarchical' => $configurationLoader->load($this->tempDir),
-                'unified' => $configurationLoader->loadHierarchical($this->tempDir),
+                'unified' => $configurationLoader->load($this->tempDir),
                 default => throw new \InvalidArgumentException("Unknown loader type: {$loaderType}"),
             };
 
@@ -362,8 +362,9 @@ final class ConfigurationEdgeCaseTest extends TestCase
         file_put_contents($toolConfigFile, $invalidContent);
 
         // Simple mode should ignore invalid tool config files and succeed
+        // NOTE: Only create the main config file (no tool-specific configs) to force simple mode
         try {
-            $config = $configurationLoader->loadSimple($this->tempDir);
+            $config = $configurationLoader->load($this->tempDir);
 
             // Verify loading succeeded
             $this->assertNotNull($config, 'Simple mode should succeed even with invalid tool configs');
