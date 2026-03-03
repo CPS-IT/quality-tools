@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,6 +23,11 @@ final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInt
     public const string TOOL_NAME = 'phpstan';
 
     private ?DisposableTemporaryFile $temporaryConfig = null;
+
+    public function __construct(ConfigurationLoaderInterface $configurationLoader)
+    {
+        parent::__construct($configurationLoader);
+    }
 
     #[\Override]
     protected function configure(): void

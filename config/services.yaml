@@ -83,7 +83,7 @@ services:
 
   Cpsit\QualityTools\Console\Command\PhpStanCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
   Cpsit\QualityTools\Console\Command\FractorLintCommand:

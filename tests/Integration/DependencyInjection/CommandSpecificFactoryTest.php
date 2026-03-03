@@ -110,16 +110,13 @@ final class CommandSpecificFactoryTest extends TestCase
         $phpStanCommand = $this->container->get(PhpStanCommand::class);
         self::assertInstanceOf(PhpStanCommand::class, $phpStanCommand);
 
-        // Get the factory from the command
+        // Get the loader from the command
         $reflection = new \ReflectionClass($phpStanCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($phpStanCommand);
+        $loader = $loaderProperty->getValue($phpStanCommand);
 
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify simple mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('simple', $factoryInfo['default_mode']);
+        // PhpStanCommand now uses ConfigurationLoader directly
+        self::assertInstanceOf(ConfigurationLoader::class, $loader);
     }
 
     /**
