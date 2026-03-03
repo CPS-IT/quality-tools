@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -102,7 +103,9 @@ final class BaseCommandPathResolutionTest extends TestCase
      */
     public function userProvidedPathOptionOverridesConfiguration(): void
     {
-        $command = new class extends RectorLintCommand {
+        $mockConfigLoader = $this->createMock(ConfigurationLoaderInterface::class);
+        
+        $command = new class($mockConfigLoader) extends RectorLintCommand {
             public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
                 return $this->getTargetPathForTool($input, $tool);

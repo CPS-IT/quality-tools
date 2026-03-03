@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Console\Command\RectorLintCommand
@@ -50,7 +56,22 @@ final class RectorLintCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new RectorLintCommand();
+                
+                // Create ConfigurationLoader with dependencies
+                $validator = new ConfigurationValidator();
+                $securityService = new SecurityService();
+                $filesystem = new Filesystem();
+                $filesystemService = new FilesystemService($filesystem, $securityService);
+                $toolValidator = new ToolConfigurationValidationService([]);
+                
+                $configurationLoader = new ConfigurationLoader(
+                    $validator,
+                    $securityService,
+                    $filesystemService,
+                    $toolValidator
+                );
+                
+                $this->command = new RectorLintCommand($configurationLoader);
                 $this->command->setApplication($app);
             },
         );

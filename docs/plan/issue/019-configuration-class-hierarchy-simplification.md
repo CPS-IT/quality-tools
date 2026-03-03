@@ -280,6 +280,8 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         - All commands refactored to use #[AsCommand] attribute pattern (COMPLETED 2026-03-03)
         - FractorFixCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
         - Fixed Fractor commands to always pass resolved paths as arguments (COMPLETED 2026-03-03)
+        - Created FractorCommandTrait to extract common code between FractorLintCommand and FractorFixCommand (COMPLETED 2026-03-03)
+        - RectorLintCommand now injects ConfigurationLoader via constructor (COMPLETED 2026-03-03)
   - [ ] Step 5-6: Service auto-injection and comprehensive testing (PENDING per analysis)
   - [ ] Step 11: Fix remaining compatibility issues (PENDING per analysis)
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\DependencyInjection;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\ConfigShowCommand;
@@ -67,25 +68,21 @@ final class CommandSpecificFactoryTest extends TestCase
     }
 
     /**
-     * Test that tool commands use simple factory configuration.
+     * Test that tool commands use unified configuration loader.
      */
     public function testToolCommandsUseSimpleFactory(): void
     {
-        // Test RectorLintCommand
+        // Test RectorLintCommand - now uses unified ConfigurationLoader
         $rectorLintCommand = $this->container->get(RectorLintCommand::class);
         self::assertInstanceOf(RectorLintCommand::class, $rectorLintCommand);
 
-        // Get the factory from the command
+        // Get the loader from the command
         $reflection = new \ReflectionClass($rectorLintCommand);
         $loaderProperty = $reflection->getProperty('configurationLoader');
-        $factory = $loaderProperty->getValue($rectorLintCommand);
+        $loader = $loaderProperty->getValue($rectorLintCommand);
 
-        self::assertInstanceOf(ConfigurationLoaderFactory::class, $factory);
-
-        // Verify this factory uses simple mode
-        $factoryInfo = $factory->getFactoryInfo();
-        self::assertSame('simple', $factoryInfo['default_mode']);
-        self::assertSame('simple', $factoryInfo['current_mode']);
+        // RectorLintCommand now uses ConfigurationLoader directly
+        self::assertInstanceOf(ConfigurationLoader::class, $loader);
     }
 
     /**

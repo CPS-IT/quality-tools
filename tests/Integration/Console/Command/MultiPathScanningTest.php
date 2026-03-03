@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Console\Command\PhpCsFixerLintCommand;
 use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -71,8 +73,16 @@ final class MultiPathScanningTest extends TestCase
         $this->createPhpFileNeedingRectorFix($this->tempProjectRoot . '/vendor/company/pkg2/Classes/Test.php');
         $this->createPhpFileNeedingRectorFix($this->tempProjectRoot . '/custom-dir/Test.php');
 
+        // Create ConfigurationLoader for rector command
+        $configLoader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            new FilesystemService(new Filesystem(), $this->securityService),
+            new ToolConfigurationValidationService([])
+        );
+        
         // Execute rector command
-        $command = new RectorLintCommand();
+        $command = new RectorLintCommand($configLoader);
         // Skip application setup for now - focus on testing the path resolution logic
 
         $input = new ArrayInput([]);

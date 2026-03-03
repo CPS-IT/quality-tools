@@ -70,10 +70,10 @@ services:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
-  # Tool commands prioritize performance with simple configuration
+  # Tool commands use unified configuration loader
   Cpsit\QualityTools\Console\Command\RectorLintCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoaderFactory.simple'
+      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
   Cpsit\QualityTools\Console\Command\RectorFixCommand:
