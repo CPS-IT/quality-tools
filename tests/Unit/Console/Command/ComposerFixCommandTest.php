@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\ComposerFixCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
@@ -62,7 +63,8 @@ final class ComposerFixCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new ComposerFixCommand();
+                $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+                $this->command = new ComposerFixCommand($mockLoader);
                 $this->command->setApplication($app);
             },
         );

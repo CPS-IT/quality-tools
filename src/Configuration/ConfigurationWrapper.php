@@ -24,6 +24,7 @@ final readonly class ConfigurationWrapper implements ConfigurationInterface
         private ?ToolConfigService $toolConfigService = null,
         private ?PathResolutionService $pathResolutionService = null,
     ) {
+        trigger_error(self::class . ' is deprecated, use Configuration instead.', E_USER_DEPRECATED);
     }
 
     // Core data access methods (available in both)

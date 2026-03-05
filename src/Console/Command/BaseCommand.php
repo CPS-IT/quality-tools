@@ -6,10 +6,6 @@ namespace Cpsit\QualityTools\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
-use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
-use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
 use Cpsit\QualityTools\DependencyInjection\ContainerAwareTrait;
@@ -21,7 +17,6 @@ use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\ProcessEnvironmentPreparer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\SecurityService;
-use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\ProjectMetrics;
@@ -42,7 +37,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     protected ?bool $cachedNoOptimization = null;
     protected ?ConfigurationInterface $configuration = null;
 
-    public function __construct(protected ?ConfigurationLoaderInterface $configurationLoader = null)
+    public function __construct(protected ConfigurationLoaderInterface $configurationLoader)
     {
         parent::__construct();
     }
@@ -443,8 +438,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
     {
         if ($this->configuration === null) {
             $projectRoot = $this->getProjectRoot();
-            $loader = $this->getConfigurationLoader();
-            $this->configuration = $loader->load($projectRoot);
+            $this->configuration = $this->configurationLoader->load($projectRoot);
 
             // Override with a custom config path if provided
             $customConfigPath = $input->getOption('config');
@@ -458,29 +452,6 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return $this->configuration;
     }
 
-    /**
-     * Service getters for dependency injection with fallback for testing.
-     */
-    protected function getConfigurationLoader(): ConfigurationLoaderInterface
-    {
-        // Use constructor-injected dependency first
-        if ($this->configurationLoader !== null) {
-            return $this->configurationLoader;
-        }
-
-        // Use service container if available
-        if ($this->hasService(ConfigurationLoaderInterface::class)) {
-            return $this->getService(ConfigurationLoaderInterface::class);
-        }
-
-        // Fallback for tests and scenarios without DI container
-        // Default to the wrapper in simple mode
-        return new ConfigurationLoaderWrapper(
-            $this->getYamlConfigurationLoader(),
-            $this->getHierarchicalConfigurationLoader(),
-            'simple',
-        );
-    }
 
     protected function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
@@ -527,23 +498,6 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new ProjectAnalyzer();
     }
 
-    protected function getYamlConfigurationLoader(): SimpleConfigurationLoader
-    {
-        if ($this->hasService(SimpleConfigurationLoader::class)) {
-            return $this->getService(SimpleConfigurationLoader::class);
-        }
-
-        // Fallback for tests and scenarios without DI container
-        $securityService = new SecurityService();
-        $filesystem = new Filesystem();
-        $filesystemService = new FilesystemService($filesystem, $securityService);
-
-        return new SimpleConfigurationLoader(
-            new ConfigurationValidator(),
-            $securityService,
-            $filesystemService,
-        );
-    }
 
     protected function getFilesystemService(): FilesystemService
     {
@@ -558,22 +512,4 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new FilesystemService($filesystem, $securityService);
     }
 
-    protected function getHierarchicalConfigurationLoader(): HierarchicalConfigurationLoader
-    {
-        if ($this->hasService(HierarchicalConfigurationLoader::class)) {
-            return $this->getService(HierarchicalConfigurationLoader::class);
-        }
-
-        // Fallback for tests and scenarios without DI container
-        $securityService = new SecurityService();
-        $filesystem = new Filesystem();
-        $filesystemService = new FilesystemService($filesystem, $securityService);
-
-        return new HierarchicalConfigurationLoader(
-            new ConfigurationValidator(),
-            $securityService,
-            $filesystemService,
-            new ToolConfigurationValidationService(),
-        );
-    }
 }

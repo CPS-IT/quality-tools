@@ -29,7 +29,12 @@ final class BaseCommandPathResolutionTest extends TestCase
     public function getTargetPathForToolReturnsFirstPathWhileResolvedPathsReturnsAll(): void
     {
         // Create a test command that extends BaseCommand
-        $command = new class extends BaseCommand {
+        $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+        $command = new class($mockLoader) extends BaseCommand {
+            public function __construct(ConfigurationLoaderInterface $loader)
+            {
+                parent::__construct($loader);
+            }
             protected function getToolName(): ?string
             {
                 return null; // This is a test command
@@ -161,7 +166,13 @@ final class BaseCommandPathResolutionTest extends TestCase
                 '/project/vendor/company2/package2',
             ]);
 
-        $command = new class extends BaseCommand {
+        $mockLoader2 = $this->createMock(ConfigurationLoaderInterface::class);
+        $command = new class($mockLoader2) extends BaseCommand {
+            public function __construct(ConfigurationLoaderInterface $loader)
+            {
+                parent::__construct($loader);
+            }
+
             protected function getToolName(): ?string
             {
                 return null; // This is a test command

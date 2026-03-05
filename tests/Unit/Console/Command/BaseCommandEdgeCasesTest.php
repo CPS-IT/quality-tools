@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command\BaseCommandEdgeCasesTest;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Exception\ConfigurationException;
@@ -38,7 +39,8 @@ final class BaseCommandEdgeCasesTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new EdgeCaseTestCommand();
+                $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+                $this->command = new EdgeCaseTestCommand($mockLoader);
                 $this->command->setApplication($app);
             },
         );
@@ -282,9 +284,9 @@ final class BaseCommandEdgeCasesTest extends TestCase
  */
 final class EdgeCaseTestCommand extends BaseCommand
 {
-    public function __construct()
+    public function __construct(ConfigurationLoaderInterface $loader)
     {
-        parent::__construct();
+        parent::__construct($loader);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

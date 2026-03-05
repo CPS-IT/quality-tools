@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
@@ -37,7 +38,8 @@ final class BaseCommandIntegrationTest extends TestCase
             },
         );
 
-        $this->command = new TestableIntegrationCommand();
+        $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+        $this->command = new TestableIntegrationCommand($mockLoader);
         $this->application->add($this->command);
     }
 
@@ -218,9 +220,9 @@ final class BaseCommandIntegrationTest extends TestCase
  */
 final class TestableIntegrationCommand extends BaseCommand
 {
-    public function __construct()
+    public function __construct(ConfigurationLoaderInterface $loader)
     {
-        parent::__construct();
+        parent::__construct($loader);
         $this->setDescription('Test integration command for BaseCommand testing');
     }
     #[\Override]

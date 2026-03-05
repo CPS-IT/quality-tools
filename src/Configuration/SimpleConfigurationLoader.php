@@ -31,6 +31,7 @@ final readonly class SimpleConfigurationLoader implements ConfigurationLoaderInt
         private SecurityService $securityService,
         private FilesystemService $filesystemService,
     ) {
+        trigger_error(self::class . ' is deprecated, use ConfigurationLoader instead.', E_USER_DEPRECATED);
     }
 
     public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface

@@ -53,6 +53,7 @@ final readonly class ConfigurationLoaderFactory implements ConfigurationLoaderIn
         private HierarchicalConfigurationLoader $hierarchicalLoader,
         private string $defaultMode = self::MODE_AUTO,
     ) {
+        trigger_error(self::class . ' is deprecated, use ConfigurationLoader instead.', E_USER_DEPRECATED);
     }
 
     public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface

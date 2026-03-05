@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\AbstractToolCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Exception\ConfigurationException;
@@ -34,7 +35,8 @@ final class AbstractToolCommandEdgeCasesTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                $this->command = new EdgeCaseTestToolCommand();
+                $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+                $this->command = new EdgeCaseTestToolCommand($mockLoader);
                 $this->command->setApplication($app);
             },
         );
@@ -114,9 +116,9 @@ final class EdgeCaseTestToolCommand extends AbstractToolCommand
 {
     public const string TOOL_NAME = 'test-tool';
 
-    public function __construct()
+    public function __construct(ConfigurationLoaderInterface $loader)
     {
-        parent::__construct();
+        parent::__construct($loader);
     }
 
     public function getToolName(): string

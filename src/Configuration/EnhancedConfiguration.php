@@ -31,6 +31,7 @@ final class EnhancedConfiguration implements ConfigurationInterface
         private readonly ?ConfigurationValidator $validator = null,
         private readonly ?PathResolutionService $pathResolutionService = null,
     ) {
+        trigger_error(self::class . ' is deprecated, use Configuration instead.', E_USER_DEPRECATED);
         // Validate configuration if validator is provided and data is not empty
         if ($this->validator !== null && !empty($this->data)) {
             $this->validator->validate($this->data);

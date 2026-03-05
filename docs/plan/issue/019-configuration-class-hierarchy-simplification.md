@@ -304,14 +304,22 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - [ ] Remove `ConfigurationWrapper` and `ConfigurationLoaderWrapper`
 - [ ] Remove old `SimpleConfiguration`, `EnhancedConfiguration`, etc.
 
+**Progress note (2026-03-05)**: Deprecation probes (`trigger_error` with `E_USER_DEPRECATED`) were added to all 7 deprecated class constructors and tests were run to identify remaining usage. Key findings:
+- `ConfigurationLoaderWrapper` was the primary unexpected usage, triggered by all command tests via `BaseCommand::getConfigurationLoader()` fallback.
+- Root cause fixed: `$configurationLoader` made required in `BaseCommand` and `AbstractToolCommand` constructors. `getConfigurationLoader()`, `getYamlConfigurationLoader()`, and `getHierarchicalConfigurationLoader()` methods removed. All old class imports removed from `BaseCommand`.
+- 7 test files updated to inject `createMock(ConfigurationLoaderInterface::class)` instead of relying on the fallback.
+- Remaining deprecated class triggers are exclusively from tests that explicitly exercise the old classes (contract tests, comparison tests, loader tests) - all expected and acceptable for the current phase.
+- `ConfigurationLoaderWrapper` deprecation is now absent from all test output.
+
 #### Classes to Replace (Priority Order)
 
-**1. ConfigurationDiscovery.php (LOWEST IMPACT - START HERE)**
+**1. ConfigurationDiscovery.php (LOWEST IMPACT - COMPLETED)**
 - Usage: `SimpleConfiguration::createDefault()->toArray()` (line ~75)
 - Impact: Single static method call
 - Replacement: `Configuration::createDefault()->toArray()`
 - Test Coverage: [x] Covered by ConfigurationLoaderInterfaceContractTest
 - Risk: Very Low
+- **STATUS**: COMPLETED. Line 66 already uses `Configuration::createDefault(projectRoot: ...)`. No further changes needed.
 
 **2. SimpleConfigurationLoader.php (LOW IMPACT) - SKIPPED**
 - Usages: `new SimpleConfiguration($configData)`, `SimpleConfiguration::createDefault()->toArray()`
@@ -321,20 +329,21 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Risk: Low
 - **DECISION**: Skip this class as it's part of the old loader architecture that will be replaced in later phases. Updating it would be temporary work that fights the intended architecture.
 
-**3. ConfigurationBuilder.php (MEDIUM IMPACT)**
+**3. ConfigurationBuilder.php (MEDIUM IMPACT - COMPLETED)**
 - Usage: Constructor parameter `SimpleConfiguration $configuration`
 - Impact: Type signature change required
 - Replacement: `ConfigurationInterface $configuration` parameter
 - Test Coverage: [x] Covered by existing tests
 - Risk: Medium (type change)
+- **STATUS**: COMPLETED. Constructor already typed as `ConfigurationInterface $configuration` (line 15). No further changes needed.
 
-**4. BaseCommand.php (MEDIUM IMPACT) - SKIPPED**
-- Usage: `new SimpleConfigurationLoader()` fallback creation
+**4. BaseCommand.php (MEDIUM IMPACT - COMPLETED)**
+- Usage: `new ConfigurationLoaderWrapper(...)` fallback in `getConfigurationLoader()` (line 478), plus `getYamlConfigurationLoader()` and `getHierarchicalConfigurationLoader()` service helpers still instantiate `SimpleConfigurationLoader` and `HierarchicalConfigurationLoader`
 - Impact: Fallback instantiation, potential backward compatibility concerns
-- Replacement: Use unified ConfigurationLoader
-- Test Coverage: [x] Well covered
+- Replacement: `$configurationLoader` constructor parameter made required; direct member access replaces wrapper fallback
+- Test Coverage: [x] Well covered; 7 test files updated to inject mocks
 - Risk: Medium
-- **DECISION**: Skip this class as it creates ConfigurationLoaderWrapper and is core transition infrastructure. Changing it causes 24+ test failures due to behavioral differences between ConfigurationWrapper and unified Configuration. Address after ConfigurationLoader is fully stabilized.
+- **STATUS**: COMPLETED. Made `$configurationLoader` required in `BaseCommand` and `AbstractToolCommand`. Removed `getConfigurationLoader()`, `getYamlConfigurationLoader()`, `getHierarchicalConfigurationLoader()` methods and all old class imports. `ConfigurationLoaderWrapper` no longer triggered by any command test. Updated 7 test files to inject `ConfigurationLoaderInterface` mocks.
 
 **5. HierarchicalConfigurationLoader.php (MEDIUM IMPACT) - SKIPPED**
 - Usages: `new EnhancedConfiguration()` (2x), `new SimpleConfiguration()` (1x)

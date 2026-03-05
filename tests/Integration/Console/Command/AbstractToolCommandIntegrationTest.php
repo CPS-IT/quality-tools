@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\AbstractToolCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
@@ -37,7 +38,8 @@ final class AbstractToolCommandIntegrationTest extends TestCase
             },
         );
 
-        $this->command = new TestableToolIntegrationCommand();
+        $mockLoader = $this->createMock(ConfigurationLoaderInterface::class);
+        $this->command = new TestableToolIntegrationCommand($mockLoader);
         $this->application->add($this->command);
     }
 
@@ -207,9 +209,9 @@ class TestableToolIntegrationCommand extends AbstractToolCommand
     // Use 'rector' as the tool name since it accepts .php config files
     public const string TOOL_NAME = 'rector';
 
-    public function __construct()
+    public function __construct(ConfigurationLoaderInterface $loader)
     {
-        parent::__construct();
+        parent::__construct($loader);
         $this->setDescription('Test tool integration command for AbstractToolCommand testing');
     }
 

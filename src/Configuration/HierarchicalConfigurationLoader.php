@@ -24,6 +24,7 @@ final readonly class HierarchicalConfigurationLoader implements ConfigurationLoa
         private FilesystemService $filesystemService,
         private ToolConfigurationValidationService $toolValidator,
     ) {
+        trigger_error(self::class . ' is deprecated, use ConfigurationLoader instead.', E_USER_DEPRECATED);
     }
 
     /**

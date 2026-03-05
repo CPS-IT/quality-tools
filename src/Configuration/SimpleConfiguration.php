@@ -29,6 +29,7 @@ class SimpleConfiguration implements ConfigurationInterface
         private readonly array $data = [],
         private readonly ?ConfigurationValidator $validator = null,
     ) {
+        trigger_error(self::class . ' is deprecated, use Configuration instead.', E_USER_DEPRECATED);
         $this->parseConfiguration();
     }
 
