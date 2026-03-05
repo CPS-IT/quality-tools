@@ -243,3 +243,4 @@ The following features have been deferred to future iterations:
 |    020 | DI Configuration Inconsistency                   | Open   | [020-di-configuration-inconsistency.md](issue/020-di-configuration-inconsistency.md)                                          |
 |    021 | Missing Integration Test Coverage                | Open   | [021-missing-integration-test-coverage.md](issue/021-missing-integration-test-coverage.md)                                    |
 |    022 | Configuration File Replacement Schema Validation | Done   | [022-configuration-file-replacement-schema-validation.md](issue/done/022-configuration-file-replacement-schema-validation.md) |
+|    023 | BaseCommand Service Locator to Constructor Injection | Open   | [023-basecommand-service-locator-to-constructor-injection.md](issue/023-basecommand-service-locator-to-constructor-injection.md) |
