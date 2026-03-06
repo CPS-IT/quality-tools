@@ -138,7 +138,8 @@ This issue reveals broader problems in the configuration system:
 ## Related Issues
 - Issue 019: Configuration class hierarchy simplification (current refactoring)
 - Feature 031: Enhanced schema validation (extracted advanced patterns)
-- Configuration override test scenarios (documented in tmp/configuration-override-test-scenarios.md)
+- Manual testing fixtures and scenarios: [`tests/Fixtures/022-testing-plan/README.md`](../../../../tests/Fixtures/022-testing-plan/README.md)
+- Automated test fixtures: [`tests/Fixtures/configFileReplacement/`](../../../../tests/Fixtures/configFileReplacement/)
 
 ## Scope Clarification
 **Current Focus**: Integration of refactored secure path resolution services for configuration file discovery and validation.

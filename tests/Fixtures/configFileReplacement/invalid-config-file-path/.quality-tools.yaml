@@ -1,0 +1,21 @@
+quality-tools:
+  project:
+    name: "test-fixture"
+    php_version: "8.3"
+    typo3_version: "13.4"
+  tools:
+    rector:
+      enabled: true
+      config_file: "non-existent/rector.php"
+    phpstan:
+      enabled: true
+    php-cs-fixer:
+      enabled: true
+    fractor:
+      enabled: true
+    typoscript-lint:
+      enabled: true
+  paths:
+    scan:
+      - "packages/"
+      - "src/"

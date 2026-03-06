@@ -111,35 +111,89 @@ final class CustomToolConfigurationTest extends TestCase
         $fixturePath = __DIR__ . '/../../Fixtures/configFileReplacement/' . $fixtureDirectory;
         $this->copyFixtureToTempDir($fixturePath);
 
-        // Create application and test config:validate command
-        $application = new QualityToolsApplication();
-        $command = $application->find('config:validate');
-        $commandTester = new CommandTester($command);
+        // Run within isolated environment pointing to temp dir
+        TestHelper::withEnvironment(
+            ['QT_PROJECT_ROOT' => $this->tempDir],
+            function () use ($scenarioName): void {
+                // Create application and test config:validate command
+                $application = new QualityToolsApplication();
+                $command = $application->find('config:validate');
+                $commandTester = new CommandTester($command);
 
-        // Run config:validate - should now work correctly (Issue 022 resolved)
-        $exitCode = $commandTester->execute([], ['cwd' => $this->tempDir]);
+                $exitCode = $commandTester->execute([]);
 
-        $this->assertEquals(0, $exitCode, "config:validate should succeed for scenario: {$scenarioName}");
+                $this->assertEquals(0, $exitCode, "config:validate should succeed for scenario: {$scenarioName}");
 
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString(
-            '[OK] Configuration is valid',
-            $output,
-            "config:validate should report configuration as valid for scenario: {$scenarioName}",
+                $output = $commandTester->getDisplay();
+                $this->assertStringContainsString(
+                    '[OK] Configuration is valid',
+                    $output,
+                    "config:validate should report configuration as valid for scenario: {$scenarioName}",
+                );
+
+                // Test config:show command also works
+                $showCommand = $application->find('config:show');
+                $showCommandTester = new CommandTester($showCommand);
+
+                $showExitCode = $showCommandTester->execute([]);
+                $this->assertEquals(0, $showExitCode, "config:show should succeed for scenario: {$scenarioName}");
+
+                $showOutput = $showCommandTester->getDisplay();
+                $this->assertStringContainsString(
+                    'quality-tools:',
+                    $showOutput,
+                    "config:show should display configuration for scenario: {$scenarioName}",
+                );
+            }
         );
+    }
 
-        // Test config:show command also works
-        $showCommand = $application->find('config:show');
-        $showCommandTester = new CommandTester($showCommand);
+    /**
+     * Test that config:validate warns about invalid config_file paths but still succeeds.
+     *
+     * When a YAML config_file entry references a non-existent file,
+     * config:validate should report SUCCESS with a warning about the
+     * missing file and the fallback to package defaults.
+     */
+    public function testConfigValidateWarnsAboutInvalidConfigFilePath(): void
+    {
+        $fixturePath = __DIR__ . '/../../Fixtures/configFileReplacement/invalid-config-file-path';
+        $this->copyFixtureToTempDir($fixturePath);
 
-        $showExitCode = $showCommandTester->execute([], ['cwd' => $this->tempDir]);
-        $this->assertEquals(0, $showExitCode, "config:show should succeed for scenario: {$scenarioName}");
+        TestHelper::withEnvironment(
+            ['QT_PROJECT_ROOT' => $this->tempDir],
+            function (): void {
+                $application = new QualityToolsApplication();
+                $command = $application->find('config:validate');
+                $commandTester = new CommandTester($command);
 
-        $showOutput = $showCommandTester->getDisplay();
-        $this->assertStringContainsString(
-            'quality-tools:',
-            $showOutput,
-            "config:show should display configuration for scenario: {$scenarioName}",
+                $exitCode = $commandTester->execute([]);
+                $output = $commandTester->getDisplay();
+
+                // Command should succeed (invalid config_file is a warning, not a failure)
+                $this->assertEquals(0, $exitCode, 'config:validate should succeed even with invalid config_file path');
+
+                // Should report configuration as valid
+                $this->assertStringContainsString(
+                    '[OK] Configuration is valid',
+                    $output,
+                    'Should report configuration as structurally valid',
+                );
+
+                // Should warn about the missing config_file
+                $this->assertStringContainsString(
+                    'non-existent/rector.php',
+                    $output,
+                    'Should mention the invalid config_file path',
+                );
+
+                // Should mention fallback behavior
+                $this->assertStringContainsString(
+                    'fallback to package defaults',
+                    $output,
+                    'Should inform about fallback to package defaults',
+                );
+            }
         );
     }
 

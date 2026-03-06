@@ -1,0 +1,9 @@
+# Scenario 4: Configuration Precedence
+# Pre-conditions:
+#   - rector.php in project root (auto-discoverable) -> ignored when config_file is set
+#   - config_file set to custom/rector.php -> used when no CLI option
+#   - cli/rector.php -> used via --config=cli/rector.php (highest precedence)
+quality-tools:
+  tools:
+    rector:
+      config_file: "custom/rector.php"
