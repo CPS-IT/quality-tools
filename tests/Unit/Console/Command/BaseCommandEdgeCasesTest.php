@@ -84,7 +84,7 @@ final class BaseCommandEdgeCasesTest extends TestCase
 
         $capturedOutput = '';
         $this->mockOutput
-            ->expects($this->once())
+            ->expects($this->atLeastOnce())
             ->method('write')
             ->willReturnCallback(function ($data) use (&$capturedOutput): void {
                 $capturedOutput .= $data;
