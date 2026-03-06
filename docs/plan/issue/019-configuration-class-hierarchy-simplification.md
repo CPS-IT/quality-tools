@@ -257,10 +257,12 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Added comprehensive documentation for configuration override feature
 - All success criteria for Issue 022 met and tested
 
-**Current Infrastructure**:
-- `ConfigurationWrapper` and `ConfigurationLoaderWrapper` still active
+**Current Infrastructure** (updated 2026-03-06):
+- `ConfigurationLoaderFactory` removed
+- `ConfigurationLoaderWrapper` removed (with 6 dedicated test files)
+- `ConfigurationWrapper` still active, ready for removal
 - Old classes `SimpleConfiguration`, `EnhancedConfiguration`, `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader` still exist
-- Unified `Configuration` and `ConfigurationLoader` exist alongside wrappers but are not used in production
+- Unified `Configuration` and `ConfigurationLoader` are the primary implementations
 
 #### Step 6.1: Complete Compatibility Implementation
 - [ ] **PREREQUISITE**: Complete compatibility fixes from 2026-02-14 analysis (Steps 1-10)
@@ -300,9 +302,11 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - [ ] Command exit codes identical across all scenarios
 
 #### Step 6.3: Replace Wrapper with Unified Classes
-- [ ] Update all code to use unified `Configuration` and `ConfigurationLoader`
-- [ ] Remove `ConfigurationWrapper` and `ConfigurationLoaderWrapper`
-- [ ] Remove old `SimpleConfiguration`, `EnhancedConfiguration`, etc.
+- [x] Remove `ConfigurationLoaderFactory` (2026-03-06)
+- [x] Remove `ConfigurationLoaderWrapper` and all dedicated comparison tests (2026-03-06)
+- [ ] Remove `ConfigurationWrapper`
+- [ ] Remove `SimpleConfiguration`, `EnhancedConfiguration`
+- [ ] Remove `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader`
 
 **Progress note (2026-03-05)**: Deprecation probes (`trigger_error` with `E_USER_DEPRECATED`) were added to all 7 deprecated class constructors and tests were run to identify remaining usage. Key findings:
 - `ConfigurationLoaderWrapper` was the primary unexpected usage, triggered by all command tests via `BaseCommand::getConfigurationLoader()` fallback.
@@ -353,15 +357,16 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Risk: Medium
 - **DECISION**: Skip this class as it uses EnhancedConfiguration heavily and the unified Configuration::createHierarchical() factory method has behavioral differences. Changing it causes 19 test failures in hierarchical configuration loading. The unified Configuration class needs further stabilization before this complex loader can be migrated safely.
 
-**6. ConfigurationLoaderFactory.php (TRANSITIONAL - READY FOR REMOVAL)**
-- Usage: Factory pattern for loader selection, interface binding in services.yaml
-- Impact: Interface binding updated to use ConfigurationLoader directly
-- Replacement: ConfigurationLoaderInterface now resolves to ConfigurationLoader
-- Test Coverage: [x] Factory tests still pass, ConfigurationDISwitchingTest obsolete
-- Risk: Low (transitional class, only used by own tests)
-- **STATUS**: Interface binding migrated to ConfigurationLoader. Factory only used by its own tests. Ready for removal in final cleanup.
+**6. ConfigurationLoaderFactory.php (REMOVED)**
+- **STATUS**: REMOVED (2026-03-06). Class, test, scratch file, and services.yaml entries deleted.
 
-**7. ConfigurationWrapper.php (TRANSITIONAL - READY FOR REMOVAL)**
+**7. ConfigurationLoaderWrapper.php (REMOVED)**
+- **STATUS**: REMOVED (2026-03-06). Class, services.yaml entry, and all dedicated tests deleted.
+  Removed test files: WrapperVsUnifiedBehaviorTest, LoaderPathResolutionTest,
+  HierarchicalModeDetectionTest, CommandExitCodeConsistencyTest,
+  ConfigurationLoaderInterfaceContractTest, ConfigurationMergingTest.
+
+**8. ConfigurationWrapper.php (TRANSITIONAL - READY FOR REMOVAL)**
 - Usages: ConfigurationLoader now returns Configuration directly
 - Impact: Wrapper indirection removed from ConfigurationLoader
 - Replacement: Configuration instances returned directly (no wrapper)

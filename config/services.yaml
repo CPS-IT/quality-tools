@@ -33,7 +33,6 @@ services:
       - '../src/Configuration/ConfigurationInterface.php'
       - '../src/Configuration/ConfigurationLoaderInterface.php'
       - '../src/Configuration/ConfigurationWrapper.php'
-      - '../src/Configuration/ConfigurationLoaderWrapper.php'
 
   # Tool Configuration Validators
   Cpsit\QualityTools\Configuration\Validator\:
@@ -223,12 +222,6 @@ services:
       $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
     public: true
 
-  Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper:
-    arguments:
-      $simpleLoader: '@Cpsit\QualityTools\Configuration\SimpleConfigurationLoader'
-      $hierarchicalLoader: '@Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader'
-      $mode: 'simple'
-    public: true
 
   # Interface bindings for dependency injection
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
