@@ -73,7 +73,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         // Validate final merged configuration to match wrapper behavior
         $this->validateMergedConfiguration($configData);
 
-        $configuration = Configuration::createSimple(
+        return Configuration::createSimple(
             projectRoot: $projectRoot,
             data: $configData,
             validator: $this->validator,
@@ -81,8 +81,6 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
             toolConfigService: $this->toolConfigService,
             pathResolutionService: $this->pathResolutionService,
         );
-
-        return $configuration;
     }
 
     /**

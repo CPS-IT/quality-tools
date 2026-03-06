@@ -57,10 +57,8 @@ final class PhpCsFixerFixCommand extends AbstractToolCommand implements ToolComm
         }
 
         // Add target paths if provided
-        if (!empty($targetPaths)) {
-            foreach ($targetPaths as $path) {
-                $command[] = $path;
-            }
+        foreach ($targetPaths as $path) {
+            $command[] = $path;
         }
 
         return $command;

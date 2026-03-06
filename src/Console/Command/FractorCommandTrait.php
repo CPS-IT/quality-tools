@@ -56,7 +56,7 @@ trait FractorCommandTrait
         InputInterface $input,
         string $configPath,
         array $targetPaths,
-        bool $dryRun = false
+        bool $dryRun = false,
     ): array {
         $command = [
             $this->getVendorBinPath() . '/fractor',
@@ -71,11 +71,9 @@ trait FractorCommandTrait
 
         // Always add target paths if available
         // This ensures Fractor processes the correct directories
-        if (!empty($targetPaths)) {
-            // Fractor accepts multiple paths as arguments
-            foreach ($targetPaths as $path) {
-                $command[] = $path;
-            }
+        // Fractor accepts multiple paths as arguments
+        foreach ($targetPaths as $path) {
+            $command[] = $path;
         }
 
         return $command;
@@ -92,7 +90,7 @@ trait FractorCommandTrait
             $output->writeln('<error>Fractor exited with an error but provided no output.</error>');
             $output->writeln('<comment>This may indicate an environment issue. Try running with --verbose for more details.</comment>');
         }
-        
+
         // Show YAML validation summary if there were issues
         if (!empty($this->yamlValidationResults['invalid'])) {
             $this->showYamlValidationSummary($output, $this->yamlValidationResults);
@@ -175,12 +173,12 @@ trait FractorCommandTrait
      * Abstract method that must be implemented by the parent class.
      */
     abstract protected function getProjectRoot(): string;
-    
+
     /**
      * Abstract method that must be implemented by the parent class.
      */
     abstract protected function getVendorBinPath(): string;
-    
+
     /**
      * Abstract method that must be implemented by the parent class.
      */

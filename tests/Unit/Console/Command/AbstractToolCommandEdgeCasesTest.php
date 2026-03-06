@@ -88,22 +88,22 @@ final class AbstractToolCommandEdgeCasesTest extends TestCase
         // any file extension will fail validation.
         $relativeConfigFile = 'config/test-tool.yml';
         $fullPath = $this->tempDir . '/' . $relativeConfigFile;
-        
+
         // Create config file in project directory
-        mkdir(dirname($fullPath), 0o777, true);
+        mkdir(\dirname($fullPath), 0o777, true);
         file_put_contents($fullPath, 'test: config');
 
         try {
             // This should fail with security validation error
             $this->expectException(\RuntimeException::class);
             $this->expectExceptionMessage('Security validation failed for custom config file');
-            
+
             $this->command->testResolveConfigPath('test.yml', $fullPath);
         } finally {
             // Clean up
             if (file_exists($fullPath)) {
                 unlink($fullPath);
-                rmdir(dirname($fullPath));
+                rmdir(\dirname($fullPath));
             }
         }
     }

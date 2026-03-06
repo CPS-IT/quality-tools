@@ -62,21 +62,21 @@ final class PhpStanTempFileCleanupTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempProjectRoot],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystem = new Filesystem();
                 $filesystemService = new FilesystemService($filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $command = new PhpStanCommand($configurationLoader);
                 $command->setApplication($app);
                 $this->commandTester = new CommandTester($command);

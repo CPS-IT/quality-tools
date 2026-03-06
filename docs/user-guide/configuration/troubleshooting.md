@@ -438,7 +438,7 @@ vendor/bin/qt config:show --format=json | grep config_file
      tools:
        rector:
          config_file: "/absolute/path/rector.php"  # Avoid absolute paths
-   
+
    # Correct - relative to project root
    quality-tools:
      tools:
@@ -450,7 +450,7 @@ vendor/bin/qt config:show --format=json | grep config_file
    ```bash
    # If rector.php exists in project root, it's auto-discovered
    ls -la rector.php
-   
+
    # Solution: Either rename/remove auto-discovered file
    # Or use --config command line option
    vendor/bin/qt lint:rector --config=custom/rector.php
@@ -460,7 +460,7 @@ vendor/bin/qt config:show --format=json | grep config_file
    ```bash
    # Validate PHP syntax for PHP configs
    php -l custom/rector.php
-   
+
    # Check YAML syntax for YAML configs
    vendor/bin/qt config:validate  # For .quality-tools.yaml
    ```

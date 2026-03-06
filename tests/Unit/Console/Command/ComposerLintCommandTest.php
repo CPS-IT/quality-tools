@@ -21,8 +21,6 @@ use Symfony\Component\Console\Tester\CommandTester;
 final class ComposerLintCommandTest extends TestCase
 {
     private ComposerLintCommand $command;
-    private MockObject&InputInterface $mockInput;
-    private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
 
     protected function setUp(): void
@@ -68,9 +66,6 @@ final class ComposerLintCommandTest extends TestCase
                 $this->command->setApplication($app);
             },
         );
-
-        $this->mockInput = $this->createMock(InputInterface::class);
-        $this->mockOutput = $this->createMock(ConsoleOutputInterface::class);
     }
 
     protected function tearDown(): void

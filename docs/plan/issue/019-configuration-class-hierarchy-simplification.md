@@ -361,7 +361,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - Risk: Low (transitional class, only used by own tests)
 - **STATUS**: Interface binding migrated to ConfigurationLoader. Factory only used by its own tests. Ready for removal in final cleanup.
 
-**7. ConfigurationWrapper.php (TRANSITIONAL - READY FOR REMOVAL)**  
+**7. ConfigurationWrapper.php (TRANSITIONAL - READY FOR REMOVAL)**
 - Usages: ConfigurationLoader now returns Configuration directly
 - Impact: Wrapper indirection removed from ConfigurationLoader
 - Replacement: Configuration instances returned directly (no wrapper)

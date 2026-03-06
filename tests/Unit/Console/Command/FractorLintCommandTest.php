@@ -56,21 +56,21 @@ final class FractorLintCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystem = new Filesystem();
                 $filesystemService = new FilesystemService($filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new FractorLintCommand($configurationLoader);
                 $this->command->setApplication($app);
             },

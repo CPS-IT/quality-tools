@@ -7,7 +7,6 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
-use Cpsit\QualityTools\Exception\ConfigurationException;
 use Cpsit\QualityTools\Exception\FileSystemException;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\MockObject\MockObject;

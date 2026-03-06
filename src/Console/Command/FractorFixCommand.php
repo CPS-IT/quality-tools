@@ -55,5 +55,4 @@ final class FractorFixCommand extends AbstractToolCommand implements ToolCommand
     {
         $this->executeFractorPostProcessingHooks($output, $exitCode);
     }
-
 }

@@ -409,10 +409,10 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
         // JSON format should output pure JSON, no configuration sources
         // The configuration sources can be checked with verbose YAML format if needed
-        
+
         // Parse JSON directly since it's pure JSON output
         $config = json_decode(trim($output), true);
-        
+
         self::assertNotNull($config, 'Output should be valid JSON');
 
         // Verify merged values
@@ -431,9 +431,9 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
         // Now test verbose mode with YAML format to see configuration sources
         $appTester->run(['command' => 'config:show', '--verbose' => true]);
-        
+
         $verboseOutput = $appTester->getDisplay();
-        
+
         // In verbose YAML mode, we should see configuration sources
         self::assertStringContainsString('Configuration Sources', $verboseOutput);
         self::assertStringContainsString('Global:', $verboseOutput);

@@ -225,6 +225,7 @@ final class TestableIntegrationCommand extends BaseCommand
         parent::__construct($loader);
         $this->setDescription('Test integration command for BaseCommand testing');
     }
+
     #[\Override]
     protected function configure(): void
     {

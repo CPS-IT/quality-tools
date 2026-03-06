@@ -50,7 +50,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($composerJsonPath)) {
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
+                    $output->writeln(\sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
                 }
                 continue;
             }
@@ -65,7 +65,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
                 $composerExecutable = $vendorComposer;
             }
 
-            $output->writeln(sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
+            $output->writeln(\sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
 
             // Store for execution - we'll handle multiple files differently
             $commands[] = [
@@ -77,6 +77,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
 
         if ($foundFiles === 0) {
             $output->writeln('<comment>No composer.json files found in any of the configured paths</comment>');
+
             // Return empty command to trigger error
             return [];
         }
@@ -97,7 +98,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
     {
         // For composer normalize, we need custom handling for multiple files
         $targetPaths = $this->resolveTargetPaths($input, $output);
-        
+
         $totalExitCode = 0;
         $foundFiles = 0;
 
@@ -108,7 +109,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($composerJsonPath)) {
                 if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
+                    $output->writeln(\sprintf('<comment>No composer.json found at: %s</comment>', $targetPath));
                 }
                 continue;
             }
@@ -128,7 +129,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
                 $composerJsonPath,
             ];
 
-            $output->writeln(sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
+            $output->writeln(\sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
 
             $exitCode = $this->executeProcess($command, $input, $output);
             if ($exitCode !== 0) {
@@ -138,6 +139,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
 
         if ($foundFiles === 0) {
             $output->writeln('<comment>No composer.json files found in any of the configured paths</comment>');
+
             return 1;
         }
 

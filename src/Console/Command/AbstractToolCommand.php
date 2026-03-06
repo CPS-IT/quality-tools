@@ -16,11 +16,8 @@ use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use Exception;
 use Override;
-use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Throwable;
-use function sprintf;
 
 abstract class AbstractToolCommand extends BaseCommand
 {
@@ -42,7 +39,7 @@ abstract class AbstractToolCommand extends BaseCommand
     {
         // Store output for use in helper methods
         $this->output = $output;
-        
+
         try {
             // Show optimization details by default unless disabled
             if (!$this->isOptimizationDisabled($input)) {
@@ -74,7 +71,7 @@ abstract class AbstractToolCommand extends BaseCommand
             $this->executePostProcessingHooks($input, $output, $exitCode);
 
             return $exitCode;
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // Handle cleanup on exception
             $this->handleExecutionException($e, $input, $output);
 
@@ -121,7 +118,7 @@ abstract class AbstractToolCommand extends BaseCommand
 
             $resolvedPath = $filesystemService->realpath($customPath);
             if ($output->isVerbose()) {
-                $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
+                $output->writeln(\sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
             }
 
             return [$resolvedPath];
@@ -132,7 +129,7 @@ abstract class AbstractToolCommand extends BaseCommand
 
         if ($output->isVerbose()) {
             if (!empty($resolvedPaths)) {
-                $output->writeln(sprintf(
+                $output->writeln(\sprintf(
                     '<comment>Analyzing resolved paths: %s</comment>',
                     implode(', ', $resolvedPaths),
                 ));
@@ -156,7 +153,7 @@ abstract class AbstractToolCommand extends BaseCommand
         $memoryLimit = $this->getOptimalMemoryLimit($input, $this->getToolName());
 
         if ($output->isVerbose()) {
-            $output->writeln(sprintf('<info>Using automatic memory limit: %s</info>', $memoryLimit));
+            $output->writeln(\sprintf('<info>Using automatic memory limit: %s</info>', $memoryLimit));
         }
 
         return $memoryLimit;
@@ -181,7 +178,7 @@ abstract class AbstractToolCommand extends BaseCommand
     /**
      * Handle cleanup when an exception occurs (optional override).
      */
-    protected function handleExecutionException(Throwable $exception, InputInterface $input, OutputInterface $output): void
+    protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
     {
         // Default: no special cleanup
     }
@@ -201,7 +198,7 @@ abstract class AbstractToolCommand extends BaseCommand
     /**
      * Get target path for tool compatibility.
      */
-    #[Override]
+    #[\Override]
     protected function getTargetPath(InputInterface $input): string
     {
         return $this->getTargetPathForTool($input, $this->getToolName());
@@ -214,9 +211,9 @@ abstract class AbstractToolCommand extends BaseCommand
     protected function resolveConfigPath(string $configFile, ?string $customConfigPath = null): string
     {
         if ($this->output && $this->output->isVerbose()) {
-            $this->output->writeln(sprintf('<comment>Resolving configuration for file: %s</comment>', $configFile));
+            $this->output->writeln(\sprintf('<comment>Resolving configuration for file: %s</comment>', $configFile));
         }
-        
+
         if ($customConfigPath !== null) {
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($customConfigPath)) {
@@ -233,8 +230,8 @@ abstract class AbstractToolCommand extends BaseCommand
                     $projectRoot,
                     $this->getToolName(),
                 );
-            } catch (Exception $e) {
-                throw new RuntimeException(sprintf('Security validation failed for custom config file "%s": %s', $customConfigPath, $e->getMessage()), 0, $e);
+            } catch (\Exception $e) {
+                throw new \RuntimeException(\sprintf('Security validation failed for custom config file "%s": %s', $customConfigPath, $e->getMessage()), 0, $e);
             }
         }
 
@@ -255,9 +252,9 @@ abstract class AbstractToolCommand extends BaseCommand
             $searchedLocations = $this->getSearchedConfigLocations($toolName, $configFile);
             throw $this->createConfigNotFoundError($defaultConfigPath, $toolName, $searchedLocations);
         }
-        
+
         if ($this->output && $this->output->isVerbose()) {
-            $this->output->writeln(sprintf('<info>Using package default configuration: %s</info>', $defaultConfigPath));
+            $this->output->writeln(\sprintf('<info>Using package default configuration: %s</info>', $defaultConfigPath));
         }
 
         return $defaultConfigPath;
@@ -279,10 +276,10 @@ abstract class AbstractToolCommand extends BaseCommand
                 new ConfigurationValidator(),
                 new ToolConfigurationValidationService(),
             );
-            
+
             // Debug output for verbose mode
             if ($this->output && $this->output->isVerbose()) {
-                $this->output->writeln(sprintf('<comment>Discovering configuration for %s...</comment>', $toolName));
+                $this->output->writeln(\sprintf('<comment>Discovering configuration for %s...</comment>', $toolName));
             }
 
             // Check if tool has a custom configuration file
@@ -290,9 +287,9 @@ abstract class AbstractToolCommand extends BaseCommand
                 $configPath = $discovery->getToolConfigurationPath($toolName);
                 if ($configPath !== null) {
                     if ($this->output && $this->output->isVerbose()) {
-                        $this->output->writeln(sprintf('<info>Found configuration: %s</info>', $configPath));
+                        $this->output->writeln(\sprintf('<info>Found configuration: %s</info>', $configPath));
                     }
-                    
+
                     // Validate the path for security
                     return $this->getFilesystemService()->validateConfigurationPath(
                         $configPath,
@@ -300,12 +297,12 @@ abstract class AbstractToolCommand extends BaseCommand
                         $toolName,
                     );
                 }
-            } else if ($this->output && $this->output->isVerbose()) {
+            } elseif ($this->output && $this->output->isVerbose()) {
                 $this->output->writeln('<comment>No custom configuration found, using package defaults</comment>');
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             if ($this->output && $this->output->isVerbose()) {
-                $this->output->writeln(sprintf('<comment>Configuration discovery failed: %s</comment>', $e->getMessage()));
+                $this->output->writeln(\sprintf('<comment>Configuration discovery failed: %s</comment>', $e->getMessage()));
             }
             // Silently fail and fall back to default
             // This allows the command to continue with package defaults
@@ -321,7 +318,7 @@ abstract class AbstractToolCommand extends BaseCommand
     {
         $locations = [];
         $projectRoot = $this->getProjectRoot();
-        
+
         // Standard locations checked by ConfigurationDiscovery
         $standardLocations = [
             $projectRoot . '/' . $configFile,
@@ -329,22 +326,22 @@ abstract class AbstractToolCommand extends BaseCommand
             $projectRoot . '/.config/' . $configFile,
             $projectRoot . '/quality-tools/' . $configFile,
         ];
-        
+
         foreach ($standardLocations as $location) {
             $locations[] = $location;
         }
-        
+
         // Package default location
         try {
             $vendorPath = $this->findVendorPath();
             $locations[] = $vendorPath . '/cpsit/quality-tools/config/' . $configFile;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Vendor path detection failed, skip
         }
-        
+
         return $locations;
     }
-    
+
     /**
      * Create detailed configuration not found error.
      */
@@ -356,18 +353,18 @@ abstract class AbstractToolCommand extends BaseCommand
             'Use --config option to specify a custom configuration file',
             'Ensure cpsit/quality-tools package is properly installed',
         ];
-        
+
         if (!empty($searchedLocations)) {
-            $troubleshooting[] = sprintf('Searched locations: %s', implode(', ', $searchedLocations));
+            $troubleshooting[] = \sprintf('Searched locations: %s', implode(', ', $searchedLocations));
         }
-        
+
         return ErrorFactory::configFileNotFound($defaultPath, null);
     }
-    
+
     /**
      * Find vendor path for tool commands.
      */
-    #[Override]
+    #[\Override]
     protected function findVendorPath(): string
     {
         $projectRoot = $this->getProjectRoot();
@@ -379,7 +376,7 @@ abstract class AbstractToolCommand extends BaseCommand
             // Validate that cpsit/quality-tools is installed in detected vendor directory
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->directoryExists($vendorPath . '/cpsit/quality-tools')) {
-                throw new RuntimeException(sprintf('cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.', $vendorPath));
+                throw new \RuntimeException(\sprintf('cpsit/quality-tools package not found in detected vendor directory: %s. Please ensure the package is properly installed.', $vendorPath));
             }
 
             return $vendorPath;
@@ -397,14 +394,14 @@ abstract class AbstractToolCommand extends BaseCommand
                 }
             }
 
-            throw new RuntimeException(sprintf('Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s', $e->getMessage(), implode(', ', $vendorPaths)));
+            throw new \RuntimeException(\sprintf('Could not detect vendor directory. Automatic detection failed: %s. Also checked fallback paths: %s', $e->getMessage(), implode(', ', $vendorPaths)));
         }
     }
 
     /**
      * Get vendor directory detector service.
      */
-    #[Override]
+    #[\Override]
     protected function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
         if ($this->hasService(VendorDirectoryDetector::class)) {

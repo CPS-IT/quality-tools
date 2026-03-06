@@ -17,7 +17,7 @@ final class PhpCsFixerConfigurationValidator implements ToolConfigurationValidat
     public const array SUPPORTED_EXTENSIONS = ['php'];
 
     private const array PHP_CS_FIXER_PATTERNS = [
-        'PhpCsFixer\\Config',
+        \PhpCsFixer\Config::class,
         'php-cs-fixer',
         'PhpCsFixer',
         'setFinder(',

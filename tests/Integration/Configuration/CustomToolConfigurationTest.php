@@ -144,7 +144,7 @@ final class CustomToolConfigurationTest extends TestCase
                     $showOutput,
                     "config:show should display configuration for scenario: {$scenarioName}",
                 );
-            }
+            },
         );
     }
 
@@ -193,7 +193,7 @@ final class CustomToolConfigurationTest extends TestCase
                     $output,
                     'Should inform about fallback to package defaults',
                 );
-            }
+            },
         );
     }
 
@@ -231,7 +231,7 @@ final class CustomToolConfigurationTest extends TestCase
                 // Execute the command - it should discover and use the custom config
                 $commandTester->execute([]);
                 $output = $commandTester->getDisplay();
-            }
+            },
         );
 
         // This test documents the current INCORRECT behavior:
@@ -251,9 +251,8 @@ final class CustomToolConfigurationTest extends TestCase
             $expectedPath,
             $output,
             "Auto-discovery not yet implemented. Tool command '{$toolCommand}' currently ignores " .
-            "custom config and uses package defaults. Expected path '{$expectedPath}' not found in output.".
+            "custom config and uses package defaults. Expected path '{$expectedPath}' not found in output." .
             "Scenario: {$scenarioName}",
-
         );
     }
 
@@ -446,23 +445,23 @@ return static function (RectorConfig $rectorConfig): void {
         $mockExecutablesDir = __DIR__ . '/../../Fixtures/mockExecutables';
 
         // Copy the appropriate mock executable based on the fixture directory
-        if (strpos($fixtureDirectory, 'rector') !== false) {
+        if (str_contains($fixtureDirectory, 'rector')) {
             copy($mockExecutablesDir . '/rector', $binDir . '/rector');
-            chmod($binDir . '/rector', 0755);
-        } elseif (strpos($fixtureDirectory, 'phpstan') !== false) {
+            chmod($binDir . '/rector', 0o755);
+        } elseif (str_contains($fixtureDirectory, 'phpstan')) {
             copy($mockExecutablesDir . '/phpstan', $binDir . '/phpstan');
-            chmod($binDir . '/phpstan', 0755);
-        } elseif (strpos($fixtureDirectory, 'fractor') !== false) {
+            chmod($binDir . '/phpstan', 0o755);
+        } elseif (str_contains($fixtureDirectory, 'fractor')) {
             copy($mockExecutablesDir . '/fractor', $binDir . '/fractor');
-            chmod($binDir . '/fractor', 0755);
+            chmod($binDir . '/fractor', 0o755);
             // Fractor needs a default config file in case auto-discovery fails
             $configDir = $vendorDir . '/cpsit/quality-tools/config';
             if (!file_exists($configDir . '/fractor.php')) {
                 file_put_contents($configDir . '/fractor.php', "<?php\nreturn static function (\$config) {\n    \$config->paths(['custom-fractor-root-path/']);\n};");
             }
-        } elseif (strpos($fixtureDirectory, 'php-cs-fixer') !== false) {
+        } elseif (str_contains($fixtureDirectory, 'php-cs-fixer')) {
             copy($mockExecutablesDir . '/php-cs-fixer', $binDir . '/php-cs-fixer');
-            chmod($binDir . '/php-cs-fixer', 0755);
+            chmod($binDir . '/php-cs-fixer', 0o755);
         }
     }
 

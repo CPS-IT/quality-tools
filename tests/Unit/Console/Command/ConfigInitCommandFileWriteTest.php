@@ -40,7 +40,7 @@ final class ConfigInitCommandFileWriteTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $toolValidator = new ToolConfigurationValidationService([]);
@@ -48,9 +48,9 @@ final class ConfigInitCommandFileWriteTest extends TestCase
                     $validator,
                     $this->securityService,
                     $this->filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new ConfigInitCommand($this->filesystemService, $configurationLoader);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);

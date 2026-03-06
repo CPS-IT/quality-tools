@@ -605,4 +605,3 @@ vendor/bin/qt config:show --format=json
 3. **Create Global Config**: Move common settings to `~/.quality-tools.yaml`
 4. **Test Thoroughly**: Verify that tools behave as expected
 5. **Clean Up**: Remove redundant configuration files
-

@@ -14,6 +14,7 @@ use Cpsit\QualityTools\Service\ToolConfigService;
  * to the wrapped instance and handling missing methods gracefully.
  * Updated in Step 4.2 to use extracted business logic services.
  * Part of the evolutionary refactoring strategy in Issue 019.
+ *
  * @deprecated use Configuration instead
  */
 final readonly class ConfigurationWrapper implements ConfigurationInterface

@@ -37,21 +37,21 @@ final class ConfigShowCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystem = new Filesystem();
                 $filesystemService = new FilesystemService($filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new ConfigShowCommand($configurationLoader);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
@@ -147,10 +147,10 @@ final class ConfigShowCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();
-        
+
         // JSON format should not contain the title, just pure JSON
         self::assertStringNotContainsString('Resolved Configuration', $output);
-        
+
         // Should be valid JSON from the start
         $jsonOutput = trim($output);
 
@@ -440,21 +440,21 @@ final class ConfigShowCommandTest extends TestCase
                 ['QT_PROJECT_ROOT' => $testDir],
                 function () use ($configFile): void {
                     $app = new QualityToolsApplication();
-                    
+
                     // Create ConfigurationLoader with dependencies
                     $validator = new ConfigurationValidator();
                     $securityService = new SecurityService();
                     $filesystem = new Filesystem();
                     $filesystemService = new FilesystemService($filesystem, $securityService);
                     $toolValidator = new ToolConfigurationValidationService([]);
-                    
+
                     $configurationLoader = new ConfigurationLoader(
                         $validator,
                         $securityService,
                         $filesystemService,
-                        $toolValidator
+                        $toolValidator,
                     );
-                    
+
                     $command = new ConfigShowCommand($configurationLoader);
                     $command->setApplication($app);
                     $commandTester = new CommandTester($command);
@@ -481,43 +481,43 @@ final class ConfigShowCommandTest extends TestCase
         string $fixtureDirectory,
         string $description,
         array $expectedSources,
-        array $expectedWarnings = []
+        array $expectedWarnings = [],
     ): void {
         // Copy fixture to temp directory
         $filesystem = new Filesystem();
         $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
-        
+
         if (!is_dir($fixturePath)) {
             $this->markTestSkipped("Fixture directory not found: $fixturePath");
         }
-        
+
         $filesystem->mirror($fixturePath, $this->tempDir);
-        
+
         // Execute with verbose mode to see configuration sources
         $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-        
+
         self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
-        
+
         $output = $this->commandTester->getDisplay();
-        
+
         // Should show configuration sources in verbose mode
         self::assertStringContainsString('Configuration Sources', $output);
-        
+
         // Check for expected source files
         foreach ($expectedSources as $source) {
             self::assertStringContainsString(
                 $source,
                 $output,
-                sprintf('Failed for %s: Should show source "%s"', $description, $source)
+                \sprintf('Failed for %s: Should show source "%s"', $description, $source),
             );
         }
-        
+
         // Check for warnings about invalid configs
         foreach ($expectedWarnings as $warning) {
             self::assertStringContainsString(
                 $warning,
                 $output,
-                sprintf('Failed for %s: Should show warning "%s"', $description, $warning)
+                \sprintf('Failed for %s: Should show warning "%s"', $description, $warning),
             );
         }
     }
@@ -572,35 +572,35 @@ final class ConfigShowCommandTest extends TestCase
     public function testShowsResolvedConfiguration(
         string $fixtureDirectory,
         string $description,
-        array $expectedConfigKeys
+        array $expectedConfigKeys,
     ): void {
         // Copy fixture to temp directory
         $filesystem = new Filesystem();
         $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
-        
+
         if (!is_dir($fixturePath)) {
             $this->markTestSkipped("Fixture directory not found: $fixturePath");
         }
-        
+
         $filesystem->mirror($fixturePath, $this->tempDir);
-        
+
         // Execute in normal mode (non-verbose)
         $exitCode = $this->commandTester->execute([]);
-        
+
         self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
-        
+
         $output = $this->commandTester->getDisplay();
-        
+
         // Should show resolved configuration
         self::assertStringContainsString('Resolved Configuration', $output);
         self::assertStringContainsString('quality-tools:', $output);
-        
+
         // Check for expected configuration keys
         foreach ($expectedConfigKeys as $key) {
             self::assertStringContainsString(
                 $key,
                 $output,
-                sprintf('Failed for %s: Configuration should contain "%s"', $description, $key)
+                \sprintf('Failed for %s: Configuration should contain "%s"', $description, $key),
             );
         }
     }
@@ -642,25 +642,25 @@ final class ConfigShowCommandTest extends TestCase
         // Use a fixture with auto-discovered configs
         $filesystem = new Filesystem();
         $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/rector-root-override';
-        
+
         if (!is_dir($fixturePath)) {
             $this->markTestSkipped("Fixture directory not found: $fixturePath");
         }
-        
+
         $filesystem->mirror($fixturePath, $this->tempDir);
-        
+
         // Execute with JSON format
         $exitCode = $this->commandTester->execute(['--format' => 'json']);
-        
+
         self::assertSame(Command::SUCCESS, $exitCode);
-        
+
         $output = $this->commandTester->getDisplay();
-        
+
         // Should be valid JSON
         $json = json_decode($output, true);
         self::assertIsArray($json);
         self::assertArrayHasKey('quality-tools', $json);
-        
+
         // Should have resolved configuration
         $config = $json['quality-tools'];
         self::assertArrayHasKey('project', $config);
@@ -682,17 +682,17 @@ final class ConfigShowCommandTest extends TestCase
                   enabled: true
                   config_file: "non-existent/rector.php"
             YAML;
-        
+
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $config);
-        
+
         // Execute with verbose to see configuration
         $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-        
+
         // Should succeed even with non-existent config_file reference
         self::assertSame(Command::SUCCESS, $exitCode);
-        
+
         $output = $this->commandTester->getDisplay();
-        
+
         // Should show configuration with the config_file value
         self::assertStringContainsString('Resolved Configuration', $output);
         self::assertStringContainsString('config_file: non-existent/rector.php', $output);
@@ -714,27 +714,27 @@ final class ConfigShowCommandTest extends TestCase
                   enabled: true
                   config_file: "custom/rector.php"
             YAML;
-        
+
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $config);
-        
+
         // Create the custom config file
         mkdir($this->tempDir . '/custom');
         file_put_contents($this->tempDir . '/custom/rector.php', '<?php return static function ($c): void {};');
-        
+
         // Also create an auto-discoverable rector.php (should be ignored due to explicit config)
         file_put_contents($this->tempDir . '/rector.php', '<?php return static function ($c): void {};');
-        
+
         // Execute with verbose
         $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-        
+
         self::assertSame(Command::SUCCESS, $exitCode);
-        
+
         $output = $this->commandTester->getDisplay();
-        
+
         // Should show configuration sources
         self::assertStringContainsString('Configuration Sources', $output);
         self::assertStringContainsString('Project:', $output);
-        
+
         // The explicit config_file should take precedence
         self::assertStringContainsString('custom/rector.php', $output);
     }

@@ -57,21 +57,21 @@ final class PhpStanCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystem = new Filesystem();
                 $filesystemService = new FilesystemService($filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new PhpStanCommand($configurationLoader);
                 $this->command->setApplication($app);
             },
@@ -284,26 +284,26 @@ final class PhpStanCommandTest extends TestCase
             ['no-optimization', false],
         ]);
 
-                // Mock output to capture error messages
+        // Mock output to capture error messages
         $actualOutput = [];
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->willReturnCallback(function ($message) use (&$actualOutput) {
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
                 $actualOutput[] = $message;
             });
 
         try {
             $result = $this->command->run($this->mockInput, $this->mockOutput);
-                    // FileSystemException returns exit code 4 based on getSuggestedExitCode()
-        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
-        
-        // Verify the error message contains expected text
-        $errorOutput = implode("\n", $actualOutput);
-        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
-        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
-        $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
-    } catch (ExceptionInterface $e) {
+            // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+            $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
+
+            // Verify the error message contains expected text
+            $errorOutput = implode("\n", $actualOutput);
+            $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
+            $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
+            $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
+        } catch (ExceptionInterface $e) {
             // Expected for invalid target path scenarios
             $this->assertStringContainsString('path', strtolower($e->getMessage()));
         }

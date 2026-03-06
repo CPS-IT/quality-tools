@@ -54,16 +54,16 @@ final class FractorFixCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with all dependencies
                 $securityService = new SecurityService();
                 $configurationLoader = new ConfigurationLoader(
                     new ConfigurationValidator(),
                     $securityService,
                     new FilesystemService(new \Symfony\Component\Filesystem\Filesystem(), $securityService),
-                    new ToolConfigurationValidationService([])
+                    new ToolConfigurationValidationService([]),
                 );
-                
+
                 $this->command = new FractorFixCommand($configurationLoader);
                 $this->command->setApplication($app);
             },
@@ -261,20 +261,20 @@ final class FractorFixCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
-                // Mock output to capture error messages
+        // Mock output to capture error messages
         $actualOutput = [];
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->willReturnCallback(function ($message) use (&$actualOutput) {
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
                 $actualOutput[] = $message;
             });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-                // ConfigurationException returns exit code 2 based on getSuggestedExitCode()
+        // ConfigurationException returns exit code 2 based on getSuggestedExitCode()
         $this->assertEquals(2, $result, 'Expected exit code 2 for ConfigurationException (config file not found)');
-        
+
         // Verify the error message contains expected text
         $errorOutput = implode("\n", $actualOutput);
         $this->assertStringContainsString('Configuration Error (1001)', $errorOutput, 'Should show configuration error code 1001');

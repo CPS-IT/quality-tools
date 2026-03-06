@@ -78,9 +78,9 @@ final class MultiPathScanningTest extends TestCase
             new ConfigurationValidator(),
             $this->securityService,
             new FilesystemService(new Filesystem(), $this->securityService),
-            new ToolConfigurationValidationService([])
+            new ToolConfigurationValidationService([]),
         );
-        
+
         // Execute rector command
         $command = new RectorLintCommand($configLoader);
         // Skip application setup for now - focus on testing the path resolution logic
@@ -140,9 +140,9 @@ final class MultiPathScanningTest extends TestCase
             new ConfigurationValidator(),
             $this->securityService,
             new FilesystemService(new Filesystem(), $this->securityService),
-            new ToolConfigurationValidationService([])
+            new ToolConfigurationValidationService([]),
         );
-        
+
         // Execute PHP CS Fixer command
         $command = new PhpCsFixerLintCommand($configLoader);
         // Skip application setup for now - focus on testing the path resolution logic

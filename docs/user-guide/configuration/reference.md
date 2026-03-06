@@ -81,7 +81,7 @@ quality-tools:
     phpstan:
       enabled: boolean              # Enable/disable PHPStan
       level: integer                # Analysis level (0-9)
-      config_file: string           # Custom configuration file path  
+      config_file: string           # Custom configuration file path
       memory_limit: string          # Memory limit (e.g., "1G", "512M")
       paths:                        # Tool-specific path overrides
         scan:                       # Additional scan paths for this tool

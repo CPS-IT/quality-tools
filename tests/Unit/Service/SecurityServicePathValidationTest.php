@@ -17,18 +17,14 @@ use Symfony\Component\Filesystem\Filesystem;
 final class SecurityServicePathValidationTest extends TestCase
 {
     private SecurityService $securityService;
-    private FilesystemService $filesystemService;
     private string $tempDir;
-    private string $projectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('security_path_test_');
-        $this->projectRoot = $this->tempDir;
 
         $this->securityService = new SecurityService();
         $filesystem = new Filesystem();
-        $this->filesystemService = new FilesystemService($filesystem, $this->securityService);
     }
 
     protected function tearDown(): void

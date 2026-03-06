@@ -56,7 +56,7 @@ final class ComposerLintCommand extends AbstractToolCommand implements ToolComma
     {
         // For composer normalize, we need custom handling for multiple files
         $targetPaths = $this->resolveTargetPaths($input, $output);
-        
+
         $totalExitCode = 0;
         $foundFiles = 0;
 
@@ -99,6 +99,7 @@ final class ComposerLintCommand extends AbstractToolCommand implements ToolComma
 
         if ($foundFiles === 0) {
             $output->writeln('<comment>No composer.json files found in any of the configured paths</comment>');
+
             return 1;
         }
 

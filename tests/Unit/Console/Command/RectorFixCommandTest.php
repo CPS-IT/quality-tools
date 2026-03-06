@@ -63,21 +63,21 @@ final class RectorFixCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystem = new Filesystem();
                 $filesystemService = new FilesystemService($filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new RectorFixCommand($configurationLoader);
                 $this->command->setApplication($app);
             },
@@ -235,20 +235,20 @@ final class RectorFixCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
-                // Mock output to capture error messages
+        // Mock output to capture error messages
         $actualOutput = [];
         $this->mockOutput
             ->expects($this->atLeastOnce())
             ->method('writeln')
-            ->willReturnCallback(function ($message) use (&$actualOutput) {
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
                 $actualOutput[] = $message;
             });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-                // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+        // FileSystemException returns exit code 4 based on getSuggestedExitCode()
         $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
-        
+
         // Verify the error message contains expected text
         $errorOutput = implode("\n", $actualOutput);
         $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');

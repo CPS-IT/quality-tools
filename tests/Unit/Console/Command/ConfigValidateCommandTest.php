@@ -39,20 +39,20 @@ final class ConfigValidateCommandTest extends TestCase
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function (): void {
                 $app = new QualityToolsApplication();
-                
+
                 // Create ConfigurationLoader with dependencies
                 $validator = new ConfigurationValidator();
                 $securityService = new SecurityService();
                 $filesystemService = new FilesystemService($this->filesystem, $securityService);
                 $toolValidator = new ToolConfigurationValidationService([]);
-                
+
                 $configurationLoader = new ConfigurationLoader(
                     $validator,
                     $securityService,
                     $filesystemService,
-                    $toolValidator
+                    $toolValidator,
                 );
-                
+
                 $this->command = new ConfigValidateCommand($configurationLoader);
                 $this->command->setApplication($app);
                 $this->commandTester = new CommandTester($this->command);
@@ -409,7 +409,7 @@ final class ConfigValidateCommandTest extends TestCase
         string $description,
         int $expectedExitCode,
         array $expectedOutputContains,
-        array $unexpectedOutputContains = []
+        array $unexpectedOutputContains = [],
     ): void {
         // Copy fixture to temp directory
         $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
@@ -427,7 +427,7 @@ final class ConfigValidateCommandTest extends TestCase
         self::assertSame(
             $expectedExitCode,
             $exitCode,
-            sprintf('Failed for %s: Expected exit code %d, got %d', $description, $expectedExitCode, $exitCode)
+            \sprintf('Failed for %s: Expected exit code %d, got %d', $description, $expectedExitCode, $exitCode),
         );
 
         $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
@@ -437,7 +437,7 @@ final class ConfigValidateCommandTest extends TestCase
             self::assertStringContainsString(
                 $expected,
                 $output,
-                sprintf('Failed for %s: Output should contain "%s"', $description, $expected)
+                \sprintf('Failed for %s: Output should contain "%s"', $description, $expected),
             );
         }
 
@@ -446,7 +446,7 @@ final class ConfigValidateCommandTest extends TestCase
             self::assertStringNotContainsString(
                 $unexpected,
                 $output,
-                sprintf('Failed for %s: Output should not contain "%s"', $description, $unexpected)
+                \sprintf('Failed for %s: Output should not contain "%s"', $description, $unexpected),
             );
         }
     }
@@ -515,7 +515,7 @@ final class ConfigValidateCommandTest extends TestCase
     public function testVerboseOutputWithCustomConfigurations(
         string $fixtureDirectory,
         string $description,
-        array $expectedVerboseOutput
+        array $expectedVerboseOutput,
     ): void {
         // Copy fixture to temp directory
         $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
@@ -539,7 +539,7 @@ final class ConfigValidateCommandTest extends TestCase
             self::assertStringContainsString(
                 $expected,
                 $output,
-                sprintf('Verbose output for %s should contain "%s"', $description, $expected)
+                \sprintf('Verbose output for %s should contain "%s"', $description, $expected),
             );
         }
     }

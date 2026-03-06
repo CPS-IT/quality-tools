@@ -11,9 +11,7 @@ use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -92,12 +90,12 @@ final class AbstractToolCommandConfigFileTest extends TestCase
         self::assertSame(
             basename($customConfigPath),
             basename($resolvedPath),
-            'resolveConfigPath must use config_file from .quality-tools.yaml'
+            'resolveConfigPath must use config_file from .quality-tools.yaml',
         );
         self::assertSame(
             file_get_contents($customConfigPath),
             file_get_contents($resolvedPath),
-            'Resolved config must be the custom file, not the package default'
+            'Resolved config must be the custom file, not the package default',
         );
     }
 
@@ -135,12 +133,12 @@ final class AbstractToolCommandConfigFileTest extends TestCase
         self::assertSame(
             basename($cliConfigPath),
             basename($resolvedPath),
-            'CLI --config must override config_file from YAML'
+            'CLI --config must override config_file from YAML',
         );
         self::assertSame(
             file_get_contents($cliConfigPath),
             file_get_contents($resolvedPath),
-            'Resolved config must be the CLI file, not the YAML config_file'
+            'Resolved config must be the CLI file, not the YAML config_file',
         );
     }
 
@@ -172,7 +170,7 @@ final class AbstractToolCommandConfigFileTest extends TestCase
         self::assertSame(
             file_get_contents($expectedDefault),
             file_get_contents($resolvedPath),
-            'Invalid YAML config_file must fall back to package defaults'
+            'Invalid YAML config_file must fall back to package defaults',
         );
     }
 
@@ -212,7 +210,7 @@ final class AbstractToolCommandConfigFileTest extends TestCase
         self::assertSame(
             '<?php return ["yaml-configured" => true];',
             file_get_contents($resolvedPath),
-            'YAML config_file must take precedence over auto-discovered rector.php'
+            'YAML config_file must take precedence over auto-discovered rector.php',
         );
     }
 }

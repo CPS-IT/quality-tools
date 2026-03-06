@@ -416,7 +416,7 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->directoryExists($customPath)) {
                 throw new FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
-                //throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
+                // throw new \InvalidArgumentException(\sprintf('Target path does not exist or is not a directory: %s', $customPath));
             }
 
             return [$filesystemService->realpath($customPath)];
@@ -451,7 +451,6 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
         return $this->configuration;
     }
-
 
     protected function getVendorDirectoryDetector(): VendorDirectoryDetector
     {
@@ -498,7 +497,6 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
         return new ProjectAnalyzer();
     }
 
-
     protected function getFilesystemService(): FilesystemService
     {
         if ($this->hasService(FilesystemService::class)) {
@@ -511,5 +509,4 @@ abstract class BaseCommand extends Command implements ContainerAwareInterface
 
         return new FilesystemService($filesystem, $securityService);
     }
-
 }

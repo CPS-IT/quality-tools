@@ -35,6 +35,7 @@ final class BaseCommandPathResolutionTest extends TestCase
             {
                 parent::__construct($loader);
             }
+
             protected function getToolName(): ?string
             {
                 return null; // This is a test command
@@ -109,7 +110,7 @@ final class BaseCommandPathResolutionTest extends TestCase
     public function userProvidedPathOptionOverridesConfiguration(): void
     {
         $mockConfigLoader = $this->createMock(ConfigurationLoaderInterface::class);
-        
+
         $command = new class($mockConfigLoader) extends RectorLintCommand {
             public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
