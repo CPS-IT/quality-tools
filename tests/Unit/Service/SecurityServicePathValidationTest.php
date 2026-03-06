@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Service;
 
 use Cpsit\QualityTools\Exception\SecurityException;
-use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
