@@ -148,16 +148,16 @@ final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInt
 
     private function createTemporaryPhpStanConfig(string $baseConfigPath, array $paths): string
     {
-        // Read the base configuration
-        $baseConfig = file_get_contents($baseConfigPath);
-        if ($baseConfig === false) {
-            throw new \RuntimeException(\sprintf('Could not read base config file: %s', $baseConfigPath));
+        // Build a temp config that includes the base config and overrides paths
+        $resolvedBasePath = realpath($baseConfigPath);
+        if ($resolvedBasePath === false) {
+            throw new \RuntimeException(\sprintf('Could not resolve base config file: %s', $baseConfigPath));
         }
 
-        // Create the dynamic paths section
-        $pathsSection = "parameters:\n\tlevel: 6\n\tpaths:\n";
+        $content = "includes:\n\t- " . $resolvedBasePath . "\n\n";
+        $content .= "parameters:\n\tpaths:\n";
         foreach ($paths as $path) {
-            $pathsSection .= "\t\t- " . $path . "\n";
+            $content .= "\t\t- " . $path . "\n";
         }
 
         // Create a disposable temporary file
@@ -165,7 +165,7 @@ final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInt
         $filesystem = new \Symfony\Component\Filesystem\Filesystem();
         $filesystemService = new \Cpsit\QualityTools\Service\FilesystemService($filesystem, $securityService);
         $this->temporaryConfig = new DisposableTemporaryFile($securityService, $filesystemService, 'phpstan_', '.neon');
-        $this->temporaryConfig->write($pathsSection);
+        $this->temporaryConfig->write($content);
 
         return $this->temporaryConfig->getPath();
     }
