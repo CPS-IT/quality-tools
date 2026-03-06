@@ -1,7 +1,9 @@
 ---
-image: php:8.3-cli
+image: $CI_REGISTRY/x-it-docker/docker-php:8.3-build-stable
 
 variables:
+  CUSTOMER_NAME: "CPSIT"
+  PROJECT_NAME: 'quality-tools'
   COMPOSER_HOME: ${CI_PROJECT_DIR}/.composer
 
 stages:
@@ -9,11 +11,5 @@ stages:
   - test
 
 include:
-  - '.gitlab-ci/build/**.yaml'
-  - '.gitlab-ci/test/**.yaml'
+  - '.gitlab-ci/**.yaml'
 
-.composer-cache:
-  cache:
-    key: composer-${CI_COMMIT_REF_SLUG}
-    paths:
-      - .composer/

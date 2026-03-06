@@ -1,5 +1,4 @@
 build:test:
-  extends: .composer-cache
   stage: build
   script:
     - composer install --no-interaction --prefer-dist --dev
