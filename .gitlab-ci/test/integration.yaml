@@ -1,7 +1,6 @@
 test:integration:
   needs:
-    - job: "build:test: [${PHP_VERSION}]"
-      artifacts: true
+    - build:test
   stage: test
   parallel:
     matrix:

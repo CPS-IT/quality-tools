@@ -2,8 +2,7 @@
   variables:
     PHP_VERSION: "8.3"
   needs:
-    - job: "build:test: [8.3]"
-      artifacts: true
+    - build:test
   stage: test
 
 test:lint:composer:
