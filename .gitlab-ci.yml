@@ -1,10 +1,11 @@
 ---
-image: $CI_REGISTRY/x-it-docker/docker-php:8.3-build-stable
-
 variables:
   CUSTOMER_NAME: "CPSIT"
   PROJECT_NAME: 'quality-tools'
   COMPOSER_HOME: ${CI_PROJECT_DIR}/.composer
+
+default:
+  image: $CI_REGISTRY/x-it-docker/docker-php:${PHP_VERSION}-build-stable
 
 workflow:
   rules:

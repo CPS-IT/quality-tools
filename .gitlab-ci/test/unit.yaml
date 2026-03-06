@@ -1,6 +1,10 @@
 test:unit:
   needs:
-    - build:test
+    - job: "build:test: [${PHP_VERSION}]"
+      artifacts: true
   stage: test
+  parallel:
+    matrix:
+      - PHP_VERSION: ["8.3", "8.4", "8.5"]
   script:
     - composer test:unit
