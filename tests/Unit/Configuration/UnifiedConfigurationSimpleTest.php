@@ -40,7 +40,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
     {
         $config = new Configuration(getcwd());
 
-        self::assertInstanceOf(ConfigurationInterface::class, $config);
+        self::assertIsArray($config->toArray());
     }
 
     public function testCreateSimpleFactory(): void
@@ -74,7 +74,6 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         $config = Configuration::createDefault(projectRoot: getcwd());
 
         // Test that it's properly initialized
-        self::assertInstanceOf(Configuration::class, $config);
         self::assertFalse($config->isHierarchicalConfiguration());
 
         // Test some key defaults to ensure it's properly initialized
@@ -277,7 +276,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
         ];
 
         $fileSystem = new Filesystem();
-        $securityService = new SecurityService($fileSystem);
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService($fileSystem, $securityService);
         $config = Configuration::createSimple(
             projectRoot: getcwd(),

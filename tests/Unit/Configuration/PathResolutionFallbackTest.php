@@ -35,7 +35,7 @@ final class PathResolutionFallbackTest extends TestCase
     protected function setUp(): void
     {
         $filesystem = new Filesystem();
-        $securityService = new SecurityService($filesystem);
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService($filesystem, $securityService);
 
         $this->pathResolutionService = new PathResolutionService(

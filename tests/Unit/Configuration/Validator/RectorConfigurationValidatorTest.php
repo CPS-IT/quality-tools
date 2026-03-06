@@ -22,7 +22,7 @@ final class RectorConfigurationValidatorTest extends TestCase
     protected function setUp(): void
     {
         $filesystem = new Filesystem();
-        $securityService = new SecurityService($filesystem);
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService($filesystem, $securityService);
         $this->validator = new RectorConfigurationValidator($filesystemService);
     }

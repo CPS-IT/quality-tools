@@ -174,7 +174,7 @@ final class ConfigurationAssertions
         string $message = '',
     ): void {
         foreach ($expectedPrecedence as $tool => $expectedConfigFile) {
-            $toolConfig = $config->getToolConfiguration($tool);
+            $toolConfig = $config->getToolConfig($tool);
 
             Assert::assertIsArray($toolConfig, $message ?: "Tool '{$tool}' should have configuration");
             Assert::assertArrayHasKey(
@@ -200,7 +200,7 @@ final class ConfigurationAssertions
         array $expectedKeys,
         string $message = '',
     ): void {
-        $toolConfig = $config->getToolConfiguration($tool);
+        $toolConfig = $config->getToolConfig($tool);
 
         Assert::assertIsArray($toolConfig, $message ?: "Tool '{$tool}' configuration should be an array");
 

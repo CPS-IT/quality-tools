@@ -21,7 +21,7 @@ final class DisposableTemporaryFileTest extends TestCase
         $filesystem = new Filesystem();
         $filesystemService = new FilesystemService($filesystem, $securityService);
 
-        return new DisposableTemporaryFile($securityService, $filesystemService, $prefix, $suffix);
+        return new DisposableTemporaryFile($filesystemService, $prefix, $suffix);
     }
 
     /**
@@ -32,7 +32,7 @@ final class DisposableTemporaryFileTest extends TestCase
         $securityService = new SecurityService();
         $filesystem = new Filesystem();
         $filesystemService = new FilesystemService($filesystem, $securityService);
-        $tempFile = new DisposableTemporaryFile($securityService, $filesystemService, 'test_', '.tmp');
+        $tempFile = new DisposableTemporaryFile($filesystemService, 'test_', '.tmp');
         $path = $tempFile->getPath();
 
         self::assertIsString($path);

@@ -196,43 +196,6 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $scenarioDescription,
     ): void {
         $this->markTestSkipped('Advanced schema validation patterns moved to Feature 017 - Enhanced Schema Validation');
-
-        // Security validation should be provided by FilesystemService integration
-        // This test should FAIL until secure path resolution integration is implemented
-
-        $configData = [
-            'quality-tools' => [
-                'project' => ['name' => 'test-security-validation'],
-                'tools' => [
-                    $tool => [
-                        'enabled' => true,
-                        'config_file' => $invalidPath,
-                    ],
-                ],
-            ],
-        ];
-
-        $validationResult = $this->validator->validateSafe($configData);
-
-        $this->assertFalse(
-            $validationResult->isValid(),
-            "Invalid path should be rejected: {$scenarioDescription}",
-        );
-
-        $errors = $validationResult->getErrors();
-        $hasExpectedError = false;
-        foreach ($errors as $error) {
-            if (str_contains((string) $error, $expectedValidationError)) {
-                $hasExpectedError = true;
-                break;
-            }
-        }
-
-        $this->assertTrue(
-            $hasExpectedError,
-            "Should have specific validation error for scenario: {$scenarioDescription}. " .
-            "Expected: {$expectedValidationError}. Actual errors: " . implode('; ', $errors),
-        );
     }
 
     /**
@@ -246,33 +209,6 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $scenarioDescription,
     ): void {
         $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Tool-specific file validation');
-
-        $configData = [
-            'quality-tools' => [
-                'project' => ['name' => 'test-tool-specific-validation'],
-                'tools' => [
-                    $tool => [
-                        'enabled' => true,
-                        'config_file' => $configFile,
-                    ],
-                ],
-            ],
-        ];
-
-        $validationResult = $this->validator->validateSafe($configData);
-
-        if ($shouldBeValid) {
-            $this->assertTrue(
-                $validationResult->isValid(),
-                "Valid config_file should pass validation: {$scenarioDescription}. " .
-                'Errors: ' . implode('; ', $validationResult->getErrors()),
-            );
-        } else {
-            $this->assertFalse(
-                $validationResult->isValid(),
-                "Invalid config_file should fail validation: {$scenarioDescription}",
-            );
-        }
     }
 
     /**
@@ -285,15 +221,6 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $scenarioDescription,
     ): void {
         $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Schema evolution patterns');
-
-        $validationResult = $this->validator->validateSafe($configData);
-
-        $this->assertEquals(
-            $shouldBeValid,
-            $validationResult->isValid(),
-            "Schema evolution scenario should behave as expected: {$scenarioDescription}. " .
-            'Errors: ' . implode('; ', $validationResult->getErrors()),
-        );
     }
 
     /**
@@ -307,27 +234,6 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $scenarioDescription,
     ): void {
         $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Advanced path patterns');
-
-        $configData = [
-            'quality-tools' => [
-                'project' => ['name' => 'test-path-formats'],
-                'tools' => [
-                    $tool => [
-                        'enabled' => true,
-                        'config_file' => $configPath,
-                    ],
-                ],
-            ],
-        ];
-
-        $validationResult = $this->validator->validateSafe($configData);
-
-        $this->assertEquals(
-            $shouldBeValid,
-            $validationResult->isValid(),
-            "Path format should be handled correctly: {$scenarioDescription}. " .
-            'Errors: ' . implode('; ', $validationResult->getErrors()),
-        );
     }
 
     /**
@@ -340,15 +246,6 @@ final class UpdatedSchemaValidationTest extends TestCase
         string $scenarioDescription,
     ): void {
         $this->markTestSkipped('Moved to Feature 017: Enhanced Schema Validation - Comprehensive edge case handling');
-
-        $validationResult = $this->validator->validateSafe($configData);
-
-        $this->assertEquals(
-            $shouldBeValid,
-            $validationResult->isValid(),
-            "Edge case should be handled correctly: {$scenarioDescription}. " .
-            'Errors: ' . implode('; ', $validationResult->getErrors()),
-        );
     }
 
     /**

@@ -12,7 +12,6 @@ final class TemporaryFile
     private bool $isDeleted = false;
 
     public function __construct(
-        private readonly SecurityService $securityService,
         private readonly FilesystemService $filesystemService,
         string $prefix = 'qt_temp_',
         string $suffix = '',

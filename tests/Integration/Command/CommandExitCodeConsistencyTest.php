@@ -54,7 +54,6 @@ final class CommandExitCodeConsistencyTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
-        $this->resetFixtureDirectories();
     }
 
     private function createMockExecutables(): void
@@ -516,17 +515,6 @@ fi
                 copy($item->getRealPath(), $destPath);
             }
         }
-    }
-
-    private function resetFixtureDirectories(): void
-    {
-        // Reset any fixture directories that may have been modified during testing
-        // This ensures clean state for subsequent test runs
-        $fixtureBaseDir = __DIR__ . '/../../Fixtures/composerFixCommand';
-
-        // Note: Fixture directories should be reset to their original state
-        // if ComposerFixCommand modifies them during testing
-        // This is a placeholder for actual reset logic when needed
     }
 
     private function createErrorScenario(): void

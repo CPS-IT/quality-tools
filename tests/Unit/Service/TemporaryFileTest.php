@@ -21,7 +21,7 @@ final class TemporaryFileTest extends TestCase
         $filesystem = new Filesystem();
         $filesystemService = new FilesystemService($filesystem, $securityService);
 
-        return new TemporaryFile($securityService, $filesystemService, $prefix, $suffix);
+        return new TemporaryFile($filesystemService, $prefix, $suffix);
     }
 
     /**

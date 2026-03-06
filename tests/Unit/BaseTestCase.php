@@ -165,7 +165,6 @@ abstract class BaseTestCase extends TestCase
      */
     protected function createFilesystemServiceMock(): MockObject
     {
-        // @phpstan-ignore-next-line
         return $this->createTestMock(FilesystemService::class, [
             'fileExists' => [
                 'willReturnCallback' => $this->testFilesystem->fileExists(...),

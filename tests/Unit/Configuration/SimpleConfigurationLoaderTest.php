@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
+use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\SimpleConfiguration;
 use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
@@ -85,7 +85,7 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => $hierarchy['homeDir']],
-            fn (): SimpleConfiguration => $this->loader->load($hierarchy['projectRoot']),
+            fn (): ConfigurationInterface => $this->loader->load($hierarchy['projectRoot']),
         );
 
         self::assertSame('project-override', $config->getProjectName());
@@ -105,7 +105,7 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => ''],
-            fn (): SimpleConfiguration => $this->loader->load($this->projectRoot),
+            fn (): ConfigurationInterface => $this->loader->load($this->projectRoot),
         );
 
         self::assertSame('no-home', $config->getProjectName());
@@ -131,7 +131,7 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
         $config = $this->withEnvironment([
             'PROJECT_NAME' => 'env-test-project',
             'PHP_VERSION' => '8.4',
-        ], fn (): SimpleConfiguration => $this->loader->load($this->projectRoot));
+        ], fn (): ConfigurationInterface => $this->loader->load($this->projectRoot));
 
         self::assertSame('env-test-project', $config->getProjectName());
         self::assertSame('8.4', $config->getProjectPhpVersion());
@@ -282,7 +282,7 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
 
         $config = $this->withEnvironment(
             ['HOME' => $homeDir],
-            fn (): SimpleConfiguration => $this->loader->load($this->projectRoot),
+            fn (): ConfigurationInterface => $this->loader->load($this->projectRoot),
         );
 
         self::assertSame('test-merge', $config->getProjectName());
@@ -330,7 +330,7 @@ final class SimpleConfigurationLoaderTest extends FilesystemTestCase
             'PROJECT_NAME' => 'env-override',
             'MEMORY_LIMIT' => '2G',
             'SECONDARY_SCAN_PATH' => 'custom/',
-        ], fn (): SimpleConfiguration => $this->loader->load($this->projectRoot));
+        ], fn (): ConfigurationInterface => $this->loader->load($this->projectRoot));
 
         self::assertSame('env-override', $config->getProjectName());
         self::assertSame('8.3', $config->getProjectPhpVersion());

@@ -165,7 +165,6 @@ final class SecurityIntegrationTest extends TestCase
     public function temporaryFilesHaveSecurePermissions(): void
     {
         $tempFile = new DisposableTemporaryFile(
-            $this->securityService,
             $this->filesystemService,
             'security_test_',
             '.tmp',

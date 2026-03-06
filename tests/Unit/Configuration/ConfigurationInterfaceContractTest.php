@@ -237,7 +237,6 @@ final class ConfigurationInterfaceContractTest extends TestCase
         $other = new SimpleConfiguration($otherData);
         $merged = $configuration->merge($other);
 
-        self::assertInstanceOf(ConfigurationInterface::class, $merged);
         self::assertNotSame($configuration, $merged);
 
         // Verify merge behavior

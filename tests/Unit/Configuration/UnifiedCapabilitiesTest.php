@@ -310,7 +310,7 @@ final class UnifiedCapabilitiesTest extends TestCase
     public function testEnhancedConfigurationWithPathResolutionService(): void
     {
         $fileSystem = new Filesystem();
-        $securityService = new SecurityService($fileSystem);
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService($fileSystem, $securityService);
         $pathResolutionService = new PathResolutionService($filesystemService, new VendorDirectoryDetector());
         $enhancedConfig = new EnhancedConfiguration(

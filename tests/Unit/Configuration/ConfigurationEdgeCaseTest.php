@@ -123,7 +123,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
                 );
             }
 
-            $this->assertNotNull($config, "Configuration should load successfully: {$scenarioName}");
+            $this->assertIsArray($config->toArray(), "Configuration should load successfully: {$scenarioName}");
         } catch (\Exception $e) {
             if ($expectedSuccess) {
                 $this->fail(
@@ -158,7 +158,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
             $config = $configurationLoader->load($this->tempDir);
 
             // Should succeed with empty/default configuration
-            $this->assertNotNull($config, 'Should handle missing configuration gracefully');
+            $this->assertIsArray($config->toArray(), 'Should handle missing configuration gracefully');
         } catch (\Exception $e) {
             // Document the current behavior
             $this->assertStringContainsString(
@@ -367,7 +367,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
             $config = $configurationLoader->load($this->tempDir);
 
             // Verify loading succeeded
-            $this->assertNotNull($config, 'Simple mode should succeed even with invalid tool configs');
+            $this->assertIsArray($config->toArray(), 'Simple mode should succeed even with invalid tool configs');
 
             // NOTE: getConfigurationErrors() ALWAYS performs hierarchical discovery
             // and will find tool validation errors even if configuration was loaded in simple mode.
@@ -378,13 +378,9 @@ final class ConfigurationEdgeCaseTest extends TestCase
             // In unit tests without DI container, ToolConfigurationValidationService has no validators registered
             // For tools without validators, no errors will be recorded - this is expected behavior
             if (empty($errors)) {
-                // Skip assertion for tools without validators (expected for unit tests)
-                $this->assertTrue(true, "No validators registered for {$tool} - configuration loading succeeded without validation");
-
+                // No validators registered for this tool - configuration loading succeeded without validation
                 return;
             }
-
-            $this->assertNotEmpty($errors, "getConfigurationErrors should detect tool validation errors when validators are available. Scenario: {$scenarioDescription}");
 
             // Verify the error is about the expected tool
             $hasRelevantError = false;
@@ -433,7 +429,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
         // Auto-detection will actually choose hierarchical mode (main config + tool config = 2 sources)
         try {
             $config = $configurationLoader->load($this->tempDir);
-            $this->assertNotNull($config, 'Auto-detection should succeed regardless of mode');
+            $this->assertIsArray($config->toArray(), 'Auto-detection should succeed regardless of mode');
 
             // getConfigurationErrors() should detect tool validation errors
             $errors = $configurationLoader->getConfigurationErrors($this->tempDir);

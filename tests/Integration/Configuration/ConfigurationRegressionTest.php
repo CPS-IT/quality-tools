@@ -113,12 +113,6 @@ final class ConfigurationRegressionTest extends TestCase
         array $configData,
         string $scenarioDescription,
     ): void {
-        // Write configuration to temp directory
-        ConfigurationBuilder::create()
-            ->reset()
-            ->withProject('regression-test')
-            ->build();
-
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, \Symfony\Component\Yaml\Yaml::dump($configData));
 
@@ -127,8 +121,7 @@ final class ConfigurationRegressionTest extends TestCase
             $config = $this->configurationLoader->load($this->tempDir);
 
             // Basic assertions that should always work
-            $this->assertNotNull($config, "Configuration should load for: {$scenarioDescription}");
-            $this->assertIsArray($config->toArray(), 'Configuration should convert to array');
+            $this->assertIsArray($config->toArray(), "Configuration should convert to array for: {$scenarioDescription}");
         } catch (\Exception $e) {
             // Document any breaking changes
             $this->markTestIncomplete(
@@ -156,12 +149,6 @@ final class ConfigurationRegressionTest extends TestCase
             'config_loading_success' => true,
             'expected_tool_usage' => $expectedBehavior['expected_tool_usage'] ?? [],
         ];
-
-        // For now, document expected behavior
-        $this->assertTrue(
-            $behaviorSnapshot['config_loading_success'],
-            "Configuration loading should succeed for {$commandName} integration",
-        );
 
         // When Issue 022 is fixed, add actual command execution tests here
         $this->markTestIncomplete(

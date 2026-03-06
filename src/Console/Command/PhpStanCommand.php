@@ -164,7 +164,7 @@ final class PhpStanCommand extends AbstractToolCommand implements ToolCommandInt
         $securityService = new \Cpsit\QualityTools\Service\SecurityService();
         $filesystem = new \Symfony\Component\Filesystem\Filesystem();
         $filesystemService = new \Cpsit\QualityTools\Service\FilesystemService($filesystem, $securityService);
-        $this->temporaryConfig = new DisposableTemporaryFile($securityService, $filesystemService, 'phpstan_', '.neon');
+        $this->temporaryConfig = new DisposableTemporaryFile($filesystemService, 'phpstan_', '.neon');
         $this->temporaryConfig->write($content);
 
         return $this->temporaryConfig->getPath();

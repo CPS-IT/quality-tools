@@ -125,14 +125,12 @@ services:
 
   Cpsit\QualityTools\Service\TemporaryFile:
     arguments:
-      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
       $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $prefix: 'qt_temp_'
       $suffix: ''
 
   Cpsit\QualityTools\Service\DisposableTemporaryFile:
     arguments:
-      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
       $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
       $prefix: 'qt_temp_'
       $suffix: ''

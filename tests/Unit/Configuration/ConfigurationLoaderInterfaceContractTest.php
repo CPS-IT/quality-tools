@@ -66,12 +66,12 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         // Test basic load method
         $configuration = $loader->load($this->projectRoot);
-        self::assertInstanceOf(ConfigurationInterface::class, $configuration);
+        self::assertIsArray($configuration->toArray());
 
         // Test load with overrides - use quality-tools wrapper for valid structure
         $overrides = ['quality-tools' => ['project' => ['name' => 'override-test']]];
         $configWithOverrides = $loader->load($this->projectRoot, $overrides);
-        self::assertInstanceOf(ConfigurationInterface::class, $configWithOverrides);
+        self::assertIsArray($configWithOverrides->toArray());
     }
 
     /**
@@ -79,13 +79,14 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
      */
     public function testConfigurationDiscoveryMethods(ConfigurationLoaderInterface $loader): void
     {
-        // Test findConfigurationFile
+        // Test findConfigurationFile returns null or string path
         $configFile = $loader->findConfigurationFile($this->projectRoot);
-        self::assertTrue(\is_string($configFile) || $configFile === null);
+        if ($configFile !== null) {
+            self::assertNotEmpty($configFile, 'Configuration file path should not be empty');
+        }
 
         // Test supportsConfiguration
-        $supportsConfig = $loader->supportsConfiguration($this->projectRoot);
-        self::assertIsBool($supportsConfig);
+        self::assertIsBool($loader->supportsConfiguration($this->projectRoot));
     }
 
     /**
@@ -95,12 +96,12 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         // Test loadForTool method
         $toolConfig = $loader->loadForTool($this->projectRoot, 'rector');
-        self::assertInstanceOf(ConfigurationInterface::class, $toolConfig);
+        self::assertIsArray($toolConfig->toArray());
 
         // Test loadForTool with overrides - use quality-tools wrapper for valid structure
         $overrides = ['quality-tools' => ['tools' => ['rector' => ['level' => 'typo3-12']]]];
         $toolConfigWithOverrides = $loader->loadForTool($this->projectRoot, 'rector', $overrides);
-        self::assertInstanceOf(ConfigurationInterface::class, $toolConfigWithOverrides);
+        self::assertIsArray($toolConfigWithOverrides->toArray());
     }
 
     /**
@@ -147,7 +148,7 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
     {
         // Test createSimpleConfiguration
         $simpleConfig = $loader->createSimpleConfiguration($this->projectRoot);
-        self::assertInstanceOf(ConfigurationInterface::class, $simpleConfig);
+        self::assertIsArray($simpleConfig->toArray());
     }
 
     /**
@@ -282,19 +283,18 @@ final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
         // Test simple mode
         $simpleWrapper = new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'simple');
         $config = $simpleWrapper->load($this->projectRoot);
-        self::assertInstanceOf(ConfigurationInterface::class, $config);
+        self::assertIsArray($config->toArray());
 
         // Test hierarchical mode
         $hierarchicalWrapper = new ConfigurationLoaderWrapper($simpleLoader, $hierarchicalLoader, 'hierarchical');
         $config = $hierarchicalWrapper->load($this->projectRoot);
-        self::assertInstanceOf(ConfigurationInterface::class, $config);
+        self::assertIsArray($config->toArray());
 
         // Test mode switching
         $switchedWrapper = $simpleWrapper->withMode('hierarchical');
-        self::assertInstanceOf(ConfigurationLoaderWrapper::class, $switchedWrapper);
         self::assertNotSame($simpleWrapper, $switchedWrapper);
 
         $config = $switchedWrapper->load($this->projectRoot);
-        self::assertInstanceOf(ConfigurationInterface::class, $config);
+        self::assertIsArray($config->toArray());
     }
 }

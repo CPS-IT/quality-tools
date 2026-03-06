@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderWrapper;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
@@ -338,7 +339,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         );
     }
 
-    private function assertProjectPropertiesMatch($config1, $config2, $config3): void
+    private function assertProjectPropertiesMatch(ConfigurationInterface $config1, ConfigurationInterface $config2, ConfigurationInterface $config3): void
     {
         $properties = ['getProjectName', 'getProjectPhpVersion', 'getProjectTypo3Version'];
 
@@ -352,7 +353,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         }
     }
 
-    private function assertToolConfigurationsMatch($config1, $config2, $config3): void
+    private function assertToolConfigurationsMatch(ConfigurationInterface $config1, ConfigurationInterface $config2, ConfigurationInterface $config3): void
     {
         $tools = ['rector', 'phpstan'];
 
@@ -375,7 +376,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         }
     }
 
-    private function assertPathConfigurationsMatch($config1, $config2, $config3): void
+    private function assertPathConfigurationsMatch(ConfigurationInterface $config1, ConfigurationInterface $config2, ConfigurationInterface $config3): void
     {
         $this->assertSame($config1->getScanPaths(), $config2->getScanPaths(), 'SimpleConfig vs Wrapper scan paths mismatch');
         $this->assertSame($config2->getScanPaths(), $config3->getScanPaths(), 'Wrapper vs Unified scan paths mismatch');
@@ -384,7 +385,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         $this->assertSame($config2->getExcludePaths(), $config3->getExcludePaths(), 'Wrapper vs Unified exclude paths mismatch');
     }
 
-    private function assertOutputConfigurationsMatch($config1, $config2, $config3): void
+    private function assertOutputConfigurationsMatch(ConfigurationInterface $config1, ConfigurationInterface $config2, ConfigurationInterface $config3): void
     {
         $outputMethods = ['getVerbosity', 'isColorsEnabled', 'isProgressEnabled'];
 
@@ -398,7 +399,7 @@ final class WrapperVsUnifiedBehaviorTest extends TestCase
         }
     }
 
-    private function assertLoadedConfigurationsMatch($config1, $config2): void
+    private function assertLoadedConfigurationsMatch(ConfigurationInterface $config1, ConfigurationInterface $config2): void
     {
         // Compare basic interface compliance
         $this->assertSame($config1->getProjectName(), $config2->getProjectName());

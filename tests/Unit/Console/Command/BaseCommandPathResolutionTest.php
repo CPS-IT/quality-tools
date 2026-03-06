@@ -36,7 +36,7 @@ final class BaseCommandPathResolutionTest extends TestCase
                 parent::__construct($loader);
             }
 
-            protected function getToolName(): ?string
+            protected function getToolName(): null
             {
                 return null; // This is a test command
             }
@@ -174,7 +174,7 @@ final class BaseCommandPathResolutionTest extends TestCase
                 parent::__construct($loader);
             }
 
-            protected function getToolName(): ?string
+            protected function getToolName(): null
             {
                 return null; // This is a test command
             }

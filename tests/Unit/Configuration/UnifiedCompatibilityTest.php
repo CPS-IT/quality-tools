@@ -122,7 +122,6 @@ final class UnifiedCompatibilityTest extends TestCase
         $unifiedProjectRoot = $unified->getProjectRoot();
 
         $this->assertEquals($enhancedProjectRoot, $unifiedProjectRoot);
-        $this->assertNotNull($unifiedProjectRoot, 'Project root should not be null');
         $this->assertEquals($projectRoot, $unifiedProjectRoot);
     }
 
@@ -256,7 +255,7 @@ final class UnifiedCompatibilityTest extends TestCase
         file_put_contents($childDir . '/quality-tools.yaml', Yaml::dump($childConfig, 4, 2));
 
         $fileSystem = new Filesystem();
-        $securityService = new SecurityService($fileSystem);
+        $securityService = new SecurityService();
         $filesystemService = new FilesystemService($fileSystem, $securityService);
 
         // Should work without throwing validation errors

@@ -143,17 +143,15 @@ final class PathResolutionConsistencyTest extends TestCase
                 "Exclude paths should be identical for $tool",
             );
 
-            // Test tool-specific path resolution if methods exist
-            if (method_exists($wrapper, 'getResolvedPathsForTool')) {
-                $wrapperResolvedPaths = $wrapper->getResolvedPathsForTool($tool);
-                $unifiedResolvedPaths = $unified->getResolvedPathsForTool($tool);
+            // Test tool-specific path resolution
+            $wrapperResolvedPaths = $wrapper->getResolvedPathsForTool($tool);
+            $unifiedResolvedPaths = $unified->getResolvedPathsForTool($tool);
 
-                $this->assertEquals(
-                    $wrapperResolvedPaths,
-                    $unifiedResolvedPaths,
-                    "Resolved paths should be identical for $tool",
-                );
-            }
+            $this->assertEquals(
+                $wrapperResolvedPaths,
+                $unifiedResolvedPaths,
+                "Resolved paths should be identical for $tool",
+            );
         }
     }
 
