@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
@@ -25,7 +25,7 @@ use Symfony\Component\Filesystem\Filesystem;
 final class ConfigurationRegressionTest extends TestCase
 {
     private string $tempDir;
-    private HierarchicalConfigurationLoader $configurationLoader;
+    private ConfigurationLoader $configurationLoader;
     private SecurityService $securityService;
     private FilesystemService $filesystemService;
 
@@ -33,7 +33,6 @@ final class ConfigurationRegressionTest extends TestCase
     {
         $this->tempDir = TestHelper::createTempDirectory('config_regression_test_');
 
-        // Create required services for HierarchicalConfigurationLoader
         $validator = new ConfigurationValidator();
         $this->securityService = new SecurityService();
         $this->filesystemService = new FilesystemService(
@@ -42,7 +41,7 @@ final class ConfigurationRegressionTest extends TestCase
         );
         $toolValidator = new ToolConfigurationValidationService();
 
-        $this->configurationLoader = new HierarchicalConfigurationLoader(
+        $this->configurationLoader = new ConfigurationLoader(
             $validator,
             $this->securityService,
             $this->filesystemService,
@@ -67,7 +66,6 @@ final class ConfigurationRegressionTest extends TestCase
         string $scenarioName,
     ): void {
         // Skip tests for unimplemented Issue 022 functionality
-        // These scenarios involve custom configuration file discovery which is not yet implemented
         $unimplementedScenarios = [
             'Project with only custom Rector configuration',
             'Project with only custom PHPStan configuration',
@@ -84,10 +82,6 @@ final class ConfigurationRegressionTest extends TestCase
 
         // Record current behavior before any fixes
         $behaviorBefore = $this->captureConfigurationBehavior();
-
-        // This test serves as regression protection
-        // When Issue 022 is fixed, these assertions will need to be updated
-        // to reflect the correct behavior, but the test structure will remain
 
         if ($scenario['expects_schema_failure']) {
             $this->assertSchemaValidationFailure($behaviorBefore, $scenarioName);
@@ -116,14 +110,11 @@ final class ConfigurationRegressionTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, \Symfony\Component\Yaml\Yaml::dump($configData));
 
-        // Test that existing configurations continue to work
         try {
             $config = $this->configurationLoader->load($this->tempDir);
 
-            // Basic assertions that should always work
             $this->assertIsArray($config->toArray(), "Configuration should convert to array for: {$scenarioDescription}");
         } catch (\Exception $e) {
-            // Document any breaking changes
             $this->markTestIncomplete(
                 "Backward compatibility test failed for {$scenarioDescription}: {$e->getMessage()}",
             );
@@ -139,18 +130,8 @@ final class ConfigurationRegressionTest extends TestCase
         array $projectStructure,
         array $expectedBehavior,
     ): void {
-        // Setup project structure
         $this->setupProjectStructure($projectStructure);
 
-        // Test command behavior (this will be expanded when commands are integrated)
-        $behaviorSnapshot = [
-            'command' => $commandName,
-            'project_structure' => $projectStructure,
-            'config_loading_success' => true,
-            'expected_tool_usage' => $expectedBehavior['expected_tool_usage'] ?? [],
-        ];
-
-        // When Issue 022 is fixed, add actual command execution tests here
         $this->markTestIncomplete(
             "Command integration test for {$commandName} - to be completed after Issue 022 fix",
         );
@@ -161,7 +142,6 @@ final class ConfigurationRegressionTest extends TestCase
      */
     public function testConfigurationLoadingPerformance(): void
     {
-        // Create a complex project structure
         $this->setupComplexProjectStructure();
 
         $startTime = microtime(true);
@@ -170,14 +150,12 @@ final class ConfigurationRegressionTest extends TestCase
             $config = $this->configurationLoader->load($this->tempDir);
             $loadTime = microtime(true) - $startTime;
 
-            // Configuration loading should be fast (under 100ms for complex projects)
             $this->assertLessThan(
                 0.1,
                 $loadTime,
                 "Configuration loading should be fast. Took: {$loadTime}s",
             );
         } catch (\Exception) {
-            // Even if loading fails due to Issue 022, measure the time
             $loadTime = microtime(true) - $startTime;
 
             $this->assertLessThan(
@@ -198,7 +176,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('no-custom')->build(),
                     'custom_files' => [],
-                    'expects_schema_failure' => false, // Issue 022 resolved - empty configs should validate
+                    'expects_schema_failure' => false,
                     'expected_tool_configs' => [
                         'rector' => ['uses_default' => true],
                         'phpstan' => ['uses_default' => true],
@@ -210,7 +188,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('rector-custom')->build(),
                     'custom_files' => ['rector.php'],
-                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
+                    'expects_schema_failure' => false,
                     'expected_tool_configs' => [
                         'rector' => ['should_use_custom' => true],
                         'phpstan' => ['uses_default' => true],
@@ -222,7 +200,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('phpstan-custom')->build(),
                     'custom_files' => ['phpstan.neon'],
-                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
+                    'expects_schema_failure' => false,
                     'expected_tool_configs' => [
                         'rector' => ['uses_default' => true],
                         'phpstan' => ['should_use_custom' => true],
@@ -234,7 +212,7 @@ final class ConfigurationRegressionTest extends TestCase
                 [
                     'yaml_config' => ConfigurationBuilder::create()->withProject('multi-custom')->build(),
                     'custom_files' => ['rector.php', 'phpstan.neon', 'fractor.php'],
-                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
+                    'expects_schema_failure' => false,
                     'expected_tool_configs' => [
                         'rector' => ['should_use_custom' => true],
                         'phpstan' => ['should_use_custom' => true],
@@ -250,7 +228,7 @@ final class ConfigurationRegressionTest extends TestCase
                         ['rector' => 'custom-configs/rector.php'],
                     )->build(),
                     'custom_files' => ['custom-configs/rector.php'],
-                    'expects_schema_failure' => false, // Issue 022 resolved - schema now supports config_file
+                    'expects_schema_failure' => false,
                     'expected_tool_configs' => [
                         'rector' => ['should_use_explicit' => 'custom-configs/rector.php'],
                     ],
@@ -317,29 +295,20 @@ final class ConfigurationRegressionTest extends TestCase
         ];
     }
 
-    /**
-     * Setup scenario configuration and files.
-     */
     private function setupScenario(array $scenario): void
     {
-        // Write YAML configuration
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, \Symfony\Component\Yaml\Yaml::dump($scenario['yaml_config']));
 
-        // Create custom configuration files
         foreach ($scenario['custom_files'] as $customFile) {
             $this->createCustomConfigFile($customFile);
         }
     }
 
-    /**
-     * Create custom configuration file with appropriate content.
-     */
     private function createCustomConfigFile(string $filename): void
     {
         $filePath = $this->tempDir . '/' . $filename;
 
-        // Ensure directory exists
         $directory = \dirname($filePath);
         if (!is_dir($directory)) {
             mkdir($directory, 0o755, true);
@@ -356,9 +325,6 @@ final class ConfigurationRegressionTest extends TestCase
         file_put_contents($filePath, $content);
     }
 
-    /**
-     * Get PHP configuration content based on filename.
-     */
     private function getPhpConfigContent(string $filename): string
     {
         if (str_contains($filename, 'rector')) {
@@ -382,9 +348,6 @@ return static function (FractorConfig $fractorConfig): void {
         return "<?php\n// Custom config: {$filename}\n";
     }
 
-    /**
-     * Get NEON configuration content.
-     */
     private function getNeonConfigContent(string $filename): string
     {
         return "parameters:
@@ -395,9 +358,6 @@ return static function (FractorConfig $fractorConfig): void {
 \t\t- */Tests/*";
     }
 
-    /**
-     * Capture current configuration behavior.
-     */
     private function captureConfigurationBehavior(): array
     {
         $behavior = [
@@ -414,7 +374,6 @@ return static function (FractorConfig $fractorConfig): void {
         } catch (\Exception $e) {
             $behavior['exception_message'] = $e->getMessage();
 
-            // Check if it's a schema validation error
             if (str_contains($e->getMessage(), 'is not defined')
                 || str_contains($e->getMessage(), 'Wrong type for')
                 || str_contains($e->getMessage(), 'Invalid merged configuration')
@@ -426,9 +385,6 @@ return static function (FractorConfig $fractorConfig): void {
         return $behavior;
     }
 
-    /**
-     * Assert schema validation failure behavior.
-     */
     private function assertSchemaValidationFailure(array $behavior, string $scenarioName): void
     {
         $this->assertFalse(
@@ -441,7 +397,6 @@ return static function (FractorConfig $fractorConfig): void {
             "Should have schema validation errors in: {$scenarioName}",
         );
 
-        // Check for Issue 022 related schema error patterns
         $hasSchemaError = false;
         $errorPatterns = ['config_file is not defined', 'Wrong type for', 'Invalid merged configuration'];
 
@@ -461,9 +416,6 @@ return static function (FractorConfig $fractorConfig): void {
         );
     }
 
-    /**
-     * Assert valid configuration behavior.
-     */
     private function assertValidConfiguration(array $behavior, string $scenarioName): void
     {
         $this->assertTrue(
@@ -483,33 +435,22 @@ return static function (FractorConfig $fractorConfig): void {
         );
     }
 
-    /**
-     * Verify tool configuration structure.
-     */
     private function verifyToolConfigurationStructure(
         array $behavior,
         array $expectedConfigs,
         string $scenarioName,
     ): void {
-        // This method documents expected tool configuration behavior
-        // Implementation will be completed when Issue 022 is fixed
-
         foreach ($expectedConfigs as $expectations) {
             if (isset($expectations['should_use_custom']) && $expectations['should_use_custom']) {
-                // Document that custom config should be used
-                $this->addToAssertionCount(1); // Placeholder for future assertion
+                $this->addToAssertionCount(1);
             }
 
             if (isset($expectations['uses_default']) && $expectations['uses_default']) {
-                // Document that default config should be used
-                $this->addToAssertionCount(1); // Placeholder for future assertion
+                $this->addToAssertionCount(1);
             }
         }
     }
 
-    /**
-     * Setup project structure for testing.
-     */
     private function setupProjectStructure(array $structure): void
     {
         foreach ($structure as $path => $shouldExist) {
@@ -517,12 +458,10 @@ return static function (FractorConfig $fractorConfig): void {
                 $fullPath = $this->tempDir . '/' . $path;
 
                 if (str_ends_with((string) $path, '/')) {
-                    // Directory
                     if (!is_dir($fullPath)) {
                         mkdir($fullPath, 0o755, true);
                     }
                 } else {
-                    // File
                     if (!is_dir(\dirname($fullPath))) {
                         mkdir(\dirname($fullPath), 0o755, true);
                     }
@@ -539,12 +478,8 @@ return static function (FractorConfig $fractorConfig): void {
         }
     }
 
-    /**
-     * Setup complex project structure for performance testing.
-     */
     private function setupComplexProjectStructure(): void
     {
-        // Create a realistic complex project structure
         $structure = [
             'src/' => true,
             'tests/' => true,
@@ -563,7 +498,6 @@ return static function (FractorConfig $fractorConfig): void {
 
         $this->setupProjectStructure($structure);
 
-        // Add complex YAML configuration
         $complexConfig = ConfigurationBuilder::create()
             ->withProject('complex-performance-test')
             ->withRector()

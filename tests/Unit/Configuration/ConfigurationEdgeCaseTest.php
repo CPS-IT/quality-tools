@@ -7,7 +7,6 @@ namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
@@ -41,7 +40,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
     {
         $this->tempDir = TestHelper::createTempDirectory('config_edge_case_test_');
 
-        // Create required services
         $this->securityService = new SecurityService();
         $this->filesystemService = new FilesystemService(
             new Filesystem(),
@@ -49,29 +47,17 @@ final class ConfigurationEdgeCaseTest extends TestCase
         );
     }
 
-    /**
-     * Create a configuration loader instance.
-     */
-    private function createConfigurationLoader(string $loaderType): ConfigurationLoaderInterface
+    private function createConfigurationLoader(): ConfigurationLoaderInterface
     {
         $validator = new ConfigurationValidator();
         $toolValidator = new ToolConfigurationValidationService();
 
-        return match ($loaderType) {
-            'hierarchical' => new HierarchicalConfigurationLoader(
-                $validator,
-                $this->securityService,
-                $this->filesystemService,
-                $toolValidator,
-            ),
-            'unified' => new ConfigurationLoader(
-                $validator,
-                $this->securityService,
-                $this->filesystemService,
-                $toolValidator,
-            ),
-            default => throw new \InvalidArgumentException("Unknown loader type: {$loaderType}"),
-        };
+        return new ConfigurationLoader(
+            $validator,
+            $this->securityService,
+            $this->filesystemService,
+            $toolValidator,
+        );
     }
 
     protected function tearDown(): void
@@ -89,7 +75,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
         bool $shouldSucceed,
         string $expectedErrorPattern = '',
     ): void {
-        // Create a configuration file
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $configContent = ConfigurationBuilder::create()
             ->withProject('permission-test')
@@ -98,21 +83,16 @@ final class ConfigurationEdgeCaseTest extends TestCase
 
         file_put_contents($configFile, $configContent);
 
-        // Create a custom rector config
         $rectorFile = $this->tempDir . '/rector.php';
         file_put_contents($rectorFile, $this->getRectorConfigContent());
 
-        // Set file permissions
         chmod($rectorFile, $filePermissions);
 
-        // Check if file permissions actually work in this environment
         $canTestPermissions = !is_readable($rectorFile) && @file_get_contents($rectorFile) === false;
 
-        // In environments where file permissions don't work, expect success for all scenarios
         $expectedSuccess = $shouldSucceed || !$canTestPermissions;
 
-        // Test configuration loading (using hierarchical loader for backward compatibility)
-        $configurationLoader = $this->createConfigurationLoader('hierarchical');
+        $configurationLoader = $this->createConfigurationLoader();
         try {
             $config = $configurationLoader->load($this->tempDir);
 
@@ -140,7 +120,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
                 );
             }
         } finally {
-            // Restore permissions for cleanup
             if (file_exists($rectorFile)) {
                 chmod($rectorFile, 0o644);
             }
@@ -152,15 +131,12 @@ final class ConfigurationEdgeCaseTest extends TestCase
      */
     public function testMissingConfigurationFiles(): void
     {
-        // Test loading from empty directory (using hierarchical loader for backward compatibility)
-        $configurationLoader = $this->createConfigurationLoader('hierarchical');
+        $configurationLoader = $this->createConfigurationLoader();
         try {
             $config = $configurationLoader->load($this->tempDir);
 
-            // Should succeed with empty/default configuration
             $this->assertIsArray($config->toArray(), 'Should handle missing configuration gracefully');
         } catch (\Exception $e) {
-            // Document the current behavior
             $this->assertStringContainsString(
                 'Configuration',
                 $e->getMessage(),
@@ -174,7 +150,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
      */
     public function testConcurrentConfigurationAccess(): void
     {
-        // Create configuration files
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $configContent = ConfigurationBuilder::create()
             ->withProject('concurrent-test')
@@ -186,8 +161,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
         $rectorFile = $this->tempDir . '/rector.php';
         file_put_contents($rectorFile, $this->getRectorConfigContent());
 
-        // Simulate concurrent access by loading configuration multiple times
-        $configurationLoader = $this->createConfigurationLoader('hierarchical');
+        $configurationLoader = $this->createConfigurationLoader();
         $results = [];
         $exceptions = [];
 
@@ -200,11 +174,9 @@ final class ConfigurationEdgeCaseTest extends TestCase
             }
         }
 
-        // All concurrent loads should either succeed or fail consistently
         if (!empty($results)) {
             $this->assertCount(5, $results, 'All concurrent loads should succeed if any succeed');
 
-            // Results should be identical
             $firstResult = $results[0];
             foreach ($results as $result) {
                 $this->assertEquals(
@@ -214,103 +186,12 @@ final class ConfigurationEdgeCaseTest extends TestCase
                 );
             }
         } else {
-            // If all failed, they should fail consistently
             $this->assertCount(5, $exceptions, 'All concurrent loads should fail consistently');
         }
     }
 
     /**
-     * Test invalid configuration file formats per tool for both loaders in hierarchical mode.
-     *
-     * This test ensures that both the deprecated HierarchicalConfigurationLoader
-     * and the new unified ConfigurationLoader (in hierarchical mode) validate tool
-     * configuration files during loading and either throw exceptions or record errors
-     * for invalid tool configurations.
-     *
-     * NOTE: Tool validation only occurs in hierarchical mode. Simple mode does not
-     * validate individual tool configuration files.
-     */
-    #[DataProvider('invalidConfigurationFormatsWithLoaders')]
-    public function testInvalidConfigurationFileFormatsWithBothLoaders(
-        string $loaderType,
-        string $tool,
-        string $filename,
-        string $invalidContent,
-        string $expectedErrorType,
-        string $scenarioDescription,
-    ): void {
-        $configurationLoader = $this->createConfigurationLoader($loaderType);
-
-        // Create base configuration
-        $configFile = $this->tempDir . '/.quality-tools.yaml';
-        $configContent = ConfigurationBuilder::create()
-            ->withProject('invalid-format-test')
-            ->withTool($tool, ['enabled' => true])
-            ->buildYaml();
-
-        file_put_contents($configFile, $configContent);
-
-        // Create invalid tool configuration file
-        $toolConfigFile = $this->tempDir . '/' . $filename;
-        file_put_contents($toolConfigFile, $invalidContent);
-
-        // Configuration loading should validate tool config files and either:
-        // 1. Throw an exception for invalid tool config files, OR
-        // 2. Succeed but record errors that can be checked via getConfigurationErrors()
-        //
-        // IMPORTANT: Force hierarchical mode to ensure tool validation occurs.
-        // Simple mode (loadWithoutHierarchy) does not validate individual tool config files.
-
-        try {
-            $config = match ($loaderType) {
-                'hierarchical' => $configurationLoader->load($this->tempDir),
-                'unified' => $configurationLoader->load($this->tempDir),
-                default => throw new \InvalidArgumentException("Unknown loader type: {$loaderType}"),
-            };
-
-            // If loading succeeded, check if configuration errors were recorded
-            $errors = $configurationLoader->getConfigurationErrors($this->tempDir);
-
-            if (empty($errors)) {
-                $this->fail(
-                    'Configuration loading should either fail or record errors for invalid tool config. ' .
-                    "Loader: {$loaderType}, Scenario: {$scenarioDescription}",
-                );
-            }
-
-            // Verify that errors were recorded for the invalid tool config file
-            $hasRelevantError = false;
-            foreach ($errors as $errorPath => $errorMessage) {
-                if (str_contains((string) $errorPath, $filename)) {
-                    $hasRelevantError = true;
-                    $this->assertStringContainsString(
-                        $tool,
-                        $errorMessage,
-                        "Error should mention the tool: {$tool} (Loader: {$loaderType})",
-                    );
-                    break;
-                }
-            }
-
-            $this->assertTrue(
-                $hasRelevantError,
-                "Should record error for invalid {$tool} config file: {$filename}. " .
-                "Loader: {$loaderType}. Errors: " . json_encode($errors),
-            );
-        } catch (\Exception $e) {
-            // If an exception was thrown, verify it's related to the invalid tool config
-            $this->assertTrue(
-                str_contains($e->getMessage(), $tool) || str_contains($e->getMessage(), 'configuration'),
-                'Exception should be related to invalid tool configuration. ' .
-                "Loader: {$loaderType}, Scenario: {$scenarioDescription}. Error: {$e->getMessage()}",
-            );
-        }
-    }
-
-    /**
-     * Legacy test for backward compatibility - tests only HierarchicalConfigurationLoader.
-     *
-     * @deprecated Use testInvalidConfigurationFileFormatsWithBothLoaders instead
+     * Test invalid configuration file formats per tool.
      */
     #[DataProvider('invalidConfigurationFormats')]
     public function testInvalidConfigurationFileFormats(
@@ -320,23 +201,60 @@ final class ConfigurationEdgeCaseTest extends TestCase
         string $expectedErrorType,
         string $scenarioDescription,
     ): void {
-        $this->testInvalidConfigurationFileFormatsWithBothLoaders(
-            'hierarchical',
-            $tool,
-            $filename,
-            $invalidContent,
-            $expectedErrorType,
-            $scenarioDescription,
-        );
+        $configurationLoader = $this->createConfigurationLoader();
+
+        $configFile = $this->tempDir . '/.quality-tools.yaml';
+        $configContent = ConfigurationBuilder::create()
+            ->withProject('invalid-format-test')
+            ->withTool($tool, ['enabled' => true])
+            ->buildYaml();
+
+        file_put_contents($configFile, $configContent);
+
+        $toolConfigFile = $this->tempDir . '/' . $filename;
+        file_put_contents($toolConfigFile, $invalidContent);
+
+        try {
+            $config = $configurationLoader->load($this->tempDir);
+
+            $errors = $configurationLoader->getConfigurationErrors($this->tempDir);
+
+            if (empty($errors)) {
+                $this->fail(
+                    'Configuration loading should either fail or record errors for invalid tool config. ' .
+                    "Scenario: {$scenarioDescription}",
+                );
+            }
+
+            $hasRelevantError = false;
+            foreach ($errors as $errorPath => $errorMessage) {
+                if (str_contains((string) $errorPath, $filename)) {
+                    $hasRelevantError = true;
+                    $this->assertStringContainsString(
+                        $tool,
+                        $errorMessage,
+                        "Error should mention the tool: {$tool}",
+                    );
+                    break;
+                }
+            }
+
+            $this->assertTrue(
+                $hasRelevantError,
+                "Should record error for invalid {$tool} config file: {$filename}. " .
+                'Errors: ' . json_encode($errors),
+            );
+        } catch (\Exception $e) {
+            $this->assertTrue(
+                str_contains($e->getMessage(), $tool) || str_contains($e->getMessage(), 'configuration'),
+                'Exception should be related to invalid tool configuration. ' .
+                "Scenario: {$scenarioDescription}. Error: {$e->getMessage()}",
+            );
+        }
     }
 
     /**
      * Test that simple mode does NOT validate individual tool configuration files during loading.
-     *
-     * This test verifies that in simple mode, invalid tool configuration files
-     * are ignored during configuration loading and do not cause loading to fail.
-     * However, getConfigurationErrors() will still detect these errors as it always
-     * performs hierarchical discovery regardless of the loading mode used.
      */
     #[DataProvider('invalidConfigurationFormats')]
     public function testSimpleModeIgnoresInvalidToolConfigurationsDuringLoading(
@@ -346,9 +264,8 @@ final class ConfigurationEdgeCaseTest extends TestCase
         string $expectedErrorType,
         string $scenarioDescription,
     ): void {
-        $configurationLoader = $this->createConfigurationLoader('unified');
+        $configurationLoader = $this->createConfigurationLoader();
 
-        // Create base configuration
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $configContent = ConfigurationBuilder::create()
             ->withProject('simple-mode-test')
@@ -357,32 +274,20 @@ final class ConfigurationEdgeCaseTest extends TestCase
 
         file_put_contents($configFile, $configContent);
 
-        // Create invalid tool configuration file
         $toolConfigFile = $this->tempDir . '/' . $filename;
         file_put_contents($toolConfigFile, $invalidContent);
 
-        // Simple mode should ignore invalid tool config files and succeed
-        // NOTE: Only create the main config file (no tool-specific configs) to force simple mode
         try {
             $config = $configurationLoader->load($this->tempDir);
 
-            // Verify loading succeeded
-            $this->assertIsArray($config->toArray(), 'Simple mode should succeed even with invalid tool configs');
+            $this->assertIsArray($config->toArray(), 'Should succeed even with invalid tool configs');
 
-            // NOTE: getConfigurationErrors() ALWAYS performs hierarchical discovery
-            // and will find tool validation errors even if configuration was loaded in simple mode.
-            // This is correct - it shows ALL potential errors, not just those from the loading mode used.
             $errors = $configurationLoader->getConfigurationErrors($this->tempDir);
 
-            // However, validation only happens if validators are registered for the specific tool
-            // In unit tests without DI container, ToolConfigurationValidationService has no validators registered
-            // For tools without validators, no errors will be recorded - this is expected behavior
             if (empty($errors)) {
-                // No validators registered for this tool - configuration loading succeeded without validation
                 return;
             }
 
-            // Verify the error is about the expected tool
             $hasRelevantError = false;
             foreach ($errors as $errorPath => $errorMessage) {
                 if (str_contains((string) $errorPath, $filename)) {
@@ -406,15 +311,11 @@ final class ConfigurationEdgeCaseTest extends TestCase
 
     /**
      * Test auto-detection behavior for unified ConfigurationLoader.
-     *
-     * Verifies that the unified loader correctly chooses hierarchical mode when
-     * multiple configuration sources are available, and simple mode otherwise.
      */
     public function testAutoDetectionBehaviorForConfigurationMode(): void
     {
-        $configurationLoader = $this->createConfigurationLoader('unified');
+        $configurationLoader = $this->createConfigurationLoader();
 
-        // Test 1: Single config file should trigger simple mode (no tool validation)
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $configContent = ConfigurationBuilder::create()
             ->withProject('auto-detect-test')
@@ -422,20 +323,16 @@ final class ConfigurationEdgeCaseTest extends TestCase
             ->buildYaml();
         file_put_contents($configFile, $configContent);
 
-        // Add invalid rector config - should be ignored in simple mode
         $rectorConfigFile = $this->tempDir . '/rector.php';
         file_put_contents($rectorConfigFile, '<?php invalid php syntax here');
 
-        // Auto-detection will actually choose hierarchical mode (main config + tool config = 2 sources)
         try {
             $config = $configurationLoader->load($this->tempDir);
             $this->assertIsArray($config->toArray(), 'Auto-detection should succeed regardless of mode');
 
-            // getConfigurationErrors() should detect tool validation errors
             $errors = $configurationLoader->getConfigurationErrors($this->tempDir);
             $this->assertNotEmpty($errors, 'Should detect tool validation errors');
         } catch (\Exception $e) {
-            // Exception is also acceptable when there are invalid tool configs
             $this->assertStringContainsString(
                 'rector',
                 $e->getMessage(),
@@ -443,18 +340,13 @@ final class ConfigurationEdgeCaseTest extends TestCase
             );
         }
 
-        // Test 2: Verify that the current setup DOES trigger hierarchical mode
-        // (main config + tool config = 2 sources = hierarchical mode)
         $hasHierarchical = $configurationLoader->hasHierarchicalConfiguration($this->tempDir);
         $this->assertTrue($hasHierarchical, 'Main config + tool config should trigger hierarchical mode');
 
-        // Test 3: Verify that even though auto-detection chooses hierarchical mode,
-        // the configuration loading succeeds and detects the invalid rector config
         try {
             $configWithHierarchical = $configurationLoader->load($this->tempDir);
             $errorsWithHierarchical = $configurationLoader->getConfigurationErrors($this->tempDir);
 
-            // In hierarchical mode, should detect the invalid rector config
             $this->assertNotEmpty($errorsWithHierarchical, 'Hierarchical mode should record tool validation errors');
 
             $hasRectorError = false;
@@ -466,7 +358,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
             }
             $this->assertTrue($hasRectorError, 'Should detect invalid rector config in hierarchical mode');
         } catch (\Exception $e) {
-            // Exception is also acceptable in hierarchical mode for invalid configs
             $this->assertStringContainsString(
                 'rector',
                 $e->getMessage(),
@@ -483,7 +374,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
         string $maliciousPath,
         string $scenarioDescription,
     ): void {
-        // Create configuration with potentially malicious path
         $configContent = [
             'quality-tools' => [
                 'project' => ['name' => 'security-test'],
@@ -499,17 +389,14 @@ final class ConfigurationEdgeCaseTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, \Symfony\Component\Yaml\Yaml::dump($configContent));
 
-        // Test that security boundaries are enforced (using hierarchical loader for backward compatibility)
-        $configurationLoader = $this->createConfigurationLoader('hierarchical');
+        $configurationLoader = $this->createConfigurationLoader();
         try {
             $config = $configurationLoader->load($this->tempDir);
 
-            // This should either fail with security error or schema validation error
             $this->fail(
                 "Configuration should reject malicious path: {$scenarioDescription}",
             );
         } catch (\Exception $e) {
-            // Accept either security error or schema validation error (Issue 022)
             $this->assertTrue(
                 str_contains($e->getMessage(), 'config_file is not defined')
                 || str_contains($e->getMessage(), 'security')
@@ -526,10 +413,8 @@ final class ConfigurationEdgeCaseTest extends TestCase
      */
     public function testPerformanceImpactMeasurement(): void
     {
-        // Create complex project structure for performance testing
         $this->createComplexProjectStructure();
 
-        // Measure configuration loading performance
         $iterations = 10;
         $times = [];
 
@@ -537,7 +422,7 @@ final class ConfigurationEdgeCaseTest extends TestCase
             $startTime = microtime(true);
 
             try {
-                $configurationLoader = $this->createConfigurationLoader('hierarchical');
+                $configurationLoader = $this->createConfigurationLoader();
                 $config = $configurationLoader->load($this->tempDir);
                 $endTime = microtime(true);
                 $times[] = $endTime - $startTime;
@@ -545,7 +430,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
                 $endTime = microtime(true);
                 $times[] = $endTime - $startTime;
 
-                // Performance should be consistent even when failing
                 $this->assertThat(
                     $e->getMessage(),
                     $this->logicalOr(
@@ -562,7 +446,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
         $maxTime = max($times);
         $minTime = min($times);
 
-        // Performance assertions
         $this->assertLessThan(
             0.1,
             $avgTime,
@@ -575,7 +458,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
             "Maximum configuration loading time should be under 200ms. Maximum: {$maxTime}s",
         );
 
-        // Performance should be reasonably consistent (max should not be more than 10x min)
         $this->assertLessThan(
             $minTime * 10,
             $maxTime,
@@ -594,10 +476,9 @@ final class ConfigurationEdgeCaseTest extends TestCase
         $peakBefore = memory_get_peak_usage();
 
         try {
-            $configurationLoader = $this->createConfigurationLoader('hierarchical');
+            $configurationLoader = $this->createConfigurationLoader();
             $config = $configurationLoader->load($this->tempDir);
         } catch (\Exception) {
-            // Memory test still valid even if loading fails
         }
 
         $memoryAfter = memory_get_usage();
@@ -606,56 +487,49 @@ final class ConfigurationEdgeCaseTest extends TestCase
         $memoryIncrease = $memoryAfter - $memoryBefore;
         $peakIncrease = $peakAfter - $peakBefore;
 
-        // Memory usage should be reasonable
         $this->assertLessThan(
-            1024 * 1024, // 1MB
+            1024 * 1024,
             $memoryIncrease,
             'Memory increase should be under 1MB. Actual: ' . round($memoryIncrease / 1024) . 'KB',
         );
 
         $this->assertLessThan(
-            2 * 1024 * 1024, // 2MB
+            2 * 1024 * 1024,
             $peakIncrease,
             'Peak memory increase should be under 2MB. Actual: ' . round($peakIncrease / 1024) . 'KB',
         );
     }
 
-    /**
-     * Data provider for file permission scenarios.
-     */
     public static function filePermissionScenarios(): array
     {
         return [
             'readable_file' => [
                 'Readable configuration file',
-                0o644, // rw-r--r--
-                true, // Should succeed now that Issue 022 is resolved
-                '', // No error expected
+                0o644,
+                true,
+                '',
             ],
             'unreadable_file' => [
                 'Unreadable configuration file',
-                0o000, // --------
-                false, // Should fail with file access error
-                'permission', // File permission/access error expected
+                0o000,
+                false,
+                'permission',
             ],
             'executable_only' => [
                 'Executable only configuration file',
-                0o100, // --x------
-                false, // Should fail with file access error
-                'permission', // File permission/access error expected
+                0o100,
+                false,
+                'permission',
             ],
             'write_only' => [
                 'Write only configuration file',
-                0o200, // -w-------
-                false, // Should fail with file access error
-                'permission', // File permission/access error expected
+                0o200,
+                false,
+                'permission',
             ],
         ];
     }
 
-    /**
-     * Data provider for invalid configuration formats.
-     */
     public static function invalidConfigurationFormats(): array
     {
         return [
@@ -697,30 +571,6 @@ final class ConfigurationEdgeCaseTest extends TestCase
         ];
     }
 
-    /**
-     * Data provider for invalid configuration formats with both loaders.
-     *
-     * Combines the base test data with loader types to test both
-     * HierarchicalConfigurationLoader and unified ConfigurationLoader.
-     */
-    public static function invalidConfigurationFormatsWithLoaders(): array
-    {
-        $baseData = self::invalidConfigurationFormats();
-        $loaderTypes = ['hierarchical', 'unified'];
-        $combinedData = [];
-
-        foreach ($loaderTypes as $loaderType) {
-            foreach ($baseData as $key => $testCase) {
-                $combinedData["{$loaderType}_{$key}"] = array_merge([$loaderType], $testCase);
-            }
-        }
-
-        return $combinedData;
-    }
-
-    /**
-     * Data provider for security violation scenarios.
-     */
     public static function securityViolationScenarios(): array
     {
         return [
@@ -745,15 +595,12 @@ final class ConfigurationEdgeCaseTest extends TestCase
                 'Windows-style directory traversal attempt',
             ],
             'null_byte_injection' => [
-                'config.php .txt',
+                'config.php .txt',
                 'Null byte injection attempt',
             ],
         ];
     }
 
-    /**
-     * Get sample Rector configuration content.
-     */
     private function getRectorConfigContent(): string
     {
         return '<?php
@@ -764,12 +611,8 @@ return static function (RectorConfig $rectorConfig): void {
 };';
     }
 
-    /**
-     * Create complex project structure for performance testing.
-     */
     private function createComplexProjectStructure(): void
     {
-        // Create directory structure
         $directories = [
             'src/',
             'tests/',
@@ -783,10 +626,11 @@ return static function (RectorConfig $rectorConfig): void {
         ];
 
         foreach ($directories as $dir) {
-            mkdir($this->tempDir . '/' . $dir, 0o755, true);
+            if (!is_dir($this->tempDir . '/' . $dir)) {
+                mkdir($this->tempDir . '/' . $dir, 0o755, true);
+            }
         }
 
-        // Create configuration files
         $configFiles = [
             '.quality-tools.yaml' => $this->getComplexYamlConfig(),
             'rector.php' => $this->getRectorConfigContent(),
@@ -805,7 +649,6 @@ return static function (RectorConfig $rectorConfig): void {
             file_put_contents($filepath, $content);
         }
 
-        // Create dummy source files for realistic structure
         $sourceFiles = [
             'src/Controller.php' => '<?php class Controller {}',
             'src/Service.php' => '<?php class Service {}',
@@ -824,9 +667,6 @@ return static function (RectorConfig $rectorConfig): void {
         }
     }
 
-    /**
-     * Get complex YAML configuration for performance testing.
-     */
     private function getComplexYamlConfig(): string
     {
         return ConfigurationBuilder::create()
@@ -843,9 +683,6 @@ return static function (RectorConfig $rectorConfig): void {
             ->buildYaml();
     }
 
-    /**
-     * Get PHPStan configuration content.
-     */
     private function getPhpstanConfigContent(): string
     {
         return 'parameters:
@@ -857,9 +694,6 @@ return static function (RectorConfig $rectorConfig): void {
         - */vendor/*';
     }
 
-    /**
-     * Get Fractor configuration content.
-     */
     private function getFractorConfigContent(): string
     {
         return '<?php

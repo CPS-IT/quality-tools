@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Security;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -48,10 +49,11 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new SimpleConfigurationLoader(
+        $loader = new ConfigurationLoader(
             new ConfigurationValidator(),
             $this->securityService,
             $this->filesystemService,
+            new ToolConfigurationValidationService(),
         );
 
         $this->expectException(\RuntimeException::class);
@@ -78,10 +80,11 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new SimpleConfigurationLoader(
+        $loader = new ConfigurationLoader(
             new ConfigurationValidator(),
             $this->securityService,
             $this->filesystemService,
+            new ToolConfigurationValidationService(),
         );
         $config = $loader->load($this->tempDir);
 
@@ -110,10 +113,11 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new SimpleConfigurationLoader(
+        $loader = new ConfigurationLoader(
             new ConfigurationValidator(),
             $this->securityService,
             $this->filesystemService,
+            new ToolConfigurationValidationService(),
         );
         $config = $loader->load($this->tempDir);
 
@@ -141,10 +145,11 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new SimpleConfigurationLoader(
+        $loader = new ConfigurationLoader(
             new ConfigurationValidator(),
             $this->securityService,
             $this->filesystemService,
+            new ToolConfigurationValidationService(),
         );
 
         $this->expectException(\RuntimeException::class);

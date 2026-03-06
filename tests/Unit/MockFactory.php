@@ -134,18 +134,6 @@ final readonly class MockFactory
     }
 
     /**
-     * Create a complete dependency set for SimpleConfigurationLoader.
-     */
-    public function createSimpleConfigurationLoaderDependencies(array $files = []): array
-    {
-        return [
-            'validator' => $this->createConfigurationValidatorMock(),
-            'securityService' => $this->createSecurityServiceMock(),
-            'filesystemService' => $this->createFilesystemServiceMock($files),
-        ];
-    }
-
-    /**
      * Create mocks for console command testing.
      */
     public function createConsoleCommandDependencies(): array

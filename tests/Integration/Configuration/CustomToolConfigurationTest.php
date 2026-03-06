@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
@@ -33,7 +33,7 @@ use Symfony\Component\Filesystem\Filesystem;
 final class CustomToolConfigurationTest extends TestCase
 {
     private string $tempDir;
-    private HierarchicalConfigurationLoader $configurationLoader;
+    private ConfigurationLoader $configurationLoader;
     private SecurityService $securityService;
     private FilesystemService $filesystemService;
 
@@ -41,13 +41,13 @@ final class CustomToolConfigurationTest extends TestCase
     {
         $this->tempDir = TestHelper::createTempDirectory('custom_tool_config_test_');
 
-        // Create required services for HierarchicalConfigurationLoader
+        // Create required services for ConfigurationLoader
         $validator = new ConfigurationValidator();
         $this->securityService = new SecurityService();
         $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
         $toolValidator = new ToolConfigurationValidationService();
 
-        $this->configurationLoader = new HierarchicalConfigurationLoader(
+        $this->configurationLoader = new ConfigurationLoader(
             $validator,
             $this->securityService,
             $this->filesystemService,

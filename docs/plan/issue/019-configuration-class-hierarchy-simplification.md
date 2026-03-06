@@ -260,9 +260,11 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 **Current Infrastructure** (updated 2026-03-06):
 - `ConfigurationLoaderFactory` removed
 - `ConfigurationLoaderWrapper` removed (with 6 dedicated test files)
-- `ConfigurationWrapper` removed
-- Old classes `SimpleConfiguration`, `EnhancedConfiguration`, `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader` still exist
-- Unified `Configuration` and `ConfigurationLoader` are the primary implementations
+- All deprecated classes removed: `ConfigurationLoaderFactory`, `ConfigurationLoaderWrapper`,
+  `ConfigurationWrapper`, `SimpleConfiguration`, `EnhancedConfiguration`,
+  `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader`
+- Unified `Configuration` and `ConfigurationLoader` are the sole implementations
+- 908 tests passing, PHPStan clean, 0 deprecation warnings
 
 #### Step 6.1: Complete Compatibility Implementation
 - [ ] **PREREQUISITE**: Complete compatibility fixes from 2026-02-14 analysis (Steps 1-10)
@@ -305,8 +307,9 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 - [x] Remove `ConfigurationLoaderFactory` (2026-03-06)
 - [x] Remove `ConfigurationLoaderWrapper` and all dedicated comparison tests (2026-03-06)
 - [x] Remove `ConfigurationWrapper` and 6 dedicated test files (2026-03-06)
-- [ ] Remove `SimpleConfiguration`, `EnhancedConfiguration`
-- [ ] Remove `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader`
+- [x] Remove `SimpleConfiguration`, `EnhancedConfiguration` (2026-03-06)
+- [x] Remove `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader` (2026-03-06)
+- [x] Remove all dedicated test files for deprecated classes (2026-03-06)
 
 **Progress note (2026-03-05)**: Deprecation probes (`trigger_error` with `E_USER_DEPRECATED`) were added to all 7 deprecated class constructors and tests were run to identify remaining usage. Key findings:
 - `ConfigurationLoaderWrapper` was the primary unexpected usage, triggered by all command tests via `BaseCommand::getConfigurationLoader()` fallback.

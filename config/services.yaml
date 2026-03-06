@@ -29,7 +29,6 @@ services:
       - '../src/Configuration/ValidationResult.php'
       - '../src/Configuration/ConfigurationHierarchy.php'
       - '../src/Configuration/ConfigurationDiscovery.php'
-      - '../src/Configuration/EnhancedConfiguration.php'
       - '../src/Configuration/ConfigurationInterface.php'
       - '../src/Configuration/ConfigurationLoaderInterface.php'
 
@@ -134,21 +133,6 @@ services:
       $suffix: ''
 
   Cpsit\QualityTools\Utility\VendorDirectoryDetector:
-    public: true
-
-  Cpsit\QualityTools\Configuration\SimpleConfigurationLoader:
-    arguments:
-      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
-      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
-      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
-    public: true
-
-  Cpsit\QualityTools\Configuration\HierarchicalConfigurationLoader:
-    arguments:
-      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
-      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
-      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
-      $toolValidator: '@Cpsit\QualityTools\Service\ToolConfigurationValidationService'
     public: true
 
   Cpsit\QualityTools\Configuration\ConfigurationLoader:

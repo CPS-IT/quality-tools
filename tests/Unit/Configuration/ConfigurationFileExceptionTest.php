@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\SimpleConfigurationLoader;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotFoundException;
 use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
 use Cpsit\QualityTools\Exception\ConfigurationLoadException;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,19 +23,20 @@ use Symfony\Component\Filesystem\Filesystem;
 #[CoversClass(ConfigurationLoadException::class)]
 final class ConfigurationFileExceptionTest extends TestCase
 {
-    private SimpleConfigurationLoader $loader;
+    private ConfigurationLoader $loader;
     private string $tempDir;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_exception_test_');
-        $this->loader = new SimpleConfigurationLoader(
+        $this->loader = new ConfigurationLoader(
             new ConfigurationValidator(),
             new SecurityService(),
             new FilesystemService(
                 new Filesystem(),
                 new SecurityService(),
             ),
+            new ToolConfigurationValidationService(),
         );
     }
 
@@ -47,17 +49,12 @@ final class ConfigurationFileExceptionTest extends TestCase
     #[Test]
     public function defaultConfigurationUsedIfFileNotFound(): void
     {
-        // Create a directory with no config files
         $emptyDir = $this->tempDir . '/empty';
         mkdir($emptyDir);
 
-        // When trying to load from a directory with no config, it should still work
-        // (uses defaults), but if we specifically try to load a non-existent file
-        // through internal methods, we should get the specific exception
-
         $config = $this->loader->load($emptyDir);
 
-        self::assertSame('8.3', $config->getProjectPhpVersion()); // default PHP version
+        self::assertSame('8.3', $config->getProjectPhpVersion());
     }
 
     public function testFileValidationPreventsPHPWarnings(): void
@@ -66,26 +63,16 @@ final class ConfigurationFileExceptionTest extends TestCase
             $this->markTestSkipped('File permission tests are meaningless when running as root');
         }
 
-        // This test demonstrates that our new approach prevents PHP warnings
-        // by checking file existence and readability before calling file_get_contents
-
-        // Create an unreadable config file using the standard config filename
         $unreadableFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($unreadableFile, 'quality-tools: {}');
         chmod($unreadableFile, 0o000);
 
         try {
-            // The old approach would call file_get_contents() directly and generate warnings
-            // Our new approach checks is_readable() first and throws specific exceptions
-
             $this->expectException(ConfigurationFileNotReadableException::class);
             $this->expectExceptionMessage('File exists but is not readable');
 
-            // This will trigger the unreadable file exception since we have a config file present
-            // but it's unreadable
             $this->loader->load($this->tempDir);
         } finally {
-            // Restore permissions for cleanup
             if (file_exists($unreadableFile)) {
                 chmod($unreadableFile, 0o644);
             }
