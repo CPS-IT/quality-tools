@@ -180,23 +180,42 @@ final class TestHelper
      */
     public static function withEnvironment(array $variables, callable $callback): mixed
     {
-        $originalValues = [];
+        $originalPutenv = [];
+        $originalEnv = [];
+        $originalServer = [];
 
-        // Backup original values
+        // Backup and set across all superglobals
         foreach ($variables as $key => $value) {
-            $originalValues[$key] = getenv($key);
+            $originalPutenv[$key] = getenv($key);
+            $originalEnv[$key] = $_ENV[$key] ?? null;
+            $originalServer[$key] = $_SERVER[$key] ?? null;
+
             putenv($key . '=' . $value);
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
         }
 
         try {
             return $callback();
         } finally {
             // Restore original values
-            foreach ($originalValues as $key => $originalValue) {
-                if ($originalValue === false) {
+            foreach ($variables as $key => $ignored) {
+                if ($originalPutenv[$key] === false) {
                     putenv($key);
                 } else {
-                    putenv($key . '=' . $originalValue);
+                    putenv($key . '=' . $originalPutenv[$key]);
+                }
+
+                if ($originalEnv[$key] === null) {
+                    unset($_ENV[$key]);
+                } else {
+                    $_ENV[$key] = $originalEnv[$key];
+                }
+
+                if ($originalServer[$key] === null) {
+                    unset($_SERVER[$key]);
+                } else {
+                    $_SERVER[$key] = $originalServer[$key];
                 }
             }
         }

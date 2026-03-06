@@ -221,11 +221,14 @@ abstract class BaseTestCase extends TestCase
     protected function withEnvironment(array $env, callable $callback): mixed
     {
         $originalEnv = [];
+        $originalServer = [];
 
-        // Store and set new environment
+        // Store and set new environment across all superglobals
         foreach ($env as $key => $value) {
             $originalEnv[$key] = $_ENV[$key] ?? null;
+            $originalServer[$key] = $_SERVER[$key] ?? null;
             $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
             putenv($key . '=' . $value);
         }
 
@@ -233,13 +236,23 @@ abstract class BaseTestCase extends TestCase
             return $callback();
         } finally {
             // Restore original environment
-            foreach ($originalEnv as $key => $value) {
-                if ($value === null) {
+            foreach ($env as $key => $ignored) {
+                if ($originalEnv[$key] === null) {
                     unset($_ENV[$key]);
+                } else {
+                    $_ENV[$key] = $originalEnv[$key];
+                }
+
+                if ($originalServer[$key] === null) {
+                    unset($_SERVER[$key]);
+                } else {
+                    $_SERVER[$key] = $originalServer[$key];
+                }
+
+                if ($originalEnv[$key] === null && $originalServer[$key] === null) {
                     putenv($key);
                 } else {
-                    $_ENV[$key] = $value;
-                    putenv($key . '=' . $value);
+                    putenv($key . '=' . ($originalEnv[$key] ?? $originalServer[$key] ?? ''));
                 }
             }
         }

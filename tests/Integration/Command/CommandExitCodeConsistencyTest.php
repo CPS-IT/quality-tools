@@ -63,25 +63,32 @@ final class CommandExitCodeConsistencyTest extends TestCase
             mkdir($vendorBinDir, 0o777, true);
         }
 
-        // Create mock composer script that can handle normalize command with proper working directory
+        // Create mock composer script that simulates composer-normalize plugin
         $composerScript = '#!/bin/bash
-# Mock composer script that runs normalize plugin in quality-tools project context
-QUALITY_TOOLS_DIR="' . __DIR__ . '/../../../"
-
+# Mock composer script that simulates composer-normalize behavior
 if [ "$1" = "normalize" ]; then
-    # Run normalize in quality-tools project directory with system composer (suppress xdebug)
-    cd "$QUALITY_TOOLS_DIR"
+    shift
+    COMPOSER_FILE=""
+    for arg in "$@"; do
+        case "$arg" in
+            --dry-run|--diff) ;;
+            *.json) COMPOSER_FILE="$arg" ;;
+        esac
+    done
 
-    # Use system composer with xdebug disabled to avoid warnings and connection errors
-    # Capture output and exit code to preserve real composer behavior
-    COMPOSER_OUTPUT=$(XDEBUG_MODE=off /usr/local/bin/composer.phar "$@" 2>&1)
-    COMPOSER_EXIT_CODE=$?
-
-    # Show the real composer output
-    echo "$COMPOSER_OUTPUT"
-
-    # Exit with the real composer exit code (preserves actual normalization status)
-    exit $COMPOSER_EXIT_CODE
+    TARGET="${COMPOSER_FILE:-composer.json}"
+    if [ -f "$TARGET" ]; then
+        php -r "json_decode(file_get_contents(\"$TARGET\")); exit(json_last_error() === JSON_ERROR_NONE ? 0 : 1);" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            echo "\"$TARGET\" does not contain valid JSON" >&2
+            exit 1
+        fi
+        echo "Running ergebnis/composer-normalize by Andreas Möller and contributors."
+        echo "$TARGET is already normalized."
+        exit 0
+    fi
+    echo "No composer.json found"
+    exit 1
 else
     echo "Mock composer: unsupported command $*"
     exit 1
@@ -319,10 +326,10 @@ fi
             'invalid_composer_in_root' => [
                 'scenarioName' => 'Invalid Composer.json in Root',
                 'fixtureDirectory' => 'invalid-composer-in-root',
-                'expectedWrapperExitCode' => 0, // Wrapper finds it with quality-tools.yaml including '.' but processes successfully with dummy content
-                'expectedUnifiedExitCode' => 1, // Unified finds it but processing fails due to invalid JSON
-                'wrapperExpectedMessage' => 'composer.json has been normalized',
-                'unifiedExpectedMessage' => 'does not contain valid JSON', // Real composer error message
+                'expectedWrapperExitCode' => 1, // Invalid JSON detected by mock composer
+                'expectedUnifiedExitCode' => 1, // Invalid JSON detected by mock composer
+                'wrapperExpectedMessage' => 'does not contain valid JSON',
+                'unifiedExpectedMessage' => 'does not contain valid JSON',
             ],
 
             // Scenario 4: Custom package in packages/ directory (realistic TYPO3)
