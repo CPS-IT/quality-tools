@@ -380,7 +380,8 @@ final class FractorFixCommandTest extends TestCase
         // and the executeProcess method will return a non-zero exit code
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        // Command should return exit code 126 (command not executable) due to missing executable
-        $this->assertEquals(126, $result);
+        // Command should return non-zero exit code due to missing executable
+        // Exit code 126 = not executable, 127 = not found (platform-dependent)
+        $this->assertContains($result, [126, 127]);
     }
 }

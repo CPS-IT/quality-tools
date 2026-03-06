@@ -6,5 +6,3 @@ build:test:
     paths:
       - vendor/
     expire_in: 1 hour
-  rules:
-    - when: always

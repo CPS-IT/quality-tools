@@ -109,6 +109,10 @@ final class ConfigurationFileValidationTest extends TestCase
      */
     public function testConfigurationFilePermissions(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         $configFile = $this->tempDir . '/rector.php';
         $validConfig = self::validRectorConfigProvider()[0][0];
         file_put_contents($configFile, $validConfig);

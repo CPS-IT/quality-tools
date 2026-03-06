@@ -62,6 +62,10 @@ final class ConfigurationFileExceptionTest extends TestCase
 
     public function testFileValidationPreventsPHPWarnings(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         // This test demonstrates that our new approach prevents PHP warnings
         // by checking file existence and readability before calling file_get_contents
 

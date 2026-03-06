@@ -268,6 +268,10 @@ final class ConfigInitCommandTest extends TestCase
 
     public function testFileWriteError(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         // Make directory read-only to cause write error
         chmod($this->tempDir, 0o555);
 

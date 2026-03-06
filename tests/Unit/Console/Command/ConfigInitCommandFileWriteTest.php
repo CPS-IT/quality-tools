@@ -66,6 +66,10 @@ final class ConfigInitCommandFileWriteTest extends TestCase
 
     public function testFileWritePreventsPHPWarnings(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         // This test demonstrates that our new approach prevents PHP warnings
         // by checking directory writability before calling file_put_contents
 
@@ -107,6 +111,10 @@ final class ConfigInitCommandFileWriteTest extends TestCase
 
     public function testReadOnlyExistingFileError(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         // Create an existing config file and make it read-only
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, 'existing content');

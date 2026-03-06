@@ -46,7 +46,6 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
         foreach ($targetPaths as $targetPath) {
             $composerJsonPath = $targetPath . '/composer.json';
 
-            // Check if composer.json exists in this path
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($composerJsonPath)) {
                 if ($output->isVerbose()) {
@@ -57,19 +56,10 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
 
             ++$foundFiles;
 
-            // Use composer normalize plugin command
-            // Check if composer exists in vendor/bin (for tests), otherwise use system composer
-            $composerExecutable = 'composer';
-            $vendorComposer = $this->getVendorBinPath() . '/composer';
-            if ($filesystemService->fileExists($vendorComposer)) {
-                $composerExecutable = $vendorComposer;
-            }
-
             $output->writeln(\sprintf('<comment>Normalizing composer.json: %s</comment>', $composerJsonPath));
 
-            // Store for execution - we'll handle multiple files differently
             $commands[] = [
-                $composerExecutable,
+                $this->resolveComposerExecutable(),
                 'normalize',
                 $composerJsonPath,
             ];
@@ -78,25 +68,21 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
         if ($foundFiles === 0) {
             $output->writeln('<comment>No composer.json files found in any of the configured paths</comment>');
 
-            // Return empty command to trigger error
             return [];
         }
 
-        // For now, return the first command (we'll need to handle multiple files differently)
         return $commands[0] ?? [];
     }
 
     #[\Override]
     protected function resolveConfigPath(string $configFile, ?string $customConfigPath = null): string
     {
-        // Composer normalize doesn't use a config file, return empty
         return '';
     }
 
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // For composer normalize, we need custom handling for multiple files
         $targetPaths = $this->resolveTargetPaths($input, $output);
 
         $totalExitCode = 0;
@@ -105,7 +91,6 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
         foreach ($targetPaths as $targetPath) {
             $composerJsonPath = $targetPath . '/composer.json';
 
-            // Check if composer.json exists in this path
             $filesystemService = $this->getFilesystemService();
             if (!$filesystemService->fileExists($composerJsonPath)) {
                 if ($output->isVerbose()) {
@@ -116,15 +101,8 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
 
             ++$foundFiles;
 
-            // Use composer normalize plugin command
-            $composerExecutable = 'composer';
-            $vendorComposer = $this->getVendorBinPath() . '/composer';
-            if ($filesystemService->fileExists($vendorComposer)) {
-                $composerExecutable = $vendorComposer;
-            }
-
             $command = [
-                $composerExecutable,
+                $this->resolveComposerExecutable(),
                 'normalize',
                 $composerJsonPath,
             ];
@@ -144,5 +122,47 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
         }
 
         return $totalExitCode;
+    }
+
+    /**
+     * Resolve the composer executable path.
+     *
+     * Prefers vendor/bin/composer if it exists and is executable,
+     * falls back to system composer.
+     */
+    private function resolveComposerExecutable(): string
+    {
+        try {
+            $vendorComposer = $this->getVendorBinPath() . '/composer';
+            if (is_file($vendorComposer) && is_executable($vendorComposer) && $this->isComposerWrapperFunctional($vendorComposer)) {
+                return $vendorComposer;
+            }
+        } catch (\Throwable) {
+            // Fall through to system composer
+        }
+
+        return 'composer';
+    }
+
+    /**
+     * Check whether the vendor/bin/composer wrapper can actually run.
+     *
+     * Composer generates a wrapper that hardcodes the path to composer.phar.
+     * In CI where build and test run in separate containers, this path may not exist.
+     */
+    private function isComposerWrapperFunctional(string $wrapperPath): bool
+    {
+        $content = @file_get_contents($wrapperPath);
+        if ($content === false) {
+            return false;
+        }
+
+        // Check for the common pattern: the wrapper references a .phar file
+        if (preg_match('#([\'"]?)(/[^\'"\s]+composer\.phar)\1#', $content, $matches)) {
+            return file_exists($matches[2]);
+        }
+
+        // If we can't detect the pattern, assume it works
+        return true;
     }
 }
