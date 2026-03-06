@@ -126,9 +126,9 @@ vendor/bin/qt --quiet [command]
 
 ## Configuration Files
 
-### Hierarchical Configuration System
+### Unified Configuration System
 
-The tool implements a hierarchical configuration override system that allows projects to customize quality tool configurations at multiple levels. This provides powerful configuration management while maintaining simplicity for basic use cases.
+The tool implements a unified configuration system with hierarchical overrides that allows projects to customize quality tool configurations at multiple levels. This provides powerful configuration management while maintaining simplicity for basic use cases.
 
 ### Configuration Precedence Hierarchy
 
@@ -598,10 +598,10 @@ vendor/bin/qt config:show --format=json
 
 ### Migration Guide
 
-#### From Simple to Hierarchical Configuration
+#### From Tool-Specific to Unified Configuration
 
-1. **Assess Current Setup**: Identify existing configuration files
-2. **Plan Hierarchy**: Decide which settings belong at which level
-3. **Create Global Config**: Move common settings to `~/.quality-tools.yaml`
+1. **Assess Current Setup**: Identify existing tool configuration files
+2. **Plan Configuration**: Decide which settings to centralize
+3. **Create Unified Config**: Set up `.quality-tools.yaml` with your settings
 4. **Test Thoroughly**: Verify that tools behave as expected
-5. **Clean Up**: Remove redundant configuration files
+5. **Clean Up**: Remove redundant tool-specific configuration files

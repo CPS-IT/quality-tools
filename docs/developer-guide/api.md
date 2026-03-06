@@ -1,28 +1,34 @@
 # Configuration API Documentation
 
-This document provides comprehensive API documentation for the configuration system classes, intended for developers who want to extend or integrate with the unified YAML configuration system.
+This document provides API documentation for the configuration system classes, intended for developers who want to extend or integrate with the unified YAML configuration system.
 
 ## Architecture Overview
 
 The configuration system consists of several key classes that work together:
 
 ```
-YamlConfigurationLoader
-├── Loads and merges YAML configurations from multiple sources
-├── Handles environment variable interpolation
-└── Uses ConfigurationValidator for validation
+ConfigurationLoader
+- Loads and merges YAML configurations from multiple sources
+- Handles environment variable interpolation
+- Uses ConfigurationValidator for validation
+- Delegates to ConfigurationDiscovery, ConfigurationHierarchy, ConfigurationMerger
 
 Configuration
-├── Holds the resolved configuration data
-├── Provides typed access methods for all settings
-└── Supports merging and default value handling
+- Holds the resolved configuration data
+- Provides typed access methods for all settings
+- Supports path resolution via PathResolutionService
+- Supports vendor directory detection via VendorDirectoryDetector
 
 ConfigurationValidator
-├── Validates configuration against JSON Schema
-└── Provides detailed error reporting
+- Validates configuration against JSON Schema
+- Provides detailed error reporting
+
+ConfigurationBuilder
+- Builds tool-specific configurations (Rector, Fractor, etc.)
+- Resolves paths using PathResolutionService
 
 ValidationResult
-└── Contains validation results and error messages
+- Contains validation results and error messages
 ```
 
 ## Core Classes
@@ -31,28 +37,40 @@ ValidationResult
 
 **Location:** `src/Configuration/Configuration.php`
 
-The central class that holds and provides access to configuration data.
+The central class that holds and provides access to configuration data. It unifies the functionality previously split across `SimpleConfiguration` and `EnhancedConfiguration`.
 
 #### Constructor
 
 ```php
-public function __construct(array $data = [])
+public function __construct(
+    private string $projectRoot,
+    private array $data = [],
+    private array $sourceMap = [],
+    private array $conflicts = [],
+    private array $mergeSummary = [],
+    private bool $hierarchicalMode = false,
+    private ?ConfigurationValidator $validator = null,
+    private ?ProjectConfigService $projectConfigService = null,
+    private ?ToolConfigService $toolConfigService = null,
+    private ?PathResolutionService $pathResolutionService = null,
+    private ?ConfigurationHierarchy $hierarchy = null,
+    private ?ConfigurationDiscovery $discovery = null,
+)
 ```
 
 **Parameters:**
+- `$projectRoot` (string): Absolute path to the project root directory (immutable after construction)
 - `$data` (array): Configuration data array, typically from YAML file
-
-**Example:**
-```php
-$config = new Configuration([
-    'quality-tools' => [
-        'project' => [
-            'name' => 'my-project',
-            'php_version' => '8.3'
-        ]
-    ]
-]);
-```
+- `$sourceMap` (array): Tracks which configuration source provided each value
+- `$conflicts` (array): Records configuration conflicts during merging
+- `$mergeSummary` (array): Summary of how configurations were merged
+- `$hierarchicalMode` (bool): Whether hierarchical configuration merging was used
+- `$validator` (ConfigurationValidator|null): Optional validator instance
+- `$projectConfigService` (ProjectConfigService|null): Optional project config service
+- `$toolConfigService` (ToolConfigService|null): Optional tool config service
+- `$pathResolutionService` (PathResolutionService|null): Optional path resolution service
+- `$hierarchy` (ConfigurationHierarchy|null): Optional hierarchy definition
+- `$discovery` (ConfigurationDiscovery|null): Optional configuration discovery
 
 #### Project Configuration Methods
 
@@ -81,6 +99,15 @@ Returns the project name if configured.
 
 **Returns:** string|null - Project name or null if not set
 
+---
+
+```php
+public function getProjectRoot(): string
+```
+Returns the project root directory path.
+
+**Returns:** string - Absolute path to the project root
+
 #### Path Configuration Methods
 
 ```php
@@ -97,7 +124,58 @@ public function getExcludePaths(): array
 ```
 Returns directories to exclude from analysis.
 
-**Returns:** array - Array of directory paths (default: ["var/", "vendor/", "node_modules/"])
+**Returns:** array - Array of directory paths (default: ["var/", "vendor/", "node_modules/", ...])
+
+---
+
+```php
+public function getToolPaths(string $tool): array
+```
+Returns tool-specific paths from the configuration.
+
+**Parameters:**
+- `$tool` (string): Tool name (rector, phpstan, php-cs-fixer, fractor, typoscript-lint)
+
+**Returns:** array - Tool-specific paths (empty if none configured)
+
+---
+
+```php
+public function getResolvedPathsForTool(string $tool): array
+```
+Returns resolved absolute paths for a specific tool, using PathResolutionService to expand glob patterns and validate directories.
+
+**Parameters:**
+- `$tool` (string): Tool name
+
+**Returns:** array - Array of resolved absolute paths
+
+#### Vendor Directory Methods
+
+```php
+public function hasVendorDirectory(): bool
+```
+Returns whether a vendor directory was detected.
+
+**Returns:** bool - true if vendor directory exists
+
+---
+
+```php
+public function getVendorPath(): ?string
+```
+Returns the detected vendor directory path.
+
+**Returns:** string|null - Absolute path to vendor directory, or null
+
+---
+
+```php
+public function getVendorBinPath(): ?string
+```
+Returns the vendor bin directory path.
+
+**Returns:** string|null - Absolute path to vendor/bin directory, or null
 
 #### Tool Configuration Methods
 
@@ -234,6 +312,35 @@ Returns whether result caching is enabled.
 
 **Returns:** bool - true if caching enabled (default: true)
 
+#### Debug Methods
+
+```php
+public function getPathScanningDebugInfo(string $tool): array
+```
+Returns debug information about path resolution for a specific tool.
+
+**Parameters:**
+- `$tool` (string): Tool name
+
+**Returns:** array with keys:
+- `tool` (string): The tool name
+- `project_root` (string): The project root path
+- `resolved_paths` (array): Resolved absolute paths
+- `path_resolution_service` (array): PathResolutionService debug data
+
+---
+
+```php
+public function getVendorDetectionDebugInfo(): array
+```
+Returns debug information about vendor directory detection.
+
+**Returns:** array with keys:
+- `project_root` (string): The project root path
+- `vendor_path` (string|null): Detected vendor path
+- `vendor_bin_path` (string|null): Detected vendor bin path
+- `detection_method` (string): How vendor directory was detected
+
 #### Utility Methods
 
 ```php
@@ -255,50 +362,67 @@ Merges this configuration with another configuration.
 
 **Returns:** Configuration - New merged configuration instance
 
----
+### ConfigurationLoader Class
 
-```php
-public static function createDefault(): self
-```
-Creates a configuration instance with default values.
+**Location:** `src/Configuration/ConfigurationLoader.php`
 
-**Returns:** Configuration - Default configuration instance
-
-### YamlConfigurationLoader Class
-
-**Location:** `src/Configuration/YamlConfigurationLoader.php`
-
-Handles loading and merging YAML configuration files from multiple sources.
+Handles loading and merging YAML configuration files from multiple sources. This is the unified loader that replaced both `SimpleConfigurationLoader` and `HierarchicalConfigurationLoader`.
 
 #### Constructor
 
 ```php
-public function __construct(?ConfigurationValidator $validator = null)
+public function __construct(
+    private ConfigurationValidator $validator,
+    private SecurityService $securityService,
+    private FilesystemService $filesystemService,
+    private ToolConfigurationValidationService $toolValidator,
+    private ?ProjectConfigService $projectConfigService = null,
+    private ?ToolConfigService $toolConfigService = null,
+    private ?PathResolutionService $pathResolutionService = null,
+)
 ```
 
 **Parameters:**
-- `$validator` (ConfigurationValidator|null): Optional validator instance
+- `$validator` (ConfigurationValidator): Configuration schema validator
+- `$securityService` (SecurityService): Security validation service
+- `$filesystemService` (FilesystemService): Filesystem abstraction
+- `$toolValidator` (ToolConfigurationValidationService): Tool configuration validator
+- `$projectConfigService` (ProjectConfigService|null): Optional project config service
+- `$toolConfigService` (ToolConfigService|null): Optional tool config service
+- `$pathResolutionService` (PathResolutionService|null): Optional path resolution service
 
 #### Main Methods
 
 ```php
-public function load(string $projectRoot): Configuration
+public function load(string $projectRoot, array $commandLineOverrides = []): ConfigurationInterface
 ```
 Loads and merges configuration from all sources.
 
 **Parameters:**
 - `$projectRoot` (string): Path to project root directory
+- `$commandLineOverrides` (array): Optional command-line override values
 
-**Returns:** Configuration - Merged configuration instance
-
-**Throws:**
-- `RuntimeException` - If configuration loading or validation fails
+**Returns:** ConfigurationInterface - Merged configuration instance
 
 **Configuration Loading Order:**
 1. Package defaults (lowest priority)
 2. Global user configuration (`~/.quality-tools.yaml`)
 3. Project configuration (project root)
 4. CLI overrides (highest priority)
+
+---
+
+```php
+public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): ConfigurationInterface
+```
+Loads configuration optimized for a specific tool.
+
+**Parameters:**
+- `$projectRoot` (string): Path to project root directory
+- `$tool` (string): Tool name
+- `$commandLineOverrides` (array): Optional command-line override values
+
+**Returns:** ConfigurationInterface - Tool-optimized configuration instance
 
 ---
 
@@ -329,77 +453,66 @@ Checks if the project has a YAML configuration file.
 
 **Returns:** bool - true if configuration file exists
 
-#### Internal Methods
+#### Analysis Methods
 
 ```php
-private function loadConfigurationHierarchy(string $projectRoot): array
+public function hasHierarchicalConfiguration(string $projectRoot): bool
 ```
-Loads and merges configuration from all hierarchy levels.
+Checks if the project uses hierarchical configuration (multiple sources).
 
 ---
 
 ```php
-private function loadGlobalConfiguration(): array
+public function getConfigurationErrors(string $projectRoot): array
 ```
-Loads global user configuration from home directory.
+Returns any validation errors in the project's configuration.
 
 ---
 
 ```php
-private function loadProjectConfiguration(string $projectRoot): array
+public function getConfigurationDebugInfo(string $projectRoot): array
 ```
-Loads project-specific configuration.
+Returns debug information about configuration loading.
 
 ---
 
 ```php
-private function loadYamlFile(string $path): array
+public function getConfigurationSources(string $projectRoot): array
 ```
-Loads and processes a single YAML file.
-
-**Features:**
-- Environment variable interpolation
-- JSON Schema validation
-- Error handling with detailed messages
+Returns the list of configuration sources that were found.
 
 ---
 
 ```php
-private function interpolateEnvironmentVariables(string $content): string
+public function previewMergedConfiguration(string $projectRoot, array $commandLineOverrides = []): array
 ```
-Performs environment variable interpolation on YAML content.
+Returns a preview of the merged configuration without creating a Configuration object.
 
-**Supported Syntax:**
-- `${VAR}` - Required variable
-- `${VAR:-default}` - Variable with default value
+#### Factory Methods
+
+```php
+public static function createSimpleLoader(
+    SecurityService $securityService,
+    FilesystemService $filesystemService,
+): self
+```
+Creates a loader configured for simple (single-source) configuration.
 
 ---
 
 ```php
-private function mergeConfigurations(array $configurations): array
+public static function createHierarchicalLoader(
+    SecurityService $securityService,
+    FilesystemService $filesystemService,
+): self
 ```
-Merges multiple configuration arrays with precedence.
-
----
-
-```php
-private function deepMerge(array $array1, array $array2): array
-```
-Performs deep merge of configuration arrays.
+Creates a loader configured for hierarchical (multi-source) configuration.
 
 ### ConfigurationValidator Class
 
 **Location:** `src/Configuration/ConfigurationValidator.php`
 
 Validates configuration data against a JSON Schema.
-
-#### Constructor
-
-```php
-public function __construct()
-```
-
-Initializes the validator with the built-in configuration schema.
 
 #### Methods
 
@@ -425,38 +538,44 @@ if (!$result->isValid()) {
 }
 ```
 
-#### Schema Structure
+### ConfigurationBuilder Class
 
-The validator uses a comprehensive JSON Schema that defines:
+**Location:** `src/Configuration/ConfigurationBuilder.php`
 
-- **Project section**: name, php_version, typo3_version
-- **Paths section**: scan, exclude arrays
-- **Tools section**: Configuration for each tool (rector, fractor, phpstan, php-cs-fixer, typoscript-lint)
-- **Output section**: verbosity, colors, progress
-- **Performance section**: parallel, max_processes, cache_enabled
+Builds tool-specific configurations based on resolved paths and project settings.
 
-**Validation Features:**
-- Type checking (string, integer, boolean, array)
-- Pattern validation (version numbers, memory limits)
-- Enum validation (predefined values)
-- Range validation (minimum/maximum values)
-- Required field validation
+#### Constructor
+
+```php
+public function __construct(ConfigurationInterface $configuration)
+```
+
+#### Methods
+
+```php
+public function buildRectorConfiguration(): array
+```
+Builds Rector configuration with resolved paths.
+
+**Returns:** array with keys: `paths`, `project_root`, `php_version`, etc.
+
+---
+
+```php
+public function generateConfigurationFileContent(string $tool): string
+```
+Generates the content for a tool-specific configuration file.
+
+**Parameters:**
+- `$tool` (string): Tool name (rector, fractor)
+
+**Returns:** string - PHP configuration file content
 
 ### ValidationResult Class
 
 **Location:** `src/Configuration/ValidationResult.php`
 
 Contains the result of configuration validation.
-
-#### Constructor
-
-```php
-public function __construct(bool $isValid, array $errors = [])
-```
-
-**Parameters:**
-- `$isValid` (bool): Whether validation passed
-- `$errors` (array): Array of error messages
 
 #### Methods
 
@@ -465,8 +584,6 @@ public function isValid(): bool
 ```
 Returns whether validation was successful.
 
-**Returns:** bool - true if configuration is valid
-
 ---
 
 ```php
@@ -474,16 +591,28 @@ public function getErrors(): array
 ```
 Returns array of validation error messages.
 
-**Returns:** array - Error message strings
-
 ## Usage Examples
 
 ### Basic Configuration Loading
 
 ```php
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
+use Symfony\Component\Filesystem\Filesystem;
 
-$loader = new YamlConfigurationLoader();
+$securityService = new SecurityService();
+$filesystemService = new FilesystemService(new Filesystem(), $securityService);
+
+$loader = new ConfigurationLoader(
+    new ConfigurationValidator(),
+    $securityService,
+    $filesystemService,
+    new ToolConfigurationValidationService(),
+);
+
 $config = $loader->load('/path/to/project');
 
 // Access configuration
@@ -492,27 +621,34 @@ echo "PHP Version: " . $config->getProjectPhpVersion() . "\n";
 echo "PHPStan Level: " . $config->getPhpStanConfig()['level'] . "\n";
 ```
 
-### Manual Configuration Creation
+### Loading with Path Resolution
 
 ```php
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Service\PathResolutionService;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 
-$configData = [
-    'quality-tools' => [
-        'project' => [
-            'name' => 'my-project',
-            'php_version' => '8.4'
-        ],
-        'tools' => [
-            'phpstan' => [
-                'level' => 8,
-                'memory_limit' => '2G'
-            ]
-        ]
-    ]
-];
+$pathResolutionService = new PathResolutionService(
+    $filesystemService,
+    new VendorDirectoryDetector(),
+);
 
-$config = new Configuration($configData);
+$loader = new ConfigurationLoader(
+    new ConfigurationValidator(),
+    $securityService,
+    $filesystemService,
+    new ToolConfigurationValidationService(),
+    pathResolutionService: $pathResolutionService,
+);
+
+$config = $loader->load('/path/to/project');
+
+// Get resolved absolute paths for a tool
+$rectorPaths = $config->getResolvedPathsForTool('rector');
+
+// Check vendor directory
+if ($config->hasVendorDirectory()) {
+    echo "Vendor: " . $config->getVendorPath() . "\n";
+}
 ```
 
 ### Configuration Validation
@@ -533,40 +669,26 @@ if (!$result->isValid()) {
 }
 ```
 
-### Configuration Merging
+### Building Tool Configurations
 
 ```php
-use Cpsit\QualityTools\Configuration\Configuration;
+use Cpsit\QualityTools\Configuration\ConfigurationBuilder;
 
-// Base configuration
-$baseConfig = Configuration::createDefault();
+$config = $loader->load('/path/to/project');
+$builder = new ConfigurationBuilder($config);
 
-// Override configuration
-$overrideData = [
-    'quality-tools' => [
-        'tools' => [
-            'phpstan' => [
-                'level' => 9
-            ]
-        ]
-    ]
-];
-$overrideConfig = new Configuration($overrideData);
+// Build Rector configuration with resolved paths
+$rectorConfig = $builder->buildRectorConfiguration();
+// Returns: ['paths' => [...], 'project_root' => '...', 'php_version' => '8.3']
 
-// Merge configurations
-$finalConfig = $baseConfig->merge($overrideConfig);
-echo "Final PHPStan level: " . $finalConfig->getPhpStanConfig()['level']; // 9
+// Generate configuration file content
+$rectorContent = $builder->generateConfigurationFileContent('rector');
+$fractorContent = $builder->generateConfigurationFileContent('fractor');
 ```
 
 ### Environment Variable Handling
 
 ```php
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
-
-// Set environment variables
-putenv('PROJECT_NAME=my-env-project');
-putenv('PHPSTAN_LEVEL=7');
-
 // YAML content with environment variables:
 // quality-tools:
 //   project:
@@ -575,166 +697,45 @@ putenv('PHPSTAN_LEVEL=7');
 //     phpstan:
 //       level: "${PHPSTAN_LEVEL:-6}"
 
-$loader = new YamlConfigurationLoader();
+$loader = new ConfigurationLoader(
+    new ConfigurationValidator(),
+    $securityService,
+    $filesystemService,
+    new ToolConfigurationValidationService(),
+);
+
 $config = $loader->load('/path/to/project');
 
-echo $config->getProjectName(); // "my-env-project"
-echo $config->getPhpStanConfig()['level']; // 7
-```
-
-## Extension Points
-
-### Custom Validation
-
-Extend the validation system for custom requirements:
-
-```php
-class CustomConfigurationValidator extends ConfigurationValidator
-{
-    public function validate(array $config): ValidationResult
-    {
-        // Call parent validation first
-        $result = parent::validate($config);
-
-        if (!$result->isValid()) {
-            return $result;
-        }
-
-        // Add custom validation logic
-        $errors = [];
-        $customErrors = $this->validateCustomRules($config);
-
-        return new ValidationResult(empty($customErrors), $customErrors);
-    }
-
-    private function validateCustomRules(array $config): array
-    {
-        $errors = [];
-
-        // Example: Ensure PHPStan level is not too high for large projects
-        $phpstan = $config['quality-tools']['tools']['phpstan'] ?? [];
-        if (($phpstan['level'] ?? 0) > 6) {
-            // Check project size or complexity
-            $errors[] = "PHPStan level too high for this project type";
-        }
-
-        return $errors;
-    }
-}
-```
-
-### Custom Configuration Loading
-
-Create custom configuration loaders:
-
-```php
-class DatabaseConfigurationLoader
-{
-    public function load(string $projectId): Configuration
-    {
-        // Load configuration from database
-        $configData = $this->loadFromDatabase($projectId);
-
-        // Apply defaults and validation
-        $validator = new ConfigurationValidator();
-        $result = $validator->validate($configData);
-
-        if (!$result->isValid()) {
-            throw new RuntimeException('Invalid configuration: ' . implode(', ', $result->getErrors()));
-        }
-
-        return new Configuration($configData);
-    }
-
-    private function loadFromDatabase(string $projectId): array
-    {
-        // Database loading logic
-        return [];
-    }
-}
+echo $config->getProjectName(); // value of $PROJECT_NAME or "default"
+echo $config->getPhpStanConfig()['level']; // value of $PHPSTAN_LEVEL or 6
 ```
 
 ## Error Handling
 
-The configuration system provides comprehensive error handling:
+The configuration system provides structured exception handling:
 
-### Common Exceptions
+### Exception Classes
 
-1. **RuntimeException** - Configuration loading errors
-2. **RuntimeException** - Environment variable errors
-3. **RuntimeException** - YAML parsing errors
-4. **RuntimeException** - Validation errors
+1. **ConfigurationFileNotFoundException** - Configuration file does not exist
+2. **ConfigurationFileNotReadableException** - Configuration file exists but cannot be read
+3. **ConfigurationLoadException** - General configuration loading errors
+4. **InvalidArgumentException** - Invalid method arguments
 
 ### Error Examples
 
 ```php
+use Cpsit\QualityTools\Exception\ConfigurationFileNotReadableException;
+use Cpsit\QualityTools\Exception\ConfigurationLoadException;
+
 try {
-    $loader = new YamlConfigurationLoader();
-    $config = $loader->load('/invalid/path');
-} catch (RuntimeException $e) {
-    // Handle specific error types
-    if (str_contains($e->getMessage(), 'Environment variable')) {
-        echo "Environment variable error: " . $e->getMessage();
-    } elseif (str_contains($e->getMessage(), 'Invalid configuration')) {
-        echo "Validation error: " . $e->getMessage();
-    } else {
-        echo "Loading error: " . $e->getMessage();
-    }
+    $config = $loader->load('/path/to/project');
+} catch (ConfigurationFileNotReadableException $e) {
+    echo "File permission error: " . $e->getMessage();
+} catch (ConfigurationLoadException $e) {
+    echo "Loading error: " . $e->getMessage();
 }
 ```
 
-## Performance Considerations
+When no configuration file is found, the loader returns a configuration with default values rather than throwing an exception.
 
-### Caching Configuration
-
-For performance-critical applications, consider caching parsed configurations:
-
-```php
-class CachedConfigurationLoader extends YamlConfigurationLoader
-{
-    private array $cache = [];
-
-    public function load(string $projectRoot): Configuration
-    {
-        $cacheKey = md5($projectRoot);
-
-        if (isset($this->cache[$cacheKey])) {
-            return $this->cache[$cacheKey];
-        }
-
-        $config = parent::load($projectRoot);
-        $this->cache[$cacheKey] = $config;
-
-        return $config;
-    }
-}
-```
-
-### Lazy Loading
-
-For applications that don't always need configuration:
-
-```php
-class LazyConfiguration
-{
-    private ?Configuration $config = null;
-    private string $projectRoot;
-
-    public function __construct(string $projectRoot)
-    {
-        $this->projectRoot = $projectRoot;
-    }
-
-    public function getConfig(): Configuration
-    {
-        if ($this->config === null) {
-            $loader = new YamlConfigurationLoader();
-            $this->config = $loader->load($this->projectRoot);
-        }
-
-        return $this->config;
-    }
-}
-```
-
-This API documentation provides a complete reference for developers working with the configuration system. The classes are designed to be extensible while maintaining backward compatibility and robust error handling.
+This API documentation provides a reference for developers working with the configuration system. The classes are designed to be extensible while maintaining robust error handling.

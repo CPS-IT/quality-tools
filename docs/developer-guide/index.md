@@ -20,16 +20,28 @@ The CPSIT Quality Tools package is a comprehensive CLI tool for TYPO3 projects t
 
 ```
 src/
-├── Configuration/           # Configuration management
-│   ├── Configuration.php    # Main configuration class
-│   ├── ConfigurationValidator.php  # JSON Schema validation
-│   ├── YamlConfigurationLoader.php # YAML file loading
-│   └── ValidationResult.php # Validation result handling
+├── Configuration/                    # Configuration management
+│   ├── Configuration.php             # Unified configuration class
+│   ├── ConfigurationInterface.php    # Configuration interface
+│   ├── ConfigurationLoader.php       # Unified configuration loader
+│   ├── ConfigurationLoaderInterface.php # Loader interface
+│   ├── ConfigurationBuilder.php      # Tool-specific config builder
+│   ├── ConfigurationDiscovery.php    # Multi-location config discovery
+│   ├── ConfigurationHierarchy.php    # Precedence rules
+│   ├── ConfigurationMerger.php       # Multi-source merging
+│   ├── ConfigurationValidator.php    # JSON Schema validation
+│   └── ValidationResult.php          # Validation result handling
 ├── Console/
-│   └── Command/            # CLI command implementations
-├── Exception/              # Custom exception classes
-├── Service/                # Business logic services
-└── Utility/                # Helper utilities
+│   └── Command/                      # CLI command implementations
+├── Exception/                        # Custom exception classes
+├── Service/                          # Business logic services
+│   ├── SecurityService.php           # Security validation
+│   ├── FilesystemService.php         # Filesystem abstraction
+│   ├── PathResolutionService.php     # Path resolution and scanning
+│   ├── ToolConfigService.php         # Tool config file management
+│   ├── ProjectConfigService.php      # Project config management
+│   └── ...                           # Other services
+└── Utility/                          # Helper utilities
 ```
 
 ### Configuration Architecture
