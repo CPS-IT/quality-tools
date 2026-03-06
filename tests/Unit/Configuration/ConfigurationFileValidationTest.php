@@ -114,7 +114,7 @@ final class ConfigurationFileValidationTest extends TestCase
         }
 
         $configFile = $this->tempDir . '/rector.php';
-        $validConfig = self::validRectorConfigProvider()[0][0];
+        $validConfig = self::validRectorConfigProvider()['basic_rector_config'][0];
         file_put_contents($configFile, $validConfig);
 
         // Test readable file
@@ -139,7 +139,7 @@ final class ConfigurationFileValidationTest extends TestCase
     public function testConfigurationFileSizeLimits(): void
     {
         // Test normal size file
-        $normalConfig = self::validRectorConfigProvider()[0][0];
+        $normalConfig = self::validRectorConfigProvider()['basic_rector_config'][0];
         $normalFile = $this->tempDir . '/normal.php';
         file_put_contents($normalFile, $normalConfig);
 

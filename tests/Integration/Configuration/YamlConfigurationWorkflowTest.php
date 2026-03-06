@@ -17,7 +17,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @covers \Cpsit\QualityTools\Console\Command\ConfigShowCommand
  * @covers \Cpsit\QualityTools\Configuration\SimpleConfigurationLoader
  * @covers \Cpsit\QualityTools\Configuration\SimpleConfiguration
- * @covers \Cpsit\QualityTools\Configuration\SimpleConfigurationValidator
+ * @covers \Cpsit\QualityTools\Configuration\ConfigurationValidator
  */
 final class YamlConfigurationWorkflowTest extends TestCase
 {

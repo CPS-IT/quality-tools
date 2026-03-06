@@ -518,10 +518,14 @@ return static function (FractorConfig $fractorConfig): void {
 
                 if (str_ends_with((string) $path, '/')) {
                     // Directory
-                    mkdir($fullPath, 0o755, true);
+                    if (!is_dir($fullPath)) {
+                        mkdir($fullPath, 0o755, true);
+                    }
                 } else {
                     // File
-                    mkdir(\dirname($fullPath), 0o755, true);
+                    if (!is_dir(\dirname($fullPath))) {
+                        mkdir(\dirname($fullPath), 0o755, true);
+                    }
 
                     if (str_contains((string) $path, '.php')) {
                         file_put_contents($fullPath, $this->getPhpConfigContent($path));

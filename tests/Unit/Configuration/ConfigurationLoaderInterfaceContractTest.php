@@ -21,7 +21,9 @@ use Symfony\Component\Filesystem\Filesystem;
  * Contract test ensuring all ConfigurationLoaderInterface implementations
  * provide consistent behavior and return types.
  */
-#[CoversClass(ConfigurationLoaderInterface::class)]
+#[CoversClass(ConfigurationLoaderWrapper::class)]
+#[CoversClass(SimpleConfigurationLoader::class)]
+#[CoversClass(HierarchicalConfigurationLoader::class)]
 final class ConfigurationLoaderInterfaceContractTest extends FilesystemTestCase
 {
     private string $projectRoot;
