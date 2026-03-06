@@ -260,7 +260,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 **Current Infrastructure** (updated 2026-03-06):
 - `ConfigurationLoaderFactory` removed
 - `ConfigurationLoaderWrapper` removed (with 6 dedicated test files)
-- `ConfigurationWrapper` still active, ready for removal
+- `ConfigurationWrapper` removed
 - Old classes `SimpleConfiguration`, `EnhancedConfiguration`, `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader` still exist
 - Unified `Configuration` and `ConfigurationLoader` are the primary implementations
 
@@ -304,7 +304,7 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 #### Step 6.3: Replace Wrapper with Unified Classes
 - [x] Remove `ConfigurationLoaderFactory` (2026-03-06)
 - [x] Remove `ConfigurationLoaderWrapper` and all dedicated comparison tests (2026-03-06)
-- [ ] Remove `ConfigurationWrapper`
+- [x] Remove `ConfigurationWrapper` and 6 dedicated test files (2026-03-06)
 - [ ] Remove `SimpleConfiguration`, `EnhancedConfiguration`
 - [ ] Remove `SimpleConfigurationLoader`, `HierarchicalConfigurationLoader`
 
@@ -366,13 +366,8 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
   HierarchicalModeDetectionTest, CommandExitCodeConsistencyTest,
   ConfigurationLoaderInterfaceContractTest, ConfigurationMergingTest.
 
-**8. ConfigurationWrapper.php (TRANSITIONAL - READY FOR REMOVAL)**
-- Usages: ConfigurationLoader now returns Configuration directly
-- Impact: Wrapper indirection removed from ConfigurationLoader
-- Replacement: Configuration instances returned directly (no wrapper)
-- Test Coverage: [x] All tests pass with direct Configuration instances
-- Risk: Low (wrapper no longer used in main flow)
-- **STATUS**: ConfigurationLoader bypasses wrapper, returns Configuration directly. ConfigurationInterface binding updated to use Configuration. Ready for removal in final cleanup.
+**8. ConfigurationWrapper.php (REMOVED)**
+- **STATUS**: REMOVED (2026-03-06). Class, services.yaml entries, and 6 dedicated test files deleted.
 
 #### Step 6.4: Update Documentation
 - [ ] Update developer documentation

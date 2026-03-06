@@ -32,7 +32,6 @@ services:
       - '../src/Configuration/EnhancedConfiguration.php'
       - '../src/Configuration/ConfigurationInterface.php'
       - '../src/Configuration/ConfigurationLoaderInterface.php'
-      - '../src/Configuration/ConfigurationWrapper.php'
 
   # Tool Configuration Validators
   Cpsit\QualityTools\Configuration\Validator\:
@@ -212,16 +211,6 @@ services:
     arguments:
       $validators: !tagged_iterator tool_configuration_validator
     public: true
-
-  # Wrapper classes for evolutionary refactoring (Issue 019 - Step 4.2)
-  Cpsit\QualityTools\Configuration\ConfigurationWrapper:
-    arguments:
-      $wrapped: '@Cpsit\QualityTools\Configuration\SimpleConfiguration'
-      $variant: 'simple'
-      $toolConfigService: '@Cpsit\QualityTools\Service\ToolConfigService'
-      $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
-    public: true
-
 
   # Interface bindings for dependency injection
   Cpsit\QualityTools\Configuration\ConfigurationInterface:
