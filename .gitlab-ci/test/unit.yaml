@@ -1,0 +1,6 @@
+test:unit:
+  needs:
+    - build:test
+  stage: test
+  script:
+    - composer test:unit

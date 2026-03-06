@@ -1,0 +1,19 @@
+---
+image: php:8.3-cli
+
+variables:
+  COMPOSER_HOME: ${CI_PROJECT_DIR}/.composer
+
+stages:
+  - build
+  - test
+
+include:
+  - '.gitlab-ci/build/**.yaml'
+  - '.gitlab-ci/test/**.yaml'
+
+.composer-cache:
+  cache:
+    key: composer-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .composer/

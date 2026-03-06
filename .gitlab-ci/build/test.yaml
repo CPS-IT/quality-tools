@@ -1,0 +1,11 @@
+build:test:
+  extends: .composer-cache
+  stage: build
+  script:
+    - composer install --no-interaction --prefer-dist --dev
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour
+  rules:
+    - when: always

@@ -1,0 +1,29 @@
+.test:lint:
+  needs:
+    - build:test
+  stage: test
+
+test:lint:composer:
+  extends: .test:lint
+  script:
+    - composer lint:composer
+
+test:lint:editorconfig:
+  extends: .test:lint
+  script:
+    - composer lint:editorconfig
+
+test:lint:php:
+  extends: .test:lint
+  script:
+    - composer lint:php
+
+test:lint:rector:
+  extends: .test:lint
+  script:
+    - composer lint:rector
+
+test:sca:php:
+  extends: .test:lint
+  script:
+    - composer sca:php
