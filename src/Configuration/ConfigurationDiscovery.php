@@ -254,6 +254,7 @@ final class ConfigurationDiscovery
      */
     public function hasToolConfiguration(string $tool): bool
     {
+        // Check physical tool config files
         $existingFiles = $this->hierarchy->getExistingConfigurationFiles();
 
         foreach ($existingFiles as $files) {
@@ -264,7 +265,8 @@ final class ConfigurationDiscovery
             }
         }
 
-        return false;
+        // Check config_file property in YAML configurations
+        return $this->resolveConfigFileFromYaml($tool) !== null;
     }
 
     /**
@@ -272,9 +274,15 @@ final class ConfigurationDiscovery
      */
     public function getToolConfigurationPath(string $tool): ?string
     {
+        // YAML config_file has higher precedence than auto-discovered files
+        $yamlConfigPath = $this->resolveConfigFileFromYaml($tool);
+        if ($yamlConfigPath !== null) {
+            return $yamlConfigPath;
+        }
+
+        // Fall back to physical tool config files
         $existingFiles = $this->hierarchy->getExistingConfigurationFiles();
 
-        // Look for tool-specific configs in order of precedence
         foreach (ConfigurationHierarchy::PRECEDENCE_LEVELS as $level) {
             if (!isset($existingFiles[$level])) {
                 continue;
@@ -283,6 +291,54 @@ final class ConfigurationDiscovery
             foreach ($existingFiles[$level] as $fileInfo) {
                 if ($fileInfo['tool'] === $tool) {
                     return $fileInfo['path'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolve config_file for a tool from discovered YAML configurations.
+     *
+     * Scans project-level and global YAML configs for an explicit
+     * config_file property under quality-tools.tools.<tool>.
+     */
+    private function resolveConfigFileFromYaml(string $tool): ?string
+    {
+        $existingFiles = $this->hierarchy->getExistingConfigurationFiles();
+        $projectRoot = $this->hierarchy->getProjectRoot();
+
+        // Scan YAML configs in precedence order (project_root > config_dir > global)
+        foreach (ConfigurationHierarchy::PRECEDENCE_LEVELS as $level) {
+            if (!isset($existingFiles[$level])) {
+                continue;
+            }
+
+            foreach ($existingFiles[$level] as $fileInfo) {
+                // Only check general YAML configs, not tool-specific files
+                if ($fileInfo['tool'] !== null || $fileInfo['type'] !== 'yaml') {
+                    continue;
+                }
+
+                try {
+                    $data = $this->loadYamlFile($fileInfo['path']);
+                    $configFile = $data['quality-tools']['tools'][$tool]['config_file'] ?? null;
+
+                    if ($configFile === null) {
+                        continue;
+                    }
+
+                    // Resolve relative paths against project root
+                    if (!str_starts_with($configFile, '/')) {
+                        $configFile = $projectRoot . '/' . $configFile;
+                    }
+
+                    if (file_exists($configFile)) {
+                        return $configFile;
+                    }
+                } catch (\Throwable) {
+                    continue;
                 }
             }
         }

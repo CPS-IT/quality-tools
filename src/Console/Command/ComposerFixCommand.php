@@ -28,7 +28,7 @@ final class ComposerFixCommand extends AbstractToolCommand implements ToolComman
         return '';
     }
 
-    #[Override]
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
