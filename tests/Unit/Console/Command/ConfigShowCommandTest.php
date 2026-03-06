@@ -264,16 +264,15 @@ final class ConfigShowCommandTest extends TestCase
 
         $exitCode = TestHelper::withEnvironment([
             'PROJECT_NAME' => 'env-test',
+            'PHP_VERSION' => '8.3',
             'MEMORY_LIMIT' => '2G',
-            // PHP_VERSION not set, should use default
         ], fn (): int => $this->commandTester->execute(['--format' => 'yaml']));
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('name: env-test', $output);
-        self::assertStringContainsString('php_version: ', $output);
-        self::assertStringContainsString('8.3', $output); // default
+        self::assertStringContainsString("php_version: '8.3'", $output);
         self::assertStringContainsString('memory_limit: ', $output);
         self::assertStringContainsString('2G', $output);
     }
