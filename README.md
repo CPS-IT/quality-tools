@@ -1,5 +1,10 @@
-CPSIT Quality Tools
-===================
+qt - Quality Tools
+==================
+
+```
+I'm qt;) - I will help you cutify your code.
+```
+
 
 A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
 

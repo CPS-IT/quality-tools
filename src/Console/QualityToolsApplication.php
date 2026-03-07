@@ -44,7 +44,7 @@ final class QualityToolsApplication extends Application
     #[\Override]
     public function getHelp(): string
     {
-        return 'Simple command-line interface for TYPO3 quality assurance tools';
+        return Tagline::random();
     }
 
     public function getProjectRoot(): string
