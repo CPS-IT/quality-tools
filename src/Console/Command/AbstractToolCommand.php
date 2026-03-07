@@ -14,8 +14,6 @@ use Cpsit\QualityTools\Service\ErrorHandler;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
-use Exception;
-use Override;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
