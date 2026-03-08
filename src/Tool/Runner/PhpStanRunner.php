@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Tool\Runner;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Tool\ToolName;
@@ -18,6 +19,7 @@ final readonly class PhpStanRunner implements ToolRunnerInterface
         private ProcessExecutor $processExecutor,
         private ProjectEnvironment $projectEnv,
         private ConfigurationLoaderInterface $configLoader,
+        private ?MemoryOptimizer $memoryOptimizer = null,
     ) {
     }
 
@@ -53,7 +55,7 @@ final readonly class PhpStanRunner implements ToolRunnerInterface
             $command[] = '--level=' . $level;
         }
 
-        $memoryLimit = $request->toolOptions['memory-limit'] ?? null;
+        $memoryLimit = $this->resolveMemoryLimit($request, $targetPaths);
         if ($memoryLimit !== null) {
             $command[] = '--memory-limit=' . $memoryLimit;
         }
@@ -99,6 +101,29 @@ final readonly class PhpStanRunner implements ToolRunnerInterface
         }
 
         return $this->configLoader->load($projectRoot)->getResolvedPathsForTool(ToolName::PhpStan->value);
+    }
+
+    /**
+     * Resolve the memory limit: explicit toolOption takes precedence,
+     * otherwise auto-calculate if MemoryOptimizer is available.
+     *
+     * @param list<string> $targetPaths
+     */
+    private function resolveMemoryLimit(ToolRunRequest $request, array $targetPaths): ?string
+    {
+        $explicit = $request->toolOptions['memory-limit'] ?? null;
+        if ($explicit !== null) {
+            return (string) $explicit;
+        }
+
+        if ($this->memoryOptimizer === null) {
+            return null;
+        }
+
+        return $this->memoryOptimizer->calculateMemoryLimit(
+            ToolName::PhpStan->value,
+            $targetPaths,
+        );
     }
 
     /**

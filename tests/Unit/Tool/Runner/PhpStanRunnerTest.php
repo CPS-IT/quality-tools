@@ -7,10 +7,13 @@ namespace Cpsit\QualityTools\Tests\Unit\Tool\Runner;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\BufferingOutputCollector;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Tool\Runner\PhpStanRunner;
 use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -279,6 +282,56 @@ final class PhpStanRunnerTest extends TestCase
         // Single path from config is NOT passed on CLI (only pathOverride triggers that)
         self::assertIsArray($capturedCommand);
         self::assertNotContains('/project/packages', $capturedCommand);
+    }
+
+    #[Test]
+    public function runAddsAutoCalculatedMemoryLimitWhenMemoryOptimizerIsPresent(): void
+    {
+        $this->configuration->method('getResolvedPathsForTool')
+            ->with('phpstan')
+            ->willReturn([]);
+
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $capturedCommand = null;
+        $executor = $this->createCapturingExecutor($capturedCommand);
+        $runner = new PhpStanRunner($executor, $this->projectEnv, $this->configLoader, $memoryOptimizer);
+        $request = new ToolRunRequest('phpstan', dryRun: false);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        $memoryArgs = array_filter(
+            $capturedCommand,
+            static fn (string $arg): bool => str_starts_with($arg, '--memory-limit='),
+        );
+        self::assertCount(1, $memoryArgs);
+        self::assertMatchesRegularExpression('/^--memory-limit=\d+M$/', array_values($memoryArgs)[0]);
+    }
+
+    #[Test]
+    public function runExplicitMemoryLimitTakesPrecedenceOverAutoCalculation(): void
+    {
+        $this->configuration->method('getResolvedPathsForTool')
+            ->with('phpstan')
+            ->willReturn([]);
+
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $capturedCommand = null;
+        $executor = $this->createCapturingExecutor($capturedCommand);
+        $runner = new PhpStanRunner($executor, $this->projectEnv, $this->configLoader, $memoryOptimizer);
+        $request = new ToolRunRequest('phpstan', dryRun: false, toolOptions: ['memory-limit' => '2G']);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertContains('--memory-limit=2G', $capturedCommand);
+        $memoryArgs = array_filter(
+            $capturedCommand,
+            static fn (string $arg): bool => str_starts_with($arg, '--memory-limit='),
+        );
+        self::assertCount(1, $memoryArgs);
     }
 
     #[Test]

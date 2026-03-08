@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Tool\Runner;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Tool\ToolName;
@@ -18,6 +19,7 @@ final readonly class FractorRunner implements ToolRunnerInterface
         private ProcessExecutor $processExecutor,
         private ProjectEnvironment $projectEnv,
         private ConfigurationLoaderInterface $configLoader,
+        private ?MemoryOptimizer $memoryOptimizer = null,
     ) {
     }
 
@@ -54,6 +56,8 @@ final readonly class FractorRunner implements ToolRunnerInterface
             $environment['QT_DYNAMIC_PATHS'] = json_encode($targetPaths, JSON_THROW_ON_ERROR);
         }
 
+        $command = $this->applyMemoryLimit($command, $targetPaths);
+
         $exitCode = $this->processExecutor->executeWithCollector(
             $command,
             $projectRoot,
@@ -62,6 +66,26 @@ final readonly class FractorRunner implements ToolRunnerInterface
         );
 
         return new ToolRunResult($exitCode);
+    }
+
+    /**
+     * @param list<string> $command
+     * @param list<string> $targetPaths
+     *
+     * @return list<string>
+     */
+    private function applyMemoryLimit(array $command, array $targetPaths): array
+    {
+        if ($this->memoryOptimizer === null) {
+            return $command;
+        }
+
+        $memoryLimit = $this->memoryOptimizer->calculateMemoryLimit(
+            ToolName::Fractor->value,
+            $targetPaths,
+        );
+
+        return ['php', '-d', 'memory_limit=' . $memoryLimit, ...$command];
     }
 
     private function resolveConfigPath(ToolRunRequest $request): string

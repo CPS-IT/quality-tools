@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Build Steps 1-4 complete, Step 5 next)                                                  |
+| **Status:**   | In Progress (Build phase complete, Migration phase next)                                             |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -506,12 +506,14 @@ Add memory optimization support to runners that need it. The existing
 `MemoryCalculator` and `ProjectAnalyzer` are standalone utilities -- compose them
 into a new service injected into runners.
 
-- [ ] Create `Service/MemoryOptimizer` composing `ProjectAnalyzer` + `MemoryCalculator`
-- [ ] Method: `calculateMemoryLimit(string $toolName, list<string> $targetPaths): string`
-- [ ] Inject into runners that need memory optimization: Rector (1.5x), PhpStan (1.2x), PhpCsFixer (1.0x), Fractor (0.8x)
-- [ ] TypoScriptLintRunner and ComposerNormalizeRunner do not need memory optimization
-- [ ] PhpStanRunner: auto-calculate when toolOptions['memory-limit'] not explicitly set
-- [ ] Other runners: inject memory limit as PHP `-d memory_limit=` flag in command
+- [x] Create `Service/MemoryOptimizer` composing `ProjectAnalyzer` + `MemoryCalculator`
+- [x] Method: `calculateMemoryLimit(string $toolName, list<string> $targetPaths): string`
+- [x] Inject into runners that need memory optimization: Rector (1.5x), PhpStan (1.2x), PhpCsFixer (1.0x), Fractor (0.8x)
+- [x] TypoScriptLintRunner and ComposerNormalizeRunner do not need memory optimization
+- [x] PhpStanRunner: auto-calculate when toolOptions['memory-limit'] not explicitly set
+- [x] Other runners: inject memory limit as PHP `-d memory_limit=` flag in command
+- [x] Unit tests for MemoryOptimizer
+- [x] Runner tests for memory limit integration
 - [ ] Unit tests for MemoryOptimizer
 - [ ] Update runner tests to verify memory limit integration
 

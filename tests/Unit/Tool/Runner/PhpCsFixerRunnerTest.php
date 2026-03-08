@@ -7,10 +7,13 @@ namespace Cpsit\QualityTools\Tests\Unit\Tool\Runner;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\BufferingOutputCollector;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner;
 use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -213,6 +216,26 @@ final class PhpCsFixerRunnerTest extends TestCase
 
         self::assertIsArray($capturedCommand);
         self::assertContains($this->packageRoot, $capturedCommand);
+    }
+
+    #[Test]
+    public function runPrependsPhpMemoryLimitWhenMemoryOptimizerIsPresent(): void
+    {
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $capturedCommand = null;
+        $executor = $this->createCapturingExecutor($capturedCommand);
+        $runner = new PhpCsFixerRunner($executor, $this->projectEnv, $this->configLoader, $memoryOptimizer);
+        $request = new ToolRunRequest('php-cs-fixer', dryRun: false);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertSame('php', $capturedCommand[0]);
+        self::assertSame('-d', $capturedCommand[1]);
+        self::assertStringStartsWith('memory_limit=', $capturedCommand[2]);
+        self::assertMatchesRegularExpression('/^memory_limit=\d+M$/', $capturedCommand[2]);
+        self::assertStringEndsWith('/php-cs-fixer', $capturedCommand[3]);
     }
 
     #[Test]
