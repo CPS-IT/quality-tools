@@ -17,9 +17,9 @@ final class BufferingOutputCollectorTest extends TestCase
     #[Test]
     public function implementsOutputCollector(): void
     {
-        $collector = new BufferingOutputCollector();
+        $reflection = new \ReflectionClass(BufferingOutputCollector::class);
 
-        $this->assertInstanceOf(OutputCollector::class, $collector);
+        $this->assertTrue($reflection->implementsInterface(OutputCollector::class));
     }
 
     #[Test]

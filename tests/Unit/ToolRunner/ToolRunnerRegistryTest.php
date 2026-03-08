@@ -6,8 +6,6 @@ namespace Cpsit\QualityTools\Tests\Unit\ToolRunner;
 
 use Cpsit\QualityTools\ToolRunner\ToolRunnerInterface;
 use Cpsit\QualityTools\ToolRunner\ToolRunnerRegistry;
-use Cpsit\QualityTools\ToolRunner\ToolRunRequest;
-use Cpsit\QualityTools\ToolRunner\ToolRunResult;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

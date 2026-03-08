@@ -15,7 +15,8 @@ final readonly class ToolRunResult
     public function __construct(
         public int $exitCode,
         public array $messages = [],
-    ) {}
+    ) {
+    }
 
     public function isSuccessful(): bool
     {

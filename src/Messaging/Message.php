@@ -13,7 +13,8 @@ final readonly class Message
         public MessageSeverity $severity,
         public string $text,
         public array $context = [],
-    ) {}
+    ) {
+    }
 
     /**
      * @param array<string, mixed> $context

@@ -15,5 +15,6 @@ final readonly class ToolRunRequest
         public ?string $configOverride = null,
         public ?string $pathOverride = null,
         public array $toolOptions = [],
-    ) {}
+    ) {
+    }
 }

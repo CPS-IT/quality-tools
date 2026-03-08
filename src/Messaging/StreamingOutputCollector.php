@@ -7,11 +7,12 @@ namespace Cpsit\QualityTools\Messaging;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class StreamingOutputCollector implements OutputCollector
+final readonly class StreamingOutputCollector implements OutputCollector
 {
     public function __construct(
-        private readonly OutputInterface $output,
-    ) {}
+        private OutputInterface $output,
+    ) {
+    }
 
     public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void
     {

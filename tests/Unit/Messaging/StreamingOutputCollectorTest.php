@@ -10,7 +10,6 @@ use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -20,10 +19,9 @@ final class StreamingOutputCollectorTest extends TestCase
     #[Test]
     public function implementsOutputCollector(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $collector = new StreamingOutputCollector($output);
+        $reflection = new \ReflectionClass(StreamingOutputCollector::class);
 
-        $this->assertInstanceOf(OutputCollector::class, $collector);
+        $this->assertTrue($reflection->implementsInterface(OutputCollector::class));
     }
 
     #[Test]
