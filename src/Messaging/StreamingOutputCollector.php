@@ -7,7 +7,7 @@ namespace Cpsit\QualityTools\Messaging;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final readonly class StreamingOutputCollector implements OutputCollector
+final readonly class StreamingOutputCollector implements OutputCollectorInterface
 {
     public function __construct(
         private OutputInterface $output,

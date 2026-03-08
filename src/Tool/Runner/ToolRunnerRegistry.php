@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cpsit\QualityTools\ToolRunner;
+namespace Cpsit\QualityTools\Tool\Runner;
 
 final class ToolRunnerRegistry
 {

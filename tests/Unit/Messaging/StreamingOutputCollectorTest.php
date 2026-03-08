@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Messaging;
 
 use Cpsit\QualityTools\Messaging\MessageSeverity;
-use Cpsit\QualityTools\Messaging\OutputCollector;
+use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -21,7 +21,7 @@ final class StreamingOutputCollectorTest extends TestCase
     {
         $reflection = new \ReflectionClass(StreamingOutputCollector::class);
 
-        $this->assertTrue($reflection->implementsInterface(OutputCollector::class));
+        $this->assertTrue($reflection->implementsInterface(OutputCollectorInterface::class));
     }
 
     #[Test]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Messaging;
 
-final class BufferingOutputCollector implements OutputCollector
+final class BufferingOutputCollector implements OutputCollectorInterface
 {
     /** @var list<array{text: string, severity: MessageSeverity}> */
     private array $collected = [];

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cpsit\QualityTools\ToolRunner;
+namespace Cpsit\QualityTools\Tool\Runner;
 
-use Cpsit\QualityTools\Messaging\OutputCollector;
+use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 
 interface ToolRunnerInterface
 {
@@ -15,7 +15,7 @@ interface ToolRunnerInterface
      * Diagnostic messages (info, warnings, errors from the runner itself)
      * are returned in ToolRunResult::$messages.
      */
-    public function run(ToolRunRequest $request, OutputCollector $collector): ToolRunResult;
+    public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult;
 
     /**
      * Which tool name(s) this runner handles.

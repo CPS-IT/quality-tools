@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Cpsit\QualityTools\Tests\Unit\ToolRunner;
+namespace Cpsit\QualityTools\Tests\Unit\Tool\Runner;
 
 use Cpsit\QualityTools\Messaging\Message;
 use Cpsit\QualityTools\Messaging\MessageSeverity;
-use Cpsit\QualityTools\ToolRunner\ToolRunResult;
+use Cpsit\QualityTools\Tool\Runner\ToolRunResult;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;

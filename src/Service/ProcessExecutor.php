@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
-use Cpsit\QualityTools\Messaging\OutputCollector;
+use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -63,7 +63,7 @@ final class ProcessExecutor
         array $command,
         string $workingDirectory,
         array $environment,
-        OutputCollector $collector,
+        OutputCollectorInterface $collector,
     ): int {
         $process = ($this->processFactory)($command, $workingDirectory, $environment);
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Cpsit\QualityTools\Tests\Unit\ToolRunner;
+namespace Cpsit\QualityTools\Tests\Unit\Tool\Runner;
 
-use Cpsit\QualityTools\ToolRunner\ToolRunnerInterface;
-use Cpsit\QualityTools\ToolRunner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerInterface;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Build Steps 1-3 complete, Step 4 next)                                                  |
+| **Status:**   | In Progress (Build Steps 1-4 complete, Step 5 next)                                                  |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -146,10 +146,10 @@ enum MessageSeverity: string
 }
 ```
 
-### OutputCollector
+### OutputCollectorInterface
 
 ```php
-interface OutputCollector
+interface OutputCollectorInterface
 {
     public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void;
     public function writeError(string $text): void;
@@ -159,7 +159,7 @@ interface OutputCollector
 **StreamingOutputCollector** -- wraps OutputInterface, forwards immediately:
 
 ```php
-final class StreamingOutputCollector implements OutputCollector
+final class StreamingOutputCollector implements OutputCollectorInterface
 {
     public function __construct(
         private readonly OutputInterface $output,
@@ -184,7 +184,7 @@ final class StreamingOutputCollector implements OutputCollector
 **BufferingOutputCollector** -- stores in memory for tests:
 
 ```php
-final class BufferingOutputCollector implements OutputCollector
+final class BufferingOutputCollector implements OutputCollectorInterface
 {
     /** @var list<array{text: string, severity: MessageSeverity}> */
     private array $collected = [];
@@ -221,7 +221,7 @@ final class BufferingOutputCollector implements OutputCollector
 ```php
 interface ToolRunnerInterface
 {
-    public function run(ToolRunRequest $request, OutputCollector $collector): ToolRunResult;
+    public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult;
 
     /** @return list<string> */
     public function supportedTools(): array;
@@ -230,7 +230,7 @@ interface ToolRunnerInterface
 
 Separation of concerns:
 
-- `OutputCollector` carries live process output (stdout/stderr streaming)
+- `OutputCollectorInterface` carries live process output (stdout/stderr streaming)
 - `ToolRunResult::$messages` carries runner diagnostics (resolved paths, warnings, validation)
 
 ### ToolRunnerRegistry
@@ -288,7 +288,7 @@ final class RectorRunner implements ToolRunnerInterface
         return ['rector'];
     }
 
-    public function run(ToolRunRequest $request, OutputCollector $collector): ToolRunResult
+    public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult
     {
         $projectRoot = $this->projectEnv->getProjectRoot();
         $vendorBinPath = $this->projectEnv->getVendorBinPath();
@@ -442,7 +442,7 @@ public function executeWithCollector(
     array $command,
     string $workingDirectory,
     array $environment,
-    OutputCollector $collector,
+    OutputCollectorInterface $collector,
 ): int
 ```
 
@@ -461,7 +461,7 @@ any existing class or test. Old and new coexist until all commands are migrated.
 - [x] Implement `MessageSeverity`, `Message` in `src/Messaging/`
 - [x] Implement `ToolRunRequest`, `ToolRunResult` in `src/ToolRunner/`
 - [x] Implement `ToolRunnerInterface` in `src/ToolRunner/`
-- [x] Implement `OutputCollector` interface in `src/Messaging/`
+- [x] Implement `OutputCollectorInterface` interface in `src/Messaging/`
 - [x] Implement `StreamingOutputCollector` and `BufferingOutputCollector` in `src/Messaging/`
 - [x] Implement `ToolRunnerRegistry` in `src/ToolRunner/`
 - [x] Unit tests for all DTOs, collector implementations, and registry
@@ -477,25 +477,43 @@ any existing class or test. Old and new coexist until all commands are migrated.
 
 #### Step 3: Add executeWithCollector to ProcessExecutor
 
-- [x] Add `executeWithCollector(array, string, array, OutputCollector): int`
+- [x] Add `executeWithCollector(array, string, array, OutputCollectorInterface): int`
 - [x] New method uses `$collector->write()` / `$collector->writeError()`
 - [x] Old `executeProcess()` stays untouched
 - [x] Tests for the new method
 
-#### Step 4: Runners
+#### Step 4: Runners and ToolName enum
 
 Implement all runners independently testable against the new infrastructure.
 
-- [ ] `RectorRunner` -- simplest, template for others
-- [ ] `PhpCsFixerRunner` -- conditional parallel processing flag
-- [ ] `TypoScriptLintRunner` -- minimal
-- [ ] `FractorRunner` -- YAML pre-validation, absorbs FractorCommandTrait logic
-- [ ] `PhpStanRunner` -- temporary config file, memory limit from toolOptions
-- [ ] `ComposerNormalizeRunner` -- multi-file iteration, executable resolution
+- [x] `ToolName` backed enum as single source of truth for tool identifiers
+- [x] `RectorRunner` -- simplest, template for others
+- [x] `PhpCsFixerRunner` -- conditional cache flag, dry-run with --diff
+- [x] `TypoScriptLintRunner` -- minimal, uses -c flag
+- [x] `FractorRunner` -- QT_DYNAMIC_PATHS env var, project root fallback
+- [x] `PhpStanRunner` -- temporary neon config for multi-path, --memory-limit and --level from toolOptions
+- [x] `ComposerNormalizeRunner` -- multi-file iteration, executable resolution with phar validation
 
-Each runner gets unit tests with mock ProcessExecutor and BufferingOutputCollector.
+Each runner gets unit tests with mock Process via factory closure and BufferingOutputCollector.
+Namespace migrated from `Cpsit\QualityTools\ToolRunner` to `Cpsit\QualityTools\Tool\Runner`.
+ToolName enum placed in `Cpsit\QualityTools\Tool` namespace.
 
 At this point: full new stack built and tested, zero changes to existing code.
+
+#### Step 5: MemoryOptimizer service
+
+Add memory optimization support to runners that need it. The existing
+`MemoryCalculator` and `ProjectAnalyzer` are standalone utilities -- compose them
+into a new service injected into runners.
+
+- [ ] Create `Service/MemoryOptimizer` composing `ProjectAnalyzer` + `MemoryCalculator`
+- [ ] Method: `calculateMemoryLimit(string $toolName, list<string> $targetPaths): string`
+- [ ] Inject into runners that need memory optimization: Rector (1.5x), PhpStan (1.2x), PhpCsFixer (1.0x), Fractor (0.8x)
+- [ ] TypoScriptLintRunner and ComposerNormalizeRunner do not need memory optimization
+- [ ] PhpStanRunner: auto-calculate when toolOptions['memory-limit'] not explicitly set
+- [ ] Other runners: inject memory limit as PHP `-d memory_limit=` flag in command
+- [ ] Unit tests for MemoryOptimizer
+- [ ] Update runner tests to verify memory limit integration
 
 ### Migration phase (one command at a time)
 
@@ -524,24 +542,25 @@ For each command:
 
 ## Files Created
 
-| File                                          | Phase   |
-|-----------------------------------------------|---------|
-| `src/Messaging/MessageSeverity.php`           | Build 1 |
-| `src/Messaging/Message.php`                   | Build 1 |
-| `src/Messaging/OutputCollector.php`           | Build 1 |
-| `src/Messaging/StreamingOutputCollector.php`  | Build 1 |
-| `src/Messaging/BufferingOutputCollector.php`  | Build 1 |
-| `src/ToolRunner/ToolRunRequest.php`           | Build 1 |
-| `src/ToolRunner/ToolRunResult.php`            | Build 1 |
-| `src/ToolRunner/ToolRunnerInterface.php`      | Build 1 |
-| `src/ToolRunner/ToolRunnerRegistry.php`       | Build 1 |
-| `src/Service/ProjectEnvironment.php`          | Build 2 |
-| `src/ToolRunner/RectorRunner.php`             | Build 4 |
-| `src/ToolRunner/PhpCsFixerRunner.php`         | Build 4 |
-| `src/ToolRunner/TypoScriptLintRunner.php`     | Build 4 |
-| `src/ToolRunner/FractorRunner.php`            | Build 4 |
-| `src/ToolRunner/PhpStanRunner.php`            | Build 4 |
-| `src/ToolRunner/ComposerNormalizeRunner.php`  | Build 4 |
+| File                                              | Phase   |
+|---------------------------------------------------|---------|
+| `src/Messaging/MessageSeverity.php`               | Build 1 |
+| `src/Messaging/Message.php`                       | Build 1 |
+| `src/Messaging/OutputCollectorInterface.php`      | Build 1 |
+| `src/Messaging/StreamingOutputCollectorInterface.php`  | Build 1 |
+| `src/Messaging/BufferingOutputCollectorInterface.php`  | Build 1 |
+| `src/Tool/Runner/ToolRunRequest.php`              | Build 1 |
+| `src/Tool/Runner/ToolRunResult.php`               | Build 1 |
+| `src/Tool/Runner/ToolRunnerInterface.php`         | Build 1 |
+| `src/Tool/Runner/ToolRunnerRegistry.php`          | Build 1 |
+| `src/Service/ProjectEnvironment.php`              | Build 2 |
+| `src/Tool/ToolName.php`                           | Build 4 |
+| `src/Tool/Runner/RectorRunner.php`                | Build 4 |
+| `src/Tool/Runner/PhpCsFixerRunner.php`            | Build 4 |
+| `src/Tool/Runner/TypoScriptLintRunner.php`        | Build 4 |
+| `src/Tool/Runner/FractorRunner.php`               | Build 4 |
+| `src/Tool/Runner/PhpStanRunner.php`               | Build 4 |
+| `src/Tool/Runner/ComposerNormalizeRunner.php`     | Build 4 |
 
 ## Files Deleted (Cleanup Phase)
 
@@ -568,8 +587,8 @@ For each command:
 
 ## Open Questions
 
-**Memory optimization**: Drop MemoryCalculator/ProjectAnalyzer entirely. Expose
-`--memory-limit` as a direct command option for PHPStan (via `toolOptions`).
+**Memory optimization**: Resolved -- keep MemoryCalculator/ProjectAnalyzer, compose
+them into a MemoryOptimizer service injected into runners that need it (Step 5).
 
 **TYPO3 project detection**: Relax in ProjectEnvironment to support any Composer
 project, enabling `qt` to lint itself.

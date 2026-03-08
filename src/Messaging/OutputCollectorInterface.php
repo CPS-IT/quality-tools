@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Messaging;
 
-interface OutputCollector
+interface OutputCollectorInterface
 {
     /**
      * Collect a line of tool output.

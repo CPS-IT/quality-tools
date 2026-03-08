@@ -6,7 +6,7 @@ namespace Cpsit\QualityTools\Tests\Unit\Messaging;
 
 use Cpsit\QualityTools\Messaging\BufferingOutputCollector;
 use Cpsit\QualityTools\Messaging\MessageSeverity;
-use Cpsit\QualityTools\Messaging\OutputCollector;
+use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ final class BufferingOutputCollectorTest extends TestCase
     {
         $reflection = new \ReflectionClass(BufferingOutputCollector::class);
 
-        $this->assertTrue($reflection->implementsInterface(OutputCollector::class));
+        $this->assertTrue($reflection->implementsInterface(OutputCollectorInterface::class));
     }
 
     #[Test]
