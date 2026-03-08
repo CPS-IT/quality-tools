@@ -20,8 +20,7 @@ final readonly class PhpCsFixerRunner implements ToolRunnerInterface
         private ProjectEnvironment $projectEnv,
         private ConfigurationLoaderInterface $configLoader,
         private ?MemoryOptimizer $memoryOptimizer = null,
-    ) {
-    }
+    ) {}
 
     public function supportedTools(): array
     {
@@ -117,6 +116,12 @@ final readonly class PhpCsFixerRunner implements ToolRunnerInterface
             return $request->configOverride;
         }
 
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $discovered = $this->configLoader->resolveToolConfigPath($projectRoot, ToolName::PhpCsFixer->value);
+        if ($discovered !== null) {
+            return $discovered;
+        }
+
         return $this->projectEnv->getVendorPath()
             . '/cpsit/quality-tools/config/' . self::DEFAULT_CONFIG_FILE;
     }
@@ -138,6 +143,6 @@ final readonly class PhpCsFixerRunner implements ToolRunnerInterface
 
     private function shouldEnableCache(ToolRunRequest $request): bool
     {
-        return (bool) ($request->toolOptions['cache'] ?? false);
+        return (bool)($request->toolOptions['cache'] ?? false);
     }
 }

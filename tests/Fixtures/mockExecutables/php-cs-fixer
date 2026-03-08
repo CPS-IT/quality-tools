@@ -1,27 +1,36 @@
-#!/bin/bash
-# Mock php-cs-fixer executable for testing
-# This mock simulates php-cs-fixer using the configuration file passed via --config flag
-# and outputs the paths configured in that file
+#!/usr/bin/env php
+<?php
+// Mock php-cs-fixer executable for testing
+// Works both when called directly (#!/usr/bin/env php) and via "php php-cs-fixer"
 
-# Parse arguments to find config file
-CONFIG_FILE=""
-for arg in "$@"; do
-    if [[ "$arg" == --config=* ]]; then
-        CONFIG_FILE="${arg#--config=}"
-    elif [[ "$prev_arg" == "--config" ]]; then
-        CONFIG_FILE="$arg"
-    fi
-    prev_arg="$arg"
-done
+$configFile = null;
+$args = array_slice($argv, 1);
 
-# If a config file is specified and exists, extract the path from it
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Extract the path from the php-cs-fixer config file
-    # Look for paths like 'custom-php-cs-fixer-root-path'
-    PATH_VALUE=$(grep -o "'[^']*php-cs-fixer[^']*-path[^']*'" "$CONFIG_FILE" | tr -d "'" | head -1)
-    if [[ -n "$PATH_VALUE" ]]; then
-        echo "$PATH_VALUE"
-    fi
-fi
+for ($i = 0; $i < count($args); $i++) {
+    $arg = $args[$i];
 
-exit 0
+    // Handle --config=file format
+    if (preg_match('/^--config=(.+)$/', $arg, $matches)) {
+        $configFile = $matches[1];
+    }
+    // Handle --config file format
+    elseif ($arg === '--config' && isset($args[$i + 1])) {
+        $configFile = $args[$i + 1];
+        $i++;
+    }
+}
+
+// Check if we're using a custom config
+if ($configFile !== null && file_exists($configFile)) {
+    $content = file_get_contents($configFile);
+    if (str_contains($content, 'custom-php-cs-fixer')) {
+        if (preg_match("/['\"]([^'\"]*php-cs-fixer[^'\"]*-path[^'\"]*)['\"]/" , $content, $matches)) {
+            echo $matches[1] . PHP_EOL;
+            exit(0);
+        }
+    }
+}
+
+// Default behavior
+echo "No custom config detected - using package defaults" . PHP_EOL;
+exit(0);

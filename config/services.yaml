@@ -49,6 +49,7 @@ services:
     public: true
     exclude:
       - '../src/Console/Command/RectorCommand.php'
+      - '../src/Console/Command/PhpCsFixerCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -88,10 +89,19 @@ services:
       $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
     public: true
 
+  Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
   Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
     arguments:
       $runners:
         - '@Cpsit\QualityTools\Tool\Runner\RectorRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner'
     public: true
 
   # Pre-run info display (Issue 023)
@@ -143,14 +153,30 @@ services:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
-  Cpsit\QualityTools\Console\Command\PhpCsFixerLintCommand:
+  Cpsit\QualityTools\Console\Command\PhpCsFixerCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:php-cs-fixer'
+      $description: 'Run PHP CS Fixer in dry-run mode to check code style issues'
+      $help: 'This command runs PHP CS Fixer in dry-run mode to show what code style issues would be fixed without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
-  Cpsit\QualityTools\Console\Command\PhpCsFixerFixCommand:
+  Cpsit\QualityTools\Console\Command\PhpCsFixerCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:php-cs-fixer'
+      $description: 'Run PHP CS Fixer to automatically fix code style issues'
+      $help: 'This command runs PHP CS Fixer to automatically fix code style issues. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\TypoScriptLintCommand:
