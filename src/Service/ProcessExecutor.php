@@ -14,10 +14,10 @@ use Symfony\Component\Process\Process;
  * Handles process creation, execution, output forwarding, and exit code management
  * with support for verbose mode and error output handling.
  */
-final class ProcessExecutor
+final readonly class ProcessExecutor
 {
     /** @var \Closure(list<string>, string, array<string, string>): Process */
-    private readonly \Closure $processFactory;
+    private \Closure $processFactory;
 
     /**
      * @param (\Closure(list<string>, string, array<string, string>): Process)|null $processFactory

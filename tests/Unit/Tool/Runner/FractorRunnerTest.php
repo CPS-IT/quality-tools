@@ -25,10 +25,10 @@ final class FractorRunnerTest extends TestCase
     private ProjectEnvironment $projectEnv;
 
     /** @var ConfigurationLoaderInterface&\PHPUnit\Framework\MockObject\MockObject */
-    private ConfigurationLoaderInterface $configLoader;
+    private \PHPUnit\Framework\MockObject\MockObject $configLoader;
 
     /** @var ConfigurationInterface&\PHPUnit\Framework\MockObject\MockObject */
-    private ConfigurationInterface $configuration;
+    private \PHPUnit\Framework\MockObject\MockObject $configuration;
 
     protected function setUp(): void
     {
