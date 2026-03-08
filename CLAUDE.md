@@ -157,6 +157,7 @@ quality-tools:
 - TYPO3 version: 13.4.x (configured in Rector ExtEmConf)
 - PHPStan level: 6 (strict analysis)
 - Indentation: 2 spaces for TypoScript, follows TYPO3 standards for PHP
+- maintain the highest possible code quality, all linting commands must succeed before committing
 - Code style: TYPO3 coding standards via php-cs-fixer
 
 ## Code Quality Standards

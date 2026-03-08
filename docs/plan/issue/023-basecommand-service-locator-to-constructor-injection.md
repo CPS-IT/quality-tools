@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Build Steps 1-2 complete)                                                               |
+| **Status:**   | In Progress (Build Steps 1-3 complete, Step 4 next)                                                  |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -477,10 +477,10 @@ any existing class or test. Old and new coexist until all commands are migrated.
 
 #### Step 3: Add executeWithCollector to ProcessExecutor
 
-- [ ] Add `executeWithCollector(array, string, array, OutputCollector): int`
-- [ ] New method uses `$collector->write()` / `$collector->writeError()`
-- [ ] Old `executeProcess()` stays untouched
-- [ ] Tests for the new method
+- [x] Add `executeWithCollector(array, string, array, OutputCollector): int`
+- [x] New method uses `$collector->write()` / `$collector->writeError()`
+- [x] Old `executeProcess()` stays untouched
+- [x] Tests for the new method
 
 #### Step 4: Runners
 

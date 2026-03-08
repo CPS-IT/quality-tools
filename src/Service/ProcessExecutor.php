@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
+use Cpsit\QualityTools\Messaging\OutputCollector;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
@@ -15,6 +16,19 @@ use Symfony\Component\Process\Process;
  */
 final class ProcessExecutor
 {
+    /** @var \Closure(list<string>, string, array<string, string>): Process */
+    private readonly \Closure $processFactory;
+
+    /**
+     * @param (\Closure(list<string>, string, array<string, string>): Process)|null $processFactory
+     */
+    public function __construct(
+        ?\Closure $processFactory = null,
+    ) {
+        $this->processFactory = $processFactory
+            ?? static fn (array $command, string $cwd, array $env): Process => new Process($command, $cwd, $env);
+    }
+
     /**
      * Execute a process with proper output handling.
      */
@@ -24,12 +38,41 @@ final class ProcessExecutor
         array $environment,
         OutputInterface $output,
     ): int {
-        $process = new Process($command, $workingDirectory, $environment);
+        $process = ($this->processFactory)($command, $workingDirectory, $environment);
 
         $this->handleVerboseOutput($output, $process);
 
         $process->run(function (string $type, string $buffer) use ($output): void {
             $this->forwardProcessOutput($type, $buffer, $output);
+        });
+
+        return $process->getExitCode() ?? 1;
+    }
+
+    /**
+     * Execute a process forwarding output to an OutputCollector.
+     *
+     * Used by tool runners in the new architecture. The existing
+     * executeProcess() method is kept for backward compatibility
+     * until all commands are migrated.
+     *
+     * @param list<string>          $command
+     * @param array<string, string> $environment
+     */
+    public function executeWithCollector(
+        array $command,
+        string $workingDirectory,
+        array $environment,
+        OutputCollector $collector,
+    ): int {
+        $process = ($this->processFactory)($command, $workingDirectory, $environment);
+
+        $process->run(function (string $type, string $buffer) use ($collector): void {
+            if ($type === Process::ERR) {
+                $collector->writeError($buffer);
+            } else {
+                $collector->write($buffer);
+            }
         });
 
         return $process->getExitCode() ?? 1;
