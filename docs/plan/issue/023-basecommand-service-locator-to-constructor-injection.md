@@ -1,222 +1,587 @@
-# Issue 023: BaseCommand Service Locator to Constructor Injection
+# Issue 023: Simplified command architecture with DTO-based tool runners
 
-**Status:** Open
-**Priority:** Medium
-**Effort:** High (1-3d)
-**Impact:** High
+|               |                                                                                                      |
+|---------------|------------------------------------------------------------------------------------------------------|
+| **Status:**   | Open                                                                                                 |
+| **Priority:** | High                                                                                                 |
+| **Effort:**   | High (3-5d)                                                                                          |
+| **Impact:**   | High                                                                                                 |
+| **ADR:**      | [0005 - Simplified command architecture](../../architecture/0005-simplified-command-architecture.md) |
 
 ## Description
 
-BaseCommand uses a service locator anti-pattern for 7 dependencies: each is resolved via
-`$this->getService()` with a `new Instance()` fallback. This creates hidden coupling,
-makes testing harder than necessary, and inflates the class with responsibilities that
-do not belong in a command.
+Replace the BaseCommand/AbstractToolCommand inheritance hierarchy with a flat
+architecture: thin commands, DTO-based communication, and tool runners behind a
+common interface. See ADR-0005 for the architectural rationale.
 
-The 7 service getter methods are:
-
-| Method | Creates | Visibility |
-|---|---|---|
-| `getVendorDirectoryDetector()` | `VendorDirectoryDetector` | protected |
-| `getProcessEnvironmentPreparer()` | `ProcessEnvironmentPreparer` | private |
-| `getCommandBuilder()` | `CommandBuilder` | private |
-| `getProcessExecutor()` | `ProcessExecutor` | private |
-| `getProjectAnalyzer()` | `ProjectAnalyzer` | private |
-| `getFilesystemService()` | `FilesystemService` | protected |
-| `getMemoryCalculator()` | `MemoryCalculator` | protected |
-
-## Root Cause
-
-BaseCommand grew organically as the single base class for all commands. It accumulated
-multiple responsibilities: process execution, path resolution, vendor detection,
-configuration loading, project analysis, memory optimization, and optimization reporting.
-
-All 10 tool commands (via AbstractToolCommand) transitively depend on all 7 services,
-because the template method in AbstractToolCommand calls `showOptimizationDetails()`,
-`resolveTargetPaths()`, `getToolMemoryLimit()`, and `executeProcess()` -- which
-collectively touch every service getter.
-
-Config commands (ConfigInitCommand, ConfigShowCommand, ConfigValidateCommand) need
-almost none of these services -- they primarily use `configurationLoader` and
-`filesystemService`.
-
-## Impact Analysis
-
-**Affected Components:**
-- `BaseCommand` (src/Console/Command/BaseCommand.php)
-- `AbstractToolCommand` (src/Console/Command/AbstractToolCommand.php)
-- All 12 concrete command classes
-- `ContainerAwareInterface` / `ContainerAwareTrait`
-- `ServiceContainer` / `services.yaml`
-- All command tests (unit and integration)
-
-**User Impact:**
-- None -- internal refactoring, no behavioral changes
-
-**Technical Impact:**
-- Service locator pattern makes dependencies invisible at the type level
-- Tests must either set up a DI container or rely on fallback instantiation (hidden coupling)
-- BaseCommand carries 500+ lines of mixed responsibilities
-- Subclasses inherit the entire dependency surface even when they need a fraction of it
-- PhpStanCommand creates its own SecurityService and FilesystemService inline, bypassing the
-  getter pattern entirely -- a symptom of the unclear ownership
-
-## Dependency Graph (Current)
+## Current State
 
 ```
-BaseCommand
-  - ConfigurationLoaderInterface  (constructor-injected -- already done)
-  - VendorDirectoryDetector       (service locator)
-  - ProcessEnvironmentPreparer    (service locator)
-  - CommandBuilder                (service locator)
-  - ProcessExecutor               (service locator)
-  - ProjectAnalyzer               (service locator)
-  - FilesystemService             (service locator)
-  - MemoryCalculator              (service locator)
-
-AbstractToolCommand extends BaseCommand
-  - transitively uses ALL of the above
-
-ConfigInitCommand extends BaseCommand
-  - configurationLoader, FilesystemService (constructor-injected)
-
-ConfigShowCommand extends BaseCommand
-  - configurationLoader only
-
-ConfigValidateCommand extends BaseCommand
-  - configurationLoader only
+BaseCommand (500 lines, 7 service-locator dependencies)
+  -> AbstractToolCommand (410 lines, template method + hooks)
+    -> 10 concrete tool commands
+  -> 3 config commands (ConfigInit, ConfigShow, ConfigValidate)
 ```
 
-## Possible Solutions
+Problems:
 
-### Solution 1: Inject all 7 as individual constructor parameters
+- Service locator anti-pattern (7 getter methods with `new` fallbacks)
+- 900 lines of base class code inherited by every command
+- Template method pattern with hook points (pre/post-processing)
+- Config commands share a base class despite needing almost none of its services
+- ContainerAwareInterface/ContainerAwareTrait add hidden coupling
 
-- **Description:** Replace each getter with a constructor parameter
-- **Effort:** Medium
-- **Impact:** Removes service locator, enables ContainerAwareTrait removal
-- **Pros:** Explicit dependencies, testable, straightforward
-- **Cons:** Constructor grows to 8 parameters -- still a code smell; does not address
-  the underlying responsibility bloat; config commands receive 7 services they never use
-
-### Solution 2: Bundle into a single CommandServices DTO
-
-- **Description:** Group the 7 services into a readonly DTO, inject that
-- **Effort:** Medium
-- **Impact:** Cleaner constructor, but hides the dependency count
-- **Pros:** Lean constructor, easy to pass in tests
-- **Cons:** Does not reduce coupling -- just wraps it; config commands still receive
-  everything; the DTO is a bag of unrelated services
-
-### Solution 3: Extract focused service objects, then inject (recommended)
-
-- **Description:** Group related services into cohesive higher-level services that
-  own a single responsibility. Then inject only what each command actually needs.
-- **Effort:** High
-- **Impact:** Addresses the root cause -- reduces BaseCommand to a thin base class
-
-**Proposed service groups:**
-
-1. **ProcessRunner** -- composes `ProcessExecutor`, `ProcessEnvironmentPreparer`,
-   `CommandBuilder`. Single method: `run(command, projectRoot, input, output, memoryLimit, tool, resolvedPaths): int`.
-   Replaces `executeProcess()` in BaseCommand.
-
-2. **OptimizationService** -- composes `ProjectAnalyzer`, `MemoryCalculator`.
-   Methods: `getOptimalMemoryLimit()`, `shouldEnableParallelProcessing()`,
-   `showOptimizationDetails()`. Replaces the optimization block in BaseCommand.
-
-3. **ProjectEnvironment** -- composes `FilesystemService`, `VendorDirectoryDetector`.
-   Methods: `getVendorBinPath()`, `findVendorPath()`, `getProjectRoot()`.
-   Replaces the path/vendor detection in BaseCommand.
-
-4. **ConfigurationLoaderInterface** -- stays as is (already injected).
-
-After extraction, the dependency surface becomes:
+## Target State
 
 ```
-AbstractToolCommand
-  - ConfigurationLoaderInterface
-  - ProcessRunner
-  - OptimizationService
-  - ProjectEnvironment
+ToolRunnerRegistry
+  -> RectorRunner implements ToolRunnerInterface
+  -> PhpStanRunner implements ToolRunnerInterface
+  -> PhpCsFixerRunner implements ToolRunnerInterface
+  -> FractorRunner implements ToolRunnerInterface
+  -> TypoScriptLintRunner implements ToolRunnerInterface
+  -> ComposerNormalizeRunner implements ToolRunnerInterface
 
-ConfigShowCommand / ConfigValidateCommand
-  - ConfigurationLoaderInterface
+Commands (flat, ~30 lines each)
+  -> RectorLintCommand, RectorFixCommand, ...
+  -> Single dependency: ToolRunnerRegistry
 
-ConfigInitCommand
-  - ConfigurationLoaderInterface
-  - FilesystemService
+Config commands (unchanged, independent)
+  -> ConfigInitCommand, ConfigShowCommand, ConfigValidateCommand
 ```
 
-- **Pros:** Each service has a single responsibility; commands declare only what they
-  use; BaseCommand shrinks or disappears; testability improves; ContainerAwareTrait
-  can be removed
-- **Cons:** More files; migration effort; requires careful phasing to avoid regressions
+## Detailed Design
 
-## Recommended Solution
+### DTOs
 
-**Choice:** Solution 3 -- Extract focused services, then inject
+#### ToolRunRequest
 
-This addresses the root cause rather than just the symptom. The service locator pattern
-is a consequence of BaseCommand doing too much; replacing the locator with constructor
-injection alone (Solution 1) would make the bloat more visible but not fix it.
+```php
+final readonly class ToolRunRequest
+{
+    /**
+     * @param array<string, scalar> $toolOptions
+     */
+    public function __construct(
+        public string $toolName,
+        public bool $dryRun,
+        public ?string $configOverride = null,
+        public ?string $pathOverride = null,
+        public array $toolOptions = [],
+    ) {}
+}
+```
 
-**Implementation Steps:**
+Carries user intent only. No resolved paths -- runners own resolution.
 
-### Phase 1: Extract ProcessRunner
-1. Create `Service/ProcessRunner.php` composing ProcessExecutor, ProcessEnvironmentPreparer, CommandBuilder
-2. Move `executeProcess()` logic from BaseCommand into ProcessRunner
-3. Inject ProcessRunner into AbstractToolCommand
-4. Update all tool commands and tests
-5. Remove the 3 getter methods and their fallback `new` calls from BaseCommand
+#### ToolRunResult
 
-### Phase 2: Extract OptimizationService
-1. Create `Service/OptimizationService.php` composing ProjectAnalyzer, MemoryCalculator
-2. Move optimization methods from BaseCommand into OptimizationService
-3. Inject OptimizationService into AbstractToolCommand
-4. Update tests
-5. Remove getter methods from BaseCommand
+```php
+final readonly class ToolRunResult
+{
+    /**
+     * @param list<ToolMessage> $messages
+     */
+    public function __construct(
+        public int $exitCode,
+        public array $messages = [],
+    ) {}
 
-### Phase 3: Extract ProjectEnvironment
-1. Create `Service/ProjectEnvironment.php` composing FilesystemService, VendorDirectoryDetector
-2. Move `findVendorPath()`, `getVendorBinPath()` into ProjectEnvironment
-3. Inject ProjectEnvironment into commands that need it
-4. Update tests
+    public function isSuccessful(): bool
+    {
+        return $this->exitCode === 0;
+    }
 
-### Phase 4: Flatten hierarchy (optional, depends on outcome of Phase 1-3)
-1. Evaluate whether BaseCommand still justifies its existence
-2. If only `configure()` (adding --config, --path, --no-optimization options) remains,
-   consider moving that into AbstractToolCommand directly
-3. Remove ContainerAwareInterface / ContainerAwareTrait if no longer used
-4. Update services.yaml
+    public function hasErrors(): bool
+    {
+        foreach ($this->messages as $message) {
+            if ($message->severity === MessageSeverity::Error) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+#### ToolMessage
+
+```php
+final readonly class ToolMessage
+{
+    /**
+     * @param array<string, mixed> $context
+     */
+    public function __construct(
+        public MessageSeverity $severity,
+        public string $text,
+        public array $context = [],
+    ) {}
+
+    public static function info(string $text, array $context = []): self
+    {
+        return new self(MessageSeverity::Info, $text, $context);
+    }
+
+    public static function warning(string $text, array $context = []): self
+    {
+        return new self(MessageSeverity::Warning, $text, $context);
+    }
+
+    public static function error(string $text, array $context = []): self
+    {
+        return new self(MessageSeverity::Error, $text, $context);
+    }
+}
+```
+
+#### MessageSeverity
+
+```php
+enum MessageSeverity: string
+{
+    case Info = 'info';
+    case Warning = 'warning';
+    case Error = 'error';
+}
+```
+
+### ToolOutputCollector
+
+```php
+interface ToolOutputCollector
+{
+    public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void;
+    public function writeError(string $text): void;
+}
+```
+
+**StreamingOutputCollector** -- wraps OutputInterface, forwards immediately:
+
+```php
+final class StreamingOutputCollector implements ToolOutputCollector
+{
+    public function __construct(
+        private readonly OutputInterface $output,
+    ) {}
+
+    public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void
+    {
+        $this->output->write($text);
+    }
+
+    public function writeError(string $text): void
+    {
+        if ($this->output instanceof ConsoleOutputInterface) {
+            $this->output->getErrorOutput()->write($text);
+        } else {
+            $this->output->write($text);
+        }
+    }
+}
+```
+
+**BufferingOutputCollector** -- stores in memory for tests:
+
+```php
+final class BufferingOutputCollector implements ToolOutputCollector
+{
+    /** @var list<array{text: string, severity: MessageSeverity}> */
+    private array $collected = [];
+
+    /** @var list<string> */
+    private array $errors = [];
+
+    public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void
+    {
+        $this->collected[] = ['text' => $text, 'severity' => $severity];
+    }
+
+    public function writeError(string $text): void
+    {
+        $this->errors[] = $text;
+    }
+
+    /** @return list<array{text: string, severity: MessageSeverity}> */
+    public function getCollected(): array
+    {
+        return $this->collected;
+    }
+
+    /** @return list<string> */
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+}
+```
+
+### ToolRunnerInterface
+
+```php
+interface ToolRunnerInterface
+{
+    public function run(ToolRunRequest $request, ToolOutputCollector $collector): ToolRunResult;
+
+    /** @return list<string> */
+    public function supportedTools(): array;
+}
+```
+
+Separation of concerns:
+
+- `ToolOutputCollector` carries live process output (stdout/stderr streaming)
+- `ToolRunResult::$messages` carries runner diagnostics (resolved paths, warnings, validation)
+
+### ToolRunnerRegistry
+
+```php
+final class ToolRunnerRegistry
+{
+    /** @var array<string, ToolRunnerInterface> */
+    private array $runners = [];
+
+    /** @param iterable<ToolRunnerInterface> $runners */
+    public function __construct(iterable $runners)
+    {
+        foreach ($runners as $runner) {
+            foreach ($runner->supportedTools() as $tool) {
+                $this->runners[$tool] = $runner;
+            }
+        }
+    }
+
+    public function get(string $toolName): ToolRunnerInterface
+    {
+        return $this->runners[$toolName]
+            ?? throw new \InvalidArgumentException('No runner for tool: ' . $toolName);
+    }
+
+    public function has(string $toolName): bool
+    {
+        return isset($this->runners[$toolName]);
+    }
+}
+```
+
+Populated by DI container via tagged service injection.
+
+### Runners
+
+Each runner composes its dependencies via constructor injection. Common
+dependencies: `ProcessExecutor`, `ProjectEnvironment`, `ConfigurationLoaderInterface`.
+Tool-specific dependencies only where needed.
+
+#### RectorRunner (template for simple runners)
+
+```php
+final class RectorRunner implements ToolRunnerInterface
+{
+    public function __construct(
+        private readonly ProcessExecutor $processExecutor,
+        private readonly ProjectEnvironment $projectEnv,
+        private readonly ConfigurationLoaderInterface $configLoader,
+    ) {}
+
+    public function supportedTools(): array
+    {
+        return ['rector'];
+    }
+
+    public function run(ToolRunRequest $request, ToolOutputCollector $collector): ToolRunResult
+    {
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $vendorBinPath = $this->projectEnv->getVendorBinPath();
+        $configPath = $this->resolveConfigPath($request);
+
+        $command = [
+            $vendorBinPath . '/rector',
+            'process',
+            '--config=' . $configPath,
+        ];
+
+        if ($request->dryRun) {
+            $command[] = '--dry-run';
+        }
+
+        $targetPaths = $this->resolveTargetPaths($request);
+        foreach ($targetPaths as $path) {
+            $command[] = $path;
+        }
+
+        $exitCode = $this->processExecutor->executeWithCollector(
+            $command,
+            $projectRoot,
+            $_SERVER,
+            $collector,
+        );
+
+        return new ToolRunResult($exitCode);
+    }
+
+    private function resolveConfigPath(ToolRunRequest $request): string
+    {
+        if ($request->configOverride !== null) {
+            return $request->configOverride;
+        }
+        return $this->configLoader->resolveToolConfigPath(
+            $request->toolName,
+            'rector.php',
+            $this->projectEnv->getVendorPath(),
+        );
+    }
+
+    private function resolveTargetPaths(ToolRunRequest $request): array
+    {
+        if ($request->pathOverride !== null) {
+            return [$request->pathOverride];
+        }
+        $configuration = $this->configLoader->load($this->projectEnv->getProjectRoot());
+        $paths = $configuration->getResolvedPathsForTool('rector');
+        return !empty($paths) ? $paths : [$this->projectEnv->getProjectRoot()];
+    }
+}
+```
+
+#### Runner-specific behavior
+
+| Runner                    | Extra dependencies  | Key behavior                                                                           |
+|---------------------------|---------------------|----------------------------------------------------------------------------------------|
+| `RectorRunner`            | --                  | Simple command + paths                                                                 |
+| `PhpCsFixerRunner`        | --                  | Conditional `--using-cache=yes` flag                                                   |
+| `TypoScriptLintRunner`    | --                  | Falls back to config-based path discovery                                              |
+| `FractorRunner`           | `YamlValidator`     | Pre-validation, post-run summary in messages                                           |
+| `PhpStanRunner`           | `FilesystemService` | Temporary neon config for multi-path, `--memory-limit` from toolOptions                |
+| `ComposerNormalizeRunner` | `FilesystemService` | Resolves composer executable, iterates over composer.json files, aggregates exit codes |
+
+### Command example
+
+```php
+#[AsCommand(name: 'lint:rector', description: '...')]
+final class RectorLintCommand extends Command
+{
+    public function __construct(
+        private readonly ToolRunnerRegistry $registry,
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Override configuration file path')
+            ->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'Target path');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $request = new ToolRunRequest(
+            toolName: 'rector',
+            dryRun: true,
+            configOverride: $input->getOption('config'),
+            pathOverride: $input->getOption('path'),
+        );
+
+        $collector = new StreamingOutputCollector($output);
+        $result = $this->registry->get('rector')->run($request, $collector);
+
+        $this->renderMessages($result, $output);
+
+        return $result->exitCode;
+    }
+
+    private function renderMessages(ToolRunResult $result, OutputInterface $output): void
+    {
+        foreach ($result->messages as $message) {
+            match ($message->severity) {
+                MessageSeverity::Error => $output->writeln('<error>' . $message->text . '</error>'),
+                MessageSeverity::Warning => $output->writeln('<comment>' . $message->text . '</comment>'),
+                MessageSeverity::Info => $output->writeln('<info>' . $message->text . '</info>'),
+            };
+        }
+    }
+}
+```
+
+### ProjectEnvironment
+
+New service replacing project root / vendor detection from BaseCommand and
+QualityToolsApplication.
+
+```php
+final class ProjectEnvironment
+{
+    public function __construct(
+        private readonly FilesystemService $filesystemService,
+        private readonly VendorDirectoryDetector $vendorDetector,
+    ) {}
+
+    public function getProjectRoot(): string { ... }
+    public function getVendorBinPath(): string { ... }
+    public function getVendorPath(): string { ... }
+}
+```
+
+Should support any Composer project, not just TYPO3.
+
+### ProcessExecutor adaptation
+
+Add a second method during the transition:
+
+```php
+// Existing (kept until cleanup phase)
+public function executeProcess(
+    array $command,
+    string $workingDirectory,
+    array $environment,
+    OutputInterface $output,
+): int
+
+// New (used by runners)
+public function executeWithCollector(
+    array $command,
+    string $workingDirectory,
+    array $environment,
+    ToolOutputCollector $collector,
+): int
+```
+
+Old method removed and new method renamed to `executeProcess` in cleanup phase.
+
+## Migration Strategy
+
+The entire new infrastructure is built alongside existing code without touching
+any existing class or test. Old and new coexist until all commands are migrated.
+
+### Build phase (no existing code touched)
+
+#### Step 1: DTOs, interface, and collector
+
+1. Create `src/ToolRunner/` directory
+2. Implement `MessageSeverity`, `ToolMessage`, `ToolRunRequest`, `ToolRunResult`
+3. Implement `ToolRunnerInterface`
+4. Implement `ToolOutputCollector` interface
+5. Implement `StreamingOutputCollector` and `BufferingOutputCollector`
+6. Implement `ToolRunnerRegistry`
+7. Unit tests for all DTOs, collector implementations, and registry
+
+#### Step 2: ProjectEnvironment
+
+1. Create `Service/ProjectEnvironment` (new class)
+2. Replicate project root detection from QualityToolsApplication
+3. Replicate vendor path detection from BaseCommand
+4. Relax TYPO3-only project detection to support any Composer project
+5. Unit tests
+6. Wire into DI container
+
+#### Step 3: Add executeWithCollector to ProcessExecutor
+
+1. Add `executeWithCollector(array, string, array, ToolOutputCollector): int`
+2. New method uses `$collector->write()` / `$collector->writeError()`
+3. Old `executeProcess()` stays untouched
+4. Tests for the new method
+
+#### Step 4: Runners
+
+Implement all runners independently testable against the new infrastructure.
+
+1. `RectorRunner` -- simplest, template for others
+2. `PhpCsFixerRunner` -- conditional parallel processing flag
+3. `TypoScriptLintRunner` -- minimal
+4. `FractorRunner` -- YAML pre-validation, absorbs FractorCommandTrait logic
+5. `PhpStanRunner` -- temporary config file, memory limit from toolOptions
+6. `ComposerNormalizeRunner` -- multi-file iteration, executable resolution
+
+Each runner gets unit tests with mock ProcessExecutor and BufferingOutputCollector.
+
+At this point: full new stack built and tested, zero changes to existing code.
+
+### Migration phase (one command at a time)
+
+Migrate one command pair (lint + fix) at a time. After each pair, all tests pass.
+Unmigrated commands continue to work on the old hierarchy.
+
+Order: Rector -> PhpCsFixer -> TypoScript -> Fractor -> PHPStan -> Composer
+
+For each command:
+
+1. Rewrite to extend `Command` directly (drop BaseCommand/AbstractToolCommand)
+2. Inject `ToolRunnerRegistry` as sole dependency
+3. Build `ToolRunRequest` from input, call runner, render result
+4. Update/rewrite command tests
+5. Verify integration tests pass
+
+### Cleanup phase (after all commands migrated)
+
+1. Delete `BaseCommand`, `AbstractToolCommand`, `FractorCommandTrait`
+2. Delete `ContainerAwareInterface`, `ContainerAwareTrait`
+3. Delete `CommandBuilder`, `ProcessEnvironmentPreparer`
+4. Delete `ToolCommandInterface`, `ErrorHandler`
+5. Remove `executeProcess()` from ProcessExecutor, rename `executeWithCollector` to `executeProcess`
+6. Update `services.yaml` (remove old wiring, finalize runner registrations)
+7. Verify full test suite
+
+## Files Created
+
+| File                                          | Phase   |
+|-----------------------------------------------|---------|
+| `src/ToolRunner/MessageSeverity.php`          | Build 1 |
+| `src/ToolRunner/ToolMessage.php`              | Build 1 |
+| `src/ToolRunner/ToolRunRequest.php`           | Build 1 |
+| `src/ToolRunner/ToolRunResult.php`            | Build 1 |
+| `src/ToolRunner/ToolRunnerInterface.php`      | Build 1 |
+| `src/ToolRunner/ToolOutputCollector.php`      | Build 1 |
+| `src/ToolRunner/StreamingOutputCollector.php` | Build 1 |
+| `src/ToolRunner/BufferingOutputCollector.php` | Build 1 |
+| `src/ToolRunner/ToolRunnerRegistry.php`       | Build 1 |
+| `src/Service/ProjectEnvironment.php`          | Build 2 |
+| `src/ToolRunner/RectorRunner.php`             | Build 4 |
+| `src/ToolRunner/PhpCsFixerRunner.php`         | Build 4 |
+| `src/ToolRunner/TypoScriptLintRunner.php`     | Build 4 |
+| `src/ToolRunner/FractorRunner.php`            | Build 4 |
+| `src/ToolRunner/PhpStanRunner.php`            | Build 4 |
+| `src/ToolRunner/ComposerNormalizeRunner.php`  | Build 4 |
+
+## Files Deleted (Cleanup Phase)
+
+- `src/Console/Command/BaseCommand.php`
+- `src/Console/Command/AbstractToolCommand.php`
+- `src/Console/Command/FractorCommandTrait.php`
+- `src/Console/Command/ToolCommandInterface.php`
+- `src/DependencyInjection/ContainerAwareInterface.php`
+- `src/DependencyInjection/ContainerAwareTrait.php`
+- `src/Service/CommandBuilder.php`
+- `src/Service/ProcessEnvironmentPreparer.php`
+- `src/Service/ErrorHandler.php`
 
 ## Validation Plan
 
-- [ ] All existing tests pass after each phase
-- [ ] No service locator calls remain in command classes
-- [ ] ContainerAwareInterface / ContainerAwareTrait removed or justified
-- [ ] Each new service class has its own unit tests
-- [ ] Constructor parameter counts: AbstractToolCommand <= 4, Config commands <= 2
-- [ ] PhpStan level 6 clean
+- [ ] All existing tests pass after each build step (no existing code changed)
+- [ ] Each DTO, collector, and runner has unit tests
+- [ ] All existing tests pass after each command migration
+- [ ] No service locator calls remain after cleanup
+- [ ] ContainerAwareInterface / ContainerAwareTrait deleted
+- [ ] PHPStan level 6 clean
 - [ ] No behavioral changes from the user perspective
+- [ ] Commands have exactly one constructor dependency (ToolRunnerRegistry)
+
+## Open Questions
+
+**Memory optimization**: Drop MemoryCalculator/ProjectAnalyzer entirely. Expose
+`--memory-limit` as a direct command option for PHPStan (via `toolOptions`).
+
+**TYPO3 project detection**: Relax in ProjectEnvironment to support any Composer
+project, enabling `qt` to lint itself.
 
 ## Dependencies
 
-- Issue 019 (Configuration Class Hierarchy Simplification) should be substantially
-  complete before starting, to avoid conflicting changes in BaseCommand
-- Issue 020 (DI Configuration Inconsistency) may be resolved as a side effect of
-  this work
-
-## Workarounds
-
-The current service locator pattern works correctly. This issue is about code quality
-and maintainability, not broken functionality.
+- Issue 019 (Configuration Class Hierarchy Simplification) should be complete
+  before starting, to avoid conflicting changes in BaseCommand
+- Issue 020 (DI Configuration Inconsistency) resolved as a side effect of this work
 
 ## Related Issues
 
-- [019 - Configuration Class Hierarchy Simplification](019-configuration-class-hierarchy-simplification.md) --
-  ongoing refactoring that already made `configurationLoader` a required constructor parameter
-- [020 - DI Configuration Inconsistency](020-di-configuration-inconsistency.md) --
-  overlapping concern about DI wiring
-- [013 - Dependency Injection Container Architecture](issue/done/013-dependency-injection-container-architecture.md) --
-  introduced the current DI container and service locator pattern
-- [018 - BaseCommand ExecuteProcess Method Refactoring](issue/done/018-basecommand-executeprocess-method-refactoring.md) --
-  previous refactoring of executeProcess that extracted CommandBuilder, ProcessExecutor, etc.
+- [019 - Configuration Class Hierarchy Simplification](019-configuration-class-hierarchy-simplification.md)
+- [020 - DI Configuration Inconsistency](020-di-configuration-inconsistency.md)
+- [013 - Dependency Injection Container Architecture](done/013-dependency-injection-container-architecture.md)
+- [018 - BaseCommand ExecuteProcess Method Refactoring](done/018-basecommand-executeprocess-method-refactoring.md)
