@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | Open                                                                                                 |
+| **Status:**   | In Progress (Build Step 1 complete)                                                                  |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -80,7 +80,7 @@ Carries user intent only. No resolved paths -- runners own resolution.
 final readonly class ToolRunResult
 {
     /**
-     * @param list<ToolMessage> $messages
+     * @param list<Message> $messages
      */
     public function __construct(
         public int $exitCode,
@@ -104,10 +104,10 @@ final readonly class ToolRunResult
 }
 ```
 
-#### ToolMessage
+#### Message
 
 ```php
-final readonly class ToolMessage
+final readonly class Message
 {
     /**
      * @param array<string, mixed> $context
@@ -146,10 +146,10 @@ enum MessageSeverity: string
 }
 ```
 
-### ToolOutputCollector
+### OutputCollector
 
 ```php
-interface ToolOutputCollector
+interface OutputCollector
 {
     public function write(string $text, MessageSeverity $severity = MessageSeverity::Info): void;
     public function writeError(string $text): void;
@@ -159,7 +159,7 @@ interface ToolOutputCollector
 **StreamingOutputCollector** -- wraps OutputInterface, forwards immediately:
 
 ```php
-final class StreamingOutputCollector implements ToolOutputCollector
+final class StreamingOutputCollector implements OutputCollector
 {
     public function __construct(
         private readonly OutputInterface $output,
@@ -184,7 +184,7 @@ final class StreamingOutputCollector implements ToolOutputCollector
 **BufferingOutputCollector** -- stores in memory for tests:
 
 ```php
-final class BufferingOutputCollector implements ToolOutputCollector
+final class BufferingOutputCollector implements OutputCollector
 {
     /** @var list<array{text: string, severity: MessageSeverity}> */
     private array $collected = [];
@@ -221,7 +221,7 @@ final class BufferingOutputCollector implements ToolOutputCollector
 ```php
 interface ToolRunnerInterface
 {
-    public function run(ToolRunRequest $request, ToolOutputCollector $collector): ToolRunResult;
+    public function run(ToolRunRequest $request, OutputCollector $collector): ToolRunResult;
 
     /** @return list<string> */
     public function supportedTools(): array;
@@ -230,7 +230,7 @@ interface ToolRunnerInterface
 
 Separation of concerns:
 
-- `ToolOutputCollector` carries live process output (stdout/stderr streaming)
+- `OutputCollector` carries live process output (stdout/stderr streaming)
 - `ToolRunResult::$messages` carries runner diagnostics (resolved paths, warnings, validation)
 
 ### ToolRunnerRegistry
@@ -288,7 +288,7 @@ final class RectorRunner implements ToolRunnerInterface
         return ['rector'];
     }
 
-    public function run(ToolRunRequest $request, ToolOutputCollector $collector): ToolRunResult
+    public function run(ToolRunRequest $request, OutputCollector $collector): ToolRunResult
     {
         $projectRoot = $this->projectEnv->getProjectRoot();
         $vendorBinPath = $this->projectEnv->getVendorBinPath();
@@ -442,7 +442,7 @@ public function executeWithCollector(
     array $command,
     string $workingDirectory,
     array $environment,
-    ToolOutputCollector $collector,
+    OutputCollector $collector,
 ): int
 ```
 
@@ -457,40 +457,41 @@ any existing class or test. Old and new coexist until all commands are migrated.
 
 #### Step 1: DTOs, interface, and collector
 
-1. Create `src/ToolRunner/` directory
-2. Implement `MessageSeverity`, `ToolMessage`, `ToolRunRequest`, `ToolRunResult`
-3. Implement `ToolRunnerInterface`
-4. Implement `ToolOutputCollector` interface
-5. Implement `StreamingOutputCollector` and `BufferingOutputCollector`
-6. Implement `ToolRunnerRegistry`
-7. Unit tests for all DTOs, collector implementations, and registry
+- [x] Create `src/Messaging/` and `src/ToolRunner/` directories
+- [x] Implement `MessageSeverity`, `Message` in `src/Messaging/`
+- [x] Implement `ToolRunRequest`, `ToolRunResult` in `src/ToolRunner/`
+- [x] Implement `ToolRunnerInterface` in `src/ToolRunner/`
+- [x] Implement `OutputCollector` interface in `src/Messaging/`
+- [x] Implement `StreamingOutputCollector` and `BufferingOutputCollector` in `src/Messaging/`
+- [x] Implement `ToolRunnerRegistry` in `src/ToolRunner/`
+- [x] Unit tests for all DTOs, collector implementations, and registry
 
 #### Step 2: ProjectEnvironment
 
-1. Create `Service/ProjectEnvironment` (new class)
-2. Replicate project root detection from QualityToolsApplication
-3. Replicate vendor path detection from BaseCommand
-4. Relax TYPO3-only project detection to support any Composer project
-5. Unit tests
-6. Wire into DI container
+- [ ] Create `Service/ProjectEnvironment` (new class)
+- [ ] Replicate project root detection from QualityToolsApplication
+- [ ] Replicate vendor path detection from BaseCommand
+- [ ] Relax TYPO3-only project detection to support any Composer project
+- [ ] Unit tests
+- [ ] Wire into DI container
 
 #### Step 3: Add executeWithCollector to ProcessExecutor
 
-1. Add `executeWithCollector(array, string, array, ToolOutputCollector): int`
-2. New method uses `$collector->write()` / `$collector->writeError()`
-3. Old `executeProcess()` stays untouched
-4. Tests for the new method
+- [ ] Add `executeWithCollector(array, string, array, OutputCollector): int`
+- [ ] New method uses `$collector->write()` / `$collector->writeError()`
+- [ ] Old `executeProcess()` stays untouched
+- [ ] Tests for the new method
 
 #### Step 4: Runners
 
 Implement all runners independently testable against the new infrastructure.
 
-1. `RectorRunner` -- simplest, template for others
-2. `PhpCsFixerRunner` -- conditional parallel processing flag
-3. `TypoScriptLintRunner` -- minimal
-4. `FractorRunner` -- YAML pre-validation, absorbs FractorCommandTrait logic
-5. `PhpStanRunner` -- temporary config file, memory limit from toolOptions
-6. `ComposerNormalizeRunner` -- multi-file iteration, executable resolution
+- [ ] `RectorRunner` -- simplest, template for others
+- [ ] `PhpCsFixerRunner` -- conditional parallel processing flag
+- [ ] `TypoScriptLintRunner` -- minimal
+- [ ] `FractorRunner` -- YAML pre-validation, absorbs FractorCommandTrait logic
+- [ ] `PhpStanRunner` -- temporary config file, memory limit from toolOptions
+- [ ] `ComposerNormalizeRunner` -- multi-file iteration, executable resolution
 
 Each runner gets unit tests with mock ProcessExecutor and BufferingOutputCollector.
 
@@ -505,34 +506,34 @@ Order: Rector -> PhpCsFixer -> TypoScript -> Fractor -> PHPStan -> Composer
 
 For each command:
 
-1. Rewrite to extend `Command` directly (drop BaseCommand/AbstractToolCommand)
-2. Inject `ToolRunnerRegistry` as sole dependency
-3. Build `ToolRunRequest` from input, call runner, render result
-4. Update/rewrite command tests
-5. Verify integration tests pass
+- [ ] Rewrite to extend `Command` directly (drop BaseCommand/AbstractToolCommand)
+- [ ] Inject `ToolRunnerRegistry` as sole dependency
+- [ ] Build `ToolRunRequest` from input, call runner, render result
+- [ ] Update/rewrite command tests
+- [ ] Verify integration tests pass
 
 ### Cleanup phase (after all commands migrated)
 
-1. Delete `BaseCommand`, `AbstractToolCommand`, `FractorCommandTrait`
-2. Delete `ContainerAwareInterface`, `ContainerAwareTrait`
-3. Delete `CommandBuilder`, `ProcessEnvironmentPreparer`
-4. Delete `ToolCommandInterface`, `ErrorHandler`
-5. Remove `executeProcess()` from ProcessExecutor, rename `executeWithCollector` to `executeProcess`
-6. Update `services.yaml` (remove old wiring, finalize runner registrations)
-7. Verify full test suite
+- [ ] Delete `BaseCommand`, `AbstractToolCommand`, `FractorCommandTrait`
+- [ ] Delete `ContainerAwareInterface`, `ContainerAwareTrait`
+- [ ] Delete `CommandBuilder`, `ProcessEnvironmentPreparer`
+- [ ] Delete `ToolCommandInterface`, `ErrorHandler`
+- [ ] Remove `executeProcess()` from ProcessExecutor, rename `executeWithCollector` to `executeProcess`
+- [ ] Update `services.yaml` (remove old wiring, finalize runner registrations)
+- [ ] Verify full test suite
 
 ## Files Created
 
 | File                                          | Phase   |
 |-----------------------------------------------|---------|
-| `src/ToolRunner/MessageSeverity.php`          | Build 1 |
-| `src/ToolRunner/ToolMessage.php`              | Build 1 |
+| `src/Messaging/MessageSeverity.php`           | Build 1 |
+| `src/Messaging/Message.php`                   | Build 1 |
+| `src/Messaging/OutputCollector.php`           | Build 1 |
+| `src/Messaging/StreamingOutputCollector.php`  | Build 1 |
+| `src/Messaging/BufferingOutputCollector.php`  | Build 1 |
 | `src/ToolRunner/ToolRunRequest.php`           | Build 1 |
 | `src/ToolRunner/ToolRunResult.php`            | Build 1 |
 | `src/ToolRunner/ToolRunnerInterface.php`      | Build 1 |
-| `src/ToolRunner/ToolOutputCollector.php`      | Build 1 |
-| `src/ToolRunner/StreamingOutputCollector.php` | Build 1 |
-| `src/ToolRunner/BufferingOutputCollector.php` | Build 1 |
 | `src/ToolRunner/ToolRunnerRegistry.php`       | Build 1 |
 | `src/Service/ProjectEnvironment.php`          | Build 2 |
 | `src/ToolRunner/RectorRunner.php`             | Build 4 |
@@ -556,12 +557,12 @@ For each command:
 
 ## Validation Plan
 
-- [ ] All existing tests pass after each build step (no existing code changed)
-- [ ] Each DTO, collector, and runner has unit tests
+- [x] All existing tests pass after each build step (no existing code changed)
+- [x] Each DTO, collector, and runner has unit tests (Step 1 DTOs and collectors done)
 - [ ] All existing tests pass after each command migration
 - [ ] No service locator calls remain after cleanup
 - [ ] ContainerAwareInterface / ContainerAwareTrait deleted
-- [ ] PHPStan level 6 clean
+- [x] PHPStan level 6 clean (Step 1 code verified)
 - [ ] No behavioral changes from the user perspective
 - [ ] Commands have exactly one constructor dependency (ToolRunnerRegistry)
 

@@ -128,11 +128,12 @@ final class ProcessExecutorTest extends TestCase
         $output->method('getErrorOutput')->willReturn($errorOutput);
         $output->expects(self::never())->method('write'); // Should not write to main output
 
-        // Use a command that writes to stderr
+        // Use a command that writes to stderr; disable Xdebug to avoid debug
+        // messages on stderr when running from the IDE
         $this->executor->executeProcess(
             ['php', '-r', 'fwrite(STDERR, "test error");'],
             '/tmp',
-            [],
+            ['XDEBUG_MODE' => 'off'],
             $output,
         );
     }
@@ -148,11 +149,12 @@ final class ProcessExecutorTest extends TestCase
             ->method('write')
             ->with(self::stringContains('test error'));
 
-        // Use a command that writes to stderr
+        // Use a command that writes to stderr; disable Xdebug to avoid debug
+        // messages on stderr when running from the IDE
         $this->executor->executeProcess(
             ['php', '-r', 'fwrite(STDERR, "test error");'],
             '/tmp',
-            [],
+            ['XDEBUG_MODE' => 'off'],
             $output,
         );
     }
