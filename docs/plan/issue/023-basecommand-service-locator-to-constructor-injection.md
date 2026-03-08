@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Build phase complete, Migration phase next)                                             |
+| **Status:**   | In Progress (Migration phase: Rector commands complete, parameterized command pattern established)    |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -42,9 +42,10 @@ ToolRunnerRegistry
   -> TypoScriptLintRunner implements ToolRunnerInterface
   -> ComposerNormalizeRunner implements ToolRunnerInterface
 
-Commands (flat, ~30 lines each)
-  -> RectorLintCommand, RectorFixCommand, ...
-  -> Single dependency: ToolRunnerRegistry
+Commands (parameterized, ~90 lines each, registered via DI)
+  -> RectorCommand (registered as lint:rector and fix:rector)
+  -> Dependencies: ToolRunnerRegistry, ToolRunInfoDisplay
+  -> Future: same pattern for PhpCsFixer, Fractor, etc.
 
 Config commands (unchanged, independent)
   -> ConfigInitCommand, ConfigShowCommand, ConfigValidateCommand
@@ -221,8 +222,8 @@ final class BufferingOutputCollector implements OutputCollectorInterface
 ```php
 interface ToolRunnerInterface
 {
+    public function describe(ToolRunRequest $request): ToolRunDescription;
     public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult;
-
     /** @return list<string> */
     public function supportedTools(): array;
 }
@@ -281,6 +282,7 @@ final class RectorRunner implements ToolRunnerInterface
         private readonly ProcessExecutor $processExecutor,
         private readonly ProjectEnvironment $projectEnv,
         private readonly ConfigurationLoaderInterface $configLoader,
+        private readonly ?MemoryOptimizer $memoryOptimizer = null,
     ) {}
 
     public function supportedTools(): array
@@ -288,24 +290,41 @@ final class RectorRunner implements ToolRunnerInterface
         return ['rector'];
     }
 
+    public function describe(ToolRunRequest $request): ToolRunDescription
+    {
+        $configPath = $this->resolveConfigPath($request);
+        $targetPaths = $this->resolveTargetPaths($request);
+        $memoryLimit = $this->memoryOptimizer?->calculateMemoryLimit('rector', $targetPaths);
+
+        return new ToolRunDescription(
+            configPath: $configPath,
+            targetPaths: $targetPaths,
+            memoryLimit: $memoryLimit,
+        );
+    }
+
     public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult
     {
         $projectRoot = $this->projectEnv->getProjectRoot();
         $vendorBinPath = $this->projectEnv->getVendorBinPath();
-        $configPath = $this->resolveConfigPath($request);
+        $description = $this->describe($request);
 
         $command = [
             $vendorBinPath . '/rector',
             'process',
-            '--config=' . $configPath,
+            '--config=' . $description->configPath,
         ];
 
         if ($request->dryRun) {
             $command[] = '--dry-run';
         }
 
-        $targetPaths = $this->resolveTargetPaths($request);
-        foreach ($targetPaths as $path) {
+        if ($description->memoryLimit !== null) {
+            $command[] = '-d';
+            $command[] = 'memory_limit=' . $description->memoryLimit;
+        }
+
+        foreach ($description->targetPaths as $path) {
             $command[] = $path;
         }
 
@@ -357,13 +376,19 @@ final class RectorRunner implements ToolRunnerInterface
 ### Command example
 
 ```php
-#[AsCommand(name: 'lint:rector', description: '...')]
-final class RectorLintCommand extends Command
+final class RectorCommand extends Command
 {
     public function __construct(
         private readonly ToolRunnerRegistry $registry,
+        private readonly ToolRunInfoDisplay $infoDisplay,
+        private readonly bool $dryRun,
+        string $name,
+        string $description,
+        string $help,
     ) {
-        parent::__construct();
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
     }
 
     protected function configure(): void
@@ -377,13 +402,17 @@ final class RectorLintCommand extends Command
     {
         $request = new ToolRunRequest(
             toolName: 'rector',
-            dryRun: true,
+            dryRun: $this->dryRun,
             configOverride: $input->getOption('config'),
             pathOverride: $input->getOption('path'),
         );
 
+        $runner = $this->registry->get('rector');
+        $description = $runner->describe($request);
+        $this->infoDisplay->render($description, $output);
+
         $collector = new StreamingOutputCollector($output);
-        $result = $this->registry->get('rector')->run($request, $collector);
+        $result = $runner->run($request, $collector);
 
         $this->renderMessages($result, $output);
 
@@ -402,6 +431,11 @@ final class RectorLintCommand extends Command
     }
 }
 ```
+
+Two DI registrations cover both command names. `RectorCommand.lint` is wired with
+`dryRun: true` and registered as `lint:rector`. `RectorCommand.fix` is wired with
+`dryRun: false` and registered as `fix:rector`. No `#[AsCommand]` attribute is
+used because the name is injected at construction time.
 
 ### ProjectEnvironment
 
@@ -514,8 +548,6 @@ into a new service injected into runners.
 - [x] Other runners: inject memory limit as PHP `-d memory_limit=` flag in command
 - [x] Unit tests for MemoryOptimizer
 - [x] Runner tests for memory limit integration
-- [ ] Unit tests for MemoryOptimizer
-- [ ] Update runner tests to verify memory limit integration
 
 ### Migration phase (one command at a time)
 
@@ -524,11 +556,34 @@ Unmigrated commands continue to work on the old hierarchy.
 
 Order: Rector -> PhpCsFixer -> TypoScript -> Fractor -> PHPStan -> Composer
 
-For each command:
+#### Rector (complete)
 
-- [ ] Rewrite to extend `Command` directly (drop BaseCommand/AbstractToolCommand)
-- [ ] Inject `ToolRunnerRegistry` as sole dependency
-- [ ] Build `ToolRunRequest` from input, call runner, render result
+- [x] Consolidated RectorLintCommand + RectorFixCommand into parameterized RectorCommand
+- [x] Two DI registrations: RectorCommand.lint (dryRun: true) and RectorCommand.fix (dryRun: false)
+- [x] Added describe() to ToolRunnerInterface, implemented in all 6 runners
+- [x] Created ToolRunDescription DTO for pre-run info
+- [x] Created ToolRunInfoDisplay for rendering optimization details
+- [x] Added resolveToolConfigPath() to ConfigurationLoaderInterface for config auto-discovery
+- [x] Updated RectorRunner to use config auto-discovery before package defaults
+- [x] Made MemoryOptimizer::analyzeAndAggregate() public for describe() metrics
+- [x] Fixed CustomToolConfigurationTest rector scenarios (VendorDirectoryDetector cache, PHP mock executable)
+- [x] Updated QualityToolsApplication with registerRunnerCommands() for suffixed service IDs
+- [x] All 1165 tests pass, 0 CS Fixer issues, 0 PHPStan errors
+
+#### Remaining commands
+
+Use the parameterized command pattern established by RectorCommand: a single
+command class with two DI registrations (one for lint, one for fix). No
+`#[AsCommand]` attribute; name and description are injected via constructor.
+
+For each remaining command pair (PhpCsFixer, TypoScript, Fractor, PHPStan, Composer):
+
+- [ ] Create a single parameterized Command class (lint and fix share one class)
+- [ ] Inject `ToolRunnerRegistry` and `ToolRunInfoDisplay` as constructor dependencies
+- [ ] Inject `bool $dryRun`, `string $name`, `string $description`, `string $help` as constructor parameters
+- [ ] Build `ToolRunRequest` from input, call runner via StreamingOutputCollector
+- [ ] Call describe() and render pre-run info via ToolRunInfoDisplay before running
+- [ ] Register two DI service definitions (e.g., PhpCsFixerCommand.lint and PhpCsFixerCommand.fix)
 - [ ] Update/rewrite command tests
 - [ ] Verify integration tests pass
 
@@ -563,8 +618,18 @@ For each command:
 | `src/Tool/Runner/FractorRunner.php`               | Build 4 |
 | `src/Tool/Runner/PhpStanRunner.php`               | Build 4 |
 | `src/Tool/Runner/ComposerNormalizeRunner.php`     | Build 4 |
+| `src/Tool/Runner/ToolRunDescription.php`          | Migration |
+| `src/Console/Output/ToolRunInfoDisplay.php`       | Migration |
+| `src/Console/Command/RectorCommand.php`           | Migration |
 
-## Files Deleted (Cleanup Phase)
+## Files Deleted
+
+### Migration Phase (already deleted)
+
+- `src/Console/Command/RectorLintCommand.php` (replaced by parameterized RectorCommand)
+- `src/Console/Command/RectorFixCommand.php` (replaced by parameterized RectorCommand)
+
+### Cleanup Phase
 
 - `src/Console/Command/BaseCommand.php`
 - `src/Console/Command/AbstractToolCommand.php`
@@ -585,12 +650,16 @@ For each command:
 - [ ] ContainerAwareInterface / ContainerAwareTrait deleted
 - [x] PHPStan level 6 clean (Step 1 code verified)
 - [ ] No behavioral changes from the user perspective
-- [ ] Commands have exactly one constructor dependency (ToolRunnerRegistry)
+- [ ] Commands have two constructor dependencies (ToolRunnerRegistry, ToolRunInfoDisplay)
 
 ## Open Questions
 
-**Memory optimization**: Resolved -- keep MemoryCalculator/ProjectAnalyzer, compose
-them into a MemoryOptimizer service injected into runners that need it (Step 5).
+**Memory optimization**: Resolved. MemoryCalculator and ProjectAnalyzer are
+composed into MemoryOptimizer, which is injected as an optional dependency into
+runners that need it. The describe() method calls
+MemoryOptimizer::analyzeAndAggregate() (made public for this purpose) to produce
+memory metrics for pre-run display. Runners pass the calculated limit as a PHP
+`-d memory_limit=` flag in the command array.
 
 **TYPO3 project detection**: Relax in ProjectEnvironment to support any Composer
 project, enabling `qt` to lint itself.

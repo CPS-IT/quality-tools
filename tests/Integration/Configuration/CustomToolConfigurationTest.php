@@ -7,11 +7,13 @@ namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Support\ConfigurationAssertions;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -58,6 +60,8 @@ final class CustomToolConfigurationTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        VendorDirectoryDetector::clearCache();
+        ServiceContainer::reset();
     }
 
     /**
@@ -224,6 +228,10 @@ final class CustomToolConfigurationTest extends TestCase
         TestHelper::withEnvironment(
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function () use ($toolCommand, &$output): void {
+                // Reset static caches so the new environment is picked up
+                VendorDirectoryDetector::clearCache();
+                ServiceContainer::reset();
+
                 $application = new QualityToolsApplication();
                 $command = $application->find($toolCommand);
                 $commandTester = new CommandTester($command);

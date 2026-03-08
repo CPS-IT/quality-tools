@@ -47,6 +47,8 @@ services:
   Cpsit\QualityTools\Console\Command\:
     resource: '../src/Console/Command/*'
     public: true
+    exclude:
+      - '../src/Console/Command/RectorCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -66,15 +68,64 @@ services:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
-  # Tool commands use unified configuration loader
-  Cpsit\QualityTools\Console\Command\RectorLintCommand:
+  # Tool Runner Infrastructure (Issue 023)
+  Cpsit\QualityTools\Service\ProjectEnvironment:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
     public: true
 
-  Cpsit\QualityTools\Console\Command\RectorFixCommand:
+  Cpsit\QualityTools\Service\MemoryOptimizer:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $projectAnalyzer: '@Cpsit\QualityTools\Utility\ProjectAnalyzer'
+      $memoryCalculator: '@Cpsit\QualityTools\Utility\MemoryCalculator'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\RectorRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
+    arguments:
+      $runners:
+        - '@Cpsit\QualityTools\Tool\Runner\RectorRunner'
+    public: true
+
+  # Pre-run info display (Issue 023)
+  Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay:
+    arguments:
+      $memoryCalculator: '@Cpsit\QualityTools\Utility\MemoryCalculator'
+    public: true
+
+  # Tool commands use runner infrastructure (Issue 023)
+  # RectorCommand is registered twice: once for lint (dry-run), once for fix
+  Cpsit\QualityTools\Console\Command\RectorCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\RectorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:rector'
+      $description: 'Run Rector in dry-run mode to analyze code without making changes'
+      $help: 'This command runs Rector in dry-run mode to show what changes would be made without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\RectorCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\RectorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:rector'
+      $description: 'Run Rector to automatically fix and upgrade code'
+      $help: 'This command runs Rector to automatically apply code fixes and upgrades. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\PhpStanCommand:

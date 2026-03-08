@@ -28,6 +28,31 @@ final readonly class FractorRunner implements ToolRunnerInterface
         return [ToolName::Fractor->value];
     }
 
+    public function describe(ToolRunRequest $request): ToolRunDescription
+    {
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $configPath = $this->resolveConfigPath($request);
+        $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
+
+        $metrics = null;
+        $memoryLimit = null;
+        if ($this->memoryOptimizer !== null) {
+            $metrics = $this->memoryOptimizer->analyzeAndAggregate($targetPaths);
+            $memoryLimit = $this->memoryOptimizer->calculateMemoryLimit(
+                ToolName::Fractor->value,
+                $targetPaths,
+            );
+        }
+
+        return new ToolRunDescription(
+            toolName: ToolName::Fractor->value,
+            configPath: $configPath,
+            targetPaths: $targetPaths,
+            metrics: $metrics,
+            memoryLimit: $memoryLimit,
+        );
+    }
+
     public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult
     {
         $projectRoot = $this->projectEnv->getProjectRoot();

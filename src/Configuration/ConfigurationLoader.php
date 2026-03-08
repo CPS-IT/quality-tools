@@ -222,6 +222,40 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         return $configuration;
     }
 
+    // Tool config path resolution
+
+    public function resolveToolConfigPath(string $projectRoot, string $toolName): ?string
+    {
+        try {
+            $hierarchy = new ConfigurationHierarchy($projectRoot);
+            $discovery = new ConfigurationDiscovery(
+                $hierarchy,
+                $this->filesystemService,
+                $this->securityService,
+                $this->validator,
+                $this->toolValidator,
+            );
+
+            if (!$discovery->hasToolConfiguration($toolName)) {
+                return null;
+            }
+
+            $configPath = $discovery->getToolConfigurationPath($toolName);
+            if ($configPath === null) {
+                return null;
+            }
+
+            return $this->filesystemService->validateConfigurationPath(
+                $configPath,
+                $projectRoot,
+                $toolName,
+            );
+        } catch (\Throwable) {
+            // Discovery or validation failed -- caller falls back to package default
+            return null;
+        }
+    }
+
     // Configuration analysis methods
 
     public function hasHierarchicalConfiguration(string $projectRoot): bool
@@ -491,6 +525,9 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
 
     // Factory methods for creating loaders with specific modes
 
+    /**
+     * @deprecated
+     */
     public static function createSimpleLoader(
         ConfigurationValidator $validator,
         SecurityService $securityService,
@@ -511,6 +548,9 @@ final readonly class ConfigurationLoader implements ConfigurationLoaderInterface
         );
     }
 
+    /**
+     * @deprecated
+     */
     public static function createHierarchicalLoader(
         ConfigurationValidator $validator,
         SecurityService $securityService,

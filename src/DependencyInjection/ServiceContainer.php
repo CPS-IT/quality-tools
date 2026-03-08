@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
@@ -44,6 +45,10 @@ final class ServiceContainer
     private static function buildContainer(): ContainerBuilder
     {
         $container = new ContainerBuilder();
+
+        // Auto-tag Command subclasses so they can be discovered via findTaggedServiceIds()
+        $container->registerForAutoconfiguration(Command::class)
+            ->addTag('console.command');
 
         // Load service definitions
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));

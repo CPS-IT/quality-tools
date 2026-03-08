@@ -25,6 +25,20 @@ final readonly class ComposerNormalizeRunner implements ToolRunnerInterface
         return [ToolName::ComposerNormalize->value];
     }
 
+    public function describe(ToolRunRequest $request): ToolRunDescription
+    {
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
+
+        return new ToolRunDescription(
+            toolName: ToolName::ComposerNormalize->value,
+            configPath: '',
+            targetPaths: $targetPaths,
+            metrics: null,
+            memoryLimit: null,
+        );
+    }
+
     public function run(ToolRunRequest $request, OutputCollectorInterface $collector): ToolRunResult
     {
         $projectRoot = $this->projectEnv->getProjectRoot();

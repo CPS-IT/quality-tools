@@ -7,7 +7,6 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Console\Command\BaseCommand;
-use Cpsit\QualityTools\Console\Command\RectorLintCommand;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -111,7 +110,7 @@ final class BaseCommandPathResolutionTest extends TestCase
     {
         $mockConfigLoader = $this->createMock(ConfigurationLoaderInterface::class);
 
-        $command = new class($mockConfigLoader) extends RectorLintCommand {
+        $command = new class($mockConfigLoader) extends BaseCommand {
             public function publicGetTargetPathForTool(InputInterface $input, string $tool): string
             {
                 return $this->getTargetPathForTool($input, $tool);
@@ -125,7 +124,7 @@ final class BaseCommandPathResolutionTest extends TestCase
             protected function configure(): void
             {
                 parent::configure();
-                $this->setName('test:rector-command');
+                $this->setName('test:base-command-path');
             }
         };
 

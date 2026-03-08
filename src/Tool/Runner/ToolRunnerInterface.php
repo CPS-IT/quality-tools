@@ -9,6 +9,14 @@ use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 interface ToolRunnerInterface
 {
     /**
+     * Describe what the runner will do for a given request, without executing.
+     *
+     * Returns resolved config path, target paths, metrics and optimization info.
+     * Commands use this to display pre-run information to the user.
+     */
+    public function describe(ToolRunRequest $request): ToolRunDescription;
+
+    /**
      * Execute the tool and return a structured result.
      *
      * The collector receives live process output during execution.

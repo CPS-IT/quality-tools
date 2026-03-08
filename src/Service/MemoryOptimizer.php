@@ -43,7 +43,7 @@ final readonly class MemoryOptimizer
      *
      * @param list<string> $targetPaths
      */
-    private function analyzeAndAggregate(array $targetPaths): ProjectMetrics
+    public function analyzeAndAggregate(array $targetPaths): ProjectMetrics
     {
         $aggregated = null;
 

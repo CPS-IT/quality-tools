@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console;
 
-use Cpsit\QualityTools\DependencyInjection\ContainerAwareInterface;
 use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -15,6 +14,7 @@ final class QualityToolsApplication extends Application
 {
     private const string APP_NAME = 'CPSIT Quality Tools';
     private const string APP_VERSION = '1.0.0-dev';
+    private const string COMMAND_TAG = 'console.command';
 
     private ?string $projectRoot = null;
     private ContainerBuilder $container;
@@ -28,7 +28,6 @@ final class QualityToolsApplication extends Application
             $this->container = ServiceContainer::getContainer();
         } catch (\Throwable) {
             // Fallback for test scenarios where container initialization might fail
-            // This ensures existing tests continue to work during the DI integration phase
             $this->container = new ContainerBuilder();
         }
 
@@ -144,68 +143,22 @@ final class QualityToolsApplication extends Application
         return false;
     }
 
+    /**
+     * Discover and register all commands tagged with 'console.command' in the DI container.
+     */
     private function registerCommands(): void
     {
-        $commandDir = __DIR__ . '/Command';
+        $taggedServiceIds = $this->container->findTaggedServiceIds(self::COMMAND_TAG);
 
-        if (!is_dir($commandDir)) {
-            return; // No commands directory yet
-        }
-
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($commandDir, \FilesystemIterator::SKIP_DOTS),
-        );
-
-        foreach ($iterator as $file) {
-            if ($file->getExtension() !== 'php') {
+        foreach (array_keys($taggedServiceIds) as $serviceId) {
+            try {
+                $command = $this->container->get($serviceId);
+                if ($command instanceof Command) {
+                    $this->add($command);
+                }
+            } catch (\Throwable) {
                 continue;
             }
-
-            $relativePath = str_replace($commandDir . '/', '', $file->getPathname());
-            $className = $this->getClassNameFromFile($relativePath);
-
-            if ($className && $this->isValidCommandClass($className)) {
-                try {
-                    $command = $this->container->has($className)
-                        ? $this->container->get($className)
-                        : new $className();
-
-                    // Inject container for container-aware commands
-                    if ($command instanceof ContainerAwareInterface) {
-                        $command->setContainer($this->container);
-                    }
-
-                    $this->add($command);
-                } catch (\Throwable) {
-                    // Skip commands that fail to instantiate
-                    continue;
-                }
-            }
-        }
-    }
-
-    private function getClassNameFromFile(string $relativePath): string
-    {
-        $pathWithoutExtension = str_replace('.php', '', $relativePath);
-        $classPath = str_replace('/', '\\', $pathWithoutExtension);
-
-        return 'Cpsit\\QualityTools\\Console\\Command\\' . $classPath;
-    }
-
-    private function isValidCommandClass(string $className): bool
-    {
-        if (!class_exists($className)) {
-            return false;
-        }
-
-        try {
-            $reflection = new \ReflectionClass($className);
-
-            return $reflection->isSubclassOf(Command::class)
-                   && !$reflection->isAbstract()
-                   && $reflection->isInstantiable();
-        } catch (\Throwable) {
-            return false;
         }
     }
 }

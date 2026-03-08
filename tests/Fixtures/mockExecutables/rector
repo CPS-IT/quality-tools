@@ -1,33 +1,38 @@
-#!/bin/bash
-# Mock rector executable for testing configuration discovery
-# This mock simulates rector and outputs paths based on the config file used
+#!/usr/bin/env php
+<?php
+// Mock rector executable for testing configuration discovery
+// This mock simulates rector and outputs paths based on the config file used
+// Works both when called directly (#!/usr/bin/env php) and via "php rector"
 
-# Parse arguments to find config file
-CONFIG_FILE=""
-for arg in "$@"; do
-    # Handle separate flags: -c file or --config file
-    if [[ "$prev_arg" == "-c" ]] || [[ "$prev_arg" == "--config" ]]; then
-        CONFIG_FILE="$arg"
-    # Handle combined flag: --config=file
-    elif [[ "$arg" =~ ^--config=(.+)$ ]]; then
-        CONFIG_FILE="${BASH_REMATCH[1]}"
-    fi
-    prev_arg="$arg"
-done
+$configFile = null;
+$args = array_slice($argv, 1);
 
-# Check if we're using a custom config (contains "custom-rector")
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    if grep -q "custom-rector" "$CONFIG_FILE" 2>/dev/null; then
-        # Extract the custom path from the config file
-        PATH_VALUE=$(grep -o "'[^']*custom-rector[^']*-path[^']*'" "$CONFIG_FILE" | tr -d "'" | head -1)
-        if [[ -n "$PATH_VALUE" ]]; then
-            echo "$PATH_VALUE"
-            exit 0
-        fi
-    fi
-fi
+for ($i = 0; $i < count($args); $i++) {
+    $arg = $args[$i];
 
-# Default behavior when not using custom config
-# (This simulates the current behavior where custom configs are ignored)
-echo "No custom config detected - using package defaults"
-exit 0
+    // Handle --config=file format
+    if (preg_match('/^--config=(.+)$/', $arg, $matches)) {
+        $configFile = $matches[1];
+    }
+    // Handle -c file or --config file format
+    elseif (($arg === '-c' || $arg === '--config') && isset($args[$i + 1])) {
+        $configFile = $args[$i + 1];
+        $i++;
+    }
+}
+
+// Check if we're using a custom config (contains "custom-rector")
+if ($configFile !== null && file_exists($configFile)) {
+    $content = file_get_contents($configFile);
+    if (str_contains($content, 'custom-rector')) {
+        // Extract the custom path from the config file
+        if (preg_match("/['\"]([^'\"]*custom-rector[^'\"]*-path[^'\"]*)['\"]/" , $content, $matches)) {
+            echo $matches[1] . PHP_EOL;
+            exit(0);
+        }
+    }
+}
+
+// Default behavior when not using custom config
+echo "No custom config detected - using package defaults" . PHP_EOL;
+exit(0);

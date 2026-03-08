@@ -236,6 +236,15 @@ final class TestHelper
         mkdir($configDir, 0o777, true);
         mkdir($binDir, 0o777, true);
 
+        // Create structure required by VendorDirectoryDetector
+        $composerDir = $vendorDir . '/composer';
+        if (!is_dir($composerDir)) {
+            mkdir($composerDir, 0o777, true);
+        }
+        if (!file_exists($vendorDir . '/autoload.php')) {
+            file_put_contents($vendorDir . '/autoload.php', "<?php\n// Mock autoload\n");
+        }
+
         // Create minimal configuration files for testing if requested
         if ($includeConfigFiles) {
             self::createMockConfigurationFiles($configDir);

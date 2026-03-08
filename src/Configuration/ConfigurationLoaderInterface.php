@@ -23,6 +23,15 @@ interface ConfigurationLoaderInterface
     // Tool-specific loading (from HierarchicalConfigurationLoader)
     public function loadForTool(string $projectRoot, string $tool, array $commandLineOverrides = []): ConfigurationInterface;
 
+    /**
+     * Resolve the config file path for a tool via auto-discovery.
+     *
+     * Checks project-local locations (project root, config/, .config/, YAML config_file)
+     * and returns the discovered path, or null if no project-local config exists.
+     * The caller is responsible for falling back to a package default when null is returned.
+     */
+    public function resolveToolConfigPath(string $projectRoot, string $toolName): ?string;
+
     // Configuration analysis methods (from HierarchicalConfigurationLoader)
     public function hasHierarchicalConfiguration(string $projectRoot): bool;
 

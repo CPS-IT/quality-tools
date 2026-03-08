@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -41,22 +41,24 @@ logic lives in dedicated runner classes behind a common interface.
 
 ```
 Command layer (Symfony Console)
-  RectorLintCommand, PhpStanCommand, ...
-  - Only dependency: ToolRunnerRegistry
+  RectorCommand (parameterized, registered twice via DI), PhpStanCommand, ...
+  - Dependencies: ToolRunnerRegistry + ToolRunInfoDisplay
   - Unwraps input into ToolRunRequest DTO
   - Creates StreamingOutputCollector from OutputInterface
+  - Calls describe() to render pre-run info via ToolRunInfoDisplay
   - Calls runner, renders ToolRunResult messages
 
 Runner layer (no framework dependency)
   RectorRunner, PhpStanRunner, ...
   - Implements ToolRunnerInterface
-  - Receives ToolRunRequest (user intent) + ToolOutputCollector (output sink)
+  - Receives ToolRunRequest (user intent) + OutputCollectorInterface (output sink)
   - Owns path resolution, config discovery, command building
   - Returns ToolRunResult with exit code and diagnostic messages
-  - Composes services via constructor injection (ProcessExecutor, ProjectEnvironment, ...)
+  - Exposes describe(ToolRunRequest): ToolRunDescription for pre-run info
+  - Composes services via constructor injection (ProcessExecutor, ProjectEnvironment, MemoryOptimizer, ...)
 
 Service layer (unchanged)
-  ProcessExecutor, ProjectEnvironment, ConfigurationLoader, FilesystemService, ...
+  ProcessExecutor, ProjectEnvironment, MemoryOptimizer, ConfigurationLoader, FilesystemService, ...
 ```
 
 ### Key design choices
@@ -68,16 +70,43 @@ project root, vendor paths, config paths, and target paths internally via
 the services it composes. This keeps the command layer free of resolution
 dependencies.
 
-**ToolOutputCollector decouples runners from Symfony Console.** Runners produce
-live process output (stdout/stderr streaming) via a `ToolOutputCollector`
-interface. The command layer provides a `StreamingOutputCollector` that forwards
-to `OutputInterface` in real time. Tests use a `BufferingOutputCollector` that
-stores output in memory. The runner has no knowledge of how output is delivered.
+**OutputCollectorInterface decouples runners from Symfony Console.** Runners
+produce live process output (stdout/stderr streaming) via an
+`OutputCollectorInterface`. The command layer provides a
+`StreamingOutputCollector` that forwards to `OutputInterface` in real time.
+Tests use a `BufferingOutputCollector` that stores output in memory. The runner
+has no knowledge of how output is delivered.
 
 **ToolRunResult carries runner diagnostics.** The result DTO contains the exit
-code and a list of `ToolMessage` objects (info/warning/error with context). Live
-process output flows through the collector; runner-level diagnostics (resolved
-paths, missing files, validation summaries) go into the result.
+code and a list of `Message` objects (info/warning/error with context, using
+`MessageSeverity`). Live process output flows through the collector;
+runner-level diagnostics (resolved paths, missing files, validation summaries)
+go into the result.
+
+**Parameterized commands eliminate lint/fix duplication.** One `RectorCommand`
+class is registered twice in `services.yaml` with different `$dryRun`, `$name`,
+`$description`, and `$help` constructor values. The file scanner excludes the
+class from automatic registration; `registerRunnerCommands()` resolves both
+instances by suffixed service IDs. This removes the need for separate
+`RectorLintCommand` and `RectorFixCommand` classes.
+
+**describe() enables pre-run info display.** `ToolRunnerInterface` exposes a
+`describe(ToolRunRequest): ToolRunDescription` method that returns the resolved
+config path, target paths, metrics, and memory limit without executing the
+tool. `ToolRunInfoDisplay` renders this information to the console before the
+run begins. This replaces `BaseCommand::showOptimizationDetails()`.
+
+**Memory optimization is composed, not inherited.** `MemoryCalculator` and
+`ProjectAnalyzer` are kept but composed into a `MemoryOptimizer` service that
+is injected into runners that need it. `MemoryOptimizer::analyzeAndAggregate()`
+provides the metrics used by `describe()`. Commands no longer inherit memory
+logic from a base class.
+
+**Config auto-discovery via ConfigurationLoader.** A
+`resolveToolConfigPath(projectRoot, toolName): ?string` method is added to
+`ConfigurationLoaderInterface`. Runners call it before falling back to package
+defaults. This eliminates the duplicated `AbstractToolCommand::resolveConfigPath`
+logic that was previously copied across the command layer.
 
 **One runner per tool, no inheritance between runners.** Each runner is a
 self-contained class. Shared behavior (process execution, path resolution) is
@@ -91,29 +120,38 @@ structure with direct service injection.
 
 ### Components
 
-**DTOs** (`src/ToolRunner/`):
+**DTOs** (`src/Tool/Runner/`):
 - `ToolRunRequest` -- immutable, user intent only
 - `ToolRunResult` -- immutable, exit code + messages
-- `ToolMessage` -- immutable, severity + text + context
+- `ToolRunDescription` -- immutable, resolved config path, target paths, metrics, memory limit
+
+**DTOs** (`src/Messaging/`):
+- `Message` -- immutable, severity + text + context
 - `MessageSeverity` -- enum (info, warning, error)
 
-**Interfaces** (`src/ToolRunner/`):
-- `ToolRunnerInterface` -- `run(ToolRunRequest, ToolOutputCollector): ToolRunResult` + `supportedTools(): list<string>`
-- `ToolOutputCollector` -- `write(string, MessageSeverity): void` + `writeError(string): void`
+**Interfaces** (`src/Tool/Runner/`):
+- `ToolRunnerInterface` -- `run(ToolRunRequest, OutputCollectorInterface): ToolRunResult` + `describe(ToolRunRequest): ToolRunDescription` + `supportedTools(): list<string>`
 
-**Collector implementations** (`src/ToolRunner/`):
+**Interfaces** (`src/Messaging/`):
+- `OutputCollectorInterface` -- `write(string, MessageSeverity): void` + `writeError(string): void`
+
+**Collector implementations** (`src/Messaging/`):
 - `StreamingOutputCollector` -- wraps OutputInterface, forwards immediately
 - `BufferingOutputCollector` -- stores in memory for tests
 
-**Registry** (`src/ToolRunner/`):
+**Registry** (`src/Tool/Runner/`):
 - `ToolRunnerRegistry` -- maps tool names to runner instances via DI tagging
 
-**Runners** (`src/ToolRunner/`):
+**Runners** (`src/Tool/Runner/`):
 - `RectorRunner`, `PhpStanRunner`, `PhpCsFixerRunner`, `FractorRunner`, `TypoScriptLintRunner`, `ComposerNormalizeRunner`
 
+**Display** (`src/Console/Output/`):
+- `ToolRunInfoDisplay` -- renders `ToolRunDescription` to the console before a run
+
 **Services** (`src/Service/`):
-- `ProjectEnvironment` (new) -- project root + vendor path detection
-- `ProcessExecutor` (adapted) -- gains `ToolOutputCollector`-based method
+- `ProjectEnvironment` (new) -- project root + vendor path detection, supports any Composer project
+- `MemoryOptimizer` (new) -- composes MemoryCalculator and ProjectAnalyzer, exposes `analyzeAndAggregate()`
+- `ProcessExecutor` (adapted) -- gains `OutputCollectorInterface`-based method
 
 ### What gets removed
 
@@ -121,19 +159,21 @@ structure with direct service injection.
 - `ContainerAwareInterface`, `ContainerAwareTrait`
 - `CommandBuilder`, `ProcessEnvironmentPreparer`, `ErrorHandler`
 - `ToolCommandInterface`
+- `RectorLintCommand`, `RectorFixCommand` (replaced by parameterized `RectorCommand`)
 
 ### What stays
 
 - `ProcessExecutor` (adapted), `FilesystemService`, `SecurityService`
 - `VendorDirectoryDetector` (used by ProjectEnvironment)
 - `ConfigurationLoader`, `ErrorFactory`
+- `MemoryCalculator`, `ProjectAnalyzer` (composed into MemoryOptimizer)
 - Config commands (independent)
 
 ## Consequences
 
 ### Positive
 
-- Commands become ~30 lines with a single dependency (ToolRunnerRegistry)
+- Commands become ~30 lines with two dependencies (ToolRunnerRegistry, ToolRunInfoDisplay)
 - Each tool's logic is self-contained in its runner
 - DTOs make the data flow explicit and type-safe
 - Runners are testable without Symfony Console (BufferingOutputCollector)
@@ -141,6 +181,7 @@ structure with direct service injection.
 - Config commands fully decoupled from tool commands
 - Adding a new tool: one runner class + one command class
 - Runners are usable outside CLI context (CI scripts, programmatic usage)
+- Parameterized RectorCommand eliminates lint/fix class duplication
 
 ### Negative
 
@@ -180,12 +221,13 @@ command dependencies. Keeps resolution logic in the wrong layer.
 
 ## Open Questions
 
-**Memory optimization**: The MemoryCalculator/ProjectAnalyzer logic adds
-complexity. Recommendation: drop it, expose `--memory-limit` as a direct
-command option where applicable (PHPStan).
+**Memory optimization**: Resolved. MemoryCalculator and ProjectAnalyzer are
+kept and composed into a `MemoryOptimizer` service. This avoids dropping
+existing logic while removing the inheritance-based delivery mechanism.
 
-**TYPO3 project detection**: Currently blocks non-TYPO3 usage.
-ProjectEnvironment should support any Composer project.
+**TYPO3 project detection**: Resolved. `ProjectEnvironment` supports any
+Composer project via `VendorDirectoryDetector`. TYPO3-specific assumptions
+have been removed from the environment detection logic.
 
 ## References
 
