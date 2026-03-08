@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Build Step 1 complete)                                                                  |
+| **Status:**   | In Progress (Build Steps 1-2 complete)                                                               |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -468,12 +468,12 @@ any existing class or test. Old and new coexist until all commands are migrated.
 
 #### Step 2: ProjectEnvironment
 
-- [ ] Create `Service/ProjectEnvironment` (new class)
-- [ ] Replicate project root detection from QualityToolsApplication
-- [ ] Replicate vendor path detection from BaseCommand
-- [ ] Relax TYPO3-only project detection to support any Composer project
-- [ ] Unit tests
-- [ ] Wire into DI container
+- [x] Create `Service/ProjectEnvironment` (new class)
+- [x] Replicate project root detection from QualityToolsApplication
+- [x] Replicate vendor path detection from BaseCommand
+- [x] Relax TYPO3-only project detection to support any Composer project
+- [x] Unit tests
+- [ ] Wire into DI container (deferred to migration phase)
 
 #### Step 3: Add executeWithCollector to ProcessExecutor
 
