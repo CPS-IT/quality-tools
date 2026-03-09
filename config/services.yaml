@@ -53,6 +53,7 @@ services:
       - '../src/Console/Command/FractorCommand.php'
       - '../src/Console/Command/TypoScriptLintCommand.php'
       - '../src/Console/Command/ComposerNormalizeCommand.php'
+      - '../src/Console/Command/PhpStanCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -122,6 +123,14 @@ services:
       $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
+  Cpsit\QualityTools\Tool\Runner\PhpStanRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
   Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
     arguments:
       $runners:
@@ -130,6 +139,7 @@ services:
         - '@Cpsit\QualityTools\Tool\Runner\FractorRunner'
         - '@Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner'
         - '@Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\PhpStanRunner'
     public: true
 
   # Pre-run info display (Issue 023)
@@ -168,7 +178,13 @@ services:
 
   Cpsit\QualityTools\Console\Command\PhpStanCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $name: 'lint:phpstan'
+      $description: 'Run PHPStan static analysis'
+      $help: 'This command runs PHPStan static analysis to find bugs in your code without running it. Use --config to specify a custom configuration file, --path to target specific directories, or --level to override the analysis level.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\FractorCommand.lint:

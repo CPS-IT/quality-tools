@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Migration phase: Rector, PhpCsFixer, Fractor, TypoScriptLint complete)                  |
+| **Status:**   | In Progress (Migration phase complete, cleanup phase started)                                        |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -614,32 +614,39 @@ full pattern is visible.
 - [x] No --no-optimization option (no MemoryOptimizer for this tool)
 - [x] All 1174 tests pass, 0 CS Fixer issues, 0 PHPStan errors
 
-#### Remaining commands
+#### ComposerNormalize (complete)
 
-Use the parameterized command pattern established by RectorCommand: a single
-command class with two DI registrations (one for lint, one for fix). No
-`#[AsCommand]` attribute; name and description are injected via constructor.
+- [x] Created ComposerNormalizeCommand with parameterized lint/fix modes
+- [x] Two DI registrations: ComposerNormalizeCommand.lint (dryRun: true) and ComposerNormalizeCommand.fix (dryRun: false)
+- [x] Only --path option (no --config since composer-normalize uses no config file)
+- [x] Renders runner messages (e.g. "no composer.json files found" warning)
+- [x] Added ComposerNormalizeRunner to ToolRunnerRegistry
+- [x] All tests pass, 0 CS Fixer issues, 0 PHPStan errors
 
-For each remaining command pair (PHPStan, Composer):
+#### PhpStan (complete)
 
-- [ ] Create a single parameterized Command class (lint and fix share one class)
-- [ ] Inject `ToolRunnerRegistry` and `ToolRunInfoDisplay` as constructor dependencies
-- [ ] Inject `bool $dryRun`, `string $name`, `string $description`, `string $help` as constructor parameters
-- [ ] Build `ToolRunRequest` from input, call runner via StreamingOutputCollector
-- [ ] Call describe() and render pre-run info via ToolRunInfoDisplay before running
-- [ ] Register two DI service definitions (e.g., FractorCommand.lint and FractorCommand.fix)
-- [ ] Update/rewrite command tests
-- [ ] Verify integration tests pass
+- [x] Rewrote PhpStanCommand to use runner infrastructure
+- [x] Single DI registration (lint-only tool, no fix mode)
+- [x] Extra options: --level, --memory-limit, --no-optimization
+- [x] Passes level and memory-limit as toolOptions to ToolRunRequest
+- [x] Added config auto-discovery to PhpStanRunner via resolveToolConfigPath()
+- [x] Updated PhpStanTempFileCleanupTest integration test for new constructor
+- [x] All tests pass, 0 CS Fixer issues, 0 PHPStan errors
 
-### Cleanup phase (after all commands migrated)
+### Cleanup phase (in progress)
 
-- [ ] Delete `BaseCommand`, `AbstractToolCommand`, `FractorCommandTrait`
+Note: Config commands (ConfigInit, ConfigShow, ConfigValidate) still depend
+on BaseCommand. These will be addressed separately after the first cleanup round.
+
+- [ ] Delete `AbstractToolCommand` and its tests (no production code extends it)
+- [ ] Delete `CommandBuilder`, `ProcessEnvironmentPreparer` and their tests
 - [ ] Delete `ContainerAwareInterface`, `ContainerAwareTrait`
-- [ ] Delete `CommandBuilder`, `ProcessEnvironmentPreparer`
-- [ ] Delete `ToolCommandInterface`, `ErrorHandler`
+- [ ] Delete `ToolCommandInterface`
+- [ ] Delete old command test files (RectorLintCommandTest, RectorFixCommandTest, etc.)
 - [ ] Remove `executeProcess()` from ProcessExecutor, rename `executeWithCollector` to `executeProcess`
 - [ ] Update `services.yaml` (remove old wiring, finalize runner registrations)
 - [ ] Verify full test suite
+- [ ] Later: migrate Config commands off BaseCommand, then delete BaseCommand and ErrorHandler
 
 ## Files Created
 
@@ -667,6 +674,9 @@ For each remaining command pair (PHPStan, Composer):
 | `src/Console/Command/RectorCommand.php`           | Migration |
 | `src/Console/Command/PhpCsFixerCommand.php`       | Migration |
 | `src/Console/Command/FractorCommand.php`          | Migration |
+| `src/Console/Command/TypoScriptLintCommand.php`   | Migration (rewritten) |
+| `src/Console/Command/PhpStanCommand.php`          | Migration (rewritten) |
+| `src/Console/Command/ComposerNormalizeCommand.php` | Migration |
 
 ## Files Deleted
 

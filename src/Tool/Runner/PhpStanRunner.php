@@ -112,6 +112,12 @@ final readonly class PhpStanRunner implements ToolRunnerInterface
             return $request->configOverride;
         }
 
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $discovered = $this->configLoader->resolveToolConfigPath($projectRoot, ToolName::PhpStan->value);
+        if ($discovered !== null) {
+            return $discovered;
+        }
+
         return $this->projectEnv->getVendorPath()
             . '/cpsit/quality-tools/config/' . self::DEFAULT_CONFIG_FILE;
     }
