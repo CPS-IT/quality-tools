@@ -60,9 +60,11 @@ final class YamlConfigurationWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        ServiceContainer::reset();
 
         // Clean up environment variables after each test to prevent pollution
         $envVariablesToClean = [
+            'QT_PROJECT_ROOT',
             'PROJECT_NAME',
             'PHP_VERSION',
             'TYPO3_VERSION',
@@ -83,21 +85,17 @@ final class YamlConfigurationWorkflowTest extends TestCase
     {
         $env = ['QT_PROJECT_ROOT' => $this->tempDir] + $additionalEnv;
 
-        // Set superglobals for SecurityService compatibility
+        // Set superglobals and putenv for SecurityService and ProjectEnvironment compatibility
         foreach ($env as $key => $value) {
             $_SERVER[$key] = $value;
             $_ENV[$key] = $value;
+            putenv($key . '=' . $value);
         }
 
-        return TestHelper::withEnvironment(
-            $env,
-            function (): ApplicationTester {
-                $app = new QualityToolsApplication();
-                $app->setAutoExit(false);
+        $app = new QualityToolsApplication();
+        $app->setAutoExit(false);
 
-                return new ApplicationTester($app);
-            },
-        );
+        return new ApplicationTester($app);
     }
 
     public function testCompleteYamlWorkflow(): void
@@ -129,7 +127,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('quality-tools:', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output);
 
@@ -279,7 +277,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
             self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
             $output = $appTester->getDisplay();
-            self::assertStringContainsString('Failed to load configuration', $output);
+            self::assertStringContainsString('Configuration file error', $output);
         } finally {
             // Clean up invalid config file to prevent it from affecting other tests
             if (file_exists($configFile)) {
@@ -338,12 +336,11 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertStringContainsString('Scan Paths:', $output);
         self::assertStringContainsString('packages/', $output);
 
-        // Show with verbose output (shows configuration sources)
+        // Show with verbose output (shows source info as individual messages)
         $appTester->run(['command' => 'config:show', '--verbose' => true]);
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Configuration Sources', $output);
-        self::assertStringContainsString('Project:', $output);
+        self::assertStringContainsString('Source: Project:', $output);
         self::assertStringContainsString('.quality-tools.yaml', $output);
         self::assertStringContainsString('Package defaults', $output);
     }
@@ -434,10 +431,9 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
         $verboseOutput = $appTester->getDisplay();
 
-        // In verbose YAML mode, we should see configuration sources
-        self::assertStringContainsString('Configuration Sources', $verboseOutput);
-        self::assertStringContainsString('Global:', $verboseOutput);
-        self::assertStringContainsString('Project:', $verboseOutput);
+        // In verbose YAML mode, we should see source info as individual messages
+        self::assertStringContainsString('Source: Global:', $verboseOutput);
+        self::assertStringContainsString('Source: Project:', $verboseOutput);
 
         // Restore environment variables
         if ($originalHome !== false) {
@@ -471,7 +467,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('quality-tools:', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output); // defaults
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Integration\DependencyInjection;
 
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -92,7 +93,6 @@ final class CommandConsistencyTest extends TestCase
 
         // Should contain expected configuration content
         $outputContent = $output['output'];
-        self::assertStringContainsString('Resolved Configuration', $outputContent);
         self::assertStringContainsString('command-consistency-test', $outputContent);
         self::assertStringContainsString('php_version: \'8.4\'', $outputContent);
         self::assertStringContainsString('typo3_version: \'13.4\'', $outputContent);
@@ -159,10 +159,9 @@ final class CommandConsistencyTest extends TestCase
         self::assertSame(Command::SUCCESS, $output['exit_code']);
 
         $outputContent = $output['output'];
-        self::assertStringContainsString('Resolved Configuration', $outputContent);
         self::assertStringContainsString('command-consistency-test', $outputContent);
 
-        // Note: Configuration Sources might only be shown in hierarchical mode
+        // Source info is now shown as individual info messages in verbose mode
         // This test ensures both modes handle verbose flag consistently
         self::assertStringNotContainsString('ERROR', $outputContent);
         self::assertStringNotContainsString('FATAL', $outputContent);
@@ -299,7 +298,7 @@ final class CommandConsistencyTest extends TestCase
 
                     // Should complete successfully (showing defaults)
                     self::assertSame(Command::SUCCESS, $output['exit_code']);
-                    self::assertStringContainsString('Resolved Configuration', $output['output']);
+                    self::assertStringContainsString('quality-tools:', $output['output']);
                 },
             );
         } finally {
@@ -357,6 +356,7 @@ final class CommandConsistencyTest extends TestCase
         return TestHelper::withEnvironment(
             ['QT_PROJECT_ROOT' => $this->tempDir],
             function () use ($commandName, $input, $mode): array {
+                ServiceContainer::reset();
                 $app = $this->createApplicationWithMode($mode);
                 $command = $app->get($commandName);
 

@@ -54,12 +54,25 @@ services:
       - '../src/Console/Command/TypoScriptLintCommand.php'
       - '../src/Console/Command/ComposerNormalizeCommand.php'
       - '../src/Console/Command/PhpStanCommand.php'
+      - '../src/Console/Command/ConfigShowCommand.php'
+
+  # Config command runners (Issue 024)
+  Cpsit\QualityTools\Console\Runner\ConfigShowRunner:
+    arguments:
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
   Cpsit\QualityTools\Console\Command\ConfigShowCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigShowRunner'
+      $name: 'config:show'
+      $description: 'Show resolved configuration'
+      $help: 'Shows the resolved configuration after merging all sources.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\ConfigValidateCommand:

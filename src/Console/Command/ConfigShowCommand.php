@@ -4,33 +4,31 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\ConfigurationHierarchy;
-use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
-use Cpsit\QualityTools\Service\SecurityService;
-use Symfony\Component\Console\Attribute\AsCommand;
+use Cpsit\QualityTools\Console\Runner\ConfigShowRunner;
+use Cpsit\QualityTools\Console\Runner\DTO\ConfigShowRequest;
+use Cpsit\QualityTools\Messaging\MessageSeverity;
+use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
+use Cpsit\QualityTools\Service\ErrorHandler;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Yaml\Yaml;
 
-#[AsCommand(
-    name: 'config:show',
-    description: 'Show resolved configuration',
-    help: 'This command shows the resolved configuration after merging all sources.',
-)]
-final class ConfigShowCommand extends BaseCommand
+final class ConfigShowCommand extends Command
 {
-    public function __construct(ConfigurationLoaderInterface $configurationLoader)
-    {
-        parent::__construct($configurationLoader);
+    public function __construct(
+        private readonly ConfigShowRunner $runner,
+        string $name,
+        string $description,
+        string $help,
+    ) {
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
     }
 
-    #[\Override]
     protected function configure(): void
     {
-        parent::configure();
-
         $this
             ->addOption(
                 'format',
@@ -43,159 +41,34 @@ final class ConfigShowCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $projectRoot = $this->getProjectRoot();
-        $format = $input->getOption('format');
-
-        if (!\in_array($format, ['yaml', 'json'], true)) {
-            $io->error('Format must be either "yaml" or "json".');
-
-            return self::FAILURE;
-        }
-
         try {
-            // For config:show command, we need to validate that critical configuration
-            // files can be loaded. If they can't, we should fail.
-            $this->validateCriticalConfigurationFiles($projectRoot);
+            $request = new ConfigShowRequest(
+                format: $input->getOption('format'),
+            );
 
-            // Use hierarchical configuration loader specifically for config:show
-            $configuration = $this->configurationLoader->load($projectRoot);
-            $configData = $configuration->toArray();
+            $description = $this->runner->describe($request);
 
-            // Only show title for non-JSON formats
-            if ($format !== 'json') {
-                $io->title('Resolved Configuration');
-
-                // Show configuration file sources if verbose
-                if ($output->isVerbose()) {
-                    $this->showConfigurationSources($io, $this->configurationLoader, $projectRoot);
-                }
+            if ($output->isVerbose() && $description->configPath !== '') {
+                $output->writeln(\sprintf('<info>Configuration file: %s</info>', $description->configPath));
             }
 
-            // Output configuration in the requested format
-            switch ($format) {
-                case 'json':
-                    $output->writeln(json_encode($configData, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                    break;
+            $collector = new StreamingOutputCollector($output);
+            $result = $this->runner->run($request, $collector);
 
-                case 'yaml':
-                default:
-                    $yamlOutput = Yaml::dump($configData, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
-                    $output->writeln($yamlOutput);
-                    break;
+            // Always show errors and warnings; info messages only in verbose mode
+            foreach ($result->messages as $message) {
+                match ($message->severity) {
+                    MessageSeverity::Error => $output->writeln('<error>' . $message->text . '</error>'),
+                    MessageSeverity::Warning => $output->writeln('<comment>' . $message->text . '</comment>'),
+                    MessageSeverity::Info => $output->isVerbose()
+                        ? $output->writeln('<info>' . $message->text . '</info>')
+                        : null,
+                };
             }
 
-            return self::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error([
-                'Failed to load configuration:',
-                $e->getMessage(),
-            ]);
-
-            return self::FAILURE;
-        }
-    }
-
-    private function showConfigurationSources(SymfonyStyle $io, ConfigurationLoaderInterface $loader, string $projectRoot): void
-    {
-        $io->section('Configuration Sources');
-
-        $sources = [];
-
-        // Get all configuration sources from hierarchical loader
-        try {
-            $configSources = $loader->getConfigurationSources($projectRoot);
-            foreach ($configSources as $source) {
-                if ($source['file_path'] !== null) {
-                    $label = match ($source['source']) {
-                        'project_root' => 'Project',
-                        'config_dir' => 'Config directory',
-                        'global' => 'Global',
-                        'package_config' => 'Package',
-                        'tool_specific' => 'Tool-specific',
-                        'tool_config_dir' => 'Tool config dir',
-                        default => ucfirst((string) $source['source'])
-                    };
-                    $sources[] = \sprintf('%s: %s', $label, $source['file_path']);
-                } elseif ($source['source'] === 'package_defaults') {
-                    $sources[] = 'Package defaults (built-in)';
-                }
-            }
-        } catch (\Exception) {
-            $sources[] = 'Package defaults (built-in)';
-        }
-
-        $io->listing($sources);
-
-        // Show configuration errors if any occurred
-        $configErrors = $loader->getConfigurationErrors($projectRoot);
-        if (!empty($configErrors)) {
-            $io->warning('Some configuration files could not be loaded:');
-            foreach ($configErrors as $filePath => $error) {
-                $io->text(\sprintf('• %s: %s', $filePath, $error));
-            }
-            $io->newLine();
-        }
-
-        $io->newLine();
-    }
-
-    /**
-     * Validate that critical configuration files can be loaded.
-     *
-     * @throws \RuntimeException when critical configuration files fail to load
-     */
-    private function validateCriticalConfigurationFiles(string $projectRoot): void
-    {
-        $hierarchy = new ConfigurationHierarchy($projectRoot);
-        $existingFiles = $hierarchy->getExistingConfigurationFiles();
-
-        // Check project_root and config_dir configuration files
-        foreach (['project_root', 'config_dir'] as $criticalLevel) {
-            if (!isset($existingFiles[$criticalLevel])) {
-                continue;
-            }
-
-            foreach ($existingFiles[$criticalLevel] as $fileInfo) {
-                try {
-                    // Try to load the configuration file directly
-                    $securityService = new SecurityService();
-
-                    // Load the file content
-                    $content = file_get_contents($fileInfo['path']);
-                    if ($content === false) {
-                        throw new \RuntimeException("Cannot read configuration file: {$fileInfo['path']}");
-                    }
-
-                    // Parse YAML and interpolate environment variables
-                    $data = Yaml::parse($content);
-                    if (!\is_array($data)) {
-                        throw new \RuntimeException('Configuration file must contain valid YAML data');
-                    }
-
-                    // Interpolate environment variables
-                    $interpolatedContent = preg_replace_callback(
-                        '/\$\{([A-Z_][A-Z0-9_]*):?([^}]*)\}/',
-                        function (array $matches) use ($securityService): string {
-                            $envVar = $matches[1];
-                            $default = $matches[2];
-
-                            // Handle syntax: ${VAR:-default}
-                            if (str_starts_with($default, '-')) {
-                                $default = substr($default, 1);
-                            }
-
-                            return $securityService->getEnvironmentVariable($envVar, $default);
-                        },
-                        $content,
-                    );
-
-                    // Re-parse after interpolation
-                    Yaml::parse($interpolatedContent);
-                } catch (\Exception $e) {
-                    throw new \RuntimeException('Failed to load configuration: ' . $e->getMessage());
-                }
-            }
+            return $result->exitCode;
+        } catch (\Throwable $e) {
+            return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
     }
 }
