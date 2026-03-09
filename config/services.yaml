@@ -55,6 +55,7 @@ services:
       - '../src/Console/Command/ComposerNormalizeCommand.php'
       - '../src/Console/Command/PhpStanCommand.php'
       - '../src/Console/Command/ConfigShowCommand.php'
+      - '../src/Console/Command/ConfigValidateCommand.php'
 
   # Config command runners (Issue 024)
   Cpsit\QualityTools\Console\Runner\ConfigShowRunner:
@@ -75,9 +76,21 @@ services:
       - { name: 'console.command' }
     public: true
 
+  Cpsit\QualityTools\Console\Runner\ConfigValidateRunner:
+    arguments:
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $configValidator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
+
   Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigValidateRunner'
+      $name: 'config:validate'
+      $description: 'Validate YAML configuration file'
+      $help: 'This command validates the quality-tools.yaml configuration file against the schema.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\ConfigInitCommand:

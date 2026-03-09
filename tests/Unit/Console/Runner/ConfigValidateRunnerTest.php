@@ -106,9 +106,8 @@ final class ConfigValidateRunnerTest extends TestCase
 
         self::assertEquals(0, $result->exitCode);
 
-        $infoMessages = $result->getMessagesBySeverity(MessageSeverity::Info);
-        $texts = array_map(static fn ($m): string => $m->text, $infoMessages);
-        self::assertContains('Configuration is valid.', $texts);
+        $collectorOutput = $collector->getOutput();
+        self::assertStringContainsString('Configuration is valid.', $collectorOutput);
     }
 
     public function testRunReportsInvalidConfigFilePaths(): void

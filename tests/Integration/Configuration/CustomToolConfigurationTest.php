@@ -130,7 +130,7 @@ final class CustomToolConfigurationTest extends TestCase
 
                 $output = $commandTester->getDisplay();
                 $this->assertStringContainsString(
-                    '[OK] Configuration is valid',
+                    'Configuration is valid',
                     $output,
                     "config:validate should report configuration as valid for scenario: {$scenarioName}",
                 );
@@ -179,7 +179,7 @@ final class CustomToolConfigurationTest extends TestCase
 
                 // Should report configuration as valid
                 $this->assertStringContainsString(
-                    '[OK] Configuration is valid',
+                    'Configuration is valid',
                     $output,
                     'Should report configuration as structurally valid',
                 );

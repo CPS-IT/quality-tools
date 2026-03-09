@@ -509,7 +509,7 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 ### Phase 3: Rewrite commands -- In Progress
 
 - [x] Rewrite ConfigShowCommand extending Command directly, injecting ConfigShowRunner
-- [ ] Rewrite ConfigValidateCommand extending Command directly, injecting ConfigValidateRunner
+- [x] Rewrite ConfigValidateCommand extending Command directly, injecting ConfigValidateRunner
 - [ ] Rewrite ConfigInitCommand extending Command directly, injecting ConfigInitRunner
 - [ ] Remove #[AsCommand] attributes (name injected via constructor)
 - [ ] Update services.yaml command registrations

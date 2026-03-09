@@ -48,8 +48,8 @@ final readonly class ConfigValidateRunner
         if ($configFile === null) {
             return new ToolRunResult(0, [
                 Message::warning('No YAML configuration file found in project root.'),
-                Message::info('Looked for: .quality-tools.yaml, quality-tools.yaml, quality-tools.yml'),
-                Message::info('Use "qt config:init" to create a configuration file.'),
+                Message::warning('Looked for: .quality-tools.yaml, quality-tools.yaml, quality-tools.yml'),
+                Message::warning('Use "qt config:init" to create a configuration file.'),
             ]);
         }
 
@@ -61,9 +61,14 @@ final readonly class ConfigValidateRunner
         // Check config_file paths for each tool
         $warnings = $this->configValidator->validateToolConfigFilePaths($configuration->toArray(), $projectRoot);
 
-        $messages = [Message::info('Configuration is valid.')];
-        foreach ($warnings as $warning) {
-            $messages[] = Message::warning($warning);
+        $collector->write("Configuration is valid.\n");
+
+        $messages = [];
+        if ($warnings !== []) {
+            $messages[] = Message::warning('Config file path issues (fallback to package defaults will be used):');
+            foreach ($warnings as $warning) {
+                $messages[] = Message::warning($warning);
+            }
         }
 
         // Add summary info for verbose display

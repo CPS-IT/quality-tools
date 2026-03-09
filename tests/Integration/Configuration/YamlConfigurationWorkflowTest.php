@@ -330,10 +330,9 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Configuration Summary', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('rector', $output);
-        self::assertStringContainsString('Scan Paths:', $output);
+        self::assertStringContainsString('Scan paths:', $output);
         self::assertStringContainsString('packages/', $output);
 
         // Show with verbose output (shows source info as individual messages)
@@ -491,6 +490,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
             file_put_contents($testDir . '/' . $fileName, $config);
 
             TestHelper::withEnvironment(['QT_PROJECT_ROOT' => $testDir], function () use ($fileName): void {
+                ServiceContainer::reset();
                 $app = new QualityToolsApplication();
                 $app->setAutoExit(false);
                 $appTester = new ApplicationTester($app);

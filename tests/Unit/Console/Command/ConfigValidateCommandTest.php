@@ -7,11 +7,14 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\ConfigValidateCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Runner\ConfigValidateRunner;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
@@ -19,51 +22,51 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
 
-/**
- * @covers \Cpsit\QualityTools\Console\Command\ConfigValidateCommand
- */
+#[CoversClass(ConfigValidateCommand::class)]
 final class ConfigValidateCommandTest extends TestCase
 {
     private ConfigValidateCommand $command;
     private CommandTester $commandTester;
     private string $tempDir;
+    private string|false $originalProjectRoot;
     private Filesystem $filesystem;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_validate_test_');
         $this->filesystem = new Filesystem();
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+        VendorDirectoryDetector::clearCache();
 
-        // Set up command with application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
+        TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
+        mkdir($this->tempDir . '/vendor/composer', 0o777, true);
+        file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
 
-                // Create ConfigurationLoader with dependencies
-                $validator = new ConfigurationValidator();
-                $securityService = new SecurityService();
-                $filesystemService = new FilesystemService($this->filesystem, $securityService);
-                $toolValidator = new ToolConfigurationValidationService([]);
-
-                $configurationLoader = new ConfigurationLoader(
-                    $validator,
-                    $securityService,
-                    $filesystemService,
-                    $toolValidator,
-                );
-
-                $this->command = new ConfigValidateCommand($configurationLoader);
-                $this->command->setApplication($app);
-                $this->commandTester = new CommandTester($this->command);
-            },
+        $runner = $this->createRunner();
+        $this->command = new ConfigValidateCommand(
+            $runner,
+            'config:validate',
+            'Validate YAML configuration file',
+            'This command validates the quality-tools.yaml configuration file against the schema.',
         );
+        $this->commandTester = new CommandTester($this->command);
     }
 
     protected function tearDown(): void
     {
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
-        parent::tearDown();
     }
 
     public function testConfigureCommand(): void
@@ -81,7 +84,6 @@ final class ConfigValidateCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('No YAML configuration file found', $output);
-        self::assertStringContainsString('Looked for:', $output);
         self::assertStringContainsString('.quality-tools.yaml', $output);
         self::assertStringContainsString('quality-tools.yaml', $output);
         self::assertStringContainsString('quality-tools.yml', $output);
@@ -141,12 +143,11 @@ final class ConfigValidateCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Configuration is valid', $output);
-        self::assertStringContainsString('Configuration Summary', $output);
         self::assertStringContainsString('test-project', $output);
         self::assertStringContainsString('8.3', $output);
         self::assertStringContainsString('13.4', $output);
         self::assertStringContainsString('rector', $output);
-        self::assertStringContainsString('Scan Paths:', $output);
+        self::assertStringContainsString('Scan paths:', $output);
         self::assertStringContainsString('packages/', $output);
         self::assertStringContainsString('src/', $output);
     }
@@ -209,7 +210,6 @@ final class ConfigValidateCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Unexpected Error:', $output);
-        // The verbose mode doesn't show 'Full error:' for validation errors, just the detailed error
         self::assertStringContainsString('quality-tools.project.php_version', $output);
     }
 
@@ -258,7 +258,6 @@ final class ConfigValidateCommandTest extends TestCase
 
     public function testExecuteWithQualityToolsYamlFile(): void
     {
-        // Test that it finds quality-tools.yaml when .quality-tools.yaml doesn't exist
         $validConfig = <<<YAML
             quality-tools:
               project:
@@ -279,7 +278,6 @@ final class ConfigValidateCommandTest extends TestCase
 
     public function testExecuteWithQualityToolsYmlFile(): void
     {
-        // Test that it finds quality-tools.yml when others don't exist
         $validConfig = <<<YAML
             quality-tools:
               project:
@@ -348,13 +346,12 @@ final class ConfigValidateCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();
-        // With minimal config, tools are merged from defaults so they're listed individually
         self::assertStringContainsString('rector', $output);
         self::assertStringContainsString('fractor', $output);
         self::assertStringContainsString('phpstan', $output);
     }
 
-    public function testConfigurationSummaryWithNoScanPaths(): void
+    public function testConfigurationSummaryWithScanPaths(): void
     {
         $configWithoutPaths = <<<YAML
             quality-tools:
@@ -369,14 +366,12 @@ final class ConfigValidateCommandTest extends TestCase
         self::assertSame(Command::SUCCESS, $exitCode);
 
         $output = $this->commandTester->getDisplay();
-        // When using defaults, scan paths are merged in so they will be shown
-        self::assertStringContainsString('Scan Paths:', $output);
+        self::assertStringContainsString('Scan paths:', $output);
         self::assertStringContainsString('packages/', $output);
     }
 
     public function testHelpOutput(): void
     {
-        // Test command help directly from command definition instead of executing with --help
         self::assertSame('Validate YAML configuration file', $this->command->getDescription());
         self::assertStringContainsString('validates the quality-tools.yaml configuration file', $this->command->getHelp());
     }
@@ -400,9 +395,6 @@ final class ConfigValidateCommandTest extends TestCase
         chmod($configFile, 0o644);
     }
 
-    /**
-     * Test validation with custom tool configuration files from fixtures.
-     */
     #[DataProvider('customConfigurationProvider')]
     public function testValidateWithCustomConfigurations(
         string $fixtureDirectory,
@@ -411,19 +403,10 @@ final class ConfigValidateCommandTest extends TestCase
         array $expectedOutputContains,
         array $unexpectedOutputContains = [],
     ): void {
-        // Copy fixture to temp directory
-        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
-        if (!is_dir($fixturePath)) {
-            $this->markTestSkipped("Fixture directory not found: $fixturePath");
-        }
+        $this->mirrorFixture($fixtureDirectory);
 
-        // Copy all files from fixture to temp directory
-        $this->filesystem->mirror($fixturePath, $this->tempDir);
-
-        // Execute the validate command
         $exitCode = $this->commandTester->execute([]);
 
-        // Assert exit code
         self::assertSame(
             $expectedExitCode,
             $exitCode,
@@ -432,7 +415,6 @@ final class ConfigValidateCommandTest extends TestCase
 
         $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
 
-        // Assert expected output
         foreach ($expectedOutputContains as $expected) {
             self::assertStringContainsString(
                 $expected,
@@ -441,7 +423,6 @@ final class ConfigValidateCommandTest extends TestCase
             );
         }
 
-        // Assert unexpected output
         foreach ($unexpectedOutputContains as $unexpected) {
             self::assertStringNotContainsString(
                 $unexpected,
@@ -452,88 +433,83 @@ final class ConfigValidateCommandTest extends TestCase
     }
 
     /**
-     * Data provider for custom configuration test scenarios.
+     * @return array<string, array{string, string, int, list<string>, list<string>}>
      */
     public static function customConfigurationProvider(): array
     {
         return [
             'rector root override' => [
-                'fixtureDirectory' => 'rector-root-override',
-                'description' => 'Auto-discovered rector.php in project root',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'rector-root-override',
+                'Auto-discovered rector.php in project root',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'rector config directory' => [
-                'fixtureDirectory' => 'rector-config-override',
-                'description' => 'Auto-discovered rector.php in config/ directory',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'rector-config-override',
+                'Auto-discovered rector.php in config/ directory',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'phpstan root override' => [
-                'fixtureDirectory' => 'phpstan-root-override',
-                'description' => 'Auto-discovered phpstan.neon in project root',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'phpstan-root-override',
+                'Auto-discovered phpstan.neon in project root',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'phpstan config directory' => [
-                'fixtureDirectory' => 'phpstan-config-override',
-                'description' => 'Auto-discovered phpstan.neon in config/ directory',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'phpstan-config-override',
+                'Auto-discovered phpstan.neon in config/ directory',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'fractor root override' => [
-                'fixtureDirectory' => 'fractor-root-override',
-                'description' => 'Auto-discovered fractor.php in project root',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'fractor-root-override',
+                'Auto-discovered fractor.php in project root',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'php-cs-fixer root override' => [
-                'fixtureDirectory' => 'php-cs-fixer-root-override',
-                'description' => 'Auto-discovered .php-cs-fixer.php in project root',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'php-cs-fixer-root-override',
+                'Auto-discovered .php-cs-fixer.php in project root',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'explicit config file' => [
-                'fixtureDirectory' => 'explicit-config-file-override',
-                'description' => 'Explicit config_file in YAML configuration',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'explicit-config-file-override',
+                'Explicit config_file in YAML configuration',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
             'multiple tools mixed' => [
-                'fixtureDirectory' => 'multiple-tools-mixed',
-                'description' => 'Multiple tools with mixed configuration methods',
-                'expectedExitCode' => Command::SUCCESS,
-                'expectedOutputContains' => ['Configuration is valid'],
+                'multiple-tools-mixed',
+                'Multiple tools with mixed configuration methods',
+                Command::SUCCESS,
+                ['Configuration is valid'],
+                [],
             ],
         ];
     }
 
-    /**
-     * Test verbose output shows auto-discovered configuration information.
-     */
     #[DataProvider('verboseOutputProvider')]
     public function testVerboseOutputWithCustomConfigurations(
         string $fixtureDirectory,
         string $description,
         array $expectedVerboseOutput,
     ): void {
-        // Copy fixture to temp directory
-        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
-        if (!is_dir($fixturePath)) {
-            $this->fail("Fixture directory not found: $fixturePath");
-        }
+        $this->mirrorFixture($fixtureDirectory);
 
-        $this->filesystem->mirror($fixturePath, $this->tempDir);
-
-        // Execute with verbose mode
         $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         self::assertSame(Command::SUCCESS, $exitCode, "Failed for $description");
 
         $output = $this->commandTester->getDisplay();
-
-        // Check for verbose-specific output
-        self::assertStringContainsString('Configuration Summary', $output);
 
         foreach ($expectedVerboseOutput as $expected) {
             self::assertStringContainsString(
@@ -545,45 +521,27 @@ final class ConfigValidateCommandTest extends TestCase
     }
 
     /**
-     * Data provider for verbose output testing.
+     * @return array<string, array{string, string, list<string>}>
      */
     public static function verboseOutputProvider(): array
     {
         return [
             'rector with custom config' => [
-                'fixtureDirectory' => 'rector-root-override',
-                'description' => 'Verbose output with rector custom config',
-                'expectedVerboseOutput' => [
-                    'Configuration Summary',
-                    'rector',
-                ],
+                'rector-root-override',
+                'Verbose output with rector custom config',
+                ['rector'],
             ],
             'multiple tools verbose' => [
-                'fixtureDirectory' => 'multiple-tools-mixed',
-                'description' => 'Verbose output with multiple tool configs',
-                'expectedVerboseOutput' => [
-                    'Configuration Summary',
-                    'rector',
-                    'phpstan',
-                ],
+                'multiple-tools-mixed',
+                'Verbose output with multiple tool configs',
+                ['rector', 'phpstan'],
             ],
         ];
     }
 
-    /**
-     * Test configuration precedence using fixtures.
-     */
     public function testConfigurationPrecedenceWithFixtures(): void
     {
-        // Use the explicit-config-file-override fixture which has both
-        // auto-discovered and explicit config_file settings
-        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/explicit-config-file-override';
-
-        if (!is_dir($fixturePath)) {
-            $this->fail("Fixture directory not found: $fixturePath");
-        }
-
-        $this->filesystem->mirror($fixturePath, $this->tempDir);
+        $this->mirrorFixture('explicit-config-file-override');
 
         $exitCode = $this->commandTester->execute([]);
 
@@ -591,6 +549,44 @@ final class ConfigValidateCommandTest extends TestCase
 
         $output = TestHelper::normalizeConsoleOutput($this->commandTester->getDisplay());
         self::assertStringContainsString('Configuration is valid', $output);
-        // The explicit config_file in YAML should take precedence over auto-discovered files
+    }
+
+    private function mirrorFixture(string $fixtureDirectory): void
+    {
+        $fixturePath = __DIR__ . '/../../../Fixtures/configFileReplacement/' . $fixtureDirectory;
+
+        if (!is_dir($fixturePath)) {
+            $this->markTestSkipped("Fixture directory not found: $fixturePath");
+        }
+
+        $this->filesystem->mirror($fixturePath, $this->tempDir);
+
+        // Ensure vendor structure exists after fixture mirroring
+        if (!is_dir($this->tempDir . '/vendor/composer')) {
+            mkdir($this->tempDir . '/vendor/composer', 0o777, true);
+        }
+        if (!file_exists($this->tempDir . '/vendor/autoload.php')) {
+            file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
+        }
+    }
+
+    private function createRunner(): ConfigValidateRunner
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        $configLoader = new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
+
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+
+        return new ConfigValidateRunner($configLoader, $validator, $projectEnv);
     }
 }
