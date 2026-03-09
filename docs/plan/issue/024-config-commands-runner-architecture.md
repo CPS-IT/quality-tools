@@ -506,14 +506,14 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
   - `ConfigValidateRunner::validateConfigFilePaths` moved to `ConfigurationValidator::validateToolConfigFilePaths`
   - `SecurityService` dependency removed from `ConfigShowRunner`
 
-### Phase 3: Rewrite commands -- In Progress
+### Phase 3: Rewrite commands -- Done
 
 - [x] Rewrite ConfigShowCommand extending Command directly, injecting ConfigShowRunner
 - [x] Rewrite ConfigValidateCommand extending Command directly, injecting ConfigValidateRunner
-- [ ] Rewrite ConfigInitCommand extending Command directly, injecting ConfigInitRunner
-- [ ] Remove #[AsCommand] attributes (name injected via constructor)
-- [ ] Update services.yaml command registrations
-- [ ] Rewrite command tests
+- [x] Rewrite ConfigInitCommand extending Command directly, injecting ConfigInitRunner
+- [x] Remove #[AsCommand] attributes (name injected via constructor)
+- [x] Update services.yaml command registrations
+- [x] Rewrite command tests
 
 ### Phase 4: Delete BaseCommand and dependencies
 

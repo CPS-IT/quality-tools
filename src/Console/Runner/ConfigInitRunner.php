@@ -63,7 +63,7 @@ final readonly class ConfigInitRunner
         if ($existing !== null && !$request->force) {
             return new ToolRunResult(0, [
                 Message::warning(\sprintf('Configuration file already exists: %s', $existing)),
-                Message::info('Use --force to overwrite the existing configuration.'),
+                Message::warning('Use --force to overwrite the existing configuration.'),
             ]);
         }
 
@@ -78,9 +78,14 @@ final readonly class ConfigInitRunner
 
         $templates = $this->templateGenerator->getAvailableTemplates();
 
+        $collector->write(\sprintf("Created configuration file: %s\n", $configFile));
+        $collector->write(\sprintf("Template used: %s\n", $templates[$request->template] ?? $request->template));
+
         return new ToolRunResult(0, [
-            Message::info(\sprintf('Created configuration file: %s', $configFile)),
-            Message::info(\sprintf('Template used: %s', $templates[$request->template] ?? $request->template)),
+            Message::info('Next steps:'),
+            Message::info('1. Review and customize the configuration'),
+            Message::info('2. Run "qt config:validate" to check syntax'),
+            Message::info('3. Use "qt config:show" to see resolved settings'),
         ]);
     }
 }

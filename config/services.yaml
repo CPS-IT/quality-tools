@@ -56,6 +56,7 @@ services:
       - '../src/Console/Command/PhpStanCommand.php'
       - '../src/Console/Command/ConfigShowCommand.php'
       - '../src/Console/Command/ConfigValidateCommand.php'
+      - '../src/Console/Command/ConfigInitCommand.php'
 
   # Config command runners (Issue 024)
   Cpsit\QualityTools\Console\Runner\ConfigShowRunner:
@@ -93,10 +94,25 @@ services:
       - { name: 'console.command' }
     public: true
 
+  Cpsit\QualityTools\Console\Runner\ConfigInitRunner:
+    arguments:
+      $templateGenerator: '@Cpsit\QualityTools\Configuration\ConfigurationTemplateGenerator'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationTemplateGenerator:
+    public: true
+
   Cpsit\QualityTools\Console\Command\ConfigInitCommand:
     arguments:
-      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigInitRunner'
+      $name: 'config:init'
+      $description: 'Initialize YAML configuration file'
+      $help: 'This command creates a .quality-tools.yaml configuration file in the project root.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   # Tool Runner Infrastructure (Issue 023)
