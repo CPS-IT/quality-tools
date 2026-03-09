@@ -17,7 +17,7 @@ use Symfony\Component\Filesystem\Filesystem;
  * This test verifies the fix where all paths are passed as command arguments.
  *
  * @covers \Cpsit\QualityTools\Console\Command\RectorCommand
- * @covers \Cpsit\QualityTools\Console\Command\PhpCsFixerLintCommand
+ * @covers \Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
  */
 final class MultiPathScanningTest extends TestCase
 {
