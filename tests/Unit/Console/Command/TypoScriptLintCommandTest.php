@@ -18,10 +18,7 @@ use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
 use Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Filesystem\Filesystem;
@@ -32,8 +29,6 @@ use Symfony\Component\Filesystem\Filesystem;
 final class TypoScriptLintCommandTest extends TestCase
 {
     private TypoScriptLintCommand $command;
-    private MockObject&InputInterface $mockInput;
-    private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
 
     private string|false $originalProjectRoot;
@@ -89,9 +84,6 @@ final class TypoScriptLintCommandTest extends TestCase
             description: 'Run TypoScript Lint to check TypoScript files for syntax errors',
             help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.',
         );
-
-        $this->mockInput = $this->createMock(InputInterface::class);
-        $this->mockOutput = $this->createMock(ConsoleOutputInterface::class);
     }
 
     protected function tearDown(): void

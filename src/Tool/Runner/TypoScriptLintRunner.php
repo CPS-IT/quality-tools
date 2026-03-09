@@ -18,7 +18,8 @@ final readonly class TypoScriptLintRunner implements ToolRunnerInterface
         private ProcessExecutor $processExecutor,
         private ProjectEnvironment $projectEnv,
         private ConfigurationLoaderInterface $configLoader,
-    ) {}
+    ) {
+    }
 
     public function supportedTools(): array
     {
