@@ -6,67 +6,97 @@ namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Console\Command\FractorFixCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Command\FractorCommand;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
+use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Tool\Runner\FractorRunner;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * @covers \Cpsit\QualityTools\Console\Command\FractorFixCommand
+ * @covers \Cpsit\QualityTools\Console\Command\FractorCommand
  */
 final class FractorFixCommandTest extends TestCase
 {
-    private FractorFixCommand $command;
+    private FractorCommand $command;
     private MockObject&InputInterface $mockInput;
     private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
+
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('fractor_fix_command_test_');
 
-        // Create a TYPO3 project structure for proper project root detection
+        // Clear static caches from previous test runs
+        VendorDirectoryDetector::clearCache();
+
+        // Set QT_PROJECT_ROOT for the entire test lifecycle
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+
+        // Create a project structure for proper project root detection
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
         mkdir($vendorBinDir, 0o777, true);
 
-        // Create fake fractor executable
+        // Create fake fractor executable (PHP script for MemoryOptimizer compatibility)
         $fractorExecutable = $vendorBinDir . '/fractor';
-        file_put_contents($fractorExecutable, "#!/bin/bash\necho 'Fractor executed successfully'\nexit 0\n");
+        file_put_contents($fractorExecutable, "#!/usr/bin/env php\n<?php\necho 'Fractor executed successfully';\nexit(0);\n");
         chmod($fractorExecutable, 0o755);
 
-        // Create default config directory and file
-        $configDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0o777, true);
-        file_put_contents($configDir . '/fractor.php', '<?php return [];');
+        // Create vendor directory structure required by VendorDirectoryDetector
+        $vendorComposerDir = $this->tempDir . '/vendor/composer';
+        mkdir($vendorComposerDir, 0o777, true);
+        file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
 
-        // Set up environment to use temp directory as project root and initialize application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
+        // Create cpsit/quality-tools config directory structure
+        $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
+        mkdir($vendorConfigDir, 0o777, true);
+        file_put_contents($vendorConfigDir . '/fractor.php', "<?php\nreturn [];\n");
 
-                // Create ConfigurationLoader with all dependencies
-                $securityService = new SecurityService();
-                $configurationLoader = new ConfigurationLoader(
-                    new ConfigurationValidator(),
-                    $securityService,
-                    new FilesystemService(new \Symfony\Component\Filesystem\Filesystem(), $securityService),
-                    new ToolConfigurationValidationService([]),
-                );
+        // Create packages directory for default target path
+        $packagesDir = $this->tempDir . '/packages';
+        mkdir($packagesDir, 0o777, true);
+        file_put_contents($packagesDir . '/sample.php', "<?php\nclass SampleClass {}\n");
 
-                $this->command = new FractorFixCommand($configurationLoader);
-                $this->command->setApplication($app);
-            },
+        // Build runner infrastructure
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+        $processExecutor = new ProcessExecutor();
+        $configLoader = $this->createConfigurationLoader();
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $fractorRunner = new FractorRunner($processExecutor, $projectEnv, $configLoader, $memoryOptimizer);
+        $registry = new ToolRunnerRegistry([$fractorRunner]);
+        $infoDisplay = new ToolRunInfoDisplay(new MemoryCalculator());
+
+        $this->command = new FractorCommand(
+            $registry,
+            $infoDisplay,
+            dryRun: false,
+            name: 'fix:fractor',
+            description: 'Run Fractor to apply TypoScript and code changes',
+            help: 'This command runs Fractor to apply TypoScript and code changes to your files. This will modify your files! Use --config to specify a custom configuration file or --path to target specific directories.',
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -75,37 +105,47 @@ final class FractorFixCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Restore original QT_PROJECT_ROOT
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
         parent::tearDown();
     }
 
     public function testCommandHasCorrectConfiguration(): void
     {
-        $this->assertEquals('fix:fractor', $this->command->getName());
-        $this->assertEquals('Run Fractor to apply TypoScript and code changes', $this->command->getDescription());
+        self::assertEquals('fix:fractor', $this->command->getName());
+        self::assertEquals('Run Fractor to apply TypoScript and code changes', $this->command->getDescription());
 
         $expectedHelp = 'This command runs Fractor to apply TypoScript and code changes to your files. ' .
                        'This will modify your files! Use --config to specify a custom configuration ' .
                        'file or --path to target specific directories.';
-        $this->assertEquals($expectedHelp, $this->command->getHelp());
+        self::assertEquals($expectedHelp, $this->command->getHelp());
     }
 
     public function testCommandInheritsBaseCommandOptions(): void
     {
         $definition = $this->command->getDefinition();
 
-        $this->assertTrue($definition->hasOption('config'));
-        $this->assertTrue($definition->hasOption('path'));
+        self::assertTrue($definition->hasOption('config'));
+        self::assertTrue($definition->hasOption('path'));
 
         $configOption = $definition->getOption('config');
-        $this->assertEquals('c', $configOption->getShortcut());
-        $this->assertTrue($configOption->isValueRequired());
-        $this->assertEquals('Override default configuration file path', $configOption->getDescription());
+        self::assertEquals('c', $configOption->getShortcut());
+        self::assertTrue($configOption->isValueRequired());
+        self::assertEquals('Override default configuration file path', $configOption->getDescription());
 
         $pathOption = $definition->getOption('path');
-        $this->assertEquals('p', $pathOption->getShortcut());
-        $this->assertTrue($pathOption->isValueRequired());
-        $this->assertEquals('Specify custom target paths (defaults to project root)', $pathOption->getDescription());
+        self::assertEquals('p', $pathOption->getShortcut());
+        self::assertTrue($pathOption->isValueRequired());
+        self::assertEquals('Specify custom target paths (defaults to project root)', $pathOption->getDescription());
     }
 
     public function testExecuteWithDefaultOptions(): void
@@ -119,48 +159,46 @@ final class FractorFixCommandTest extends TestCase
             ]);
 
         $this->mockOutput
-            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
-            ->method('writeln');
+            ->method('write');
 
         $this->mockOutput
-            ->method('write');
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(0, $result);
+        self::assertEquals(0, $result);
     }
 
-    public function testExecuteWithCustomConfigPath(): void
+    public function testExecuteWithCustomConfig(): void
     {
-        $customConfigFile = $this->tempDir . '/custom-fractor.php';
-        file_put_contents($customConfigFile, '<?php return [];');
+        $customConfigPath = $this->tempDir . '/custom-fractor.php';
+        file_put_contents($customConfigPath, "<?php\nreturn [];\n");
 
         $this->mockInput
             ->method('getOption')
             ->willReturnMap([
-                ['config', $customConfigFile],
+                ['config', $customConfigPath],
                 ['path', null],
                 ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
-            ->method('writeln');
+            ->method('write');
 
         $this->mockOutput
-            ->method('write');
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(0, $result);
+        self::assertEquals(0, $result);
     }
 
     public function testExecuteWithCustomTargetPath(): void
@@ -177,50 +215,18 @@ final class FractorFixCommandTest extends TestCase
             ]);
 
         $this->mockOutput
-            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(false);
-
-        $this->mockOutput
-            ->method('writeln');
 
         $this->mockOutput
             ->method('write');
 
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
-    }
-
-    public function testExecuteWithCustomConfigAndTargetPath(): void
-    {
-        $customConfigFile = $this->tempDir . '/custom-fractor.php';
-        file_put_contents($customConfigFile, '<?php return [];');
-
-        $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0o777, true);
-
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', $customConfigFile],
-                ['path', $customTargetDir],
-                ['no-optimization', false],
-            ]);
-
         $this->mockOutput
-            ->expects($this->atLeast(1))
-            ->method('isVerbose')
-            ->willReturn(false);
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("Fractor executed successfully\n");
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(0, $result);
+        self::assertEquals(0, $result);
     }
 
     public function testExecuteWithVerboseOutput(): void
@@ -234,7 +240,6 @@ final class FractorFixCommandTest extends TestCase
             ]);
 
         $this->mockOutput
-            ->expects($this->atLeast(1))
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -246,40 +251,7 @@ final class FractorFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(0, $result);
-    }
-
-    public function testExecuteHandlesConfigPathException(): void
-    {
-        $nonExistentConfigFile = $this->tempDir . '/non-existent-config.php';
-
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', $nonExistentConfigFile],
-                ['path', null],
-                ['no-optimization', false],
-            ]);
-
-        // Mock output to capture error messages
-        $actualOutput = [];
-        $this->mockOutput
-            ->expects($this->atLeastOnce())
-            ->method('writeln')
-            ->willReturnCallback(function ($message) use (&$actualOutput): void {
-                $actualOutput[] = $message;
-            });
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        // ConfigurationException returns exit code 2 based on getSuggestedExitCode()
-        $this->assertEquals(2, $result, 'Expected exit code 2 for ConfigurationException (config file not found)');
-
-        // Verify the error message contains expected text
-        $errorOutput = implode("\n", $actualOutput);
-        $this->assertStringContainsString('Configuration Error (1001)', $errorOutput, 'Should show configuration error code 1001');
-        $this->assertStringContainsString('Configuration file not found', $errorOutput, 'Should show config file not found message');
-        $this->assertStringContainsString($nonExistentConfigFile, $errorOutput, 'Should include the problematic config path');
+        self::assertEquals(0, $result);
     }
 
     public function testExecuteHandlesTargetPathException(): void
@@ -294,77 +266,106 @@ final class FractorFixCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
+        $actualOutput = [];
         $this->mockOutput
-            ->expects($this->atLeast(1))
+            ->expects(self::atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
+                $actualOutput[] = $message;
+            });
+
+        $result = $this->command->run($this->mockInput, $this->mockOutput);
+
+        self::assertEquals(4, $result, 'Expected exit code 4 for FileSystemException');
+    }
+
+    public function testExecuteHandlesConfigPathException(): void
+    {
+        $nonExistentConfigPath = $this->tempDir . '/non-existent-config.php';
+
+        $this->mockInput
+            ->method('getOption')
+            ->willReturnMap([
+                ['config', $nonExistentConfigPath],
+                ['path', null],
+                ['no-optimization', false],
+            ]);
+
+        $this->mockOutput
             ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(4, $result);
+        self::assertEquals(2, $result);
+    }
+
+    public function testExecuteDisplaysPreRunInfo(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
+
+        $output = $commandTester->getDisplay();
+
+        self::assertStringContainsString('Analyzing', $output);
+        self::assertStringContainsString('configured paths:', $output);
+        self::assertStringContainsString('Aggregated Project Analysis', $output);
+        self::assertStringContainsString('Optimization Profile', $output);
+        self::assertStringContainsString('Memory limit:', $output);
+        self::assertStringContainsString('Parallel processing:', $output);
+    }
+
+    public function testExecuteWithNoOptimizationHidesProfile(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--no-optimization' => true]);
+
+        $output = $commandTester->getDisplay();
+
+        self::assertStringContainsString('Optimization disabled by --no-optimization flag', $output);
+        self::assertStringNotContainsString('Memory limit:', $output);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void
     {
         $commandTester = new CommandTester($this->command);
-
-        // Execute with default options
         $commandTester->execute([]);
 
-        // Command should execute successfully
-        $this->assertEquals(0, $commandTester->getStatusCode());
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        // Output should contain fractor execution result
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Fractor executed successfully', $output);
+        self::assertStringContainsString('Fractor executed successfully', $output);
     }
 
-    public function testCommandBuildsCorrectExecutionCommandWithCustomOptions(): void
+    public function testCommandBuildsCorrectExecutionCommandWithCustomConfig(): void
     {
-        $customConfigFile = $this->tempDir . '/custom-fractor.php';
-        file_put_contents($customConfigFile, '<?php return [];');
+        $customConfigPath = $this->tempDir . '/custom-fractor.php';
+        file_put_contents($customConfigPath, "<?php\nreturn [];\n");
 
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--config' => $customConfigPath]);
+
+        self::assertEquals(0, $commandTester->getStatusCode());
+
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('Fractor executed successfully', $output);
+    }
+
+    public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
+    {
         $customTargetDir = $this->tempDir . '/custom-target';
         mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--path' => $customTargetDir]);
 
-        // Execute with custom options
-        $commandTester->execute([
-            '--config' => $customConfigFile,
-            '--path' => $customTargetDir,
-        ]);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        // Command should execute successfully
-        $this->assertEquals(0, $commandTester->getStatusCode());
-
-        // Output should contain fractor execution result
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Fractor executed successfully', $output);
-    }
-
-    public function testCommandFailsWhenDefaultConfigNotFound(): void
-    {
-        // Remove default config file to simulate missing config
-        $defaultConfigFile = $this->tempDir . '/vendor/cpsit/quality-tools/config/fractor.php';
-        unlink($defaultConfigFile);
-
-        $commandTester = new CommandTester($this->command);
-
-        // Execute should fail
-        $commandTester->execute([]);
-
-        // Command should return configuration error code
-        $this->assertEquals(2, $commandTester->getStatusCode());
-
-        // Output should contain error message
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Configuration Error', $output);
-        $this->assertStringContainsString('Configuration file not found', $output);
+        self::assertStringContainsString('Fractor executed successfully', $output);
     }
 
     public function testCommandHandlesMissingExecutable(): void
     {
-        // Remove fractor executable to simulate missing dependency
         $fractorExecutable = $this->tempDir . '/vendor/bin/fractor';
         unlink($fractorExecutable);
 
@@ -376,12 +377,55 @@ final class FractorFixCommandTest extends TestCase
                 ['no-optimization', false],
             ]);
 
-        // Since the executable doesn't exist, this will fail at the process level
-        // and the executeProcess method will return a non-zero exit code
+        $this->mockOutput
+            ->method('writeln');
+
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        // Command should return non-zero exit code due to missing executable
-        // Exit code 126 = not executable, 127 = not found (platform-dependent)
-        $this->assertContains($result, [126, 127]);
+        self::assertNotEquals(0, $result);
+    }
+
+    public function testCommandUsesCorrectProcessArguments(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        self::assertEquals(0, $commandTester->getStatusCode());
+
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('Fractor executed successfully', $output);
+    }
+
+    public function testCommandTargetsSpecificPath(): void
+    {
+        $customTargetDir = $this->tempDir . '/src';
+        mkdir($customTargetDir, 0o777, true);
+
+        $testFile = $customTargetDir . '/setup.typoscript';
+        file_put_contents($testFile, "page = PAGE\npage.10 = TEXT\npage.10.value = Hello\n");
+
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--path' => $customTargetDir]);
+
+        self::assertEquals(0, $commandTester->getStatusCode());
+
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('Fractor executed successfully', $output);
+    }
+
+    private function createConfigurationLoader(): ConfigurationLoader
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        return new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
     }
 }

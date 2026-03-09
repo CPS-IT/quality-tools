@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Migration phase: Rector commands complete, parameterized command pattern established)    |
+| **Status:**   | In Progress (Migration phase: Rector + PhpCsFixer complete, DI-tagged command registration)          |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -42,10 +42,11 @@ ToolRunnerRegistry
   -> TypoScriptLintRunner implements ToolRunnerInterface
   -> ComposerNormalizeRunner implements ToolRunnerInterface
 
-Commands (parameterized, ~90 lines each, registered via DI)
+Commands (parameterized, ~90 lines each, registered via DI tags)
   -> RectorCommand (registered as lint:rector and fix:rector)
+  -> PhpCsFixerCommand (registered as lint:php-cs-fixer and fix:php-cs-fixer)
   -> Dependencies: ToolRunnerRegistry, ToolRunInfoDisplay
-  -> Future: same pattern for PhpCsFixer, Fractor, etc.
+  -> Future: same pattern for Fractor, TypoScript, PHPStan, Composer
 
 Config commands (unchanged, independent)
   -> ConfigInitCommand, ConfigShowCommand, ConfigValidateCommand
@@ -570,20 +571,44 @@ Order: Rector -> PhpCsFixer -> TypoScript -> Fractor -> PHPStan -> Composer
 - [x] Updated QualityToolsApplication with registerRunnerCommands() for suffixed service IDs
 - [x] All 1165 tests pass, 0 CS Fixer issues, 0 PHPStan errors
 
+#### PhpCsFixer (complete)
+
+- [x] Consolidated PhpCsFixerLintCommand + PhpCsFixerFixCommand into parameterized PhpCsFixerCommand
+- [x] Two DI registrations: PhpCsFixerCommand.lint (dryRun: true) and PhpCsFixerCommand.fix (dryRun: false)
+- [x] Registered PhpCsFixerRunner in ToolRunnerRegistry
+- [x] Added config auto-discovery to PhpCsFixerRunner via resolveToolConfigPath()
+- [x] Converted mock php-cs-fixer executable from bash to PHP for MemoryOptimizer compatibility
+- [x] All 1170 tests pass, 0 CS Fixer issues, 0 PHPStan errors
+
+#### DI-tagged command registration (complete)
+
+- [x] Added registerForAutoconfiguration(Command::class)->addTag('console.command') in ServiceContainer
+- [x] Replaced file-scanning registerCommands() + hardcoded registerRunnerCommands() in QualityToolsApplication
+- [x] Single registerCommands() method using findTaggedServiceIds('console.command')
+- [x] Suffixed service IDs (e.g. RectorCommand.lint) get explicit console.command tags in services.yaml
+
+#### Note on command duplication
+
+RectorCommand and PhpCsFixerCommand are structurally identical. The only
+differences are the ToolName arguments in the execute() method (lines ~77 and
+~83). A ToolCommandTrait or a generic ToolCommand class could eliminate this
+duplication. This will be discussed after all commands are migrated and the
+full pattern is visible.
+
 #### Remaining commands
 
 Use the parameterized command pattern established by RectorCommand: a single
 command class with two DI registrations (one for lint, one for fix). No
 `#[AsCommand]` attribute; name and description are injected via constructor.
 
-For each remaining command pair (PhpCsFixer, TypoScript, Fractor, PHPStan, Composer):
+For each remaining command pair (Fractor, TypoScript, PHPStan, Composer):
 
 - [ ] Create a single parameterized Command class (lint and fix share one class)
 - [ ] Inject `ToolRunnerRegistry` and `ToolRunInfoDisplay` as constructor dependencies
 - [ ] Inject `bool $dryRun`, `string $name`, `string $description`, `string $help` as constructor parameters
 - [ ] Build `ToolRunRequest` from input, call runner via StreamingOutputCollector
 - [ ] Call describe() and render pre-run info via ToolRunInfoDisplay before running
-- [ ] Register two DI service definitions (e.g., PhpCsFixerCommand.lint and PhpCsFixerCommand.fix)
+- [ ] Register two DI service definitions (e.g., FractorCommand.lint and FractorCommand.fix)
 - [ ] Update/rewrite command tests
 - [ ] Verify integration tests pass
 
@@ -621,6 +646,7 @@ For each remaining command pair (PhpCsFixer, TypoScript, Fractor, PHPStan, Compo
 | `src/Tool/Runner/ToolRunDescription.php`          | Migration |
 | `src/Console/Output/ToolRunInfoDisplay.php`       | Migration |
 | `src/Console/Command/RectorCommand.php`           | Migration |
+| `src/Console/Command/PhpCsFixerCommand.php`       | Migration |
 
 ## Files Deleted
 
@@ -628,6 +654,8 @@ For each remaining command pair (PhpCsFixer, TypoScript, Fractor, PHPStan, Compo
 
 - `src/Console/Command/RectorLintCommand.php` (replaced by parameterized RectorCommand)
 - `src/Console/Command/RectorFixCommand.php` (replaced by parameterized RectorCommand)
+- `src/Console/Command/PhpCsFixerLintCommand.php` (replaced by parameterized PhpCsFixerCommand)
+- `src/Console/Command/PhpCsFixerFixCommand.php` (replaced by parameterized PhpCsFixerCommand)
 
 ### Cleanup Phase
 

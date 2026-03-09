@@ -12,17 +12,19 @@ use Cpsit\QualityTools\Service\ErrorHandler;
 use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
 use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
 use Cpsit\QualityTools\Tool\ToolName;
+use Cpsit\QualityTools\Utility\YamlValidator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Unified PHP CS Fixer command supporting both lint (dry-run) and fix modes.
+ * Unified Fractor command supporting both lint (dry-run) and fix modes.
  *
  * Registered twice in services.yaml with different names and dryRun values.
+ * Includes YAML pre-validation specific to Fractor processing.
  */
-final class PhpCsFixerCommand extends Command
+final class FractorCommand extends Command
 {
     public function __construct(
         private readonly ToolRunnerRegistry $registry,
@@ -74,14 +76,21 @@ final class PhpCsFixerCommand extends Command
             }
 
             $request = new ToolRunRequest(
-                toolName: ToolName::PhpCsFixer->value,
+                toolName: ToolName::Fractor->value,
                 dryRun: $this->dryRun,
                 configOverride: $configOverride,
                 pathOverride: $pathOverride,
             );
 
-            $runner = $this->registry->get(ToolName::PhpCsFixer->value);
-            $this->infoDisplay->display($runner->describe($request), $output, (bool) $input->getOption('no-optimization'));
+            $runner = $this->registry->get(ToolName::Fractor->value);
+            $description = $runner->describe($request);
+            $optimizationDisabled = (bool) $input->getOption('no-optimization');
+            $this->infoDisplay->display($description, $output, $optimizationDisabled);
+
+            // Fractor-specific: pre-validate YAML files in target paths
+            if (!$optimizationDisabled) {
+                $this->validateYamlFiles($description->targetPaths, $output);
+            }
 
             $collector = new StreamingOutputCollector($output);
 
@@ -89,5 +98,37 @@ final class PhpCsFixerCommand extends Command
         } catch (\Throwable $e) {
             return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
+    }
+
+    /**
+     * @param list<string> $targetPaths
+     */
+    private function validateYamlFiles(array $targetPaths, OutputInterface $output): void
+    {
+        $output->writeln('<comment>Pre-validating YAML files across all target paths...</comment>');
+
+        $validator = new YamlValidator();
+        $totalInvalid = 0;
+
+        foreach ($targetPaths as $targetPath) {
+            if (!is_dir($targetPath)) {
+                continue;
+            }
+
+            $output->writeln(\sprintf('<comment>  Validating YAML files in: %s</comment>', $targetPath));
+            $results = $validator->validateYamlFiles($targetPath);
+            $totalInvalid += $results['summary']['invalid'];
+        }
+
+        if ($totalInvalid > 0) {
+            $output->writeln(\sprintf(
+                '<comment>Found %d problematic YAML files across all paths (will be processed with error recovery)</comment>',
+                $totalInvalid,
+            ));
+        } else {
+            $output->writeln('<info>All YAML files validated successfully across all paths</info>');
+        }
+
+        $output->writeln('');
     }
 }

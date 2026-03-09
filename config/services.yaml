@@ -50,6 +50,7 @@ services:
     exclude:
       - '../src/Console/Command/RectorCommand.php'
       - '../src/Console/Command/PhpCsFixerCommand.php'
+      - '../src/Console/Command/FractorCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -97,11 +98,20 @@ services:
       $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
     public: true
 
+  Cpsit\QualityTools\Tool\Runner\FractorRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
   Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
     arguments:
       $runners:
         - '@Cpsit\QualityTools\Tool\Runner\RectorRunner'
         - '@Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\FractorRunner'
     public: true
 
   # Pre-run info display (Issue 023)
@@ -143,14 +153,30 @@ services:
       $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
-  Cpsit\QualityTools\Console\Command\FractorLintCommand:
+  Cpsit\QualityTools\Console\Command\FractorCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\FractorCommand
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:fractor'
+      $description: 'Run Fractor in dry-run mode to analyze TypoScript and code without making changes'
+      $help: 'This command runs Fractor in dry-run mode to show what TypoScript and code changes would be made without actually modifying your files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
-  Cpsit\QualityTools\Console\Command\FractorFixCommand:
+  Cpsit\QualityTools\Console\Command\FractorCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\FractorCommand
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:fractor'
+      $description: 'Run Fractor to apply TypoScript and code changes'
+      $help: 'This command runs Fractor to apply TypoScript and code changes to your files. This will modify your files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   Cpsit\QualityTools\Console\Command\PhpCsFixerCommand.lint:

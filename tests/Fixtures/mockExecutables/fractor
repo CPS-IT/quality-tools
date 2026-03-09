@@ -1,29 +1,36 @@
-#!/bin/bash
-# Mock fractor executable for testing
-# This mock simulates fractor using the configuration file passed via -c flag
-# and outputs the paths configured in that file
+#!/usr/bin/env php
+<?php
+// Mock fractor executable for testing
+// Works both when called directly (#!/usr/bin/env php) and via "php fractor"
 
-# Parse arguments to find config file
-CONFIG_FILE=""
-for arg in "$@"; do
-    # Handle separate flags: -c file or --config file
-    if [[ "$prev_arg" == "-c" ]] || [[ "$prev_arg" == "--config" ]]; then
-        CONFIG_FILE="$arg"
-    # Handle combined flag: --config=file
-    elif [[ "$arg" =~ ^--config=(.+)$ ]]; then
-        CONFIG_FILE="${BASH_REMATCH[1]}"
-    fi
-    prev_arg="$arg"
-done
+$configFile = null;
+$args = array_slice($argv, 1);
 
-# If a config file is specified and exists, extract the path from it
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Extract the path from the fractor config file
-    # Look for paths like 'custom-fractor-root-path/'
-    PATH_VALUE=$(grep -o "'[^']*fractor[^']*-path[^']*'" "$CONFIG_FILE" | tr -d "'" | head -1)
-    if [[ -n "$PATH_VALUE" ]]; then
-        echo "$PATH_VALUE"
-    fi
-fi
+for ($i = 0; $i < count($args); $i++) {
+    $arg = $args[$i];
 
-exit 0
+    // Handle --config=file format
+    if (preg_match('/^--config=(.+)$/', $arg, $matches)) {
+        $configFile = $matches[1];
+    }
+    // Handle -c file or --config file format
+    elseif (($arg === '-c' || $arg === '--config') && isset($args[$i + 1])) {
+        $configFile = $args[$i + 1];
+        $i++;
+    }
+}
+
+// Check if we're using a custom config
+if ($configFile !== null && file_exists($configFile)) {
+    $content = file_get_contents($configFile);
+    if (str_contains($content, 'custom-fractor')) {
+        if (preg_match("/['\"]([^'\"]*fractor[^'\"]*-path[^'\"]*)['\"]/" , $content, $matches)) {
+            echo $matches[1] . PHP_EOL;
+            exit(0);
+        }
+    }
+}
+
+// Default behavior
+echo "No custom config detected - using package defaults" . PHP_EOL;
+exit(0);
