@@ -2,7 +2,7 @@
 
 |               |                                                     |
 |---------------|-----------------------------------------------------|
-| **Status:**   | In Progress                                         |
+| **Status:**   | Done                                                |
 | **Priority:** | High                                                |
 | **Effort:**   | Medium (2-3d)                                       |
 | **Impact:**   | High                                                |
@@ -515,22 +515,24 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 - [x] Update services.yaml command registrations
 - [x] Rewrite command tests
 
-### Phase 4: Delete BaseCommand and dependencies
+### Phase 4: Delete BaseCommand and dependencies -- Done
 
-- [ ] Delete `src/Console/Command/BaseCommand.php`
-- [ ] Delete `src/DependencyInjection/ContainerAwareInterface.php`
-- [ ] Delete `src/DependencyInjection/ContainerAwareTrait.php`
-- [ ] Delete `src/Service/CommandBuilder.php`
-- [ ] Delete `src/Service/ProcessEnvironmentPreparer.php`
-- [ ] Remove `executeProcess()` from ProcessExecutor
-- [ ] Delete test files:
+- [x] Delete `src/Console/Command/BaseCommand.php`
+- [x] Delete `src/DependencyInjection/ContainerAwareInterface.php`
+- [x] Delete `src/DependencyInjection/ContainerAwareTrait.php`
+- [x] Delete `src/Service/CommandBuilder.php`
+- [x] Delete `src/Service/ProcessEnvironmentPreparer.php`
+- [x] Remove `executeProcess()` from ProcessExecutor
+- [x] Delete test files:
   - `tests/Unit/Console/Command/BaseCommandTest.php`
   - `tests/Unit/Console/Command/BaseCommandEdgeCasesTest.php`
   - `tests/Unit/Console/Command/BaseCommandPathResolutionTest.php`
   - `tests/Integration/Console/Command/BaseCommandIntegrationTest.php`
   - `tests/Unit/Service/CommandBuilderTest.php`
   - `tests/Unit/Service/ProcessEnvironmentPreparerTest.php`
-- [ ] Verify full test suite and linters
+- [x] Clean up MockFactory (removed CommandBuilder references)
+- [x] Remove CommandBuilder and ProcessEnvironmentPreparer from services.yaml
+- [x] Verify full test suite and linters
 
 ## Files Created
 
@@ -583,13 +585,13 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 
 ## Validation Plan
 
-- [ ] All existing tests pass after each phase
-- [ ] No class extends BaseCommand after Phase 3
-- [ ] BaseCommand and all dependencies deleted in Phase 4
-- [ ] PHPStan level 6 clean
-- [ ] CS Fixer clean
-- [ ] No behavioral changes from user perspective
-- [ ] Config commands produce identical output before and after
+- [x] All existing tests pass after each phase
+- [x] No class extends BaseCommand after Phase 3
+- [x] BaseCommand and all dependencies deleted in Phase 4
+- [x] PHPStan level 6 clean
+- [x] CS Fixer clean
+- [x] No behavioral changes from user perspective
+- [x] Config commands produce identical output before and after
 
 ## Related Issues
 

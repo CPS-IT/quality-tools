@@ -374,12 +374,6 @@ services:
       $discovery: null  # Will be set at runtime if needed
     public: true
 
-  Cpsit\QualityTools\Service\ProcessEnvironmentPreparer:
-    public: true
-
-  Cpsit\QualityTools\Service\CommandBuilder:
-    public: true
-
   Cpsit\QualityTools\Service\ProcessExecutor:
     public: true
 

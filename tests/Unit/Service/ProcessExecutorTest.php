@@ -9,150 +9,11 @@ use Cpsit\QualityTools\Service\ProcessExecutor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 
 #[CoversClass(ProcessExecutor::class)]
 final class ProcessExecutorTest extends TestCase
 {
-    // -- executeProcess tests --
-
-    #[Test]
-    public function executeProcessReturnsExitCode(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 0);
-        $output = $this->createNonVerboseOutput();
-
-        $result = $executor->executeProcess(['cmd'], '/tmp', [], $output);
-
-        self::assertSame(0, $result);
-    }
-
-    #[Test]
-    public function executeProcessReturnsNonZeroExitCode(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 1);
-        $output = $this->createNonVerboseOutput();
-
-        $result = $executor->executeProcess(['cmd'], '/tmp', [], $output);
-
-        self::assertSame(1, $result);
-    }
-
-    #[Test]
-    public function executeProcessWritesVerboseOutputWhenVerbose(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 0);
-
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(true);
-        $output->expects(self::once())
-            ->method('writeln')
-            ->with(self::stringContains('<info>Executing:'));
-
-        $executor->executeProcess(['my-tool', '--flag'], '/tmp', [], $output);
-    }
-
-    #[Test]
-    public function executeProcessDoesNotWriteVerboseOutputWhenNotVerbose(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 0);
-        $output = $this->createNonVerboseOutput();
-
-        $output->expects(self::never())->method('writeln');
-
-        $executor->executeProcess(['cmd'], '/tmp', [], $output);
-    }
-
-    #[Test]
-    public function executeProcessForwardsStdoutToMainOutput(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 0, stdout: 'hello world');
-        $output = $this->createNonVerboseOutput();
-
-        $output->expects(self::atLeastOnce())
-            ->method('write')
-            ->with('hello world');
-
-        $executor->executeProcess(['cmd'], '/tmp', [], $output);
-    }
-
-    #[Test]
-    public function executeProcessForwardsStderrToErrorStreamWhenSupported(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 1, stderr: 'oops');
-
-        $errorOutput = $this->createMock(OutputInterface::class);
-        $errorOutput->expects(self::atLeastOnce())
-            ->method('write')
-            ->with('oops');
-
-        $output = $this->createMock(ConsoleOutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-        $output->method('getErrorOutput')->willReturn($errorOutput);
-        $output->expects(self::never())->method('write');
-
-        $executor->executeProcess(['cmd'], '/tmp', [], $output);
-    }
-
-    #[Test]
-    public function executeProcessForwardsStderrToMainOutputWhenErrorStreamNotSupported(): void
-    {
-        $executor = $this->createExecutorWithProcess(exitCode: 1, stderr: 'oops');
-        $output = $this->createNonVerboseOutput();
-
-        $output->expects(self::atLeastOnce())
-            ->method('write')
-            ->with('oops');
-
-        $executor->executeProcess(['cmd'], '/tmp', [], $output);
-    }
-
-    #[Test]
-    public function executeProcessPassesArgumentsToFactory(): void
-    {
-        $capturedCommand = null;
-        $capturedCwd = null;
-        $capturedEnv = null;
-
-        $factory = function (array $command, string $cwd, array $env) use (&$capturedCommand, &$capturedCwd, &$capturedEnv): Process {
-            $capturedCommand = $command;
-            $capturedCwd = $cwd;
-            $capturedEnv = $env;
-
-            return $this->createMockProcess(exitCode: 0);
-        };
-
-        $executor = new ProcessExecutor($factory);
-        $output = $this->createNonVerboseOutput();
-
-        $executor->executeProcess(
-            ['rector', '--dry-run'],
-            '/project',
-            ['FOO' => 'bar'],
-            $output,
-        );
-
-        self::assertSame(['rector', '--dry-run'], $capturedCommand);
-        self::assertSame('/project', $capturedCwd);
-        self::assertSame(['FOO' => 'bar'], $capturedEnv);
-    }
-
-    #[Test]
-    public function executeProcessUsesDefaultFactoryWhenNoneProvided(): void
-    {
-        $executor = new ProcessExecutor();
-        $output = $this->createNonVerboseOutput();
-
-        // Real subprocess -- just verify it works without errors
-        $result = $executor->executeProcess(['echo', 'test'], '/tmp', [], $output);
-
-        self::assertSame(0, $result);
-    }
-
-    // -- executeWithCollector tests --
-
     #[Test]
     public function executeWithCollectorReturnsExitCode(): void
     {
@@ -239,7 +100,16 @@ final class ProcessExecutorTest extends TestCase
         self::assertSame(['BAR' => 'baz'], $capturedEnv);
     }
 
-    // -- Helpers --
+    #[Test]
+    public function defaultFactoryCreatesRealProcess(): void
+    {
+        $executor = new ProcessExecutor();
+        $collector = new BufferingOutputCollector();
+
+        $result = $executor->executeWithCollector(['echo', 'test'], '/tmp', [], $collector);
+
+        self::assertSame(0, $result);
+    }
 
     private function createExecutorWithProcess(
         int $exitCode,
@@ -277,16 +147,5 @@ final class ProcessExecutorTest extends TestCase
         );
 
         return $process;
-    }
-
-    /**
-     * @return OutputInterface&\PHPUnit\Framework\MockObject\MockObject
-     */
-    private function createNonVerboseOutput(): OutputInterface
-    {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-
-        return $output;
     }
 }
