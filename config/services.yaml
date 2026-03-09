@@ -52,6 +52,7 @@ services:
       - '../src/Console/Command/PhpCsFixerCommand.php'
       - '../src/Console/Command/FractorCommand.php'
       - '../src/Console/Command/TypoScriptLintCommand.php'
+      - '../src/Console/Command/ComposerNormalizeCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -114,6 +115,13 @@ services:
       $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
     public: true
 
+  Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
+
   Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
     arguments:
       $runners:
@@ -121,6 +129,7 @@ services:
         - '@Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner'
         - '@Cpsit\QualityTools\Tool\Runner\FractorRunner'
         - '@Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner'
     public: true
 
   # Pre-run info display (Issue 023)
@@ -221,6 +230,32 @@ services:
       $name: 'lint:typoscript'
       $description: 'Run TypoScript Lint to check TypoScript files for syntax errors'
       $help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:composer'
+      $description: 'Run composer-normalize in dry-run mode to check composer.json formatting'
+      $help: 'This command runs composer-normalize in dry-run mode to check if composer.json files are properly formatted without making changes. Use --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:composer'
+      $description: 'Run composer-normalize to format composer.json files'
+      $help: 'This command runs composer-normalize to format composer.json files according to normalized standards. This will modify your composer.json file! Use --path to target specific directories.'
     tags:
       - { name: 'console.command' }
     public: true
