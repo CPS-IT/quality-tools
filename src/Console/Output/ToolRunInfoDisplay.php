@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Output;
 
-use Cpsit\QualityTools\Tool\Runner\ToolRunDescription;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunDescription;
 use Cpsit\QualityTools\Utility\MemoryCalculator;
 use Symfony\Component\Console\Output\OutputInterface;
 

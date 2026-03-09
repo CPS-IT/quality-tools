@@ -11,7 +11,7 @@ use Cpsit\QualityTools\Messaging\MessageSeverity;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
 use Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner;
-use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Tool\Runner;
 
-use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

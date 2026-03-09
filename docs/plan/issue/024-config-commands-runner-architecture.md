@@ -2,7 +2,7 @@
 
 |               |                                                     |
 |---------------|-----------------------------------------------------|
-| **Status:**   | Draft                                               |
+| **Status:**   | In Progress                                         |
 | **Priority:** | High                                                |
 | **Effort:**   | Medium (2-3d)                                       |
 | **Impact:**   | High                                                |
@@ -307,6 +307,8 @@ final readonly class ConfigurationTemplateGenerator
 #### ConfigShowRunner
 
 Orchestrates configuration loading, source display, and formatting.
+No inline validation -- ConfigurationLoader handles YAML parsing and env var
+interpolation internally.
 
 ```php
 namespace Cpsit\QualityTools\Console\Runner;
@@ -319,57 +321,25 @@ final readonly class ConfigShowRunner
     ) {
     }
 
-    public function describe(ConfigShowRequest $request): CommandRunDescription
-    {
-        $projectRoot = $this->projectEnv->getProjectRoot();
-        $configFile = $this->configLoader->findConfigurationFile($projectRoot) ?? '';
-
-        return new CommandRunDescription(
-            operationName: 'config-show',
-            configPath: $configFile,
-            info: ['format' => $request->format],
-        );
-    }
-
     public function run(
         ConfigShowRequest $request,
         OutputCollectorInterface $collector,
     ): ToolRunResult {
-        $projectRoot = $this->projectEnv->getProjectRoot();
-
-        // Validate critical config files
-        $this->validateCriticalConfigurationFiles($projectRoot);
-
-        // Load configuration
+        // Load configuration (loader handles validation internally)
         $configuration = $this->configLoader->load($projectRoot);
         $configData = $configuration->toArray();
 
-        // Format and write output
-        $formatted = match ($request->format) {
-            'json' => json_encode(
-                $configData,
-                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
-            ),
-            default => Yaml::dump($configData, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK),
-        };
-        $collector->write($formatted);
-
-        // Source info as messages (shown when verbose)
-        $messages = $this->buildSourceMessages($projectRoot);
-
-        return new ToolRunResult(0, $messages);
+        // Format and write output via collector
+        // Build source info as messages (shown when verbose)
+        // ...
     }
-
-    // Private methods moved from ConfigShowCommand:
-    // - validateCriticalConfigurationFiles()
-    // - buildSourceMessages()
 }
 ```
 
 #### ConfigValidateRunner
 
-Orchestrates configuration loading, schema validation, and config_file path
-checking.
+Orchestrates configuration loading and delegates path validation to
+`ConfigurationValidator::validateToolConfigFilePaths`.
 
 ```php
 namespace Cpsit\QualityTools\Console\Runner;
@@ -378,54 +348,24 @@ final readonly class ConfigValidateRunner
 {
     public function __construct(
         private ConfigurationLoaderInterface $configLoader,
+        private ConfigurationValidator $configValidator,
         private ProjectEnvironment $projectEnv,
     ) {
-    }
-
-    public function describe(ConfigValidateRequest $request): CommandRunDescription
-    {
-        $projectRoot = $this->projectEnv->getProjectRoot();
-        $configFile = $this->configLoader->findConfigurationFile($projectRoot) ?? '';
-
-        return new CommandRunDescription(
-            operationName: 'config-validate',
-            configPath: $configFile,
-        );
     }
 
     public function run(
         ConfigValidateRequest $request,
         OutputCollectorInterface $collector,
     ): ToolRunResult {
-        $projectRoot = $this->projectEnv->getProjectRoot();
-
-        // Check if config exists
-        $configFile = $this->configLoader->findConfigurationFile($projectRoot);
-        if ($configFile === null) {
-            return new ToolRunResult(0, [
-                Message::warning('No YAML configuration file found.'),
-                Message::info('Use "qt config:init" to create a configuration file.'),
-            ]);
-        }
-
-        $collector->write(sprintf('Validating: %s', $configFile));
-
-        // Load and validate
+        // Load and validate (ConfigurationLoader performs schema validation)
         $configuration = $this->configLoader->load($projectRoot);
-        $warnings = $this->validateConfigFilePaths(
+
+        // Delegate config_file path checking to ConfigurationValidator
+        $warnings = $this->configValidator->validateToolConfigFilePaths(
             $configuration->toArray(), $projectRoot
         );
-
-        $messages = [Message::info('Configuration is valid.')];
-        foreach ($warnings as $warning) {
-            $messages[] = Message::warning($warning);
-        }
-
-        return new ToolRunResult(0, $messages);
+        // ...
     }
-
-    // Private methods moved from ConfigValidateCommand:
-    // - validateConfigFilePaths()
 }
 ```
 
@@ -544,27 +484,32 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 
 ## Migration Strategy
 
-### Phase 1: Extract ConfigurationTemplateGenerator
+### Phase 1: Extract ConfigurationTemplateGenerator -- Done
 
-- [ ] Create `src/Configuration/ConfigurationTemplateGenerator.php`
-- [ ] Move template logic and project name detection from ConfigInitCommand
-- [ ] Unit tests for template generation, project detection, validation
-- [ ] Register in services.yaml
+- [x] Create `src/Configuration/ConfigurationTemplateGenerator.php`
+- [x] Move template logic and project name detection from ConfigInitCommand
+- [x] Unit tests for template generation, project detection, validation
 
-### Phase 2: Create runners and DTOs
+### Phase 2: Create runners and DTOs -- Done
 
-- [ ] Create `src/Console/Runner/` namespace with:
+- [x] Create `src/Console/Runner/DTO/` namespace with:
   - `ConfigInitRequest`, `ConfigShowRequest`, `ConfigValidateRequest`
   - `CommandRunDescription`
+- [x] Create `src/Console/Runner/` namespace with:
   - `ConfigInitRunner`, `ConfigShowRunner`, `ConfigValidateRunner`
-- [ ] Move business logic from commands into runners
-- [ ] Unit tests for all three runners
-- [ ] Register runners in services.yaml
+- [x] Move business logic from commands into runners
+- [x] Unit tests for all three runners
+- [x] Move Tool/Runner DTOs to `Tool/Runner/DTO/` sub-namespace:
+  - `ToolRunRequest`, `ToolRunResult`, `ToolRunDescription`
+- [x] Move validation logic to proper domain classes:
+  - `ConfigShowRunner::validateCriticalConfigurationFiles` removed (duplicated ConfigurationLoader)
+  - `ConfigValidateRunner::validateConfigFilePaths` moved to `ConfigurationValidator::validateToolConfigFilePaths`
+  - `SecurityService` dependency removed from `ConfigShowRunner`
 
-### Phase 3: Rewrite commands
+### Phase 3: Rewrite commands -- In Progress
 
-- [ ] Rewrite ConfigInitCommand extending Command directly, injecting ConfigInitRunner
 - [ ] Rewrite ConfigShowCommand extending Command directly, injecting ConfigShowRunner
+- [ ] Rewrite ConfigInitCommand extending Command directly, injecting ConfigInitRunner
 - [ ] Rewrite ConfigValidateCommand extending Command directly, injecting ConfigValidateRunner
 - [ ] Remove #[AsCommand] attributes (name injected via constructor)
 - [ ] Update services.yaml command registrations
@@ -592,18 +537,27 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 | File                                                   | Phase   |
 |--------------------------------------------------------|---------|
 | `src/Configuration/ConfigurationTemplateGenerator.php` | Phase 1 |
-| `src/Console/Runner/ConfigInitRequest.php`             | Phase 2 |
-| `src/Console/Runner/ConfigShowRequest.php`             | Phase 2 |
-| `src/Console/Runner/ConfigValidateRequest.php`         | Phase 2 |
-| `src/Console/Runner/CommandRunDescription.php`         | Phase 2 |
+| `src/Console/Runner/DTO/ConfigInitRequest.php`         | Phase 2 |
+| `src/Console/Runner/DTO/ConfigShowRequest.php`         | Phase 2 |
+| `src/Console/Runner/DTO/ConfigValidateRequest.php`     | Phase 2 |
+| `src/Console/Runner/DTO/CommandRunDescription.php`     | Phase 2 |
 | `src/Console/Runner/ConfigInitRunner.php`              | Phase 2 |
 | `src/Console/Runner/ConfigShowRunner.php`              | Phase 2 |
 | `src/Console/Runner/ConfigValidateRunner.php`          | Phase 2 |
+
+## Files Moved
+
+| From                                    | To                                         | Phase   |
+|-----------------------------------------|--------------------------------------------|---------|
+| `src/Tool/Runner/ToolRunRequest.php`    | `src/Tool/Runner/DTO/ToolRunRequest.php`   | Phase 2 |
+| `src/Tool/Runner/ToolRunResult.php`     | `src/Tool/Runner/DTO/ToolRunResult.php`    | Phase 2 |
+| `src/Tool/Runner/ToolRunDescription.php`| `src/Tool/Runner/DTO/ToolRunDescription.php`| Phase 2 |
 
 ## Files Modified
 
 | File                                              | Phase   |
 |---------------------------------------------------|---------|
+| `src/Configuration/ConfigurationValidator.php`    | Phase 2 |
 | `src/Console/Command/ConfigInitCommand.php`       | Phase 3 |
 | `src/Console/Command/ConfigShowCommand.php`       | Phase 3 |
 | `src/Console/Command/ConfigValidateCommand.php`   | Phase 3 |

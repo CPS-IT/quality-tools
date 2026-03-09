@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cpsit\QualityTools\Tool\Runner;
+namespace Cpsit\QualityTools\Tool\Runner\DTO;
 
 use Cpsit\QualityTools\Utility\ProjectMetrics;
 

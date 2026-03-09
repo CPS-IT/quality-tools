@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tool\Runner;
 
 use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunDescription;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunResult;
 
 interface ToolRunnerInterface
 {

@@ -9,7 +9,7 @@ use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\BufferingOutputCollector;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
-use Cpsit\QualityTools\Tool\Runner\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
 use Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\Attributes\CoversClass;

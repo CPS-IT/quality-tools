@@ -9,6 +9,9 @@ use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use Cpsit\QualityTools\Service\MemoryOptimizer;
 use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunDescription;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunResult;
 use Cpsit\QualityTools\Tool\ToolName;
 
 final readonly class PhpStanRunner implements ToolRunnerInterface
