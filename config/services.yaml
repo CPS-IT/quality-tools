@@ -51,6 +51,7 @@ services:
       - '../src/Console/Command/RectorCommand.php'
       - '../src/Console/Command/PhpCsFixerCommand.php'
       - '../src/Console/Command/FractorCommand.php'
+      - '../src/Console/Command/TypoScriptLintCommand.php'
 
   # Command-specific loader configurations (Step 3.2)
   # Config commands benefit from hierarchical configuration features
@@ -106,12 +107,20 @@ services:
       $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
     public: true
 
+  Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
+
   Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
     arguments:
       $runners:
         - '@Cpsit\QualityTools\Tool\Runner\RectorRunner'
         - '@Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner'
         - '@Cpsit\QualityTools\Tool\Runner\FractorRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner'
     public: true
 
   # Pre-run info display (Issue 023)
@@ -207,7 +216,13 @@ services:
 
   Cpsit\QualityTools\Console\Command\TypoScriptLintCommand:
     arguments:
-      $configurationLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $name: 'lint:typoscript'
+      $description: 'Run TypoScript Lint to check TypoScript files for syntax errors'
+      $help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
     public: true
 
   # External Dependencies

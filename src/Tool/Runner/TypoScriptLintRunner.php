@@ -18,8 +18,7 @@ final readonly class TypoScriptLintRunner implements ToolRunnerInterface
         private ProcessExecutor $processExecutor,
         private ProjectEnvironment $projectEnv,
         private ConfigurationLoaderInterface $configLoader,
-    ) {
-    }
+    ) {}
 
     public function supportedTools(): array
     {
@@ -71,6 +70,12 @@ final readonly class TypoScriptLintRunner implements ToolRunnerInterface
     {
         if ($request->configOverride !== null) {
             return $request->configOverride;
+        }
+
+        $projectRoot = $this->projectEnv->getProjectRoot();
+        $discovered = $this->configLoader->resolveToolConfigPath($projectRoot, ToolName::TypoScriptLint->value);
+        if ($discovered !== null) {
+            return $discovered;
         }
 
         return $this->projectEnv->getVendorPath()

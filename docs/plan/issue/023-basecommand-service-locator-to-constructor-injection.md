@@ -2,7 +2,7 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Migration phase: Rector + PhpCsFixer complete, DI-tagged command registration)          |
+| **Status:**   | In Progress (Migration phase: Rector, PhpCsFixer, Fractor, TypoScriptLint complete)                  |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
@@ -595,13 +595,32 @@ differences are the ToolName arguments in the execute() method (lines ~77 and
 duplication. This will be discussed after all commands are migrated and the
 full pattern is visible.
 
+#### Fractor (complete)
+
+- [x] Consolidated FractorLintCommand + FractorFixCommand into parameterized FractorCommand
+- [x] Two DI registrations: FractorCommand.lint (dryRun: true) and FractorCommand.fix (dryRun: false)
+- [x] Fractor-specific YAML pre-validation moved from FractorCommandTrait into FractorCommand
+- [x] Added config auto-discovery to FractorRunner via resolveToolConfigPath()
+- [x] Converted mock fractor executable from bash to PHP for MemoryOptimizer compatibility
+- [x] Deleted FractorCommandTrait (no longer used)
+- [x] All 1175 tests pass, 0 CS Fixer issues, 0 PHPStan errors
+
+#### TypoScriptLint (complete)
+
+- [x] Rewrote TypoScriptLintCommand to use runner infrastructure (no AbstractToolCommand)
+- [x] Single DI registration (lint-only tool, no fix mode, no dryRun parameter)
+- [x] Added config auto-discovery to TypoScriptLintRunner via resolveToolConfigPath()
+- [x] Added TypoScriptLintRunner to ToolRunnerRegistry
+- [x] No --no-optimization option (no MemoryOptimizer for this tool)
+- [x] All 1174 tests pass, 0 CS Fixer issues, 0 PHPStan errors
+
 #### Remaining commands
 
 Use the parameterized command pattern established by RectorCommand: a single
 command class with two DI registrations (one for lint, one for fix). No
 `#[AsCommand]` attribute; name and description are injected via constructor.
 
-For each remaining command pair (Fractor, TypoScript, PHPStan, Composer):
+For each remaining command pair (PHPStan, Composer):
 
 - [ ] Create a single parameterized Command class (lint and fix share one class)
 - [ ] Inject `ToolRunnerRegistry` and `ToolRunInfoDisplay` as constructor dependencies
@@ -647,6 +666,7 @@ For each remaining command pair (Fractor, TypoScript, PHPStan, Composer):
 | `src/Console/Output/ToolRunInfoDisplay.php`       | Migration |
 | `src/Console/Command/RectorCommand.php`           | Migration |
 | `src/Console/Command/PhpCsFixerCommand.php`       | Migration |
+| `src/Console/Command/FractorCommand.php`          | Migration |
 
 ## Files Deleted
 
@@ -656,12 +676,14 @@ For each remaining command pair (Fractor, TypoScript, PHPStan, Composer):
 - `src/Console/Command/RectorFixCommand.php` (replaced by parameterized RectorCommand)
 - `src/Console/Command/PhpCsFixerLintCommand.php` (replaced by parameterized PhpCsFixerCommand)
 - `src/Console/Command/PhpCsFixerFixCommand.php` (replaced by parameterized PhpCsFixerCommand)
+- `src/Console/Command/FractorLintCommand.php` (replaced by parameterized FractorCommand)
+- `src/Console/Command/FractorFixCommand.php` (replaced by parameterized FractorCommand)
+- `src/Console/Command/FractorCommandTrait.php` (YAML validation moved into FractorCommand)
 
 ### Cleanup Phase
 
 - `src/Console/Command/BaseCommand.php`
 - `src/Console/Command/AbstractToolCommand.php`
-- `src/Console/Command/FractorCommandTrait.php`
 - `src/Console/Command/ToolCommandInterface.php`
 - `src/DependencyInjection/ContainerAwareInterface.php`
 - `src/DependencyInjection/ContainerAwareTrait.php`
