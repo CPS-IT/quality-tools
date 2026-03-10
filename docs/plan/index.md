@@ -94,8 +94,9 @@ The following issues have been identified and prioritized for improvement:
 ## Current Active Issues
 
 **High Priority:**
-- [ ] [020 - DI Configuration Inconsistency](issue/020-di-configuration-inconsistency.md)
-- [ ] [021 - Missing Integration Test Coverage](issue/021-missing-integration-test-coverage.md)
+- [ ] [020 - DI Configuration Inconsistency](issue/done/020-di-configuration-inconsistency.md)
+- [x] [021 - Missing Integration Test Coverage](issue/021-missing-integration-test-coverage.md)
+- [ ] [025 - PathResolutionService Tool Paths Structure](issue/025-path-resolution-service-tool-paths-structure.md)
 
 ## Active Development Features
 
@@ -218,29 +219,30 @@ The following features have been deferred to future iterations:
 
 ## Issue Overview Table
 
-| Number | Issue                                            | Status | File                                                                                                                          |
-|-------:|--------------------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------|
-|    001 | PHPStan Memory Exhaustion                        | Done   | [001-phpstan-memory-exhaustion.md](issue/done/001-phpstan-memory-exhaustion.md)                                               |
-|    002 | PHP CS Fixer Memory Exhaustion                   | Done   | [002-php-cs-fixer-memory-exhaustion.md](issue/done/002-php-cs-fixer-memory-exhaustion.md)                                     |
-|    003 | Fractor YAML Parser Crash                        | Done   | [003-fractor-yaml-parser-crash.md](issue/done/003-fractor-yaml-parser-crash.md)                                               |
-|    004 | TypoScript Lint Path Option                      | Done   | [004-typoscript-lint-path-option.md](issue/done/004-typoscript-lint-path-option.md)                                           |
-|    005 | Composer Normalize Missing                       | Done   | [005-composer-normalize-missing.md](issue/done/005-composer-normalize-missing.md)                                             |
-|    006 | Rector Performance Large Projects                | Done   | [006-rector-performance-large-projects.md](issue/done/006-rector-performance-large-projects.md)                               |
-|    007 | PathScanner Exclusion Logic Refactoring          | Done   | [007-pathscanner-exclusion-logic-refactoring.md](issue/done/007-pathscanner-exclusion-logic-refactoring.md)                   |
-|    008 | Resource Cleanup Temporary Files                 | Done   | [008-resource-cleanup-temporary-files.md](issue/done/008-resource-cleanup-temporary-files.md)                                 |
-|    009 | Security Hardening Environment Variables         | Done   | [009-security-hardening-environment-variables.md](issue/done/009-security-hardening-environment-variables.md)                 |
-|    010 | Command Execution Template Pattern               | Done   | [010-command-execution-template-pattern.md](issue/done/010-command-execution-template-pattern.md)                             |
-|    011 | Cache Key Generation Optimization                | Done   | [011-cache-key-generation-optimization.md](issue/done/011-cache-key-generation-optimization.md)                               |
-|    012 | Enhanced Error Handling Structured Responses     | Done   | [012-enhanced-error-handling-structured-responses.md](issue/done/012-enhanced-error-handling-structured-responses.md)         |
-|    013 | Dependency Injection Container Architecture      | Done   | [013-dependency-injection-container-architecture.md](issue/done/013-dependency-injection-container-architecture.md)           |
-|    014 | Filesystem Abstraction Symfony Filesystem        | Done   | [014-filesystem-abstraction-symfony-filesystem.md](issue/done/014-filesystem-abstraction-symfony-filesystem.md)               |
-|    015 | Test Mocking Improvements Isolation              | Done   | [015-test-mocking-improvements-isolation.md](issue/done/015-test-mocking-improvements-isolation.md)                           |
-|    016 | Configuration Schema Validation                  | Done   | [016-configuration-schema-validation.md](issue/done/016-configuration-schema-validation.md)                                   |
-|    017 | Property Based Testing Path Resolution           | Done   | [017-property-based-testing-path-resolution.md](issue/done/017-property-based-testing-path-resolution.md)                     |
-|    018 | BaseCommand ExecuteProcess Method Refactoring    | Done   | [018-basecommand-executeprocess-method-refactoring.md](issue/done/018-basecommand-executeprocess-method-refactoring.md)       |
-|    019 | Configuration Class Hierarchy Simplification     | Done   | [019-configuration-class-hierarchy-simplification.md](issue/done/019-configuration-class-hierarchy-simplification.md)         |
-|    020 | DI Configuration Inconsistency                   | Open   | [020-di-configuration-inconsistency.md](issue/020-di-configuration-inconsistency.md)                                          |
-|    021 | Missing Integration Test Coverage                | Open   | [021-missing-integration-test-coverage.md](issue/021-missing-integration-test-coverage.md)                                    |
-|    022 | Configuration File Replacement Schema Validation | Done   | [022-configuration-file-replacement-schema-validation.md](issue/done/022-configuration-file-replacement-schema-validation.md) |
-|    023 | BaseCommand Service Locator to Constructor Injection | Open   | [023-basecommand-service-locator-to-constructor-injection.md](issue/023-basecommand-service-locator-to-constructor-injection.md) |
-|    024 | Config Commands Runner Architecture              | Draft  | [024-config-commands-runner-architecture.md](issue/024-config-commands-runner-architecture.md)                                 |
+| Number | Issue                                                | Status | File                                                                                                                                  |
+|-------:|------------------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------|
+|    001 | PHPStan Memory Exhaustion                            | Done   | [001-phpstan-memory-exhaustion.md](issue/done/001-phpstan-memory-exhaustion.md)                                                       |
+|    002 | PHP CS Fixer Memory Exhaustion                       | Done   | [002-php-cs-fixer-memory-exhaustion.md](issue/done/002-php-cs-fixer-memory-exhaustion.md)                                             |
+|    003 | Fractor YAML Parser Crash                            | Done   | [003-fractor-yaml-parser-crash.md](issue/done/003-fractor-yaml-parser-crash.md)                                                       |
+|    004 | TypoScript Lint Path Option                          | Done   | [004-typoscript-lint-path-option.md](issue/done/004-typoscript-lint-path-option.md)                                                   |
+|    005 | Composer Normalize Missing                           | Done   | [005-composer-normalize-missing.md](issue/done/005-composer-normalize-missing.md)                                                     |
+|    006 | Rector Performance Large Projects                    | Done   | [006-rector-performance-large-projects.md](issue/done/006-rector-performance-large-projects.md)                                       |
+|    007 | PathScanner Exclusion Logic Refactoring              | Done   | [007-pathscanner-exclusion-logic-refactoring.md](issue/done/007-pathscanner-exclusion-logic-refactoring.md)                           |
+|    008 | Resource Cleanup Temporary Files                     | Done   | [008-resource-cleanup-temporary-files.md](issue/done/008-resource-cleanup-temporary-files.md)                                         |
+|    009 | Security Hardening Environment Variables             | Done   | [009-security-hardening-environment-variables.md](issue/done/009-security-hardening-environment-variables.md)                         |
+|    010 | Command Execution Template Pattern                   | Done   | [010-command-execution-template-pattern.md](issue/done/010-command-execution-template-pattern.md)                                     |
+|    011 | Cache Key Generation Optimization                    | Done   | [011-cache-key-generation-optimization.md](issue/done/011-cache-key-generation-optimization.md)                                       |
+|    012 | Enhanced Error Handling Structured Responses         | Done   | [012-enhanced-error-handling-structured-responses.md](issue/done/012-enhanced-error-handling-structured-responses.md)                 |
+|    013 | Dependency Injection Container Architecture          | Done   | [013-dependency-injection-container-architecture.md](issue/done/013-dependency-injection-container-architecture.md)                   |
+|    014 | Filesystem Abstraction Symfony Filesystem            | Done   | [014-filesystem-abstraction-symfony-filesystem.md](issue/done/014-filesystem-abstraction-symfony-filesystem.md)                       |
+|    015 | Test Mocking Improvements Isolation                  | Done   | [015-test-mocking-improvements-isolation.md](issue/done/015-test-mocking-improvements-isolation.md)                                   |
+|    016 | Configuration Schema Validation                      | Done   | [016-configuration-schema-validation.md](issue/done/016-configuration-schema-validation.md)                                           |
+|    017 | Property Based Testing Path Resolution               | Done   | [017-property-based-testing-path-resolution.md](issue/done/017-property-based-testing-path-resolution.md)                             |
+|    018 | BaseCommand ExecuteProcess Method Refactoring        | Done   | [018-basecommand-executeprocess-method-refactoring.md](issue/done/018-basecommand-executeprocess-method-refactoring.md)               |
+|    019 | Configuration Class Hierarchy Simplification         | Done   | [019-configuration-class-hierarchy-simplification.md](issue/done/019-configuration-class-hierarchy-simplification.md)                 |
+|    020 | DI Configuration Inconsistency                       | Open   | [020-di-configuration-inconsistency.md](issue/done/020-di-configuration-inconsistency.md)                                                  |
+|    021 | Missing Integration Test Coverage                    | Open   | [021-missing-integration-test-coverage.md](issue/021-missing-integration-test-coverage.md)                                            |
+|    022 | Configuration File Replacement Schema Validation     | Done   | [022-configuration-file-replacement-schema-validation.md](issue/done/022-configuration-file-replacement-schema-validation.md)         |
+|    023 | BaseCommand Service Locator to Constructor Injection | Done   | [023-basecommand-service-locator-to-constructor-injection.md](issue/done/023-basecommand-service-locator-to-constructor-injection.md) |
+|    024 | Config Commands Runner Architecture                  | Done   | [024-config-commands-runner-architecture.md](issue/done/024-config-commands-runner-architecture.md)                                   |
+|    025 | PathResolutionService Tool Paths Structure            | Open   | [025-path-resolution-service-tool-paths-structure.md](issue/025-path-resolution-service-tool-paths-structure.md)                     |

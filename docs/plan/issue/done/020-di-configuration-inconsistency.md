@@ -1,6 +1,6 @@
 # Issue 020: Inconsistent Dependency Injection Configuration for Command ConfigurationLoader
 
-**Status:** Open
+**Status:** done
 **Priority:** Medium
 **Effort:** Low (1-2h)
 **Impact:** Medium
@@ -72,10 +72,10 @@ This maintains consistency with the existing architecture and follows dependency
 
 ## Validation Plan
 
-- [ ] All commands in services.yaml have explicit ConfigurationLoader DI configuration
-- [ ] Unit tests pass for all affected commands
-- [ ] Integration tests verify consistent configuration loading behavior
-- [ ] No regression in command functionality
+- [x] All commands in services.yaml have explicit ConfigurationLoader DI configuration
+- [x] Unit tests pass for all affected commands
+- [x] Integration tests verify consistent configuration loading behavior
+- [x] No regression in command functionality
 
 ## Dependencies
 

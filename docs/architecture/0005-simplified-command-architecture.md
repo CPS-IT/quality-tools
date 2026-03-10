@@ -231,5 +231,5 @@ have been removed from the environment detection logic.
 
 ## References
 
-- [Issue 023 - Implementation plan](../plan/issue/023-basecommand-service-locator-to-constructor-injection.md)
+- [Issue 023 - Implementation plan](../plan/issue/done/023-basecommand-service-locator-to-constructor-injection.md)
 - [ADR-0003 - Code Duplication Elimination Through Refactoring](0003-code-duplication-elimination-through-refactoring.md)

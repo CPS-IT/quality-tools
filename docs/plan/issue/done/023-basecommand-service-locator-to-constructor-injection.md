@@ -2,11 +2,11 @@
 
 |               |                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------|
-| **Status:**   | In Progress (Migration phase complete, cleanup phase started)                                        |
+| **Status:**   | Done                                                                                                 |
 | **Priority:** | High                                                                                                 |
 | **Effort:**   | High (3-5d)                                                                                          |
 | **Impact:**   | High                                                                                                 |
-| **ADR:**      | [0005 - Simplified command architecture](../../architecture/0005-simplified-command-architecture.md) |
+| **ADR:**      | [0005 - Simplified command architecture](../../../architecture/0005-simplified-command-architecture.md) |
 
 ## Description
 
@@ -734,5 +734,5 @@ project, enabling `qt` to lint itself.
 
 - [019 - Configuration Class Hierarchy Simplification](019-configuration-class-hierarchy-simplification.md)
 - [020 - DI Configuration Inconsistency](020-di-configuration-inconsistency.md)
-- [013 - Dependency Injection Container Architecture](done/013-dependency-injection-container-architecture.md)
-- [018 - BaseCommand ExecuteProcess Method Refactoring](done/018-basecommand-executeprocess-method-refactoring.md)
+- [013 - Dependency Injection Container Architecture](013-dependency-injection-container-architecture.md)
+- [018 - BaseCommand ExecuteProcess Method Refactoring](018-basecommand-executeprocess-method-refactoring.md)

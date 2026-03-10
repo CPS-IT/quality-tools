@@ -596,4 +596,4 @@ Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
 ## Related Issues
 
 - [023 - BaseCommand service locator to constructor injection](023-basecommand-service-locator-to-constructor-injection.md)
-- [019 - Configuration class hierarchy simplification](done/019-configuration-class-hierarchy-simplification.md)
+- [019 - Configuration class hierarchy simplification](019-configuration-class-hierarchy-simplification.md)
