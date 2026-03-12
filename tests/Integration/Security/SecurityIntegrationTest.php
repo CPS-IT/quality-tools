@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Security;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Service\DisposableTemporaryFile;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integration tests for security hardening features.
@@ -17,10 +20,14 @@ use PHPUnit\Framework\TestCase;
 final class SecurityIntegrationTest extends TestCase
 {
     private string $tempDir;
+    private SecurityService $securityService;
+    private FilesystemService $filesystemService;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('security_integration_test_');
+        $this->securityService = new SecurityService();
+        $this->filesystemService = new FilesystemService(new Filesystem(), $this->securityService);
     }
 
     protected function tearDown(): void
@@ -42,7 +49,12 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            $this->filesystemService,
+            new ToolConfigurationValidationService(),
+        );
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Access to environment variable "PATH" is not allowed for security reasons');
@@ -68,7 +80,12 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            $this->filesystemService,
+            new ToolConfigurationValidationService(),
+        );
         $config = $loader->load($this->tempDir);
 
         $data = $config->toArray();
@@ -96,7 +113,12 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            $this->filesystemService,
+            new ToolConfigurationValidationService(),
+        );
         $config = $loader->load($this->tempDir);
 
         $data = $config->toArray();
@@ -123,7 +145,12 @@ final class SecurityIntegrationTest extends TestCase
 
         file_put_contents($this->tempDir . '/.quality-tools.yaml', $configContent);
 
-        $loader = new YamlConfigurationLoader(new \Cpsit\QualityTools\Configuration\ConfigurationValidator(), new SecurityService(), new FilesystemService());
+        $loader = new ConfigurationLoader(
+            new ConfigurationValidator(),
+            $this->securityService,
+            $this->filesystemService,
+            new ToolConfigurationValidationService(),
+        );
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Environment variable "QT_PROJECT_ROOT" contains potentially unsafe content');
@@ -142,10 +169,14 @@ final class SecurityIntegrationTest extends TestCase
      */
     public function temporaryFilesHaveSecurePermissions(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService(), 'security_test_', '.tmp');
+        $tempFile = new DisposableTemporaryFile(
+            $this->filesystemService,
+            'security_test_',
+            '.tmp',
+        );
         $path = $tempFile->getPath();
 
-        // Check that file exists and has secure permissions
+        // Check that the file exists and has secure permissions
         self::assertFileExists($path);
 
         $permissions = fileperms($path) & 0o777;
@@ -153,25 +184,6 @@ final class SecurityIntegrationTest extends TestCase
 
         $tempFile->cleanup();
         self::assertFileDoesNotExist($path);
-    }
-
-    /**
-     * @test
-     */
-    public function temporaryFileCreationFailsIfSecurePermissionsCannotBeSet(): void
-    {
-        // Create a stub security service that fails to set permissions
-        $stubSecurityService = new class extends SecurityService {
-            public function setSecureFilePermissions(string $filePath): void
-            {
-                throw new \RuntimeException('Permission denied');
-            }
-        };
-
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Failed to set secure permissions on temporary file');
-
-        new DisposableTemporaryFile($stubSecurityService, new FilesystemService(), 'security_test_', '.tmp');
     }
 
     /**

@@ -219,8 +219,14 @@ public function testWithFinalClass(): void
     // Use real instance with mocked dependencies
     $filesystemMock = $this->createFilesystemServiceMock();
     $validator = new ConfigurationValidator(); // Final class - use real instance
+    $toolValidator = new ToolConfigurationValidationService();
 
-    $loader = new YamlConfigurationLoader($validator, $securityService, $filesystemMock);
+    $loader = new ConfigurationLoader(
+        $validator,
+        $securityService,
+        $filesystemMock,
+        $toolValidator,
+    );
 
     // Test behavior
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Tests\Unit\TestHelper;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -476,5 +477,95 @@ final class ConfigurationValidatorTest extends TestCase
         self::assertFalse($result->isValid());
         self::assertTrue($result->hasErrors());
         self::assertGreaterThan(1, \count($result->getErrors()));
+    }
+
+    public function testValidateToolConfigFilePathsReturnsWarningForMissingFile(): void
+    {
+        $tempDir = TestHelper::createTempDirectory('validator_paths_test_');
+
+        try {
+            $config = [
+                'quality-tools' => [
+                    'tools' => [
+                        'rector' => [
+                            'config_file' => 'nonexistent/rector.php',
+                        ],
+                    ],
+                ],
+            ];
+
+            $warnings = $this->validator->validateToolConfigFilePaths($config, $tempDir);
+
+            self::assertCount(1, $warnings);
+            self::assertStringContainsString('rector', $warnings[0]);
+            self::assertStringContainsString('config_file', $warnings[0]);
+        } finally {
+            TestHelper::removeDirectory($tempDir);
+        }
+    }
+
+    public function testValidateToolConfigFilePathsSkipsAbsolutePaths(): void
+    {
+        $tempDir = TestHelper::createTempDirectory('validator_paths_test_');
+
+        try {
+            $config = [
+                'quality-tools' => [
+                    'tools' => [
+                        'rector' => [
+                            'config_file' => '/absolute/path/rector.php',
+                        ],
+                    ],
+                ],
+            ];
+
+            $warnings = $this->validator->validateToolConfigFilePaths($config, $tempDir);
+
+            self::assertEmpty($warnings);
+        } finally {
+            TestHelper::removeDirectory($tempDir);
+        }
+    }
+
+    public function testValidateToolConfigFilePathsReturnsEmptyForExistingFile(): void
+    {
+        $tempDir = TestHelper::createTempDirectory('validator_paths_test_');
+
+        try {
+            mkdir($tempDir . '/config', 0o777, true);
+            file_put_contents($tempDir . '/config/rector.php', '<?php return [];');
+
+            $config = [
+                'quality-tools' => [
+                    'tools' => [
+                        'rector' => [
+                            'config_file' => 'config/rector.php',
+                        ],
+                    ],
+                ],
+            ];
+
+            $warnings = $this->validator->validateToolConfigFilePaths($config, $tempDir);
+
+            self::assertEmpty($warnings);
+        } finally {
+            TestHelper::removeDirectory($tempDir);
+        }
+    }
+
+    public function testValidateToolConfigFilePathsSkipsToolsWithoutConfigFile(): void
+    {
+        $config = [
+            'quality-tools' => [
+                'tools' => [
+                    'rector' => ['enabled' => true],
+                    'phpstan' => ['level' => 6],
+                ],
+            ],
+        ];
+
+        $warnings = $this->validator->validateToolConfigFilePaths($config, '/tmp');
+
+        self::assertEmpty($warnings);
     }
 }

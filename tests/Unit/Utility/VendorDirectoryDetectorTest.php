@@ -27,6 +27,7 @@ final class VendorDirectoryDetectorTest extends TestCase
     {
         TestHelper::removeDirectory($this->tempDir);
         VendorDirectoryDetector::clearCache();
+        parent::tearDown();
     }
 
     public function testDetectVendorPathFromStandardLocation(): void

@@ -1,0 +1,7 @@
+parameters:
+		level: 3
+		paths:
+				- custom-phpstan-config-path/
+		excludePaths:
+				- */Tests/*
+				- */vendor/*

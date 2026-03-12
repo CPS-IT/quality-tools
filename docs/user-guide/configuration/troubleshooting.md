@@ -11,7 +11,7 @@ When encountering configuration issues, start with these diagnostic commands:
 vendor/bin/qt config:validate
 
 # Show resolved configuration from all sources
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Show configuration in JSON format for debugging
 vendor/bin/qt config:show --format=json
@@ -35,7 +35,7 @@ pwd
 ls -la .quality-tools.yaml
 
 # Check what the loader is looking for
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 ```
 
 **Solutions:**
@@ -377,7 +377,7 @@ vendor/bin/qt lint:phpstan --no-optimization
 **Diagnosis:**
 ```bash
 # Show all configuration sources
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Check for global configuration
 ls -la ~/.quality-tools.yaml
@@ -410,6 +410,85 @@ cat ~/.quality-tools.yaml
          level: 6  # Overrides global setting
    ```
 
+### 8. Custom Tool Configuration Files
+
+**Symptoms:**
+- Custom configuration file not being loaded
+- Tool using default config instead of custom
+- `config_file` setting being ignored
+
+**Diagnosis:**
+```bash
+# Check if custom config file exists
+ls -la custom/rector.php
+
+# Run tool with verbose to see configuration discovery
+vendor/bin/qt lint:rector --verbose
+
+# Check resolved configuration
+vendor/bin/qt config:show --format=json | grep config_file
+```
+
+**Common Problems:**
+
+1. **File path is incorrect:**
+   ```yaml
+   # Wrong - absolute path
+   quality-tools:
+     tools:
+       rector:
+         config_file: "/absolute/path/rector.php"  # Avoid absolute paths
+
+   # Correct - relative to project root
+   quality-tools:
+     tools:
+       rector:
+         config_file: "custom/rector.php"  # Relative path
+   ```
+
+2. **Auto-discovery takes precedence:**
+   ```bash
+   # If rector.php exists in project root, it's auto-discovered
+   ls -la rector.php
+
+   # Solution: Either rename/remove auto-discovered file
+   # Or use --config command line option
+   vendor/bin/qt lint:rector --config=custom/rector.php
+   ```
+
+3. **Config file syntax errors:**
+   ```bash
+   # Validate PHP syntax for PHP configs
+   php -l custom/rector.php
+
+   # Check YAML syntax for YAML configs
+   vendor/bin/qt config:validate  # For .quality-tools.yaml
+   ```
+
+**Solutions:**
+
+1. **Use relative paths:**
+   ```yaml
+   quality-tools:
+     tools:
+       rector:
+         config_file: "config/custom/rector.php"
+       phpstan:
+         config_file: "phpstan-custom.neon"
+   ```
+
+2. **Verify file permissions:**
+   ```bash
+   # Ensure file is readable
+   chmod 644 custom/rector.php
+   ```
+
+3. **Use command-line override for testing:**
+   ```bash
+   # Override all config discovery
+   vendor/bin/qt lint:rector --config=custom/rector.php
+   ```
+
 ## Debugging Workflows
 
 ### Complete Diagnostic Workflow
@@ -425,7 +504,7 @@ ls -la .quality-tools.*
 vendor/bin/qt config:validate
 
 # Step 3: Check resolved configuration
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Step 4: Test environment variables
 echo $PROJECT_NAME
@@ -536,7 +615,7 @@ php --version
 composer --version
 
 # Configuration information
-vendor/bin/qt config:show --verbose > config-debug.txt
+vendor/bin/qt config:show -v > config-debug.txt
 
 # Error information
 vendor/bin/qt config:validate > validation-debug.txt 2>&1
@@ -559,7 +638,7 @@ find . -name "*.yaml" -o -name "*.yml" | head -20 > yaml-files.txt
 ### Common Support Questions
 
 1. **Configuration not working:**
-   - Share output of `vendor/bin/qt config:show --verbose`
+   - Share output of `vendor/bin/qt config:show -v`
    - Share the exact error message
    - Share your `.quality-tools.yaml` file
 

@@ -14,12 +14,12 @@ Project templates provide ready-to-use configurations optimized for specific pro
 
 ## Available Templates
 
-| Template | Best For | Key Features |
-|----------|----------|--------------|
-| `default` | General TYPO3 projects | Balanced configuration for typical projects |
-| `typo3-extension` | Extension development | High analysis level, extension-specific paths |
-| `typo3-site-package` | Site package projects | Site-focused paths, moderate analysis |
-| `typo3-distribution` | TYPO3 distributions | Distribution paths, high performance settings |
+| Template             | Best For               | Key Features                                  |
+|----------------------|------------------------|-----------------------------------------------|
+| `default`            | General TYPO3 projects | Balanced configuration for typical projects   |
+| `typo3-extension`    | Extension development  | High analysis level, extension-specific paths |
+| `typo3-site-package` | Site package projects  | Site-focused paths, moderate analysis         |
+| `typo3-distribution` | TYPO3 distributions    | Distribution paths, high performance settings |
 
 ## Template Details
 

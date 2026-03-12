@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit;
 
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\SecurityService;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use Symfony\Component\Filesystem\Filesystem;
@@ -14,8 +15,16 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class TestFilesystemService
 {
-    public function __construct(private ?vfsStreamDirectory $vfsRoot = null, private readonly ?FilesystemService $filesystemService = new FilesystemService(new Filesystem()))
+    private readonly FilesystemService $filesystemService;
+
+    public function __construct(private ?vfsStreamDirectory $vfsRoot = null, ?FilesystemService $filesystemService = null)
     {
+        if ($filesystemService === null) {
+            $securityService = new SecurityService();
+            $filesystem = new Filesystem();
+            $filesystemService = new FilesystemService($filesystem, $securityService);
+        }
+        $this->filesystemService = $filesystemService;
     }
 
     /**

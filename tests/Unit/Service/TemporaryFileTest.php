@@ -8,18 +8,28 @@ use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use Cpsit\QualityTools\Service\TemporaryFile;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Service\TemporaryFile
  */
 final class TemporaryFileTest extends TestCase
 {
+    private function createTemporaryFile(string $prefix = 'qt_', string $suffix = ''): TemporaryFile
+    {
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
+        return new TemporaryFile($filesystemService, $prefix, $suffix);
+    }
+
     /**
      * @test
      */
     public function constructorCreatesTemporaryFile(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService(), 'test_', '.tmp');
+        $tempFile = $this->createTemporaryFile('test_', '.tmp');
         $path = $tempFile->getPath();
 
         self::assertIsString($path);
@@ -35,7 +45,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function writeStoresContentInFile(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $content = 'test content';
 
         $tempFile->write($content);
@@ -50,7 +60,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function writeThrowsExceptionAfterCleanup(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $tempFile->cleanup();
 
         $this->expectException(\RuntimeException::class);
@@ -64,7 +74,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function cleanupRemovesFile(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -80,7 +90,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function cleanupCanBeCalledMultipleTimes(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $path = $tempFile->getPath();
 
         $tempFile->cleanup();
@@ -95,7 +105,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function destructorCleansUpFile(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -118,7 +128,7 @@ final class TemporaryFileTest extends TestCase
      */
     public function writeThrowsRuntimeExceptionOnFailure(): void
     {
-        $tempFile = new TemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createTemporaryFile();
         $tempFile->cleanup();
 
         $this->expectException(\RuntimeException::class);

@@ -8,18 +8,31 @@ use Cpsit\QualityTools\Service\DisposableTemporaryFile;
 use Cpsit\QualityTools\Service\FilesystemService;
 use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Service\DisposableTemporaryFile
  */
 final class DisposableTemporaryFileTest extends TestCase
 {
+    private function createDisposableTemporaryFile(string $prefix = 'qt_', string $suffix = ''): DisposableTemporaryFile
+    {
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+
+        return new DisposableTemporaryFile($filesystemService, $prefix, $suffix);
+    }
+
     /**
      * @test
      */
     public function constructorCreatesTemporaryFile(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService(), 'test_', '.tmp');
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $tempFile = new DisposableTemporaryFile($filesystemService, 'test_', '.tmp');
         $path = $tempFile->getPath();
 
         self::assertIsString($path);
@@ -35,7 +48,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function writeStoresContentInFile(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createDisposableTemporaryFile();
         $content = 'test content for disposable file';
 
         $tempFile->write($content);
@@ -50,7 +63,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function cleanupRemovesFile(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createDisposableTemporaryFile();
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -66,7 +79,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function cleanupCanBeCalledMultipleTimes(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createDisposableTemporaryFile();
         $path = $tempFile->getPath();
 
         $tempFile->cleanup();
@@ -81,7 +94,7 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function destructorCleansUpFile(): void
     {
-        $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile = $this->createDisposableTemporaryFile();
         $path = $tempFile->getPath();
 
         self::assertFileExists($path);
@@ -108,7 +121,7 @@ final class DisposableTemporaryFileTest extends TestCase
 
         // Create multiple temporary files and keep references
         for ($i = 0; $i < 3; ++$i) {
-            $tempFile = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+            $tempFile = $this->createDisposableTemporaryFile();
             $tempFiles[] = $tempFile;
             $paths[] = $tempFile->getPath();
         }
@@ -135,8 +148,8 @@ final class DisposableTemporaryFileTest extends TestCase
      */
     public function registryHandlesFileCleanupCorrectly(): void
     {
-        $tempFile1 = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
-        $tempFile2 = new DisposableTemporaryFile(new SecurityService(), new FilesystemService());
+        $tempFile1 = $this->createDisposableTemporaryFile();
+        $tempFile2 = $this->createDisposableTemporaryFile();
 
         $path1 = $tempFile1->getPath();
         $path2 = $tempFile2->getPath();

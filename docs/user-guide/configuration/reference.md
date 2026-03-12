@@ -12,12 +12,18 @@ The configuration loader searches for configuration files in the following order
 
 ## Configuration Hierarchy
 
-Configuration is merged in the following order (later values override earlier ones):
+Configuration sources are applied in the following order (highest to lowest priority):
 
-1. **Package defaults** (built-in defaults)
-2. **Global user configuration** (`~/.quality-tools.yaml`)
-3. **Project-specific configuration** (project root)
-4. **Command-line overrides** (--config, --path, etc.)
+1. **Command Line Arguments** - Highest priority
+2. **Project Root Configuration** - `quality-tools.yaml` in project root
+3. **Config Directory Configuration** - `quality-tools.yaml` in `config/` directory
+4. **Tool-Specific Project Configuration** - Tool config files in the project root
+5. **Tool-Specific Config Directory** - Tool config files in `config/` directory
+6. **Package Configuration** - `quality-tools.yaml` in package directories
+7. **Global User Configuration** - `~/.quality-tools.yaml` in user's home directory
+8. **Package Defaults** - Lowest priority
+
+This hierarchical system allows for flexible configuration management while maintaining clear precedence rules. Higher priority sources override lower priority sources for the same configuration options.
 
 ## Complete Configuration Schema
 
@@ -35,12 +41,23 @@ quality-tools:
       - string                      # Paths, glob patterns, or vendor namespaces
     exclude:                        # Directories and patterns to exclude
       - string                      # Paths, glob patterns, or vendor namespaces
+    additional:                     # Additional paths to include (Feature 013)
+      - string                      # Extra patterns beyond scan paths
+    exclude_patterns:               # Advanced exclusion patterns (Feature 013)
+      - string                      # Complex exclusion patterns
+    tool_overrides:                 # Tool-specific path overrides (Feature 013)
+      tool_name:                    # Override paths for specific tools
+        additional:                 # Tool-specific additional paths
+          - string                  # Paths specific to this tool
+        exclude:                    # Tool-specific exclusions
+          - string                  # Exclusions specific to this tool
 
   # Tool Configuration
   tools:
     rector:
       enabled: boolean              # Enable/disable Rector
       level: string                 # Rector level: "typo3-13", "typo3-12", "typo3-11"
+      config_file: string           # Custom configuration file path
       php_version: string           # Override project PHP version
       dry_run: boolean              # Always run in dry-run mode
       paths:                        # Tool-specific path overrides
@@ -51,6 +68,7 @@ quality-tools:
 
     fractor:
       enabled: boolean              # Enable/disable Fractor
+      config_file: string           # Custom configuration file path
       indentation: integer          # Indentation spaces (1-8)
       skip_files:                   # Files to skip
         - string                    # File pattern
@@ -63,6 +81,7 @@ quality-tools:
     phpstan:
       enabled: boolean              # Enable/disable PHPStan
       level: integer                # Analysis level (0-9)
+      config_file: string           # Custom configuration file path
       memory_limit: string          # Memory limit (e.g., "1G", "512M")
       paths:                        # Tool-specific path overrides
         scan:                       # Additional scan paths for this tool
@@ -73,6 +92,7 @@ quality-tools:
     php-cs-fixer:
       enabled: boolean              # Enable/disable PHP CS Fixer
       preset: string                # Preset: "typo3", "psr12", "symfony"
+      config_file: string           # Custom configuration file path
       cache: boolean                # Enable caching
       paths:                        # Tool-specific path overrides
         scan:                       # Additional scan paths for this tool
@@ -82,6 +102,7 @@ quality-tools:
 
     typoscript-lint:
       enabled: boolean              # Enable/disable TypoScript Lint
+      config_file: string           # Custom configuration file path
       indentation: integer          # Indentation spaces (1-8)
       ignore_patterns:              # Patterns to ignore
         - string                    # Pattern
@@ -129,10 +150,20 @@ quality-tools:
 
 The `paths` section defines which directories to scan and exclude during analysis. All path patterns support glob patterns and vendor namespaces for flexible configuration.
 
+#### Basic Path Configuration
+
 | Option    | Type  | Default                                                                                              | Description                                                                        |
 |-----------|-------|------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
 | `scan`    | array | ["packages/", "config/system/"]                                                                      | Directories and patterns to analyze (supports glob patterns and vendor namespaces) |
 | `exclude` | array | ["var/", "vendor/", "public/", "_assets/", "fileadmin/", "typo3/", "Tests/", "tests/", "typo3conf/"] | Directories and patterns to exclude (supports glob patterns and vendor namespaces) |
+
+#### Advanced Path Configuration (Feature 013)
+
+| Option             | Type   | Default | Description                                                      |
+|--------------------|--------|---------|------------------------------------------------------------------|
+| `additional`       | array  | []      | Additional paths to include beyond standard scan paths           |
+| `exclude_patterns` | array  | []      | Advanced exclusion patterns with complex matching rules          |
+| `tool_overrides`   | object | {}      | Tool-specific path configurations that override global settings |
 
 **Default Scan Paths for Different Project Types:**
 
@@ -146,6 +177,22 @@ The `paths` section defines which directories to scan and exclude during analysi
 2. **Glob Patterns**: Wildcard patterns (e.g., `"src/**/*.php"`, `"packages/*/Classes"`)
 3. **Vendor Namespaces**: Vendor package patterns (e.g., `"cpsit/*"`, `"fr/*/Classes"`)
 4. **Exclusion Patterns**: Patterns to exclude (e.g., `"packages/legacy/*"`, `"*/Tests/"`)
+
+#### Feature 013: Advanced Path Configuration
+
+Feature 013 introduces enhanced path configuration capabilities with two approaches for tool-specific customization:
+
+**1. Centralized Tool Overrides (`tool_overrides`)**:
+- Define all tool-specific paths in the central `paths.tool_overrides` section
+- Better overview of all path configurations in one place
+- More explicit about which tools have custom paths
+
+**2. Legacy Tool-Specific Paths**:
+- Define paths within each tool's configuration under `tools.{tool}.paths`
+- Maintains backward compatibility
+- Tools can override global scan/exclude paths individually
+
+Both approaches are supported, but Feature 013's `tool_overrides` provides better organization for complex projects with multiple tool-specific path requirements.
 
 **Basic Example:**
 ```yaml
@@ -179,7 +226,51 @@ quality-tools:
       - "*.backup"                        # Exclude backup files
 ```
 
-**Tool-Specific Path Overrides:**
+**Advanced Path Configuration with Feature 013:**
+```yaml
+quality-tools:
+  paths:
+    # Standard paths
+    scan:
+      - "packages/"
+      - "config/system/"
+    exclude:
+      - "var/"
+      - "vendor/"
+
+    # Advanced Feature 013 configuration
+    additional:
+      - "custom-extensions/"              # Additional paths beyond scan
+      - "legacy-code/**/*.php"            # Include legacy code
+      - "vendor/mycompany/*"              # Include specific vendor packages
+
+    exclude_patterns:
+      - "**/*.backup"                     # Advanced exclusion patterns
+      - "*/tmp/**"                        # Exclude all tmp directories
+      - "packages/*/Tests/Fixtures/*"     # Complex nested exclusions
+
+    tool_overrides:
+      rector:
+        additional:
+          - "scripts/**/*.php"            # Rector-specific additional paths
+          - "config/rector/*.php"         # Rector config files
+        exclude:
+          - "packages/legacy/*"           # Rector-specific exclusions
+
+      phpstan:
+        additional:
+          - "Tests/**/*.php"              # Include tests for PHPStan only
+          - "spec/**/*.php"               # Include spec files
+        exclude:
+          - "packages/experimental/*"     # Exclude experimental for PHPStan
+
+      fractor:
+        additional:
+          - "config/sites/*/setup.typoscript"  # TypoScript for Fractor
+          - "Resources/Private/*.typoscript"   # Template TypoScript
+```
+
+**Tool-Specific Path Overrides (Legacy Method):**
 ```yaml
 quality-tools:
   paths:

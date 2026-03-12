@@ -322,7 +322,7 @@ final class ExecutableTest extends TestCase
 
         // Assert
         $output = $process->getOutput();
-        $this->assertStringContainsString('Simple command-line interface for TYPO3 quality assurance tools', $output);
+        $this->assertStringContainsString('qt;) ', $output);
         $this->assertStringContainsString('Available commands:', $output);
         $this->assertStringContainsString('help', $output);
         $this->assertStringContainsString('list', $output);

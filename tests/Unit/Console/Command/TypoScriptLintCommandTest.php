@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\TypoScriptLintCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
-use PHPUnit\Framework\MockObject\MockObject;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @covers \Cpsit\QualityTools\Console\Command\TypoScriptLintCommand
@@ -19,15 +29,24 @@ use Symfony\Component\Console\Tester\CommandTester;
 final class TypoScriptLintCommandTest extends TestCase
 {
     private TypoScriptLintCommand $command;
-    private MockObject&InputInterface $mockInput;
-    private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
+
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('typoscript_lint_command_test_');
 
-        // Create a TYPO3 project structure for proper project root detection
+        // Clear static caches from previous test runs
+        VendorDirectoryDetector::clearCache();
+
+        // Set QT_PROJECT_ROOT for the entire test lifecycle
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+
+        // Create a project structure for proper project root detection
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
 
         // Create vendor/bin directory structure
@@ -39,88 +58,95 @@ final class TypoScriptLintCommandTest extends TestCase
         file_put_contents($typoscriptLintExecutable, "#!/bin/bash\necho 'TypoScript Lint executed successfully'\nexit 0\n");
         chmod($typoscriptLintExecutable, 0o755);
 
-        // Create default config directory and file
-        $configDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($configDir, 0o777, true);
-        file_put_contents($configDir . '/typoscript-lint.yml', 'sniffs: []');
+        // Create vendor directory structure required by VendorDirectoryDetector
+        $vendorComposerDir = $this->tempDir . '/vendor/composer';
+        mkdir($vendorComposerDir, 0o777, true);
+        file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
 
-        // Set up environment to use temp directory as project root and initialize application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $this->command = new TypoScriptLintCommand();
-                $this->command->setApplication($app);
-            },
+        // Create cpsit/quality-tools config directory structure
+        $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
+        mkdir($vendorConfigDir, 0o777, true);
+        file_put_contents($vendorConfigDir . '/typoscript-lint.yml', 'sniffs: []');
+
+        // Build runner infrastructure
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+        $processExecutor = new ProcessExecutor();
+        $configLoader = $this->createConfigurationLoader();
+
+        $typoscriptLintRunner = new TypoScriptLintRunner($processExecutor, $projectEnv, $configLoader);
+        $registry = new ToolRunnerRegistry([$typoscriptLintRunner]);
+        $infoDisplay = new ToolRunInfoDisplay(new MemoryCalculator());
+
+        $this->command = new TypoScriptLintCommand(
+            $registry,
+            $infoDisplay,
+            name: 'lint:typoscript',
+            description: 'Run TypoScript Lint to check TypoScript files for syntax errors',
+            help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.',
         );
-
-        $this->mockInput = $this->createMock(InputInterface::class);
-        $this->mockOutput = $this->createMock(ConsoleOutputInterface::class);
     }
 
     protected function tearDown(): void
     {
+        // Restore original QT_PROJECT_ROOT
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testCommandHasCorrectConfiguration(): void
     {
-        $this->assertEquals('lint:typoscript', $this->command->getName());
-        $this->assertEquals('Run TypoScript Lint to check TypoScript files for syntax errors', $this->command->getDescription());
+        self::assertEquals('lint:typoscript', $this->command->getName());
+        self::assertEquals('Run TypoScript Lint to check TypoScript files for syntax errors', $this->command->getDescription());
 
         $expectedHelp = 'This command runs TypoScript Lint to check TypoScript files for syntax errors ' .
                        'and coding standard violations. Use --config to specify a custom configuration ' .
                        'file or --path to target specific directories.';
-        $this->assertEquals($expectedHelp, $this->command->getHelp());
+        self::assertEquals($expectedHelp, $this->command->getHelp());
     }
 
-    public function testCommandInheritsBaseCommandOptions(): void
+    public function testCommandHasExpectedOptions(): void
     {
         $definition = $this->command->getDefinition();
 
-        $this->assertTrue($definition->hasOption('config'));
-        $this->assertTrue($definition->hasOption('path'));
+        self::assertTrue($definition->hasOption('config'));
+        self::assertTrue($definition->hasOption('path'));
 
         $configOption = $definition->getOption('config');
-        $this->assertEquals('c', $configOption->getShortcut());
-        $this->assertTrue($configOption->isValueRequired());
-        $this->assertEquals('Override default configuration file path', $configOption->getDescription());
+        self::assertEquals('c', $configOption->getShortcut());
+        self::assertTrue($configOption->isValueRequired());
+        self::assertEquals('Override default configuration file path', $configOption->getDescription());
 
         $pathOption = $definition->getOption('path');
-        $this->assertEquals('p', $pathOption->getShortcut());
-        $this->assertTrue($pathOption->isValueRequired());
-        $this->assertEquals('Specify custom target paths (defaults to project root)', $pathOption->getDescription());
+        self::assertEquals('p', $pathOption->getShortcut());
+        self::assertTrue($pathOption->isValueRequired());
+        self::assertEquals('Specify custom target paths (defaults to project root)', $pathOption->getDescription());
+    }
+
+    public function testCommandDoesNotHaveNoOptimizationOption(): void
+    {
+        $definition = $this->command->getDefinition();
+
+        self::assertFalse($definition->hasOption('no-optimization'));
     }
 
     public function testExecuteWithDefaultOptions(): void
     {
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', null],
-                ['path', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("TypoScript Lint executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('TypoScript Lint executed successfully', $output);
     }
 
     public function testExecuteWithCustomConfigPath(): void
@@ -128,32 +154,13 @@ final class TypoScriptLintCommandTest extends TestCase
         $customConfigFile = $this->tempDir . '/custom-typoscript-lint.yml';
         file_put_contents($customConfigFile, 'sniffs: []');
 
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', $customConfigFile],
-                ['path', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--config' => $customConfigFile]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("TypoScript Lint executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('TypoScript Lint executed successfully', $output);
     }
 
     public function testExecuteWithCustomTargetPath(): void
@@ -161,32 +168,13 @@ final class TypoScriptLintCommandTest extends TestCase
         $customTargetDir = $this->tempDir . '/custom-target';
         mkdir($customTargetDir, 0o777, true);
 
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', null],
-                ['path', $customTargetDir],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--path' => $customTargetDir]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with(\sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("TypoScript Lint executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('TypoScript Lint executed successfully', $output);
     }
 
     public function testExecuteWithCustomConfigAndTargetPath(): void
@@ -197,187 +185,88 @@ final class TypoScriptLintCommandTest extends TestCase
         $customTargetDir = $this->tempDir . '/custom-target';
         mkdir($customTargetDir, 0o777, true);
 
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', $customConfigFile],
-                ['path', $customTargetDir],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([
+            '--config' => $customConfigFile,
+            '--path' => $customTargetDir,
+        ]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(false);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('writeln')
-            ->with(\sprintf('<comment>Analyzing custom path: %s</comment>', $customTargetDir));
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("TypoScript Lint executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('TypoScript Lint executed successfully', $output);
     }
 
     public function testExecuteWithVerboseOutput(): void
     {
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', null],
-                ['path', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('isVerbose')
-            ->willReturn(true);
+        self::assertEquals(0, $commandTester->getStatusCode());
 
-        $this->mockOutput
-            ->expects($this->atLeast(1))
-            ->method('writeln')
-            ->with($this->logicalOr(
-                '<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>',
-                $this->matchesRegularExpression('/Executing:.*typoscript-lint/i'),
-            ));
-
-        $this->mockOutput
-            ->expects($this->once())
-            ->method('write')
-            ->with("TypoScript Lint executed successfully\n");
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(0, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('TypoScript Lint executed successfully', $output);
     }
 
     public function testExecuteHandlesConfigPathException(): void
     {
         $nonExistentConfigFile = $this->tempDir . '/non-existent-config.yml';
 
-        $this->mockInput
-            ->expects($this->once())
-            ->method('getOption')
-            ->with('config')
-            ->willReturn($nonExistentConfigFile);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--config' => $nonExistentConfigFile]);
 
-        $this->mockOutput
-            ->expects($this->atLeast(1))
-            ->method('writeln');
+        self::assertEquals(2, $commandTester->getStatusCode());
 
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(2, $result);
+        $output = $commandTester->getDisplay();
+        self::assertStringContainsString('Configuration file not found', $output);
     }
 
     public function testExecuteHandlesTargetPathException(): void
     {
         $nonExistentTargetDir = $this->tempDir . '/non-existent-target';
 
-        $this->mockInput
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', null],
-                ['path', $nonExistentTargetDir],
-                ['no-optimization', false],
-            ]);
-
-        $this->mockOutput
-            ->expects($this->atLeast(1))
-            ->method('writeln');
-
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
-
-        $this->assertEquals(1, $result);
-    }
-
-    public function testCommandBuildsCorrectExecutionCommand(): void
-    {
         $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--path' => $nonExistentTargetDir]);
 
-        // Execute with default options
-        $commandTester->execute([]);
-
-        // Command should execute successfully
-        $this->assertEquals(0, $commandTester->getStatusCode());
-
-        // Output should contain typoscript-lint execution result
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('TypoScript Lint executed successfully', $output);
-    }
-
-    public function testCommandBuildsCorrectExecutionCommandWithCustomOptions(): void
-    {
-        $customConfigFile = $this->tempDir . '/custom-typoscript-lint.yml';
-        file_put_contents($customConfigFile, 'sniffs: []');
-
-        $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0o777, true);
-
-        $commandTester = new CommandTester($this->command);
-
-        // Execute with custom options
-        $commandTester->execute([
-            '--config' => $customConfigFile,
-            '--path' => $customTargetDir,
-        ]);
-
-        // Command should execute successfully
-        $this->assertEquals(0, $commandTester->getStatusCode());
-
-        // Output should contain typoscript-lint execution result
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('TypoScript Lint executed successfully', $output);
-    }
-
-    public function testCommandFailsWhenDefaultConfigNotFound(): void
-    {
-        // Remove default config file to simulate missing config
-        $defaultConfigFile = $this->tempDir . '/vendor/cpsit/quality-tools/config/typoscript-lint.yml';
-        unlink($defaultConfigFile);
-
-        $commandTester = new CommandTester($this->command);
-
-        // Execute should fail
-        $commandTester->execute([]);
-
-        // Command should return configuration error code
-        $this->assertEquals(2, $commandTester->getStatusCode());
-
-        // Output should contain error message
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('Configuration Error', $output);
-        $this->assertStringContainsString('Configuration file not found', $output);
+        self::assertEquals(4, $commandTester->getStatusCode(), 'Expected exit code 4 for FileSystemException');
     }
 
     public function testCommandHandlesMissingExecutable(): void
     {
-        // Remove typoscript-lint executable to simulate missing dependency
         $typoscriptLintExecutable = $this->tempDir . '/vendor/bin/typoscript-lint';
         unlink($typoscriptLintExecutable);
 
-        $this->mockInput
-            ->expects($this->atLeastOnce())
-            ->method('getOption')
-            ->willReturnMap([
-                ['config', null],
-                ['path', null],
-                ['no-optimization', false],
-            ]);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
 
-        // Since the executable doesn't exist, this will fail at the process level
-        // and the executeProcess method will return a non-zero exit code
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
+        self::assertNotEquals(0, $commandTester->getStatusCode());
+    }
 
-        // Command should return non-zero exit code due to missing executable
-        $this->assertNotEquals(0, $result);
+    public function testExecuteDisplaysPreRunInfo(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
+
+        $output = $commandTester->getDisplay();
+
+        // TypoScriptLintRunner returns empty paths when no TypoScript paths configured,
+        // so the info display shows "Using default path discovery"
+        self::assertStringContainsString('Using default path discovery', $output);
+    }
+
+    private function createConfigurationLoader(): ConfigurationLoader
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        return new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
     }
 }

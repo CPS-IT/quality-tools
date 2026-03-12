@@ -12,7 +12,6 @@ final class TemporaryFile
     private bool $isDeleted = false;
 
     public function __construct(
-        private readonly SecurityService $securityService,
         private readonly FilesystemService $filesystemService,
         string $prefix = 'qt_temp_',
         string $suffix = '',
@@ -25,7 +24,7 @@ final class TemporaryFile
 
         // Set secure file permissions (readable/writable by owner only)
         try {
-            $this->securityService->setSecureFilePermissions($this->filePath);
+            $this->filesystemService->setSecureFilePermissions($this->filePath);
         } catch (\RuntimeException $e) {
             // If we can't set secure permissions, clean up and fail
             unlink($this->filePath);

@@ -42,7 +42,7 @@
         "php_version": {
           "type": "string",
           "description": "PHP version requirement (e.g., '8.0', '8.3', '8.4')",
-          "pattern": "^8\\.[0-9]$"
+          "pattern": "^8\\.[0-9](\\.[0-9]+)?$"
         },
         "typo3_version": {
           "type": "string",
@@ -171,12 +171,17 @@
         "php_version": {
           "type": "string",
           "description": "PHP version for Rector",
-          "pattern": "^8\\.[0-9]$"
+          "pattern": "^8\\.[0-9](\\.[0-9]+)?$"
         },
         "dry_run": {
           "type": "boolean",
           "description": "Run in dry-run mode (preview changes only)",
           "default": false
+        },
+        "config_file": {
+          "type": "string",
+          "description": "Path to custom Rector configuration file (e.g., rector.php, config/rector.php)",
+          "minLength": 1
         },
         "paths": {
           "$ref": "#/definitions/tool_paths"
@@ -198,6 +203,11 @@
           "minimum": 2,
           "maximum": 8,
           "default": 2
+        },
+        "config_file": {
+          "type": "string",
+          "description": "Path to custom Fractor configuration file (e.g., fractor.php)",
+          "minLength": 1
         },
         "paths": {
           "$ref": "#/definitions/tool_paths"
@@ -226,6 +236,11 @@
           "pattern": "^\\d+[MG]?$",
           "default": "1G"
         },
+        "config_file": {
+          "type": "string",
+          "description": "Path to custom PHPStan configuration file (e.g., phpstan.neon, phpstan.neon.dist)",
+          "minLength": 1
+        },
         "paths": {
           "$ref": "#/definitions/tool_paths"
         }
@@ -251,6 +266,11 @@
           "description": "Enable caching for faster subsequent runs",
           "default": true
         },
+        "config_file": {
+          "type": "string",
+          "description": "Path to custom PHP CS Fixer configuration file (e.g., .php-cs-fixer.php, .php_cs.php)",
+          "minLength": 1
+        },
         "paths": {
           "$ref": "#/definitions/tool_paths"
         }
@@ -271,6 +291,11 @@
           "minimum": 2,
           "maximum": 8,
           "default": 2
+        },
+        "config_file": {
+          "type": "string",
+          "description": "Path to custom TypoScript Lint configuration file (e.g., typoscript-lint.yml)",
+          "minLength": 1
         },
         "paths": {
           "$ref": "#/definitions/tool_paths"

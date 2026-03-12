@@ -12,7 +12,7 @@ namespace Cpsit\QualityTools\Configuration;
  */
 final readonly class ConfigurationBuilder
 {
-    public function __construct(private Configuration $configuration)
+    public function __construct(private ConfigurationInterface $configuration)
     {
     }
 
@@ -22,13 +22,13 @@ final readonly class ConfigurationBuilder
     public function buildRectorConfiguration(): array
     {
         $paths = $this->configuration->getResolvedPathsForTool('rector');
-        $config = $this->configuration->getRectorConfig();
+        $config = $this->configuration->getToolConfig('rector');
 
         return [
             'paths' => $paths,
-            'php_version' => $config['php_version'],
-            'level' => $config['level'],
-            'enabled' => $config['enabled'],
+            'php_version' => $config['php_version'] ?? $this->configuration->getProjectPhpVersion(),
+            'level' => $config['level'] ?? ConfigurationInterface::DEFAULT_RECTOR_LEVEL,
+            'enabled' => $config['enabled'] ?? true,
             'project_root' => $this->configuration->getProjectRoot(),
             'vendor_path' => $this->configuration->getVendorPath(),
         ];
@@ -40,12 +40,12 @@ final readonly class ConfigurationBuilder
     public function buildFractorConfiguration(): array
     {
         $paths = $this->configuration->getResolvedPathsForTool('fractor');
-        $config = $this->configuration->getFractorConfig();
+        $config = $this->configuration->getToolConfig('fractor');
 
         return [
             'paths' => $paths,
-            'indentation' => $config['indentation'],
-            'enabled' => $config['enabled'],
+            'indentation' => $config['indentation'] ?? ConfigurationInterface::DEFAULT_FRACTOR_INDENTATION,
+            'enabled' => $config['enabled'] ?? true,
             'project_root' => $this->configuration->getProjectRoot(),
             'vendor_path' => $this->configuration->getVendorPath(),
         ];
@@ -57,13 +57,13 @@ final readonly class ConfigurationBuilder
     public function buildPhpStanConfiguration(): array
     {
         $paths = $this->configuration->getResolvedPathsForTool('phpstan');
-        $config = $this->configuration->getPhpStanConfig();
+        $config = $this->configuration->getToolConfig('phpstan');
 
         return [
             'paths' => $paths,
-            'level' => $config['level'],
-            'memory_limit' => $config['memory_limit'],
-            'enabled' => $config['enabled'],
+            'level' => $config['level'] ?? ConfigurationInterface::DEFAULT_PHPSTAN_LEVEL,
+            'memory_limit' => $config['memory_limit'] ?? ConfigurationInterface::DEFAULT_PHPSTAN_MEMORY_LIMIT,
+            'enabled' => $config['enabled'] ?? true,
             'project_root' => $this->configuration->getProjectRoot(),
             'vendor_path' => $this->configuration->getVendorPath(),
         ];
@@ -75,12 +75,12 @@ final readonly class ConfigurationBuilder
     public function buildPhpCsFixerConfiguration(): array
     {
         $paths = $this->configuration->getResolvedPathsForTool('php-cs-fixer');
-        $config = $this->configuration->getPhpCsFixerConfig();
+        $config = $this->configuration->getToolConfig('php-cs-fixer');
 
         return [
             'paths' => $paths,
-            'preset' => $config['preset'],
-            'enabled' => $config['enabled'],
+            'preset' => $config['preset'] ?? ConfigurationInterface::DEFAULT_PHP_CS_FIXER_PRESET,
+            'enabled' => $config['enabled'] ?? true,
             'project_root' => $this->configuration->getProjectRoot(),
             'vendor_path' => $this->configuration->getVendorPath(),
         ];
@@ -92,12 +92,12 @@ final readonly class ConfigurationBuilder
     public function buildTypoScriptLintConfiguration(): array
     {
         $paths = $this->configuration->getResolvedPathsForTool('typoscript-lint');
-        $config = $this->configuration->getTypoScriptLintConfig();
+        $config = $this->configuration->getToolConfig('typoscript-lint');
 
         return [
             'paths' => $paths,
-            'indentation' => $config['indentation'],
-            'enabled' => $config['enabled'],
+            'indentation' => $config['indentation'] ?? ConfigurationInterface::DEFAULT_TYPOSCRIPT_LINT_INDENTATION,
+            'enabled' => $config['enabled'] ?? true,
             'project_root' => $this->configuration->getProjectRoot(),
             'vendor_path' => $this->configuration->getVendorPath(),
         ];

@@ -1,14 +1,21 @@
-CPSIT Quality Tools
-===================
+qt - Quality Tools
+==================
+
+```
+I'm qt;) - I will help you cutify your code.
+```
+
 
 A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
 
 ## Status: MVP Complete with Dynamic Optimization
 
-**Version:** 0.1.0
-**Test Coverage:** 97.9% (283 tests, 810 assertions)
-**All 10 tool commands fully implemented and tested**
-**Dynamic Resource Optimization:** - Automatic memory and performance optimization for all tools
+* **Version:** 0.1.0
+* **All 10 tool commands fully implemented and tested**
+* **Dynamic Resource Optimization:** - Automatic memory and performance optimization for all tools
+* **Configuration Hierarchy:** - Supports global user configuration, project-specific configuration, CLI overrides
+* **Unified YAML Configuration:** - Centralized configuration for all tools with flexible path configuration
+* **Flexible Path Configuration:** - Supports custom paths beyond standard TYPO3 structure
 
 ## Installation
 
@@ -126,41 +133,43 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 ## All Available Commands
 
 ### Lint Commands (Analysis Only)
-| Command | Tool | Description |
-|---------|------|-------------|
-| `qt lint:rector` | Rector | Analyze code for modernization opportunities |
-| `qt lint:phpstan` | PHPStan | Static analysis with configurable levels (`--level`, `--memory-limit`) |
-| `qt lint:php-cs-fixer` | PHP CS Fixer | Check coding standards compliance |
-| `qt lint:fractor` | Fractor | Analyze TypoScript for modernization |
-| `qt lint:typoscript` | TypoScript Lint | Validate TypoScript syntax and structure |
-| `qt lint:composer` | Composer | Validate composer.json structure |
+| Command                | Tool            | Description                                                            |
+|------------------------|-----------------|------------------------------------------------------------------------|
+| `qt lint:rector`       | Rector          | Analyze code for modernization opportunities                           |
+| `qt lint:phpstan`      | PHPStan         | Static analysis with configurable levels (`--level`, `--memory-limit`) |
+| `qt lint:php-cs-fixer` | PHP CS Fixer    | Check coding standards compliance                                      |
+| `qt lint:fractor`      | Fractor         | Analyze TypoScript for modernization                                   |
+| `qt lint:typoscript`   | TypoScript Lint | Validate TypoScript syntax and structure                               |
+| `qt lint:composer`     | Composer        | Validate composer.json structure                                       |
 
 ### Fix Commands (Apply Changes)
-| Command | Tool | Description |
-|---------|------|-------------|
-| `qt fix:rector` | Rector | Apply automated code modernization |
-| `qt fix:php-cs-fixer` | PHP CS Fixer | Fix coding standards violations |
-| `qt fix:fractor` | Fractor | Apply TypoScript modernization |
-| `qt fix:composer` | Composer | Normalize composer.json formatting |
+| Command               | Tool         | Description                        |
+|-----------------------|--------------|------------------------------------|
+| `qt fix:rector`       | Rector       | Apply automated code modernization |
+| `qt fix:php-cs-fixer` | PHP CS Fixer | Fix coding standards violations    |
+| `qt fix:fractor`      | Fractor      | Apply TypoScript modernization     |
+| `qt fix:composer`     | Composer     | Normalize composer.json formatting |
 
 ### Configuration Commands
-| Command | Description |
-|---------|-------------|
-| `qt config:init` | Initialize YAML configuration with project templates |
-| `qt config:validate` | Validate YAML configuration against schema |
-| `qt config:show` | Display resolved configuration from all sources |
+| Command              | Description                                          |
+|----------------------|------------------------------------------------------|
+| `qt config:init`     | Initialize YAML configuration with project templates |
+| `qt config:validate` | Validate YAML configuration against schema           |
+| `qt config:show`     | Display resolved configuration from all sources      |
 
 ## Key Features
 
 ### Unified YAML Configuration System
 - **Centralized Configuration**: Single `.quality-tools.yaml` file for all tools
 - **Configuration Hierarchy**: Package defaults -> global user config -> project config -> CLI overrides
+- **Custom Tool Configs**: Support for custom tool configuration files via `config_file` option
+- **Auto-Discovery**: Automatic detection of tool configs in standard locations (project root, config/)
 - **Environment Variables**: Support for `${VAR:-default}` syntax with type-safe interpolation
 - **JSON Schema Validation**: Built-in validation with helpful error messages
 - **Project Templates**: Ready-made configurations for different TYPO3 project types
 - **Backward Compatibility**: Existing tool-specific configurations continue to work
 
-### Flexible Path Configuration (Feature 013)
+### Flexible Path Configuration
 - **Additional Paths**: Configure custom paths beyond standard TYPO3 structure
 - **Vendor Namespace Patterns**: Scan vendor packages with patterns like "cpsit/*", "fr/*"
 - **Glob Pattern Support**: Use powerful glob patterns for path matching

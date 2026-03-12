@@ -1,9 +1,12 @@
 # Issue XXX: [Issue Title]
 
-**Status:** [Open | In Progress | Resolved | Closed]  
-**Priority:** [Critical | High | Medium | Low]  
-**Effort:** [Low (1-2h) | Medium (3-8h) | High (1-3d) | Very High (1w+)]  
-**Impact:** [Critical | High | Medium | Low]
+|               |                                                        |
+|---------------|--------------------------------------------------------|
+| **Status:**   | Open / In Progress / Resolved / Closed                 |
+| **Priority:** | Critical / High / Medium / Low                         |
+| **Effort:**   | Low (1-2h) / Medium (3-8h) / High (1-3d) / Very High (1w+) |
+| **Impact:**   | Critical / High / Medium / Low                         |
+| **ADR:**      | (optional link to related ADR)                         |
 
 ## Description
 

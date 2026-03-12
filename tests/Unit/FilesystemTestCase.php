@@ -4,28 +4,11 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit;
 
-use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
-use Cpsit\QualityTools\Service\FilesystemService;
-use Cpsit\QualityTools\Service\SecurityService;
-
 /**
  * Base test case for filesystem-related tests with virtual filesystem support.
  */
 abstract class FilesystemTestCase extends BaseTestCase
 {
-    /**
-     * Create a YamlConfigurationLoader with dependencies for testing.
-     */
-    protected function createConfigurationLoader(?FilesystemService $filesystemService = null): YamlConfigurationLoader
-    {
-        return new YamlConfigurationLoader(
-            new ConfigurationValidator(),
-            new SecurityService(),
-            $filesystemService ?? new FilesystemService(),
-        );
-    }
-
     /**
      * Create a standard configuration file structure in virtual filesystem.
      */

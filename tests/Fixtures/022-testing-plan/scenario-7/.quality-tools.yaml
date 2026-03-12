@@ -1,0 +1,10 @@
+# Scenario 7: Invalid Config File Path with Fallback
+# Pre-condition: config_file points to a non-existent path
+# Expected: config:validate succeeds with warning about missing file and fallback info
+#           lint:rector falls back to package default config
+quality-tools:
+  tools:
+    rector:
+      config_file: "non-existent/rector.php"
+    phpstan:
+      config_file: "also-missing/phpstan.neon"

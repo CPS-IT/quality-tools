@@ -1,0 +1,8 @@
+# Scenario 1: Custom Config File via YAML
+# Pre-condition: custom rector config at custom/rector.php
+# Expected: config:show displays config_file, rector uses custom config
+quality-tools:
+  tools:
+    rector:
+      enabled: true
+      config_file: "custom/rector.php"

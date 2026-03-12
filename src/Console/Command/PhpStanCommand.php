@@ -4,27 +4,53 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Service\DisposableTemporaryFile;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Exception\FileSystemException;
+use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
+use Cpsit\QualityTools\Service\ErrorFactory;
+use Cpsit\QualityTools\Service\ErrorHandler;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Tool\ToolName;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PhpStanCommand extends AbstractToolCommand
+/**
+ * PHPStan static analysis command.
+ *
+ * Lint-only tool with extra options for analysis level and memory limit.
+ * Uses runner infrastructure for execution.
+ */
+final class PhpStanCommand extends Command
 {
-    private ?DisposableTemporaryFile $temporaryConfig = null;
+    public function __construct(
+        private readonly ToolRunnerRegistry $registry,
+        private readonly ToolRunInfoDisplay $infoDisplay,
+        string $name,
+        string $description,
+        string $help,
+    ) {
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
+    }
 
-    #[\Override]
     protected function configure(): void
     {
-        parent::configure();
-
         $this
-            ->setName('lint:phpstan')
-            ->setDescription('Run PHPStan static analysis')
-            ->setHelp(
-                'This command runs PHPStan static analysis to find bugs in your code without ' .
-                'running it. Use --config to specify a custom configuration file, --path to ' .
-                'target specific directories, or --level to override the analysis level.',
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Override default configuration file path',
+            )
+            ->addOption(
+                'path',
+                'p',
+                InputOption::VALUE_REQUIRED,
+                'Specify custom target paths (defaults to project root)',
             )
             ->addOption(
                 'level',
@@ -37,132 +63,56 @@ final class PhpStanCommand extends AbstractToolCommand
                 'm',
                 InputOption::VALUE_REQUIRED,
                 'Memory limit for analysis (e.g., 1G, 512M)',
+            )
+            ->addOption(
+                'no-optimization',
+                null,
+                InputOption::VALUE_NONE,
+                'Disable automatic optimization (use default settings)',
             );
     }
 
-    protected function getToolName(): string
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        return 'phpstan';
-    }
-
-    protected function getDefaultConfigFileName(): string
-    {
-        return 'phpstan.neon';
-    }
-
-    #[\Override]
-    protected function validateToolConfig(InputInterface $input, OutputInterface $output, string $configPath): void
-    {
-        // Handle dynamic path resolution for PHPStan
-        $customPath = $input->getOption('path');
-        if ($customPath === null) {
-            try {
-                $resolvedPaths = $this->getResolvedPathsForTool($input, 'phpstan');
-                if (\count($resolvedPaths) > 1) {
-                    // Create a temporary configuration file with dynamic paths
-                    $tempConfigPath = $this->createTemporaryPhpStanConfig($configPath, $resolvedPaths);
-                    // We need to update the config path - let's store it for buildToolCommand
-                    $this->temporaryConfigPath = $tempConfigPath;
-                }
-            } catch (\Exception $e) {
-                // If we can't create the temporary config, just continue with the original path
-                // This ensures tests that don't fully mock the environment still work
-                if ($output->isVerbose()) {
-                    $output->writeln(\sprintf('<comment>Could not create temporary config: %s</comment>', $e->getMessage()));
-                }
+        try {
+            $pathOverride = $input->getOption('path');
+            if ($pathOverride !== null && !is_dir($pathOverride)) {
+                throw new FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $pathOverride));
             }
-        }
-    }
 
-    private string $temporaryConfigPath = '';
+            $configOverride = $input->getOption('config');
+            if ($configOverride !== null && !file_exists($configOverride)) {
+                throw ErrorFactory::configFileNotFound($configOverride, $configOverride);
+            }
 
-    protected function buildToolCommand(
-        InputInterface $input,
-        OutputInterface $output,
-        string $configPath,
-        array $targetPaths,
-    ): array {
-        // Use temporary config path if it was created
-        $actualConfigPath = $this->temporaryConfigPath ?: $configPath;
+            /** @var array<string, scalar> $toolOptions */
+            $toolOptions = [];
+            $level = $input->getOption('level');
+            if ($level !== null) {
+                $toolOptions['level'] = $level;
+            }
+            $memoryLimit = $input->getOption('memory-limit');
+            if ($memoryLimit !== null) {
+                $toolOptions['memory-limit'] = $memoryLimit;
+            }
 
-        $command = [
-            $this->getVendorBinPath() . '/phpstan',
-            'analyse',
-            '--configuration=' . $actualConfigPath,
-        ];
+            $request = new ToolRunRequest(
+                toolName: ToolName::PhpStan->value,
+                dryRun: false,
+                configOverride: $configOverride,
+                pathOverride: $pathOverride,
+                toolOptions: $toolOptions,
+            );
 
-        // Add a custom analysis level if specified
-        $level = $input->getOption('level');
-        if ($level !== null) {
-            $command[] = '--level=' . $level;
-        }
+            $runner = $this->registry->get(ToolName::PhpStan->value);
+            $optimizationDisabled = (bool) $input->getOption('no-optimization');
+            $this->infoDisplay->display($runner->describe($request), $output, $optimizationDisabled);
 
-        // Add memory limit if manually specified (automatic handling is in getToolMemoryLimit)
-        $memoryLimit = $input->getOption('memory-limit');
-        if ($memoryLimit !== null) {
-            $command[] = '--memory-limit=' . $memoryLimit;
-        } elseif (!$this->isOptimizationDisabled($input)) {
-            $optimalMemory = $this->getOptimalMemoryLimit($input, 'phpstan');
-            $command[] = '--memory-limit=' . $optimalMemory;
-        }
+            $collector = new StreamingOutputCollector($output);
 
-        // Only add a target path if the user provided a custom path via --path option
-        $customPath = $input->getOption('path');
-        if ($customPath !== null && !empty($targetPaths)) {
-            $command[] = $targetPaths[0];
-        }
-
-        return $command;
-    }
-
-    #[\Override]
-    protected function getToolMemoryLimit(InputInterface $input, OutputInterface $output): ?string
-    {
-        // PHPStan handles memory limit in buildToolCommand to add it as a command argument
-        // Return null here to avoid double application
-        return null;
-    }
-
-    #[\Override]
-    protected function executePostProcessingHooks(InputInterface $input, OutputInterface $output, int $exitCode): void
-    {
-        // Clean up temporary file if created
-        $this->cleanupTemporaryConfig();
-    }
-
-    #[\Override]
-    protected function handleExecutionException(\Throwable $exception, InputInterface $input, OutputInterface $output): void
-    {
-        // Clean up temporary file on error
-        $this->cleanupTemporaryConfig();
-    }
-
-    private function createTemporaryPhpStanConfig(string $baseConfigPath, array $paths): string
-    {
-        // Read the base configuration
-        $baseConfig = file_get_contents($baseConfigPath);
-        if ($baseConfig === false) {
-            throw new \RuntimeException(\sprintf('Could not read base config file: %s', $baseConfigPath));
-        }
-
-        // Create the dynamic paths section
-        $pathsSection = "parameters:\n\tlevel: 6\n\tpaths:\n";
-        foreach ($paths as $path) {
-            $pathsSection .= "\t\t- " . $path . "\n";
-        }
-
-        // Create a disposable temporary file
-        $this->temporaryConfig = new DisposableTemporaryFile(new \Cpsit\QualityTools\Service\SecurityService(), new \Cpsit\QualityTools\Service\FilesystemService(), 'phpstan_', '.neon');
-        $this->temporaryConfig->write($pathsSection);
-
-        return $this->temporaryConfig->getPath();
-    }
-
-    private function cleanupTemporaryConfig(): void
-    {
-        if ($this->temporaryConfig !== null) {
-            $this->temporaryConfig->cleanup();
-            $this->temporaryConfig = null;
+            return $runner->run($request, $collector)->exitCode;
+        } catch (\Throwable $e) {
+            return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
     }
 }

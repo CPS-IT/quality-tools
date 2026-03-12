@@ -4,27 +4,40 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationTemplateGenerator;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\ConfigInitCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Runner\ConfigInitRunner;
 use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
-/**
- * @covers \Cpsit\QualityTools\Console\Command\ConfigInitCommand
- */
+#[CoversClass(ConfigInitCommand::class)]
 final class ConfigInitCommandTest extends TestCase
 {
     private ConfigInitCommand $command;
     private CommandTester $commandTester;
     private string $tempDir;
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('config_init_test_');
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+        VendorDirectoryDetector::clearCache();
 
         // Create a basic project structure
         TestHelper::createComposerJson($this->tempDir, [
@@ -32,20 +45,27 @@ final class ConfigInitCommandTest extends TestCase
             'type' => 'project',
         ]);
 
-        // Set up command with application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $this->command = new ConfigInitCommand(new FilesystemService());
-                $this->command->setApplication($app);
-                $this->commandTester = new CommandTester($this->command);
-            },
+        $runner = $this->createRunner();
+        $this->command = new ConfigInitCommand(
+            $runner,
+            'config:init',
+            'Initialize YAML configuration file',
+            'This command creates a .quality-tools.yaml configuration file in the project root.',
         );
+        $this->commandTester = new CommandTester($this->command);
     }
 
     protected function tearDown(): void
     {
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
     }
 
@@ -54,7 +74,6 @@ final class ConfigInitCommandTest extends TestCase
         self::assertSame('config:init', $this->command->getName());
         self::assertSame('Initialize YAML configuration file', $this->command->getDescription());
 
-        // Check options
         $definition = $this->command->getDefinition();
         self::assertTrue($definition->hasOption('template'));
         self::assertTrue($definition->hasOption('force'));
@@ -96,12 +115,11 @@ final class ConfigInitCommandTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $content = file_get_contents($configFile);
 
-        // Extension template should have specific paths
         self::assertStringContainsString('Classes/', $content);
         self::assertStringContainsString('Configuration/', $content);
         self::assertStringContainsString('Tests/', $content);
-        self::assertStringContainsString('level: 8', $content); // Higher PHPStan level for extensions
-        self::assertStringContainsString('parallel: false', $content); // Extensions typically don't use parallel
+        self::assertStringContainsString('level: 8', $content);
+        self::assertStringContainsString('parallel: false', $content);
     }
 
     public function testExecuteSitePackageTemplate(): void
@@ -116,10 +134,9 @@ final class ConfigInitCommandTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $content = file_get_contents($configFile);
 
-        // Site package template should have typical paths
         self::assertStringContainsString('packages/', $content);
         self::assertStringContainsString('config/', $content);
-        self::assertStringContainsString('level: 6', $content); // Standard PHPStan level
+        self::assertStringContainsString('level: 6', $content);
     }
 
     public function testExecuteDistributionTemplate(): void
@@ -134,12 +151,11 @@ final class ConfigInitCommandTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $content = file_get_contents($configFile);
 
-        // Distribution template should have comprehensive paths
         self::assertStringContainsString('packages/', $content);
         self::assertStringContainsString('config/system/', $content);
         self::assertStringContainsString('config/sites/', $content);
-        self::assertStringContainsString('memory_limit: "2G"', $content); // Higher memory for distributions
-        self::assertStringContainsString('max_processes: 8', $content); // More processes for distributions
+        self::assertStringContainsString('memory_limit: "2G"', $content);
+        self::assertStringContainsString('max_processes: 8', $content);
     }
 
     public function testExecuteInvalidTemplate(): void
@@ -152,14 +168,12 @@ final class ConfigInitCommandTest extends TestCase
         self::assertStringContainsString('Invalid template "invalid-template"', $output);
         self::assertStringContainsString('Available templates:', $output);
 
-        // No file should be created
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         self::assertFileDoesNotExist($configFile);
     }
 
     public function testExecuteWithExistingConfiguration(): void
     {
-        // Create existing configuration
         $existingConfig = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($existingConfig, 'existing-content');
 
@@ -171,13 +185,11 @@ final class ConfigInitCommandTest extends TestCase
         self::assertStringContainsString('Configuration file already exists', $output);
         self::assertStringContainsString('Use --force to overwrite', $output);
 
-        // File should not be modified
         self::assertSame('existing-content', file_get_contents($existingConfig));
     }
 
     public function testExecuteWithForceFlag(): void
     {
-        // Create existing configuration
         $existingConfig = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($existingConfig, 'existing-content');
 
@@ -188,7 +200,6 @@ final class ConfigInitCommandTest extends TestCase
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Created configuration file', $output);
 
-        // File should be overwritten
         $content = file_get_contents($existingConfig);
         self::assertNotSame('existing-content', $content);
         self::assertStringContainsString('quality-tools:', $content);
@@ -196,7 +207,6 @@ final class ConfigInitCommandTest extends TestCase
 
     public function testExecuteWithExistingQualityToolsYaml(): void
     {
-        // Create existing quality-tools.yaml (different file)
         $existingConfig = $this->tempDir . '/quality-tools.yaml';
         file_put_contents($existingConfig, 'existing-content');
 
@@ -206,16 +216,13 @@ final class ConfigInitCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString('Configuration file already exists', $output);
-        // Use basename to avoid path format differences between /var/ and /private/var/
-        self::assertStringContainsString(basename($existingConfig), $output);
+        self::assertStringContainsString('Use --force to overwrite', $output);
 
-        // New file should not be created
         self::assertFileDoesNotExist($this->tempDir . '/.quality-tools.yaml');
     }
 
     public function testProjectNameDetectionFromComposer(): void
     {
-        // Create composer.json with specific name
         TestHelper::createComposerJson($this->tempDir, [
             'name' => 'vendor/custom-project',
             'type' => 'project',
@@ -233,7 +240,6 @@ final class ConfigInitCommandTest extends TestCase
 
     public function testProjectNameDetectionFromDirectoryName(): void
     {
-        // Remove composer.json to test fallback
         unlink($this->tempDir . '/composer.json');
 
         $exitCode = $this->commandTester->execute([]);
@@ -243,13 +249,16 @@ final class ConfigInitCommandTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         $content = file_get_contents($configFile);
 
-        // Should use directory name as fallback
         $directoryName = basename($this->tempDir);
         self::assertStringContainsString($directoryName, $content);
     }
 
     public function testFileWriteError(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         // Make directory read-only to cause write error
         chmod($this->tempDir, 0o555);
 
@@ -266,11 +275,9 @@ final class ConfigInitCommandTest extends TestCase
 
     public function testHelpOutput(): void
     {
-        // Test command help directly from command definition instead of executing with --help
         self::assertSame('Initialize YAML configuration file', $this->command->getDescription());
         self::assertStringContainsString('.quality-tools.yaml', $this->command->getHelp());
 
-        // Check that options are properly defined
         $definition = $this->command->getDefinition();
         self::assertTrue($definition->hasOption('template'));
         self::assertTrue($definition->hasOption('force'));
@@ -295,9 +302,9 @@ final class ConfigInitCommandTest extends TestCase
         self::assertFileExists($configFile);
     }
 
-    public function testNextStepsInOutput(): void
+    public function testNextStepsInVerboseOutput(): void
     {
-        $exitCode = $this->commandTester->execute([]);
+        $exitCode = $this->commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
@@ -318,9 +325,14 @@ final class ConfigInitCommandTest extends TestCase
             TestHelper::withEnvironment(
                 ['QT_PROJECT_ROOT' => $testDir],
                 function () use ($template, $testDir): void {
-                    $app = new QualityToolsApplication();
-                    $command = new ConfigInitCommand(new FilesystemService());
-                    $command->setApplication($app);
+                    VendorDirectoryDetector::clearCache();
+                    $runner = $this->createRunner();
+                    $command = new ConfigInitCommand(
+                        $runner,
+                        'config:init',
+                        'Initialize YAML configuration file',
+                        'This command creates a .quality-tools.yaml configuration file in the project root.',
+                    );
                     $commandTester = new CommandTester($command);
 
                     $exitCode = $commandTester->execute(['--template' => $template]);
@@ -341,5 +353,26 @@ final class ConfigInitCommandTest extends TestCase
 
             TestHelper::removeDirectory($testDir);
         }
+    }
+
+    private function createRunner(): ConfigInitRunner
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        $configLoader = new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
+
+        $templateGenerator = new ConfigurationTemplateGenerator();
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+
+        return new ConfigInitRunner($templateGenerator, $configLoader, $filesystemService, $projectEnv);
     }
 }

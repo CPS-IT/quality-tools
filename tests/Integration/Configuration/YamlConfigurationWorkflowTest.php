@@ -15,7 +15,7 @@ use Symfony\Component\Console\Tester\ApplicationTester;
  * @covers \Cpsit\QualityTools\Console\Command\ConfigInitCommand
  * @covers \Cpsit\QualityTools\Console\Command\ConfigValidateCommand
  * @covers \Cpsit\QualityTools\Console\Command\ConfigShowCommand
- * @covers \Cpsit\QualityTools\Configuration\YamlConfigurationLoader
+ * @covers \Cpsit\QualityTools\Configuration\ConfigurationLoader
  * @covers \Cpsit\QualityTools\Configuration\Configuration
  * @covers \Cpsit\QualityTools\Configuration\ConfigurationValidator
  */
@@ -50,6 +50,8 @@ final class YamlConfigurationWorkflowTest extends TestCase
             if (getenv($envVar) !== false) {
                 putenv($envVar);
             }
+            // Also clean superglobals
+            unset($_SERVER[$envVar], $_ENV[$envVar]);
         }
 
         // Note: We create ApplicationTester instances per test method to avoid state leakage
@@ -58,27 +60,42 @@ final class YamlConfigurationWorkflowTest extends TestCase
     protected function tearDown(): void
     {
         TestHelper::removeDirectory($this->tempDir);
+        ServiceContainer::reset();
+
+        // Clean up environment variables after each test to prevent pollution
+        $envVariablesToClean = [
+            'QT_PROJECT_ROOT',
+            'PROJECT_NAME',
+            'PHP_VERSION',
+            'TYPO3_VERSION',
+            'MEMORY_LIMIT',
+            'PHPSTAN_LEVEL',
+        ];
+
+        foreach ($envVariablesToClean as $envVar) {
+            if (getenv($envVar) !== false) {
+                putenv($envVar);
+            }
+            // Also clean superglobals
+            unset($_SERVER[$envVar], $_ENV[$envVar]);
+        }
     }
 
     private function createAppTester(array $additionalEnv = []): ApplicationTester
     {
         $env = ['QT_PROJECT_ROOT' => $this->tempDir] + $additionalEnv;
 
-        // Also set $_SERVER and $_ENV variables for SecurityService compatibility
+        // Set superglobals and putenv for SecurityService and ProjectEnvironment compatibility
         foreach ($env as $key => $value) {
             $_SERVER[$key] = $value;
             $_ENV[$key] = $value;
+            putenv($key . '=' . $value);
         }
 
-        return TestHelper::withEnvironment(
-            $env,
-            function (): ApplicationTester {
-                $app = new QualityToolsApplication();
-                $app->setAutoExit(false);
+        $app = new QualityToolsApplication();
+        $app->setAutoExit(false);
 
-                return new ApplicationTester($app);
-            },
-        );
+        return new ApplicationTester($app);
     }
 
     public function testCompleteYamlWorkflow(): void
@@ -110,7 +127,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('quality-tools:', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output);
 
@@ -245,21 +262,28 @@ final class YamlConfigurationWorkflowTest extends TestCase
         $configFile = $this->tempDir . '/.quality-tools.yaml';
         file_put_contents($configFile, $invalidConfig);
 
-        // Validation should fail
-        $appTester->run(['command' => 'config:validate']);
+        try {
+            // Validation should fail
+            $appTester->run(['command' => 'config:validate']);
 
-        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
+            self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $appTester->getDisplay();
-        self::assertStringContainsString('Unexpected Error:', $output);
+            $output = $appTester->getDisplay();
+            self::assertStringContainsString('Unexpected Error:', $output);
 
-        // Show command should also fail
-        $appTester->run(['command' => 'config:show']);
+            // Show command should also fail
+            $appTester->run(['command' => 'config:show']);
 
-        self::assertSame(Command::FAILURE, $appTester->getStatusCode());
+            self::assertSame(Command::FAILURE, $appTester->getStatusCode());
 
-        $output = $appTester->getDisplay();
-        self::assertStringContainsString('Failed to load configuration', $output);
+            $output = $appTester->getDisplay();
+            self::assertStringContainsString('Configuration file error', $output);
+        } finally {
+            // Clean up invalid config file to prevent it from affecting other tests
+            if (file_exists($configFile)) {
+                unlink($configFile);
+            }
+        }
     }
 
     public function testWorkflowWithForceOverwrite(): void
@@ -306,18 +330,16 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Configuration Summary', $output);
         self::assertStringContainsString('integration/test-project', $output);
         self::assertStringContainsString('rector', $output);
-        self::assertStringContainsString('Scan Paths:', $output);
+        self::assertStringContainsString('Scan paths:', $output);
         self::assertStringContainsString('packages/', $output);
 
-        // Show with verbose output (shows configuration sources)
+        // Show with verbose output (shows source info as individual messages)
         $appTester->run(['command' => 'config:show', '--verbose' => true]);
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Configuration Sources', $output);
-        self::assertStringContainsString('Project:', $output);
+        self::assertStringContainsString('Source: Project:', $output);
         self::assertStringContainsString('.quality-tools.yaml', $output);
         self::assertStringContainsString('Package defaults', $output);
     }
@@ -377,29 +399,17 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         // Show configuration to verify merging
-        $appTester->run(['command' => 'config:show', '--format' => 'json', '--verbose' => true]);
+        $appTester->run(['command' => 'config:show', '--format' => 'json']);
 
         $output = $appTester->getDisplay();
 
-        // Should show both configuration sources
-        self::assertStringContainsString('Global:', $output);
-        self::assertStringContainsString('Project:', $output);
+        // JSON format should output pure JSON, no configuration sources
+        // The configuration sources can be checked with verbose YAML format if needed
 
-        // Extract and verify merged configuration
-        $lines = explode("\n", $output);
-        $jsonStart = false;
-        $jsonOutput = '';
+        // Parse JSON directly since it's pure JSON output
+        $config = json_decode(trim($output), true);
 
-        foreach ($lines as $line) {
-            if (str_starts_with($line, '{')) {
-                $jsonStart = true;
-            }
-            if ($jsonStart) {
-                $jsonOutput .= $line . "\n";
-            }
-        }
-
-        $config = json_decode(trim($jsonOutput), true);
+        self::assertNotNull($config, 'Output should be valid JSON');
 
         // Verify merged values
         self::assertSame('hierarchy-test', $config['quality-tools']['project']['name']); // project
@@ -414,6 +424,15 @@ final class YamlConfigurationWorkflowTest extends TestCase
         // Output settings should be merged
         self::assertTrue($config['quality-tools']['output']['colors']); // project override
         self::assertSame('verbose', $config['quality-tools']['output']['verbosity']); // global
+
+        // Now test verbose mode with YAML format to see configuration sources
+        $appTester->run(['command' => 'config:show', '--verbose' => true]);
+
+        $verboseOutput = $appTester->getDisplay();
+
+        // In verbose YAML mode, we should see source info as individual messages
+        self::assertStringContainsString('Source: Global:', $verboseOutput);
+        self::assertStringContainsString('Source: Project:', $verboseOutput);
 
         // Restore environment variables
         if ($originalHome !== false) {
@@ -447,7 +466,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
         self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
         $output = $appTester->getDisplay();
-        self::assertStringContainsString('Resolved Configuration', $output);
+        self::assertStringContainsString('quality-tools:', $output);
         self::assertStringContainsString('php_version: \'8.3\'', $output); // defaults
     }
 
@@ -471,6 +490,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
             file_put_contents($testDir . '/' . $fileName, $config);
 
             TestHelper::withEnvironment(['QT_PROJECT_ROOT' => $testDir], function () use ($fileName): void {
+                ServiceContainer::reset();
                 $app = new QualityToolsApplication();
                 $app->setAutoExit(false);
                 $appTester = new ApplicationTester($app);
@@ -480,7 +500,7 @@ final class YamlConfigurationWorkflowTest extends TestCase
 
                 self::assertSame(Command::SUCCESS, $appTester->getStatusCode());
 
-                $output = $appTester->getDisplay();
+                $output = TestHelper::normalizeConsoleOutput($appTester->getDisplay());
                 self::assertStringContainsString($fileName, $output);
                 self::assertStringContainsString('Configuration is valid', $output);
             });

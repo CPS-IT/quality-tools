@@ -22,6 +22,7 @@ final class ProjectAnalyzerTest extends TestCase
     protected function tearDown(): void
     {
         $this->removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testAnalyzeProjectWithEmptyDirectory(): void

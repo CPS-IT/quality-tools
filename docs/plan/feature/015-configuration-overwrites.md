@@ -1,6 +1,6 @@
 # Feature 015: Configuration Overwrites
 
-- **Status:** Not Started
+- **Status:** Completed
 - **Estimated Time:** 6–8 hours
 - **Layer:** MVP
 - **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
@@ -28,40 +28,40 @@ Projects need the ability to customize quality tool configurations for their spe
 
 ## Tasks
 
-- [ ] Configuration Precedence System
-  - [ ] Design configuration hierarchy and precedence rules
-  - [ ] Implement configuration file discovery mechanism
-  - [ ] Create configuration merging algorithm
-  - [ ] Add configuration source tracking and debugging
-- [ ] Configuration File Support
-  - [ ] Support phpcs.xml in the project root
-  - [ ] Support tool configs in package root directories
-  - [ ] Support tool configs in config/ subdirectory
-  - [ ] Support quality-tools.yaml in various locations
-- [ ] Override Mechanisms
-  - [ ] Implement deep configuration merging
-  - [ ] Add configuration validation after merging
-  - [ ] Create override conflict detection
-  - [ ] Add configuration inheritance documentation
+- [x] Configuration Precedence System
+  - [x] Design configuration hierarchy and precedence rules
+  - [x] Implement configuration file discovery mechanism
+  - [x] Create configuration merging algorithm
+  - [x] Add configuration source tracking and debugging
+- [x] Configuration File Support
+  - [x] Support phpcs.xml in the project root
+  - [x] Support tool configs in package root directories
+  - [x] Support tool configs in config/ subdirectory
+  - [x] Support .quality-tools.yaml in various locations
+- [x] Override Mechanisms
+  - [x] Implement deep configuration merging
+  - [x] Add configuration validation after merging
+  - [x] Create override conflict detection
+  - [x] Add configuration inheritance documentation
 
 ## Success Criteria
 
-- [ ] Clear, documented configuration precedence order
-- [ ] Projects can override any configuration setting
-- [ ] Configuration merging works predictably
-- [ ] Debugging tools show which config files are active
-- [ ] Backward compatibility maintained for existing projects
+- [x] Clear, documented configuration precedence order
+- [x] Projects can override any configuration setting
+- [x] Configuration merging works predictably
+- [x] Debugging tools show which config files are active
+- [x] Backward compatibility maintained for existing projects
 
 ## Technical Requirements
 
 ### Configuration File Locations (in precedence order)
 
 1. Command line arguments (the highest priority)
-2. `quality-tools.yaml` in project root
-3. `quality-tools.yaml` in config/ directory
+2. `.quality-tools.yaml` in project root
+3. `.quality-tools.yaml` in config/ directory
 4. Tool-specific config in project root (e.g., `phpcs.xml`)
 5. Tool-specific config in an arbitrary directory (e.g., <package>/`config/phpcs.xml`, <package>/`phpcs.xml`, <project>/`config/phpcs.xml`)
-6. `quality-tools.yaml` in package root
+6. `.quality-tools.yaml` in package root
 7. Package defaults (the lowest priority)
 
 ### Configuration Merging Strategy
@@ -70,7 +70,7 @@ Projects need the ability to customize quality tool configurations for their spe
 - Objects: Deep merge with override
 - Scalars: Override completely
 - Special handling for path arrays (relative path resolution)
-- a custom config file for a tool overrides the default config file and all other configs for that tool in configuration YAML files. (config file set as command argument or in `quality-tools.yaml`)
+- a custom config file for a tool overrides the default config file and all other configs for that tool in configuration YAML files. (config file set as command argument or in `.quality-tools.yaml`)
 
 ## Implementation Plan
 
@@ -93,7 +93,7 @@ Projects need the ability to customize quality tool configurations for their spe
 Extends unified YAML configuration from Feature 010:
 
 ```yaml
-# Example: project-root/quality-tools.yaml
+# Example: project-root/.quality-tools.yaml
 quality-tools:
   # Override specific tool settings
   tools:
@@ -119,14 +119,14 @@ quality-tools:
 
 ```
 project-root/
-├── quality-tools.yaml              # Project-level overrides
+├── .quality-tools.yaml              # Project-level overrides
 ├── phpcs.xml                      # Legacy PHP CS Fixer config
 ├── config/
-│   ├── quality-tools.yaml         # Config directory overrides
+│   ├── .quality-tools.yaml         # Config directory overrides
 │   └── rector.php                 # Legacy Rector config
 └── packages/
     └── custom-package/
-        └── quality-tools.yaml     # Package-specific overrides
+        └── .quality-tools.yaml     # Package-specific overrides
 ```
 
 ## Backward Compatibility

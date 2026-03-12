@@ -36,9 +36,6 @@ abstract class BaseTestCase extends TestCase
 
     protected function tearDown(): void
     {
-        // Verify no resource leaks before cleanup
-        $this->performCleanupVerification();
-
         // Cleanup mocks
         foreach ($this->mockRegistry as $mock) {
             if ($mock instanceof MockObject) {
@@ -58,7 +55,11 @@ abstract class BaseTestCase extends TestCase
         // Force garbage collection to ensure cleanup
         gc_collect_cycles();
 
+        // Call parent tearDown to allow child classes to clean up
         parent::tearDown();
+
+        // Verify no resource leaks after all cleanup is complete
+        $this->performCleanupVerification();
     }
 
     /**
@@ -164,7 +165,6 @@ abstract class BaseTestCase extends TestCase
      */
     protected function createFilesystemServiceMock(): MockObject
     {
-        // @phpstan-ignore-next-line
         return $this->createTestMock(FilesystemService::class, [
             'fileExists' => [
                 'willReturnCallback' => $this->testFilesystem->fileExists(...),
@@ -188,9 +188,10 @@ abstract class BaseTestCase extends TestCase
     {
         $tempDir = sys_get_temp_dir();
         $patterns = [
-            $tempDir . '/qt_*',           // Quality tools temp files
+            $tempDir . '/qt_temp_*',      // Quality tools service temp files (not test directories)
             $tempDir . '/yaml_loader_*',  // YAML loader temp files
             $tempDir . '/phpunit_*',      // PHPUnit temp files
+            // Note: qt_test_* directories are managed by TestHelper and should not be detected
         ];
 
         $temporaryFiles = [];
@@ -220,11 +221,14 @@ abstract class BaseTestCase extends TestCase
     protected function withEnvironment(array $env, callable $callback): mixed
     {
         $originalEnv = [];
+        $originalServer = [];
 
-        // Store and set new environment
+        // Store and set new environment across all superglobals
         foreach ($env as $key => $value) {
             $originalEnv[$key] = $_ENV[$key] ?? null;
+            $originalServer[$key] = $_SERVER[$key] ?? null;
             $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
             putenv($key . '=' . $value);
         }
 
@@ -232,13 +236,23 @@ abstract class BaseTestCase extends TestCase
             return $callback();
         } finally {
             // Restore original environment
-            foreach ($originalEnv as $key => $value) {
-                if ($value === null) {
+            foreach ($env as $key => $ignored) {
+                if ($originalEnv[$key] === null) {
                     unset($_ENV[$key]);
+                } else {
+                    $_ENV[$key] = $originalEnv[$key];
+                }
+
+                if ($originalServer[$key] === null) {
+                    unset($_SERVER[$key]);
+                } else {
+                    $_SERVER[$key] = $originalServer[$key];
+                }
+
+                if ($originalEnv[$key] === null && $originalServer[$key] === null) {
                     putenv($key);
                 } else {
-                    $_ENV[$key] = $value;
-                    putenv($key . '=' . $value);
+                    putenv($key . '=' . ($originalEnv[$key] ?? $originalServer[$key] ?? ''));
                 }
             }
         }

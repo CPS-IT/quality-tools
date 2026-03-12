@@ -25,6 +25,7 @@ final class YamlValidatorTest extends TestCase
     protected function tearDown(): void
     {
         $this->filesystem->remove($this->tempDir);
+        parent::tearDown();
     }
 
     public function testValidateYamlFilesWithValidFiles(): void

@@ -4,11 +4,25 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Console\Command\PhpStanCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
+use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Tool\Runner\PhpStanRunner;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * Integration test to verify temporary file cleanup in PHPStan command.
@@ -17,10 +31,12 @@ final class PhpStanTempFileCleanupTest extends TestCase
 {
     private string $tempProjectRoot;
     private CommandTester $commandTester;
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempProjectRoot = TestHelper::createTempDirectory('phpstan_cleanup_test_');
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
 
         // Create TYPO3 project structure for proper project root detection
         TestHelper::createComposerJson($this->tempProjectRoot, TestHelper::getComposerContent('typo3-core'));
@@ -51,20 +67,62 @@ final class PhpStanTempFileCleanupTest extends TestCase
         $config = "paths:\n  - src/*\n  - config/*\n";
         file_put_contents($this->tempProjectRoot . '/.quality-tools.yaml', $config);
 
-        // Set up command tester using the same pattern as unit tests
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempProjectRoot],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $command = new PhpStanCommand();
-                $command->setApplication($app);
-                $this->commandTester = new CommandTester($command);
-            },
+        // Set QT_PROJECT_ROOT for proper project root detection
+        putenv('QT_PROJECT_ROOT=' . $this->tempProjectRoot);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempProjectRoot;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempProjectRoot;
+
+        VendorDirectoryDetector::clearCache();
+
+        // Create vendor directory structure required by VendorDirectoryDetector
+        $vendorComposerDir = $this->tempProjectRoot . '/vendor/composer';
+        mkdir($vendorComposerDir, 0o777, true);
+        file_put_contents($this->tempProjectRoot . '/vendor/autoload.php', "<?php\nreturn [];\n");
+
+        // Build runner infrastructure
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        $configLoader = new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
         );
+
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+        $processExecutor = new ProcessExecutor();
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $phpStanRunner = new PhpStanRunner($processExecutor, $projectEnv, $configLoader, $memoryOptimizer);
+        $registry = new ToolRunnerRegistry([$phpStanRunner]);
+        $infoDisplay = new ToolRunInfoDisplay(new MemoryCalculator());
+
+        $command = new PhpStanCommand(
+            $registry,
+            $infoDisplay,
+            name: 'lint:phpstan',
+            description: 'Run PHPStan static analysis',
+            help: 'PHPStan static analysis command.',
+        );
+        $this->commandTester = new CommandTester($command);
     }
 
     protected function tearDown(): void
     {
+        // Restore original QT_PROJECT_ROOT
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempProjectRoot);
     }
 

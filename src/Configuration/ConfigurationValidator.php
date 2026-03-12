@@ -63,6 +63,45 @@ final class ConfigurationValidator
     }
 
     /**
+     * Validate that tool config_file paths reference existing files.
+     *
+     * @param array<string, mixed> $config      The full configuration array
+     * @param string               $projectRoot The project root directory
+     *
+     * @return list<string> Warning messages for invalid paths
+     */
+    public function validateToolConfigFilePaths(array $config, string $projectRoot): array
+    {
+        $warnings = [];
+        $tools = $config['quality-tools']['tools'] ?? [];
+
+        foreach ($tools as $tool => $toolConfig) {
+            if (!isset($toolConfig['config_file'])) {
+                continue;
+            }
+
+            $configFile = $toolConfig['config_file'];
+
+            // Skip absolute paths -- these come from auto-discovery and are always valid
+            if (str_starts_with($configFile, '/')) {
+                continue;
+            }
+
+            $resolvedPath = $projectRoot . '/' . $configFile;
+
+            if (!file_exists($resolvedPath)) {
+                $warnings[] = \sprintf(
+                    'Tool "%s": config_file "%s" does not exist',
+                    $tool,
+                    $configFile,
+                );
+            }
+        }
+
+        return $warnings;
+    }
+
+    /**
      * Get the JSON schema for validation.
      *
      * @throws ConfigurationValidationException If schema cannot be loaded

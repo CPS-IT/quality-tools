@@ -4,24 +4,32 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
-use Cpsit\QualityTools\Configuration\YamlConfigurationLoader;
+use Cpsit\QualityTools\Console\Runner\ConfigShowRunner;
+use Cpsit\QualityTools\Console\Runner\DTO\ConfigShowRequest;
+use Cpsit\QualityTools\Messaging\MessageSeverity;
+use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
+use Cpsit\QualityTools\Service\ErrorHandler;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Yaml\Yaml;
 
-final class ConfigShowCommand extends BaseCommand
+final class ConfigShowCommand extends Command
 {
-    #[\Override]
+    public function __construct(
+        private readonly ConfigShowRunner $runner,
+        string $name,
+        string $description,
+        string $help,
+    ) {
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
+    }
+
     protected function configure(): void
     {
-        parent::configure();
-
         $this
-            ->setName('config:show')
-            ->setDescription('Show resolved configuration')
-            ->setHelp('This command shows the resolved configuration after merging all sources.')
             ->addOption(
                 'format',
                 'f',
@@ -33,78 +41,34 @@ final class ConfigShowCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $projectRoot = $this->getProjectRoot();
-        $format = $input->getOption('format');
-
-        if (!\in_array($format, ['yaml', 'json'], true)) {
-            $io->error('Format must be either "yaml" or "json".');
-
-            return self::FAILURE;
-        }
-
         try {
-            $configuration = $this->getConfiguration($input);
-            $configData = $configuration->toArray();
+            $request = new ConfigShowRequest(
+                format: $input->getOption('format'),
+            );
 
-            $io->title('Resolved Configuration');
+            $description = $this->runner->describe($request);
 
-            // Show configuration file sources if verbose
-            if ($output->isVerbose()) {
-                $loader = $this->getYamlConfigurationLoader();
-                $this->showConfigurationSources($io, $loader, $projectRoot);
+            if ($output->isVerbose() && $description->configPath !== '') {
+                $output->writeln(\sprintf('<info>Configuration file: %s</info>', $description->configPath));
             }
 
-            // Output configuration in the requested format
-            switch ($format) {
-                case 'json':
-                    $output->writeln(json_encode($configData, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                    break;
+            $collector = new StreamingOutputCollector($output);
+            $result = $this->runner->run($request, $collector);
 
-                case 'yaml':
-                default:
-                    $yamlOutput = Yaml::dump($configData, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK);
-                    $output->writeln($yamlOutput);
-                    break;
+            // Always show errors and warnings; info messages only in verbose mode
+            foreach ($result->messages as $message) {
+                match ($message->severity) {
+                    MessageSeverity::Error => $output->writeln('<error>' . $message->text . '</error>'),
+                    MessageSeverity::Warning => $output->writeln('<comment>' . $message->text . '</comment>'),
+                    MessageSeverity::Info => $output->isVerbose()
+                        ? $output->writeln('<info>' . $message->text . '</info>')
+                        : null,
+                };
             }
 
-            return self::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error([
-                'Failed to load configuration:',
-                $e->getMessage(),
-            ]);
-
-            return self::FAILURE;
+            return $result->exitCode;
+        } catch (\Throwable $e) {
+            return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
-    }
-
-    private function showConfigurationSources(SymfonyStyle $io, YamlConfigurationLoader $loader, string $projectRoot): void
-    {
-        $io->section('Configuration Sources');
-
-        $sources = [];
-
-        // Check for global configuration
-        $homeDir = getenv('HOME') ?: ($_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '');
-        if (!empty($homeDir)) {
-            $globalConfig = $homeDir . '/.quality-tools.yaml';
-            if (file_exists($globalConfig)) {
-                $sources[] = \sprintf('Global: %s', $globalConfig);
-            }
-        }
-
-        // Check for project configuration
-        $projectConfig = $loader->findConfigurationFile($projectRoot);
-        if ($projectConfig !== null) {
-            $sources[] = \sprintf('Project: %s', $projectConfig);
-        }
-
-        // Show package defaults
-        $sources[] = 'Package defaults (built-in)';
-
-        $io->listing($sources);
-
-        $io->newLine();
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit\Console;
 
 use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Console\Tagline;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -57,10 +58,10 @@ final class QualityToolsApplicationTest extends TestCase
         // Assert
         $this->assertSame('CPSIT Quality Tools', $application->getName());
         $this->assertSame('1.0.0-dev', $application->getVersion());
-        $this->assertSame(
-            'Simple command-line interface for TYPO3 quality assurance tools',
-            $application->getHelp(),
-        );
+        $help = $application->getHelp();
+        $this->assertStringStartsWith('qt;) ', $help);
+        $taglineText = substr($help, 5);
+        $this->assertContains($taglineText, Tagline::all());
     }
 
     #[Test]

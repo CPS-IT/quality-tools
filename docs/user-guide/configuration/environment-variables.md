@@ -496,7 +496,7 @@ variables:
 vendor/bin/qt config:show
 
 # Show with sources (verbose)
-vendor/bin/qt config:show --verbose
+vendor/bin/qt config:show -v
 
 # Show as JSON for easier parsing
 vendor/bin/qt config:show --format=json

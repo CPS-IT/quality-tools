@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace Cpsit\QualityTools\Tests\Unit;
 
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
-use Cpsit\QualityTools\Service\CommandBuilder;
 use Cpsit\QualityTools\Service\FilesystemService;
-use Cpsit\QualityTools\Service\ProcessExecutor;
 use Cpsit\QualityTools\Service\SecurityService;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Process\Process;
 
 /**
  * Factory for creating commonly used mocks with sensible defaults.
@@ -86,75 +83,6 @@ final readonly class MockFactory
             ->willReturn($errors);
 
         return $mock;
-    }
-
-    /**
-     * Create a ProcessExecutor mock for command execution testing.
-     */
-    public function createProcessExecutorMock(array $results = []): MockObject
-    {
-        $mock = $this->testCase->createTestMockForFactory(ProcessExecutor::class);
-
-        $mock->method('execute')
-            ->willReturnCallback(function (Process $process) use ($results): int {
-                $commandLine = $process->getCommandLine();
-
-                // Return configured result or default success
-                foreach ($results as $pattern => $result) {
-                    if (str_contains($commandLine, $pattern)) {
-                        return $result['exitCode'] ?? 0;
-                    }
-                }
-
-                return 0; // Default success
-            });
-
-        return $mock;
-    }
-
-    /**
-     * Create a CommandBuilder mock for building commands.
-     */
-    public function createCommandBuilderMock(array $commandMappings = []): MockObject
-    {
-        $mock = $this->testCase->createTestMockForFactory(CommandBuilder::class);
-
-        $mock->method('buildCommand')
-            ->willReturnCallback(function (string $tool, array $arguments) use ($commandMappings): Process {
-                $commandLine = $commandMappings[$tool] ?? [$tool];
-
-                if (!empty($arguments)) {
-                    $commandLine = array_merge($commandLine, $arguments);
-                }
-
-                return new Process($commandLine);
-            });
-
-        return $mock;
-    }
-
-    /**
-     * Create a complete dependency set for YamlConfigurationLoader.
-     */
-    public function createYamlConfigurationLoaderDependencies(array $files = []): array
-    {
-        return [
-            'validator' => $this->createConfigurationValidatorMock(),
-            'securityService' => $this->createSecurityServiceMock(),
-            'filesystemService' => $this->createFilesystemServiceMock($files),
-        ];
-    }
-
-    /**
-     * Create mocks for console command testing.
-     */
-    public function createConsoleCommandDependencies(): array
-    {
-        return [
-            'processExecutor' => $this->createProcessExecutorMock(),
-            'commandBuilder' => $this->createCommandBuilderMock(),
-            'filesystemService' => $this->createFilesystemServiceMock(),
-        ];
     }
 
     /**

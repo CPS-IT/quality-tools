@@ -556,7 +556,7 @@ ENABLE_COLORS="false"
 
 2. **Compare resolved configuration**
    ```bash
-   vendor/bin/qt config:show --verbose
+   vendor/bin/qt config:show -v
    ```
 
 3. **Test with increased verbosity**

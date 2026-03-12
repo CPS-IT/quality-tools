@@ -1,0 +1,12 @@
+# Custom PHPStan configuration for Scenario 5.
+#
+# Installed at: config/custom/phpstan.neon (relative to project root)
+# One of three custom tool configs in this scenario, testing that
+# multiple tools can each have their own custom config_file.
+# Uses level 5 instead of the default level 6.
+parameters:
+	level: 5
+	paths:
+		- ../../packages
+		- ../../config/system
+	treatPhpDocTypesAsCertain: false

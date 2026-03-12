@@ -1,0 +1,11 @@
+build:test:
+  stage: build
+  parallel:
+    matrix:
+      - PHP_VERSION: ["8.3", "8.4", "8.5"]
+  script:
+    - composer install --no-interaction --prefer-dist --dev
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour

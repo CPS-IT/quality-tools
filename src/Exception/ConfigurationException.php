@@ -9,10 +9,10 @@ namespace Cpsit\QualityTools\Exception;
  */
 class ConfigurationException extends QualityToolsException
 {
-    public const ERROR_CONFIG_FILE_NOT_FOUND = 1001;
-    public const ERROR_CONFIG_FILE_INVALID = 1002;
-    public const ERROR_CONFIG_PATH_NOT_ACCESSIBLE = 1003;
-    public const ERROR_CONFIG_VALIDATION_FAILED = 1004;
+    public const int ERROR_CONFIG_FILE_NOT_FOUND = 1001;
+    public const int ERROR_CONFIG_FILE_INVALID = 1002;
+    public const int ERROR_CONFIG_PATH_NOT_ACCESSIBLE = 1003;
+    public const int ERROR_CONFIG_VALIDATION_FAILED = 1004;
 
     public function __construct(
         string $message = '',

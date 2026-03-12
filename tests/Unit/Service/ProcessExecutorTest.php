@@ -4,196 +4,148 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Service;
 
+use Cpsit\QualityTools\Messaging\BufferingOutputCollector;
 use Cpsit\QualityTools\Service\ProcessExecutor;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
-/**
- * @covers \Cpsit\QualityTools\Service\ProcessExecutor
- */
+#[CoversClass(ProcessExecutor::class)]
 final class ProcessExecutorTest extends TestCase
 {
-    private ProcessExecutor $executor;
-
-    protected function setUp(): void
+    #[Test]
+    public function executeWithCollectorReturnsExitCode(): void
     {
-        $this->executor = new ProcessExecutor();
-    }
+        $executor = $this->createExecutorWithProcess(exitCode: 0);
+        $collector = new BufferingOutputCollector();
 
-    /**
-     * @test
-     */
-    public function executeProcessReturnsExitCodeZeroForSuccessfulCommand(): void
-    {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-
-        $result = $this->executor->executeProcess(
-            ['echo', 'test'],
-            '/tmp',
-            [],
-            $output,
-        );
+        $result = $executor->executeWithCollector(['cmd'], '/tmp', [], $collector);
 
         self::assertSame(0, $result);
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessReturnsNonZeroExitCodeForFailedCommand(): void
+    #[Test]
+    public function executeWithCollectorReturnsNonZeroExitCode(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
+        $executor = $this->createExecutorWithProcess(exitCode: 1);
+        $collector = new BufferingOutputCollector();
 
-        $result = $this->executor->executeProcess(
-            ['false'], // Command that always fails
-            '/tmp',
-            [],
-            $output,
-        );
+        $result = $executor->executeWithCollector(['cmd'], '/tmp', [], $collector);
 
         self::assertSame(1, $result);
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessWritesVerboseOutputWhenVerbose(): void
+    #[Test]
+    public function executeWithCollectorForwardsStdoutToWrite(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(true);
-        $output->expects(self::once())
-            ->method('writeln')
-            ->with(self::stringContains('<info>Executing:'));
+        $executor = $this->createExecutorWithProcess(exitCode: 0, stdout: 'hello');
+        $collector = new BufferingOutputCollector();
 
-        $this->executor->executeProcess(
-            ['echo', 'test'],
-            '/tmp',
-            [],
-            $output,
-        );
+        $executor->executeWithCollector(['cmd'], '/tmp', [], $collector);
+
+        self::assertSame('hello', $collector->getOutput());
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessDoesNotWriteVerboseOutputWhenNotVerbose(): void
+    #[Test]
+    public function executeWithCollectorForwardsStderrToWriteError(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-        $output->expects(self::never())
-            ->method('writeln');
+        $executor = $this->createExecutorWithProcess(exitCode: 1, stderr: 'oops');
+        $collector = new BufferingOutputCollector();
 
-        $this->executor->executeProcess(
-            ['echo', 'test'],
-            '/tmp',
-            [],
-            $output,
-        );
+        $executor->executeWithCollector(['cmd'], '/tmp', [], $collector);
+
+        self::assertSame('oops', $collector->getErrorOutput());
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessForwardsStandardOutputToMainOutput(): void
+    #[Test]
+    public function executeWithCollectorKeepsStdoutAndStderrSeparate(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-        $output->expects(self::atLeastOnce())
-            ->method('write')
-            ->with(self::stringContains('test'));
+        $executor = $this->createExecutorWithProcess(exitCode: 0, stdout: 'out', stderr: 'err');
+        $collector = new BufferingOutputCollector();
 
-        $this->executor->executeProcess(
-            ['echo', 'test'],
-            '/tmp',
-            [],
-            $output,
-        );
+        $executor->executeWithCollector(['cmd'], '/tmp', [], $collector);
+
+        self::assertSame('out', $collector->getOutput());
+        self::assertSame('err', $collector->getErrorOutput());
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessForwardsErrorOutputToErrorStreamWhenSupported(): void
+    #[Test]
+    public function executeWithCollectorPassesArgumentsToFactory(): void
     {
-        $errorOutput = $this->createMock(OutputInterface::class);
-        $errorOutput->expects(self::atLeastOnce())
-            ->method('write')
-            ->with(self::stringContains('test error'));
+        $capturedCommand = null;
+        $capturedCwd = null;
+        $capturedEnv = null;
 
-        $output = $this->createMock(ConsoleOutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-        $output->method('getErrorOutput')->willReturn($errorOutput);
-        $output->expects(self::never())->method('write'); // Should not write to main output
+        $factory = function (array $command, string $cwd, array $env) use (&$capturedCommand, &$capturedCwd, &$capturedEnv): Process {
+            $capturedCommand = $command;
+            $capturedCwd = $cwd;
+            $capturedEnv = $env;
 
-        // Use a command that writes to stderr
-        $this->executor->executeProcess(
-            ['php', '-r', 'fwrite(STDERR, "test error");'],
-            '/tmp',
-            [],
-            $output,
+            return $this->createMockProcess(exitCode: 0);
+        };
+
+        $executor = new ProcessExecutor($factory);
+        $collector = new BufferingOutputCollector();
+
+        $executor->executeWithCollector(
+            ['phpstan', 'analyse'],
+            '/project',
+            ['BAR' => 'baz'],
+            $collector,
         );
+
+        self::assertSame(['phpstan', 'analyse'], $capturedCommand);
+        self::assertSame('/project', $capturedCwd);
+        self::assertSame(['BAR' => 'baz'], $capturedEnv);
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessForwardsErrorOutputToMainOutputWhenErrorStreamNotSupported(): void
+    #[Test]
+    public function defaultFactoryCreatesRealProcess(): void
     {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-        $output->expects(self::atLeastOnce())
-            ->method('write')
-            ->with(self::stringContains('test error'));
+        $executor = new ProcessExecutor();
+        $collector = new BufferingOutputCollector();
 
-        // Use a command that writes to stderr
-        $this->executor->executeProcess(
-            ['php', '-r', 'fwrite(STDERR, "test error");'],
-            '/tmp',
-            [],
-            $output,
-        );
-    }
-
-    /**
-     * @test
-     */
-    public function executeProcessUsesProvidedWorkingDirectory(): void
-    {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
-
-        // This test verifies the working directory is set correctly by checking
-        // that a command that depends on the working directory works
-        $result = $this->executor->executeProcess(
-            ['pwd'],
-            '/tmp',
-            [],
-            $output,
-        );
+        $result = $executor->executeWithCollector(['echo', 'test'], '/tmp', [], $collector);
 
         self::assertSame(0, $result);
     }
 
-    /**
-     * @test
-     */
-    public function executeProcessUsesProvidedEnvironmentVariables(): void
-    {
-        $output = $this->createMock(OutputInterface::class);
-        $output->method('isVerbose')->willReturn(false);
+    private function createExecutorWithProcess(
+        int $exitCode,
+        string $stdout = '',
+        string $stderr = '',
+    ): ProcessExecutor {
+        $process = $this->createMockProcess($exitCode, $stdout, $stderr);
 
-        $environment = ['TEST_VAR' => 'test_value'];
+        return new ProcessExecutor(
+            static fn (): Process => $process,
+        );
+    }
 
-        $result = $this->executor->executeProcess(
-            ['php', '-r', 'echo getenv("TEST_VAR");'],
-            '/tmp',
-            $environment,
-            $output,
+    private function createMockProcess(
+        int $exitCode,
+        string $stdout = '',
+        string $stderr = '',
+    ): Process {
+        $process = $this->createMock(Process::class);
+        $process->method('getExitCode')->willReturn($exitCode);
+        $process->method('getCommandLine')->willReturn('mocked-command');
+        $process->method('run')->willReturnCallback(
+            function (?\Closure $callback) use ($stdout, $stderr): int {
+                if ($callback !== null) {
+                    if ($stdout !== '') {
+                        $callback(Process::OUT, $stdout);
+                    }
+                    if ($stderr !== '') {
+                        $callback(Process::ERR, $stderr);
+                    }
+                }
+
+                return 0;
+            },
         );
 
-        self::assertSame(0, $result);
+        return $process;
     }
 }

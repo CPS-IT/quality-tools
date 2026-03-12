@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use Symfony\Component\Process\Process;
 
 /**
@@ -13,61 +13,43 @@ use Symfony\Component\Process\Process;
  * Handles process creation, execution, output forwarding, and exit code management
  * with support for verbose mode and error output handling.
  */
-final class ProcessExecutor
+final readonly class ProcessExecutor
 {
+    /** @var \Closure(list<string>, string, array<string, string>): Process */
+    private \Closure $processFactory;
+
     /**
-     * Execute a process with proper output handling.
+     * @param (\Closure(list<string>, string, array<string, string>): Process)|null $processFactory
      */
-    public function executeProcess(
+    public function __construct(
+        ?\Closure $processFactory = null,
+    ) {
+        $this->processFactory = $processFactory
+            ?? static fn (array $command, string $cwd, array $env): Process => new Process($command, $cwd, $env);
+    }
+
+    /**
+     * Execute a process forwarding output to an OutputCollector.
+     *
+     * @param list<string>          $command
+     * @param array<string, string> $environment
+     */
+    public function executeWithCollector(
         array $command,
         string $workingDirectory,
         array $environment,
-        OutputInterface $output,
+        OutputCollectorInterface $collector,
     ): int {
-        $process = new Process($command, $workingDirectory, $environment);
+        $process = ($this->processFactory)($command, $workingDirectory, $environment);
 
-        $this->handleVerboseOutput($output, $process);
-
-        $process->run(function (string $type, string $buffer) use ($output): void {
-            $this->forwardProcessOutput($type, $buffer, $output);
+        $process->run(function (string $type, string $buffer) use ($collector): void {
+            if ($type === Process::ERR) {
+                $collector->writeError($buffer);
+            } else {
+                $collector->write($buffer);
+            }
         });
 
         return $process->getExitCode() ?? 1;
-    }
-
-    /**
-     * Handle verbose output before process execution.
-     */
-    private function handleVerboseOutput(OutputInterface $output, Process $process): void
-    {
-        if ($output->isVerbose()) {
-            $output->writeln(\sprintf('<info>Executing: %s</info>', $process->getCommandLine()));
-        }
-    }
-
-    /**
-     * Forward process output to the appropriate output stream.
-     */
-    private function forwardProcessOutput(string $type, string $buffer, OutputInterface $output): void
-    {
-        if ($type === Process::ERR) {
-            $this->forwardErrorOutput($buffer, $output);
-        } else {
-            $output->write($buffer);
-        }
-    }
-
-    /**
-     * Forward error output to the appropriate error stream.
-     */
-    private function forwardErrorOutput(string $buffer, OutputInterface $output): void
-    {
-        // Check if output supports getErrorOutput() method (ConsoleOutputInterface)
-        if (method_exists($output, 'getErrorOutput')) {
-            $output->getErrorOutput()->write($buffer);
-        } else {
-            // For outputs that don't support error output (like StreamOutput), write to the main output
-            $output->write($buffer);
-        }
     }
 }

@@ -1,0 +1,7 @@
+# Scenario 3: Command Line Override
+# Pre-condition: default configuration, alternative config at alternative/rector.php
+# Expected: --config=alternative/rector.php overrides everything
+quality-tools:
+  tools:
+    rector:
+      enabled: true

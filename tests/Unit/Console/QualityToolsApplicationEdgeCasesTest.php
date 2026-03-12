@@ -194,6 +194,10 @@ final class QualityToolsApplicationEdgeCasesTest extends TestCase
     #[Test]
     public function getProjectRootHandlesUnreadableComposerJsonFiles(): void
     {
+        if (\function_exists('posix_getuid') && posix_getuid() === 0) {
+            $this->markTestSkipped('File permission tests are meaningless when running as root');
+        }
+
         $tempDir = TestHelper::createTempDirectory();
 
         try {

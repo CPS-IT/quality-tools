@@ -10,12 +10,11 @@ final class DisposableTemporaryFile
     private static array $registry = [];
 
     public function __construct(
-        SecurityService $securityService,
         FilesystemService $filesystemService,
         string $prefix = 'qt_temp_',
         string $suffix = '',
     ) {
-        $this->temporaryFile = new TemporaryFile($securityService, $filesystemService, $prefix, $suffix);
+        $this->temporaryFile = new TemporaryFile($filesystemService, $prefix, $suffix);
         self::$registry[spl_object_id($this)] = $this->temporaryFile;
     }
 
