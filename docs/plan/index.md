@@ -110,7 +110,7 @@ The MVP is complete. The following features are organized into implementation it
   Flexible path configuration extending unified YAML system
 - [x] **[014 - Vendor Folder Derivation](feature/done/014-vendor-folder-derivation.md)** *(4–6 hours)*
   Automatic vendor path detection for non-standard project structures
-- [ ] **[015 - Configuration Overwrites](feature/015-configuration-overwrites.md)** *(6–8 hours)*
+- [ ] **[015 - Configuration Overwrites](feature/done/015-configuration-overwrites.md)** *(6–8 hours)*
   Hierarchical configuration override system for project customization
 - [ ] **[026 - Fail on Warnings Configuration](feature/026-fail-on-warnings-configuration.md)** *(4–6 hours)*
   Configurable exit code behavior for linting tools to ensure CI/CD reliability
@@ -199,7 +199,7 @@ The following features have been deferred to future iterations:
 |    012 | Human-Readable Reports                  | Open     | [012-human-readable-reports.md](feature/012-human-readable-reports.md)                                 |
 |    013 | Additional Packages Paths Scanning      | Done     | [013-additional-packages-paths-scanning.md](feature/done/013-additional-packages-paths-scanning.md)    |
 |    014 | Vendor Folder Derivation                | Done     | [014-vendor-folder-derivation.md](feature/done/014-vendor-folder-derivation.md)                        |
-|    015 | Configuration Overwrites                | Open     | [015-configuration-overwrites.md](feature/015-configuration-overwrites.md)                             |
+|    015 | Configuration Overwrites                | Open     | [015-configuration-overwrites.md](feature/done/015-configuration-overwrites.md)                             |
 |    016 | Unified Arguments Options               | Deferred | [016-unified-arguments-options.md](feature/deferred/016-unified-arguments-options.md)                  |
 |    017 | Single Package Scanning                 | Deferred | [017-single-package-scanning.md](feature/deferred/017-single-package-scanning.md)                      |
 |    018 | Global Installation                     | Deferred | [018-global-installation.md](feature/deferred/018-global-installation.md)                              |
