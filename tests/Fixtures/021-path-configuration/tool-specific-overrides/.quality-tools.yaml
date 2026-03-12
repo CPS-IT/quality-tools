@@ -1,0 +1,25 @@
+quality-tools:
+  project:
+    name: "tool-specific-overrides-test"
+    php_version: "8.3"
+    typo3_version: "13.4"
+  paths:
+    scan:
+      - "src/"
+  tools:
+    rector:
+      enabled: true
+      paths:
+        scan:
+          - "custom-rector-src/"
+    phpstan:
+      enabled: true
+      paths:
+        scan:
+          - "custom-phpstan-src/"
+    php-cs-fixer:
+      enabled: true
+    fractor:
+      enabled: true
+    typoscript-lint:
+      enabled: true

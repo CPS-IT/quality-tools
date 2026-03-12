@@ -1,0 +1,411 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # Core Services
+  Cpsit\QualityTools\Service\:
+    resource: '../src/Service/*'
+    public: true
+    exclude:
+      - '../src/Service/TemporaryFile.php'
+      - '../src/Service/DisposableTemporaryFile.php'
+
+  # Utilities
+  Cpsit\QualityTools\Utility\:
+    resource: '../src/Utility/*'
+    public: true
+    exclude:
+      - '../src/Utility/PathExclusionFilter.php'
+      - '../src/Utility/PathScanner.php'
+      - '../src/Utility/ProjectMetrics.php'
+
+  # Configuration Services
+  Cpsit\QualityTools\Configuration\:
+    resource: '../src/Configuration/*'
+    public: true
+    exclude:
+      - '../src/Configuration/ValidationResult.php'
+      - '../src/Configuration/ConfigurationHierarchy.php'
+      - '../src/Configuration/ConfigurationDiscovery.php'
+      - '../src/Configuration/ConfigurationInterface.php'
+      - '../src/Configuration/ConfigurationLoaderInterface.php'
+
+  # Tool Configuration Validators
+  Cpsit\QualityTools\Configuration\Validator\:
+    resource: '../src/Configuration/Validator/*'
+    exclude:
+      - '../src/Configuration/Validator/ToolConfigurationValidatorInterface.php'
+      - '../src/Configuration/Validator/ToolValidationTrait.php'
+    arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+    tags:
+      - { name: 'tool_configuration_validator' }
+
+  # Console Commands
+  Cpsit\QualityTools\Console\Command\:
+    resource: '../src/Console/Command/*'
+    public: true
+    exclude:
+      - '../src/Console/Command/RectorCommand.php'
+      - '../src/Console/Command/PhpCsFixerCommand.php'
+      - '../src/Console/Command/FractorCommand.php'
+      - '../src/Console/Command/TypoScriptLintCommand.php'
+      - '../src/Console/Command/ComposerNormalizeCommand.php'
+      - '../src/Console/Command/PhpStanCommand.php'
+      - '../src/Console/Command/ConfigShowCommand.php'
+      - '../src/Console/Command/ConfigValidateCommand.php'
+      - '../src/Console/Command/ConfigInitCommand.php'
+
+  # Config command runners (Issue 024)
+  Cpsit\QualityTools\Console\Runner\ConfigShowRunner:
+    arguments:
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
+
+  # Command-specific loader configurations (Step 3.2)
+  # Config commands benefit from hierarchical configuration features
+  Cpsit\QualityTools\Console\Command\ConfigShowCommand:
+    arguments:
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigShowRunner'
+      $name: 'config:show'
+      $description: 'Show resolved configuration'
+      $help: 'Shows the resolved configuration after merging all sources.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Runner\ConfigValidateRunner:
+    arguments:
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $configValidator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ConfigValidateCommand:
+    arguments:
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigValidateRunner'
+      $name: 'config:validate'
+      $description: 'Validate YAML configuration file'
+      $help: 'This command validates the quality-tools.yaml configuration file against the schema.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Runner\ConfigInitRunner:
+    arguments:
+      $templateGenerator: '@Cpsit\QualityTools\Configuration\ConfigurationTemplateGenerator'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationTemplateGenerator:
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ConfigInitCommand:
+    arguments:
+      $runner: '@Cpsit\QualityTools\Console\Runner\ConfigInitRunner'
+      $name: 'config:init'
+      $description: 'Initialize YAML configuration file'
+      $help: 'This command creates a .quality-tools.yaml configuration file in the project root.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  # Tool Runner Infrastructure (Issue 023)
+  Cpsit\QualityTools\Service\ProjectEnvironment:
+    arguments:
+      $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
+    public: true
+
+  Cpsit\QualityTools\Service\MemoryOptimizer:
+    arguments:
+      $projectAnalyzer: '@Cpsit\QualityTools\Utility\ProjectAnalyzer'
+      $memoryCalculator: '@Cpsit\QualityTools\Utility\MemoryCalculator'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\RectorRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\FractorRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\PhpStanRunner:
+    arguments:
+      $processExecutor: '@Cpsit\QualityTools\Service\ProcessExecutor'
+      $projectEnv: '@Cpsit\QualityTools\Service\ProjectEnvironment'
+      $configLoader: '@Cpsit\QualityTools\Configuration\ConfigurationLoader'
+      $memoryOptimizer: '@Cpsit\QualityTools\Service\MemoryOptimizer'
+    public: true
+
+  Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry:
+    arguments:
+      $runners:
+        - '@Cpsit\QualityTools\Tool\Runner\RectorRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\FractorRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\TypoScriptLintRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\ComposerNormalizeRunner'
+        - '@Cpsit\QualityTools\Tool\Runner\PhpStanRunner'
+    public: true
+
+  # Pre-run info display (Issue 023)
+  Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay:
+    arguments:
+      $memoryCalculator: '@Cpsit\QualityTools\Utility\MemoryCalculator'
+    public: true
+
+  # Tool commands use runner infrastructure (Issue 023)
+  # RectorCommand is registered twice: once for lint (dry-run), once for fix
+  Cpsit\QualityTools\Console\Command\RectorCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\RectorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:rector'
+      $description: 'Run Rector in dry-run mode to analyze code without making changes'
+      $help: 'This command runs Rector in dry-run mode to show what changes would be made without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\RectorCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\RectorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:rector'
+      $description: 'Run Rector to automatically fix and upgrade code'
+      $help: 'This command runs Rector to automatically apply code fixes and upgrades. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\PhpStanCommand:
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $name: 'lint:phpstan'
+      $description: 'Run PHPStan static analysis'
+      $help: 'This command runs PHPStan static analysis to find bugs in your code without running it. Use --config to specify a custom configuration file, --path to target specific directories, or --level to override the analysis level.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\FractorCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\FractorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:fractor'
+      $description: 'Run Fractor in dry-run mode to analyze TypoScript and code without making changes'
+      $help: 'This command runs Fractor in dry-run mode to show what TypoScript and code changes would be made without actually modifying your files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\FractorCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\FractorCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:fractor'
+      $description: 'Run Fractor to apply TypoScript and code changes'
+      $help: 'This command runs Fractor to apply TypoScript and code changes to your files. This will modify your files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\PhpCsFixerCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:php-cs-fixer'
+      $description: 'Run PHP CS Fixer in dry-run mode to check code style issues'
+      $help: 'This command runs PHP CS Fixer in dry-run mode to show what code style issues would be fixed without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\PhpCsFixerCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:php-cs-fixer'
+      $description: 'Run PHP CS Fixer to automatically fix code style issues'
+      $help: 'This command runs PHP CS Fixer to automatically fix code style issues. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\TypoScriptLintCommand:
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $name: 'lint:typoscript'
+      $description: 'Run TypoScript Lint to check TypoScript files for syntax errors'
+      $help: 'This command runs TypoScript Lint to check TypoScript files for syntax errors and coding standard violations. Use --config to specify a custom configuration file or --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand.lint:
+    class: Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: true
+      $name: 'lint:composer'
+      $description: 'Run composer-normalize in dry-run mode to check composer.json formatting'
+      $help: 'This command runs composer-normalize in dry-run mode to check if composer.json files are properly formatted without making changes. Use --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand.fix:
+    class: Cpsit\QualityTools\Console\Command\ComposerNormalizeCommand
+    arguments:
+      $registry: '@Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry'
+      $infoDisplay: '@Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay'
+      $dryRun: false
+      $name: 'fix:composer'
+      $description: 'Run composer-normalize to format composer.json files'
+      $help: 'This command runs composer-normalize to format composer.json files according to normalized standards. This will modify your composer.json file! Use --path to target specific directories.'
+    tags:
+      - { name: 'console.command' }
+    public: true
+
+  # External Dependencies
+  Symfony\Component\Filesystem\Filesystem:
+    public: false
+
+  # Specific Service Definitions
+  Cpsit\QualityTools\Service\SecurityService:
+    public: true
+
+  Cpsit\QualityTools\Service\FilesystemService:
+    arguments:
+      $filesystem: '@Symfony\Component\Filesystem\Filesystem'
+    public: true
+
+  Cpsit\QualityTools\Service\TemporaryFile:
+    arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $prefix: 'qt_temp_'
+      $suffix: ''
+
+  Cpsit\QualityTools\Service\DisposableTemporaryFile:
+    arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $prefix: 'qt_temp_'
+      $suffix: ''
+
+  Cpsit\QualityTools\Utility\VendorDirectoryDetector:
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoader:
+    arguments:
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $securityService: '@Cpsit\QualityTools\Service\SecurityService'
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $toolValidator: '@Cpsit\QualityTools\Service\ToolConfigurationValidationService'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationValidator:
+    public: true
+
+  # Unified Configuration class with dependencies
+  Cpsit\QualityTools\Configuration\Configuration:
+    arguments:
+      $projectRoot: ''  # Will be set at runtime
+      $data: []        # Will be set at runtime
+      $sourceMap: []   # Will be set at runtime
+      $conflicts: []   # Will be set at runtime
+      $mergeSummary: [] # Will be set at runtime
+      $hierarchicalMode: false # Will be set at runtime
+      $validator: '@Cpsit\QualityTools\Configuration\ConfigurationValidator'
+      $projectConfigService: '@Cpsit\QualityTools\Service\ProjectConfigService'
+      $toolConfigService: '@Cpsit\QualityTools\Service\ToolConfigService'
+      $pathResolutionService: '@Cpsit\QualityTools\Service\PathResolutionService'
+      $hierarchy: null  # Will be set at runtime if needed
+      $discovery: null  # Will be set at runtime if needed
+    public: true
+
+  Cpsit\QualityTools\Service\ProcessExecutor:
+    public: true
+
+  Cpsit\QualityTools\Utility\ProjectAnalyzer:
+    public: true
+
+  Cpsit\QualityTools\Utility\MemoryCalculator:
+    public: true
+
+  # Business logic services for Step 4.1 (Issue 019)
+  Cpsit\QualityTools\Service\ProjectConfigService:
+    public: true
+
+  Cpsit\QualityTools\Service\ToolConfigService:
+    public: true
+
+  Cpsit\QualityTools\Service\PathResolutionService:
+    arguments:
+      $filesystemService: '@Cpsit\QualityTools\Service\FilesystemService'
+      $vendorDetector: '@Cpsit\QualityTools\Utility\VendorDirectoryDetector'
+    public: true
+
+  Cpsit\QualityTools\Service\ToolConfigurationValidationService:
+    arguments:
+      $validators: !tagged_iterator tool_configuration_validator
+    public: true
+
+  # Interface bindings for dependency injection
+  Cpsit\QualityTools\Configuration\ConfigurationInterface:
+    alias: 'Cpsit\QualityTools\Configuration\Configuration'
+    public: true
+
+  Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface:
+    alias: 'Cpsit\QualityTools\Configuration\ConfigurationLoader'
+    public: true

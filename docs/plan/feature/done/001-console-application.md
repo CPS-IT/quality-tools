@@ -1,8 +1,8 @@
 # Feature 001: Console Application
 
-**Status:** Completed
-**Estimated Time:** 2-3 hours
-**Layer:** MVP Core
+**Status:** Completed\
+**Estimated Time:** 2-3 hours\
+**Layer:** MVP Core\
 **Dependencies:** None
 
 ## Description

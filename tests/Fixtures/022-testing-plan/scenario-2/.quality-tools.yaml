@@ -1,0 +1,7 @@
+# Scenario 2: Auto-Discovery of Tool Configs
+# Pre-condition: rector.php exists in project root, no config_file set
+# Expected: auto-discovered rector.php shown in verbose output
+quality-tools:
+  tools:
+    rector:
+      enabled: true

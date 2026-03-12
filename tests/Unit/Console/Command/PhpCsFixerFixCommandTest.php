@@ -4,55 +4,99 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
-use Cpsit\QualityTools\Console\Command\PhpCsFixerFixCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Console\Command\PhpCsFixerCommand;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
+use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Tool\Runner\PhpCsFixerRunner;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * @covers \Cpsit\QualityTools\Console\Command\PhpCsFixerFixCommand
+ * @covers \Cpsit\QualityTools\Console\Command\PhpCsFixerCommand
  */
 final class PhpCsFixerFixCommandTest extends TestCase
 {
-    private PhpCsFixerFixCommand $command;
+    private PhpCsFixerCommand $command;
     private MockObject&InputInterface $mockInput;
     private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
+
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('php_cs_fixer_fix_command_test_');
 
-        // Create a TYPO3 project structure for proper project root detection
+        // Clear static caches from previous test runs
+        VendorDirectoryDetector::clearCache();
+
+        // Set QT_PROJECT_ROOT for the entire test lifecycle
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+
+        // Create a project structure for proper project root detection
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
-        // Create fake php-cs-fixer executable
+        // Create fake php-cs-fixer executable (PHP script for MemoryOptimizer compatibility)
         $phpCsFixerExecutable = $vendorBinDir . '/php-cs-fixer';
-        file_put_contents($phpCsFixerExecutable, "#!/bin/bash\necho 'PHP CS Fixer fix completed successfully'\nexit 0\n");
-        chmod($phpCsFixerExecutable, 0755);
+        file_put_contents($phpCsFixerExecutable, "#!/usr/bin/env php\n<?php\necho 'PHP CS Fixer fix completed successfully';\nexit(0);\n");
+        chmod($phpCsFixerExecutable, 0o755);
 
-        // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
+        // Create vendor directory structure required by VendorDirectoryDetector
+        $vendorComposerDir = $this->tempDir . '/vendor/composer';
+        mkdir($vendorComposerDir, 0o777, true);
+        file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
+
+        // Create cpsit/quality-tools config directory structure
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/php-cs-fixer.php', "<?php\nreturn [];\n");
 
-        // Set up environment to use temp directory as project root and initialize application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $this->command = new PhpCsFixerFixCommand();
-                $this->command->setApplication($app);
-            }
+        // Create packages directory for default target path
+        $packagesDir = $this->tempDir . '/packages';
+        mkdir($packagesDir, 0o777, true);
+        file_put_contents($packagesDir . '/sample.php', "<?php\nclass SampleClass {}\n");
+
+        // Build runner infrastructure
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+        $processExecutor = new ProcessExecutor();
+        $configLoader = $this->createConfigurationLoader();
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $phpCsFixerRunner = new PhpCsFixerRunner($processExecutor, $projectEnv, $configLoader, $memoryOptimizer);
+        $registry = new ToolRunnerRegistry([$phpCsFixerRunner]);
+        $infoDisplay = new ToolRunInfoDisplay(new MemoryCalculator());
+
+        $this->command = new PhpCsFixerCommand(
+            $registry,
+            $infoDisplay,
+            dryRun: false,
+            name: 'fix:php-cs-fixer',
+            description: 'Run PHP CS Fixer to automatically fix code style issues',
+            help: 'This command runs PHP CS Fixer to automatically fix code style issues. This will modify your code files! Use --config to specify a custom configuration file or --path to target specific directories.',
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -61,7 +105,18 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Restore original QT_PROJECT_ROOT
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testCommandHasCorrectConfiguration(): void
@@ -101,22 +156,19 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
-            ->method('writeln');
-
-        $this->mockOutput
             ->method('write');
 
-        $result = $this->command->run($this->mockInput, $this->mockOutput);
+        $this->mockOutput
+            ->method('writeln');
 
+        $result = $this->command->run($this->mockInput, $this->mockOutput);
 
         $this->assertEquals(0, $result);
     }
@@ -132,19 +184,17 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', $customConfigPath],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
-            ->method('writeln');
+            ->method('write');
 
         $this->mockOutput
-            ->method('write');
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -154,7 +204,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
@@ -162,19 +212,17 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', null],
                 ['path', $customTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
-            ->method('writeln');
+            ->method('write');
 
         $this->mockOutput
-            ->method('write');
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -189,11 +237,9 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -218,15 +264,27 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', null],
                 ['path', $nonExistentTargetDir],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
+        // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
+                $actualOutput[] = $message;
+            });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
+
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
+        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
+        $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
     }
 
     public function testExecuteHandlesConfigPathException(): void
@@ -239,7 +297,6 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', $nonExistentConfigPath],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
@@ -247,7 +304,33 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(2, $result); // ConfigurationException returns exit code 2
+    }
+
+    public function testExecuteDisplaysPreRunInfo(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
+
+        $output = $commandTester->getDisplay();
+
+        $this->assertStringContainsString('Analyzing', $output);
+        $this->assertStringContainsString('configured paths:', $output);
+        $this->assertStringContainsString('Aggregated Project Analysis', $output);
+        $this->assertStringContainsString('Optimization Profile', $output);
+        $this->assertStringContainsString('Memory limit:', $output);
+        $this->assertStringContainsString('Parallel processing:', $output);
+    }
+
+    public function testExecuteWithNoOptimizationHidesProfile(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--no-optimization' => true]);
+
+        $output = $commandTester->getDisplay();
+
+        $this->assertStringContainsString('Optimization disabled by --no-optimization flag', $output);
+        $this->assertStringNotContainsString('Memory limit:', $output);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void
@@ -274,7 +357,7 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         // Execute with custom config option
         $commandTester->execute([
-            '--config' => $customConfigPath
+            '--config' => $customConfigPath,
         ]);
 
         // Command should execute successfully
@@ -288,13 +371,13 @@ final class PhpCsFixerFixCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -317,14 +400,11 @@ final class PhpCsFixerFixCommandTest extends TestCase
                 ['config', null],
                 ['path', null],
                 ['no-optimization', false],
-                ['show-optimization', false]
             ]);
 
         $this->mockOutput
             ->method('writeln');
 
-        // Since the executable doesn't exist, this will fail at the process level
-        // and the executeProcess method will return a non-zero exit code
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
         // Command should return non-zero exit code due to missing executable
@@ -367,5 +447,45 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
         // File should still exist after fixing
         $this->assertFileExists($testFile);
+    }
+
+    public function testCommandTargetsSpecificPath(): void
+    {
+        // Create a custom target directory with PHP files
+        $customTargetDir = $this->tempDir . '/src';
+        mkdir($customTargetDir, 0o777, true);
+
+        $testFile = $customTargetDir . '/Service.php';
+        file_put_contents($testFile, "<?php\nclass Service {\n    public function process() {\n        return true;\n    }\n}\n");
+
+        $commandTester = new CommandTester($this->command);
+
+        // Execute fix command targeting specific path
+        $commandTester->execute([
+            '--path' => $customTargetDir,
+        ]);
+
+        // Command should execute successfully
+        $this->assertEquals(0, $commandTester->getStatusCode());
+
+        // Output should contain php-cs-fixer execution result
+        $output = $commandTester->getDisplay();
+        $this->assertStringContainsString('PHP CS Fixer fix completed successfully', $output);
+    }
+
+    private function createConfigurationLoader(): ConfigurationLoader
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        return new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
     }
 }

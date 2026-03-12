@@ -1,0 +1,9 @@
+test:integration:
+  needs:
+    - build:test
+  stage: test
+  parallel:
+    matrix:
+      - PHP_VERSION: ["8.3", "8.4", "8.5"]
+  script:
+    - composer test:integration

@@ -1,14 +1,21 @@
-CPSIT Quality Tools
-===================
+qt - Quality Tools
+==================
+
+```
+I'm qt;) - I will help you cutify your code.
+```
+
 
 A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
 
 ## Status: MVP Complete with Dynamic Optimization
 
-**Version:** 1.0.0-dev
-**Test Coverage:** 97.9% (283 tests, 810 assertions)
-**All 10 tool commands fully implemented and tested**
-**Dynamic Resource Optimization: ACTIVE** - Automatic memory and performance optimization for all tools
+* **Version:** 0.1.0
+* **All 10 tool commands fully implemented and tested**
+* **Dynamic Resource Optimization:** - Automatic memory and performance optimization for all tools
+* **Configuration Hierarchy:** - Supports global user configuration, project-specific configuration, CLI overrides
+* **Unified YAML Configuration:** - Centralized configuration for all tools with flexible path configuration
+* **Flexible Path Configuration:** - Supports custom paths beyond standard TYPO3 structure
 
 ## Installation
 
@@ -31,8 +38,53 @@ composer require --dev cpsit/quality-tools
 
 ## Quick Start
 
-### CLI Commands (Recommended)
-After installation, use the simple `qt` command shortcuts with automatic optimization:
+### Unified YAML Configuration (Recommended)
+Create a centralized configuration file for all quality tools:
+
+```bash
+# Initialize configuration with templates
+vendor/bin/qt config:init --template=typo3-site-package
+
+# Validate your configuration
+vendor/bin/qt config:validate
+
+# View resolved configuration
+vendor/bin/qt config:show
+```
+
+Example `.quality-tools.yaml`:
+```yaml
+quality-tools:
+  project:
+    name: "my-typo3-project"
+    php_version: "8.3"
+    typo3_version: "13.4"
+
+  # Path configuration for flexible scanning
+  paths:
+    scan:
+      - "packages/"
+      - "config/system/"
+    additional:
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
+      - "vendor/fr/*/Classes"             # Scan other vendor packages
+    exclude_patterns:
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude vendor tests
+
+  tools:
+    rector:
+      enabled: true
+      level: "typo3-13"
+    phpstan:
+      enabled: true
+      level: 6
+      memory_limit: "1G"
+```
+
+### CLI Commands
+After configuration, use the simple `qt` command shortcuts with automatic optimization:
 
 ```bash
 # Lint commands (analysis only)
@@ -81,24 +133,49 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 ## All Available Commands
 
 ### Lint Commands (Analysis Only)
-| Command | Tool | Description |
-|---------|------|-------------|
-| `qt lint:rector` | Rector | Analyze code for modernization opportunities |
-| `qt lint:phpstan` | PHPStan | Static analysis with configurable levels (`--level`, `--memory-limit`) |
-| `qt lint:php-cs-fixer` | PHP CS Fixer | Check coding standards compliance |
-| `qt lint:fractor` | Fractor | Analyze TypoScript for modernization |
-| `qt lint:typoscript` | TypoScript Lint | Validate TypoScript syntax and structure |
-| `qt lint:composer` | Composer | Validate composer.json structure |
+| Command                | Tool            | Description                                                            |
+|------------------------|-----------------|------------------------------------------------------------------------|
+| `qt lint:rector`       | Rector          | Analyze code for modernization opportunities                           |
+| `qt lint:phpstan`      | PHPStan         | Static analysis with configurable levels (`--level`, `--memory-limit`) |
+| `qt lint:php-cs-fixer` | PHP CS Fixer    | Check coding standards compliance                                      |
+| `qt lint:fractor`      | Fractor         | Analyze TypoScript for modernization                                   |
+| `qt lint:typoscript`   | TypoScript Lint | Validate TypoScript syntax and structure                               |
+| `qt lint:composer`     | Composer        | Validate composer.json structure                                       |
 
 ### Fix Commands (Apply Changes)
-| Command | Tool | Description |
-|---------|------|-------------|
-| `qt fix:rector` | Rector | Apply automated code modernization |
-| `qt fix:php-cs-fixer` | PHP CS Fixer | Fix coding standards violations |
-| `qt fix:fractor` | Fractor | Apply TypoScript modernization |
-| `qt fix:composer` | Composer | Normalize composer.json formatting |
+| Command               | Tool         | Description                        |
+|-----------------------|--------------|------------------------------------|
+| `qt fix:rector`       | Rector       | Apply automated code modernization |
+| `qt fix:php-cs-fixer` | PHP CS Fixer | Fix coding standards violations    |
+| `qt fix:fractor`      | Fractor      | Apply TypoScript modernization     |
+| `qt fix:composer`     | Composer     | Normalize composer.json formatting |
+
+### Configuration Commands
+| Command              | Description                                          |
+|----------------------|------------------------------------------------------|
+| `qt config:init`     | Initialize YAML configuration with project templates |
+| `qt config:validate` | Validate YAML configuration against schema           |
+| `qt config:show`     | Display resolved configuration from all sources      |
 
 ## Key Features
+
+### Unified YAML Configuration System
+- **Centralized Configuration**: Single `.quality-tools.yaml` file for all tools
+- **Configuration Hierarchy**: Package defaults -> global user config -> project config -> CLI overrides
+- **Custom Tool Configs**: Support for custom tool configuration files via `config_file` option
+- **Auto-Discovery**: Automatic detection of tool configs in standard locations (project root, config/)
+- **Environment Variables**: Support for `${VAR:-default}` syntax with type-safe interpolation
+- **JSON Schema Validation**: Built-in validation with helpful error messages
+- **Project Templates**: Ready-made configurations for different TYPO3 project types
+- **Backward Compatibility**: Existing tool-specific configurations continue to work
+
+### Flexible Path Configuration
+- **Additional Paths**: Configure custom paths beyond standard TYPO3 structure
+- **Vendor Namespace Patterns**: Scan vendor packages with patterns like "cpsit/*", "fr/*"
+- **Glob Pattern Support**: Use powerful glob patterns for path matching
+- **Exclusion Patterns**: Exclude specific paths using flexible patterns
+- **Tool-Specific Overrides**: Per-tool path configuration for specialized needs
+- **Performance Optimized**: Intelligent caching and path resolution
 
 ### Dynamic Resource Optimization (Zero Configuration)
 - **Automatic Project Analysis**: Analyzes your project size, complexity, and file types to determine optimal settings
@@ -114,7 +191,7 @@ app/vendor/bin/phpstan analyse -c app/vendor/cpsit/quality-tools/config/phpstan.
 - **Comprehensive Error Handling**: Proper exit codes and detailed error messages
 
 ### Advanced Features
-- **Optimization Diagnostics**: View project analysis and optimization decisions with `--show-optimization` flag
+- **Optimization Diagnostics**: View project analysis and optimization decisions (shown by default)
 - **Manual Override Options**: Disable optimization with `--no-optimization` for edge cases
 - **Extensive Testing**: 97.9% line coverage with 283 tests and 810 assertions
 - **Performance Monitoring**: Built-in metrics show optimization effectiveness
@@ -137,11 +214,8 @@ Optimization: Enabling parallel processing and caching for performance
 
 **Override Options for Advanced Users:**
 ```bash
-# Disable automatic optimization
+# Disable automatic optimization (also hides optimization details)
 vendor/bin/qt lint:phpstan --no-optimization
-
-# View optimization decisions
-vendor/bin/qt lint:phpstan --show-optimization
 
 # Manual memory limit (overrides automatic calculation)
 vendor/bin/qt lint:phpstan --memory-limit=1024M
@@ -154,13 +228,24 @@ vendor/bin/qt lint:phpstan --memory-limit=1024M
 - [User Guide](docs/user-guide/index.md) - Complete guide for installing and using the CLI tool
 - [Project Planning](docs/plan/index.md) - Complete planning documentation and known issues
 
+### Developer Guide
+- [Developer Guide](docs/developer-guide/index.md) - Complete developer documentation including architecture, testing, and contribution guidelines
+- [Testing Infrastructure](docs/developer-guide/testing.md) - Testing best practices, virtual filesystem, and test isolation
+
+### Configuration Guide
+- [YAML Configuration Guide](docs/configuration/yaml-configuration.md) - Complete guide for unified YAML configuration
+- [Configuration Reference](docs/configuration/reference.md) - Complete reference of all configuration options
+- [Migration Guide](docs/configuration/migration.md) - Migrating from tool-specific to unified configuration
+- [Environment Variables](docs/configuration/environment-variables.md) - Using environment variables in configuration
+- [Templates](docs/configuration/templates.md) - Project templates and customization
+
 ### Tool Configuration
 - [Dynamic Resource Optimization](docs/user-guide/optimization.md) - How automatic optimization works
-- [Fractor](docs/Fractor.md) - TYPO3 Fractor configuration and usage
-- [PHP CS Fixer](docs/PhpCsFixer.md) - PHP coding standards fixer configuration
-- [PHPStan](docs/Phpstan.md) - Static analysis tool configuration
-- [Rector](docs/Rector.md) - TYPO3 Rector configuration and usage
-- [TypoScript Lint](docs/TypoScriptLint.md) - TypoScript linting configuration
+- [Fractor](docs/user-guide/tool/Fractor.md) - TYPO3 Fractor configuration and usage
+- [PHP CS Fixer](docs/user-guide/tool/PhpCsFixer.md) - PHP coding standards fixer configuration
+- [PHPStan](docs/user-guide/tool/Phpstan.md) - Static analysis tool configuration
+- [Rector](docs/user-guide/tool/Rector.md) - TYPO3 Rector configuration and usage
+- [TypoScript Lint](docs/user-guide/tool/TypoScriptLint.md) - TypoScript linting configuration
 
 [typo3-fractor]: https://packagist.org/packages/a9f/typo3-fractor
 [editorconfig-cli]: https://packagist.org/packages/armin/editorconfig-cli

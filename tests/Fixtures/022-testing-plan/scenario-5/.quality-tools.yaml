@@ -1,0 +1,11 @@
+# Scenario 5: Multiple Tool Configurations
+# Pre-condition: custom configs for rector, phpstan, and php-cs-fixer
+# Expected: validation passes, each tool uses its specified config, JSON output correct
+quality-tools:
+  tools:
+    rector:
+      config_file: "config/custom/rector.php"
+    phpstan:
+      config_file: "config/custom/phpstan.neon"
+    php-cs-fixer:
+      config_file: ".php-cs-fixer.custom.php"

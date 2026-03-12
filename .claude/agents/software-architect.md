@@ -34,6 +34,7 @@ For each analysis, provide:
 3. **Refactoring Roadmap**: Step-by-step plan to address issues, prioritized by impact and effort
 4. **Design Recommendations**: Specific patterns, abstractions, and organizational changes
 5. **Implementation Guidance**: Concrete code examples showing the improved structure
+6. **Architecture Decision Records**: Document significant decisions as ADRs when appropriate
 
 **Quality Standards:**
 
@@ -51,3 +52,26 @@ When working with projects, consider:
 - Service layer patterns and dependency injection
 
 Always approach architectural decisions with pragmatism - the best architecture is one that serves the actual needs of the project while remaining maintainable and extensible. Focus on eliminating real duplication and structural issues rather than pursuing theoretical perfection.
+
+**Architecture Decision Records (ADRs):**
+
+When making significant architectural decisions:
+
+1. **Create an ADR**: Document decisions that have long-term impact or involve trade-offs
+2. **Use the Template**: Start with `docs/.templates/adr.md` for consistency
+3. **Location**: Save ADRs in `docs/architecture/` with sequential numbering (0001-, 0002-, etc.)
+4. **Link in Documentation**: Reference ADRs from relevant feature/issue documentation
+
+**When to Document as an ADR:**
+- Choosing between multiple viable architectural approaches
+- Making trade-offs between competing concerns (e.g., performance vs. simplicity)
+- Deviating from established patterns for specific reasons
+- Introducing new patterns or abstractions to the codebase
+- Decisions that future maintainers need to understand
+
+**ADR Quality Criteria:**
+- Clear problem statement in the Context section
+- Explicit decision with rationale
+- Honest assessment of consequences (positive and negative)
+- Documentation of rejected alternatives with reasoning
+- Concise but complete (typically 1-2 pages)

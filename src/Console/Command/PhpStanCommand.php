@@ -4,104 +4,115 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Exception\FileSystemException;
+use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
+use Cpsit\QualityTools\Service\ErrorFactory;
+use Cpsit\QualityTools\Service\ErrorHandler;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Tool\ToolName;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class PhpStanCommand extends BaseCommand
+/**
+ * PHPStan static analysis command.
+ *
+ * Lint-only tool with extra options for analysis level and memory limit.
+ * Uses runner infrastructure for execution.
+ */
+final class PhpStanCommand extends Command
 {
+    public function __construct(
+        private readonly ToolRunnerRegistry $registry,
+        private readonly ToolRunInfoDisplay $infoDisplay,
+        string $name,
+        string $description,
+        string $help,
+    ) {
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
+    }
+
     protected function configure(): void
     {
-        parent::configure();
-
         $this
-            ->setName('lint:phpstan')
-            ->setDescription('Run PHPStan static analysis')
-            ->setHelp(
-                'This command runs PHPStan static analysis to find bugs in your code without ' .
-                'running it. Use --config to specify a custom configuration file, --path to ' .
-                'target specific directories, or --level to override the analysis level.'
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Override default configuration file path',
+            )
+            ->addOption(
+                'path',
+                'p',
+                InputOption::VALUE_REQUIRED,
+                'Specify custom target paths (defaults to project root)',
             )
             ->addOption(
                 'level',
                 'l',
                 InputOption::VALUE_REQUIRED,
-                'Override the analysis level (0-9)'
+                'Override the analysis level (0-9)',
             )
             ->addOption(
                 'memory-limit',
                 'm',
                 InputOption::VALUE_REQUIRED,
-                'Memory limit for analysis (e.g., 1G, 512M)'
+                'Memory limit for analysis (e.g., 1G, 512M)',
+            )
+            ->addOption(
+                'no-optimization',
+                null,
+                InputOption::VALUE_NONE,
+                'Disable automatic optimization (use default settings)',
             );
-    }
-
-    protected function getTargetPath(InputInterface $input): string
-    {
-        if ($this->cachedTargetPath === null) {
-            // If user specified a custom path, use it
-            $customPath = $input->getOption('path');
-            if ($customPath !== null) {
-                if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
-                }
-                $this->cachedTargetPath = realpath($customPath);
-            } else {
-                // For PHPStan, default to packages directory if it exists (typical TYPO3 setup)
-                $packagesPath = $this->getProjectRoot() . '/packages';
-                if (is_dir($packagesPath)) {
-                    $this->cachedTargetPath = $packagesPath;
-                } else {
-                    // Fall back to project root
-                    $this->cachedTargetPath = $this->getProjectRoot();
-                }
-            }
-        }
-
-        return $this->cachedTargetPath;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            if ($input->getOption('show-optimization')) {
-                $this->showOptimizationDetails($input, $output, 'phpstan');
+            $pathOverride = $input->getOption('path');
+            if ($pathOverride !== null && !is_dir($pathOverride)) {
+                throw new FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $pathOverride));
             }
 
-            $configPath = $this->resolveConfigPath('phpstan.neon', $input->getOption('config'));
-            $targetPath = $this->getTargetPath($input);
+            $configOverride = $input->getOption('config');
+            if ($configOverride !== null && !file_exists($configOverride)) {
+                throw ErrorFactory::configFileNotFound($configOverride, $configOverride);
+            }
 
-            $command = [
-                $this->getVendorBinPath() . '/phpstan',
-                'analyse',
-                '--configuration=' . $configPath
-            ];
-
-            // Add custom analysis level if specified
+            /** @var array<string, scalar> $toolOptions */
+            $toolOptions = [];
             $level = $input->getOption('level');
             if ($level !== null) {
-                $command[] = '--level=' . $level;
+                $toolOptions['level'] = $level;
             }
-
-            // Add memory limit - use automatic optimization unless manually specified or disabled
             $memoryLimit = $input->getOption('memory-limit');
             if ($memoryLimit !== null) {
-                $command[] = '--memory-limit=' . $memoryLimit;
-            } elseif (!$this->isOptimizationDisabled($input)) {
-                $optimalMemory = $this->getOptimalMemoryLimit($input, $output, 'phpstan');
-                $command[] = '--memory-limit=' . $optimalMemory;
+                $toolOptions['memory-limit'] = $memoryLimit;
             }
 
-            // Add target path
-            $command[] = $targetPath;
+            $request = new ToolRunRequest(
+                toolName: ToolName::PhpStan->value,
+                dryRun: false,
+                configOverride: $configOverride,
+                pathOverride: $pathOverride,
+                toolOptions: $toolOptions,
+            );
 
-            return $this->executeProcess($command, $input, $output);
+            $runner = $this->registry->get(ToolName::PhpStan->value);
+            $optimizationDisabled = (bool) $input->getOption('no-optimization');
+            $this->infoDisplay->display($runner->describe($request), $output, $optimizationDisabled);
 
-        } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
-            return 1;
+            $collector = new StreamingOutputCollector($output);
+
+            return $runner->run($request, $collector)->exitCode;
+        } catch (\Throwable $e) {
+            return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
     }
 }

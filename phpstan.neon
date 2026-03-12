@@ -1,0 +1,17 @@
+includes:
+	- vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+	level: 6
+	phpVersion: 80300
+	treatPhpDocTypesAsCertain: false
+	paths:
+		- src
+		- tests
+	excludePaths:
+		- tests/Fixtures
+	tmpDir: .build/phpstan
+	ignoreErrors:
+		# Ignore missing typehints from arrays (replaces deprecated checkMissingIterableValueType)
+		-
+			identifier: missingType.iterableValue

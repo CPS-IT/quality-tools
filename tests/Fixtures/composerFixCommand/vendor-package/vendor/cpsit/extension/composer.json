@@ -1,0 +1,21 @@
+{
+  "name": "cpsit/extension",
+  "description": "CPSIT TYPO3 extension installed via Composer",
+  "type": "typo3-cms-extension",
+  "require": {
+    "typo3/cms-core": "^13.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Cpsit\\Extension\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "cpsit_extension"
+    }
+  }
+}

@@ -4,55 +4,83 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console\Command;
 
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Exception\FileSystemException;
+use Cpsit\QualityTools\Messaging\StreamingOutputCollector;
+use Cpsit\QualityTools\Service\ErrorFactory;
+use Cpsit\QualityTools\Service\ErrorHandler;
+use Cpsit\QualityTools\Tool\Runner\DTO\ToolRunRequest;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Tool\ToolName;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class TypoScriptLintCommand extends BaseCommand
+/**
+ * TypoScript Lint command for checking TypoScript files.
+ *
+ * Lint-only tool with no fix mode. Uses runner infrastructure for execution.
+ */
+final class TypoScriptLintCommand extends Command
 {
+    public function __construct(
+        private readonly ToolRunnerRegistry $registry,
+        private readonly ToolRunInfoDisplay $infoDisplay,
+        string $name,
+        string $description,
+        string $help,
+    ) {
+        parent::__construct($name);
+        $this->setDescription($description);
+        $this->setHelp($help);
+    }
+
     protected function configure(): void
     {
-        parent::configure();
-
         $this
-            ->setName('lint:typoscript')
-            ->setDescription('Run TypoScript Lint to check TypoScript files for syntax errors')
-            ->setHelp(
-                'This command runs TypoScript Lint to check TypoScript files for syntax errors ' .
-                'and coding standard violations. Use --config to specify a custom configuration ' .
-                'file or --path to target specific directories.'
+            ->addOption(
+                'config',
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Override default configuration file path',
+            )
+            ->addOption(
+                'path',
+                'p',
+                InputOption::VALUE_REQUIRED,
+                'Specify custom target paths (defaults to project root)',
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $configPath = $this->resolveConfigPath('typoscript-lint.yml', $input->getOption('config'));
-
-            $command = [
-                $this->getVendorBinPath() . '/typoscript-lint',
-                '-c',
-                $configPath
-            ];
-
-            // If user specified a custom path, add it as positional argument
-            $customPath = $input->getOption('path');
-            if ($customPath !== null) {
-                if (!is_dir($customPath)) {
-                    throw new \InvalidArgumentException(
-                        sprintf('Target path does not exist or is not a directory: %s', $customPath)
-                    );
-                }
-                $command[] = realpath($customPath);
-                $output->writeln(sprintf('<comment>Analyzing custom path: %s</comment>', $customPath));
-            } else {
-                $output->writeln('<comment>Using configuration file path discovery (packages/**/Configuration/TypoScript)</comment>');
+            $pathOverride = $input->getOption('path');
+            if ($pathOverride !== null && !is_dir($pathOverride)) {
+                throw new FileSystemException(\sprintf('Target path does not exist or is not a directory: %s', $pathOverride));
             }
 
-            return $this->executeProcess($command, $input, $output);
+            $configOverride = $input->getOption('config');
+            if ($configOverride !== null && !file_exists($configOverride)) {
+                throw ErrorFactory::configFileNotFound($configOverride, $configOverride);
+            }
 
-        } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error: %s</error>', $e->getMessage()));
-            return 1;
+            $request = new ToolRunRequest(
+                toolName: ToolName::TypoScriptLint->value,
+                dryRun: false,
+                configOverride: $configOverride,
+                pathOverride: $pathOverride,
+            );
+
+            $runner = $this->registry->get(ToolName::TypoScriptLint->value);
+            $this->infoDisplay->display($runner->describe($request), $output, false);
+
+            $collector = new StreamingOutputCollector($output);
+
+            return $runner->run($request, $collector)->exitCode;
+        } catch (\Throwable $e) {
+            return (new ErrorHandler())->handleException($e, $output, $output->isVerbose());
         }
     }
 }

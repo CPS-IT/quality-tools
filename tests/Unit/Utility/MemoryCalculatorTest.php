@@ -25,7 +25,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 1, 'totalLines' => 20],
             'xml' => ['fileCount' => 0, 'totalLines' => 0],
             'typoscript' => ['fileCount' => 1, 'totalLines' => 30],
-            'other' => ['fileCount' => 5, 'totalLines' => 100]
+            'other' => ['fileCount' => 5, 'totalLines' => 100],
         ]);
 
         $memory = $this->memoryCalculator->calculateOptimalMemory($metrics);
@@ -41,7 +41,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 10, 'totalLines' => 500],
             'xml' => ['fileCount' => 5, 'totalLines' => 200],
             'typoscript' => ['fileCount' => 20, 'totalLines' => 1000],
-            'other' => ['fileCount' => 100, 'totalLines' => 5000]
+            'other' => ['fileCount' => 100, 'totalLines' => 5000],
         ]);
 
         $memory = $this->memoryCalculator->calculateOptimalMemory($metrics);
@@ -59,7 +59,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 100, 'totalLines' => 5000],
             'xml' => ['fileCount' => 50, 'totalLines' => 2000],
             'typoscript' => ['fileCount' => 200, 'totalLines' => 10000],
-            'other' => ['fileCount' => 1000, 'totalLines' => 50000]
+            'other' => ['fileCount' => 1000, 'totalLines' => 50000],
         ]);
 
         $memory = $this->memoryCalculator->calculateOptimalMemory($metrics);
@@ -75,7 +75,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 5, 'totalLines' => 200],
             'xml' => ['fileCount' => 2, 'totalLines' => 100],
             'typoscript' => ['fileCount' => 10, 'totalLines' => 500],
-            'other' => ['fileCount' => 50, 'totalLines' => 2000]
+            'other' => ['fileCount' => 50, 'totalLines' => 2000],
         ]);
 
         $phpstanMemory = $this->memoryCalculator->calculateOptimalMemoryForTool($metrics, 'phpstan');
@@ -102,7 +102,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 5],
             'xml' => ['fileCount' => 2],
             'typoscript' => ['fileCount' => 3],
-            'other' => ['fileCount' => 20]
+            'other' => ['fileCount' => 20],
         ]);
 
         $largeProject = new ProjectMetrics([
@@ -111,7 +111,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 50],
             'xml' => ['fileCount' => 25],
             'typoscript' => ['fileCount' => 75],
-            'other' => ['fileCount' => 100]
+            'other' => ['fileCount' => 100],
         ]);
 
         $this->assertFalse($this->memoryCalculator->shouldEnableParallelProcessing($smallProject));
@@ -126,7 +126,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 25],
             'xml' => ['fileCount' => 10],
             'typoscript' => ['fileCount' => 15],
-            'other' => ['fileCount' => 100]
+            'other' => ['fileCount' => 100],
         ]);
 
         $largeProject = new ProjectMetrics([
@@ -135,7 +135,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 250],
             'xml' => ['fileCount' => 100],
             'typoscript' => ['fileCount' => 150],
-            'other' => ['fileCount' => 1000]
+            'other' => ['fileCount' => 1000],
         ]);
 
         $this->assertFalse($this->memoryCalculator->shouldShowProgressIndicator($smallProject));
@@ -150,7 +150,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 25, 'totalLines' => 1000],
             'xml' => ['fileCount' => 10, 'totalLines' => 500],
             'typoscript' => ['fileCount' => 50, 'totalLines' => 2500],
-            'other' => ['fileCount' => 200, 'totalLines' => 10000]
+            'other' => ['fileCount' => 200, 'totalLines' => 10000],
         ]);
 
         $profile = $this->memoryCalculator->getOptimizationProfile($metrics);
@@ -176,7 +176,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 100, 'totalLines' => 5000],
             'xml' => ['fileCount' => 50, 'totalLines' => 2500],
             'typoscript' => ['fileCount' => 300, 'totalLines' => 15000],
-            'other' => ['fileCount' => 2000, 'totalLines' => 100000]
+            'other' => ['fileCount' => 2000, 'totalLines' => 100000],
         ]);
 
         $profile = $this->memoryCalculator->getOptimizationProfile($metrics);
@@ -196,7 +196,7 @@ final class MemoryCalculatorTest extends TestCase
             'json' => ['fileCount' => 0, 'totalLines' => 0],
             'xml' => ['fileCount' => 0, 'totalLines' => 0],
             'typoscript' => ['fileCount' => 0, 'totalLines' => 0],
-            'other' => ['fileCount' => 0, 'totalLines' => 0]
+            'other' => ['fileCount' => 0, 'totalLines' => 0],
         ]);
 
         $memory = $this->memoryCalculator->calculateOptimalMemory($metrics);

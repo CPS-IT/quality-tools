@@ -18,7 +18,8 @@ indent_size = 2
 
 # JSON-Files
 [*.json]
-indent_style = tab
+indent_style = space
+indent_size = 2
 
 # ReST-Files
 [*.{rst,rst.txt}]
@@ -33,19 +34,10 @@ max_line_length = off
 [*.{yaml,yml}]
 indent_size = 2
 
-# NEON-Files
+# NEON-Files  
 [*.neon]
 indent_size = 2
 indent_style = tab
-
-#.eslintrc.json
-[.eslintrc.json]
-indent_size = 2
-indent_style = space
-
-# stylelint
-[.stylelintrc]
-indent_size = 2
 
 # package.json
 [package.json]

@@ -4,55 +4,94 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Unit\Console\Command;
 
-use Cpsit\QualityTools\Console\Command\RectorLintCommand;
-use Cpsit\QualityTools\Console\QualityToolsApplication;
+use Cpsit\QualityTools\Configuration\ConfigurationLoader;
+use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Console\Command\RectorCommand;
+use Cpsit\QualityTools\Console\Output\ToolRunInfoDisplay;
+use Cpsit\QualityTools\Service\FilesystemService;
+use Cpsit\QualityTools\Service\MemoryOptimizer;
+use Cpsit\QualityTools\Service\ProcessExecutor;
+use Cpsit\QualityTools\Service\ProjectEnvironment;
+use Cpsit\QualityTools\Service\SecurityService;
+use Cpsit\QualityTools\Service\ToolConfigurationValidationService;
 use Cpsit\QualityTools\Tests\Unit\TestHelper;
+use Cpsit\QualityTools\Tool\Runner\RectorRunner;
+use Cpsit\QualityTools\Tool\Runner\ToolRunnerRegistry;
+use Cpsit\QualityTools\Utility\MemoryCalculator;
+use Cpsit\QualityTools\Utility\ProjectAnalyzer;
+use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * @covers \Cpsit\QualityTools\Console\Command\RectorLintCommand
+ * @covers \Cpsit\QualityTools\Console\Command\RectorCommand
  */
 final class RectorLintCommandTest extends TestCase
 {
-    private RectorLintCommand $command;
+    private RectorCommand $command;
     private MockObject&InputInterface $mockInput;
     private MockObject&ConsoleOutputInterface $mockOutput;
     private string $tempDir;
+
+    private string|false $originalProjectRoot;
 
     protected function setUp(): void
     {
         $this->tempDir = TestHelper::createTempDirectory('rector_lint_command_test_');
 
-        // Create a TYPO3 project structure for proper project root detection
+        // Clear static caches from previous test runs
+        VendorDirectoryDetector::clearCache();
+
+        // Set QT_PROJECT_ROOT for the entire test lifecycle
+        $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
+        putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
+        $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
+
+        // Create a project structure for proper project root detection
         TestHelper::createComposerJson($this->tempDir, TestHelper::getComposerContent('typo3-core'));
 
         // Create vendor/bin directory structure
         $vendorBinDir = $this->tempDir . '/vendor/bin';
-        mkdir($vendorBinDir, 0777, true);
+        mkdir($vendorBinDir, 0o777, true);
 
         // Create fake rector executable
         $rectorExecutable = $vendorBinDir . '/rector';
         file_put_contents($rectorExecutable, "#!/bin/bash\necho 'Rector dry-run completed successfully'\nexit 0\n");
-        chmod($rectorExecutable, 0755);
+        chmod($rectorExecutable, 0o755);
 
-        // Create cpsit/quality-tools config directory structure to match the resolveConfigPath expectation
+        // Create vendor directory structure required by VendorDirectoryDetector
+        $vendorComposerDir = $this->tempDir . '/vendor/composer';
+        mkdir($vendorComposerDir, 0o777, true);
+        file_put_contents($this->tempDir . '/vendor/autoload.php', "<?php\nreturn [];\n");
+
+        // Create cpsit/quality-tools config directory structure
         $vendorConfigDir = $this->tempDir . '/vendor/cpsit/quality-tools/config';
-        mkdir($vendorConfigDir, 0777, true);
+        mkdir($vendorConfigDir, 0o777, true);
         file_put_contents($vendorConfigDir . '/rector.php', "<?php\nreturn [];\n");
 
-        // Set up environment to use temp directory as project root and initialize application
-        TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
-            function (): void {
-                $app = new QualityToolsApplication();
-                $this->command = new RectorLintCommand();
-                $this->command->setApplication($app);
-            }
+        // Build runner infrastructure
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
+        $processExecutor = new ProcessExecutor();
+        $configLoader = $this->createConfigurationLoader();
+        $memoryOptimizer = new MemoryOptimizer(new ProjectAnalyzer(), new MemoryCalculator());
+
+        $rectorRunner = new RectorRunner($processExecutor, $projectEnv, $configLoader, $memoryOptimizer);
+        $registry = new ToolRunnerRegistry([$rectorRunner]);
+        $infoDisplay = new ToolRunInfoDisplay(new MemoryCalculator());
+
+        $this->command = new RectorCommand(
+            $registry,
+            $infoDisplay,
+            dryRun: true,
+            name: 'lint:rector',
+            description: 'Run Rector in dry-run mode to analyze code without making changes',
+            help: 'This command runs Rector in dry-run mode to show what changes would be made without actually modifying your code files. Use --config to specify a custom configuration file or --path to target specific directories.',
         );
 
         $this->mockInput = $this->createMock(InputInterface::class);
@@ -61,7 +100,18 @@ final class RectorLintCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Restore original QT_PROJECT_ROOT
+        if ($this->originalProjectRoot === false) {
+            putenv('QT_PROJECT_ROOT');
+            unset($_ENV['QT_PROJECT_ROOT'], $_SERVER['QT_PROJECT_ROOT']);
+        } else {
+            putenv('QT_PROJECT_ROOT=' . $this->originalProjectRoot);
+            $_ENV['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+            $_SERVER['QT_PROJECT_ROOT'] = $this->originalProjectRoot;
+        }
+
         TestHelper::removeDirectory($this->tempDir);
+        parent::tearDown();
     }
 
     public function testCommandHasCorrectConfiguration(): void
@@ -100,17 +150,18 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
             ->method('write');
+
+        $this->mockOutput
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -127,17 +178,18 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $customConfigPath],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
             ->method('write');
+
+        $this->mockOutput
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -147,24 +199,25 @@ final class RectorLintCommandTest extends TestCase
     public function testExecuteWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $this->mockInput
             ->method('getOption')
             ->willReturnMap([
                 ['config', null],
                 ['path', $customTargetDir],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(false);
 
         $this->mockOutput
             ->method('write');
+
+        $this->mockOutput
+            ->method('writeln');
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
@@ -178,12 +231,10 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
-            ->expects($this->once())
             ->method('isVerbose')
             ->willReturn(true);
 
@@ -207,16 +258,28 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', $nonExistentTargetDir],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
+        // Mock output to capture error messages
+        $actualOutput = [];
         $this->mockOutput
-            ->method('writeln');
+            ->expects($this->atLeastOnce())
+            ->method('writeln')
+            ->willReturnCallback(function ($message) use (&$actualOutput): void {
+                $actualOutput[] = $message;
+            });
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        // FileSystemException returns exit code 4 based on getSuggestedExitCode()
+        $this->assertEquals(4, $result, 'Expected exit code 4 for FileSystemException (directory not found)');
+
+        // Verify the error message contains expected text
+        $errorOutput = implode("\n", $actualOutput);
+        $this->assertStringContainsString('Filesystem Error (3001)', $errorOutput, 'Should show filesystem error code 3001');
+        $this->assertStringContainsString('Target path does not exist or is not a directory', $errorOutput, 'Should show target path error message');
+        $this->assertStringContainsString($nonExistentTargetDir, $errorOutput, 'Should include the problematic path');
     }
 
     public function testExecuteHandlesConfigPathException(): void
@@ -228,8 +291,7 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', $nonExistentConfigPath],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
 
         $this->mockOutput
@@ -237,7 +299,33 @@ final class RectorLintCommandTest extends TestCase
 
         $result = $this->command->run($this->mockInput, $this->mockOutput);
 
-        $this->assertEquals(1, $result);
+        $this->assertEquals(2, $result); // ConfigurationException returns exit code 2
+    }
+
+    public function testExecuteDisplaysPreRunInfo(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute([]);
+
+        $output = $commandTester->getDisplay();
+
+        $this->assertStringContainsString('Analyzing', $output);
+        $this->assertStringContainsString('configured paths:', $output);
+        $this->assertStringContainsString('Aggregated Project Analysis', $output);
+        $this->assertStringContainsString('Optimization Profile', $output);
+        $this->assertStringContainsString('Memory limit:', $output);
+        $this->assertStringContainsString('Parallel processing:', $output);
+    }
+
+    public function testExecuteWithNoOptimizationHidesProfile(): void
+    {
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--no-optimization' => true]);
+
+        $output = $commandTester->getDisplay();
+
+        $this->assertStringContainsString('Optimization disabled by --no-optimization flag', $output);
+        $this->assertStringNotContainsString('Memory limit:', $output);
     }
 
     public function testCommandBuildsCorrectExecutionCommand(): void
@@ -264,7 +352,7 @@ final class RectorLintCommandTest extends TestCase
 
         // Execute with custom config option
         $commandTester->execute([
-            '--config' => $customConfigPath
+            '--config' => $customConfigPath,
         ]);
 
         // Command should execute successfully
@@ -278,13 +366,13 @@ final class RectorLintCommandTest extends TestCase
     public function testCommandBuildsCorrectExecutionCommandWithCustomTargetPath(): void
     {
         $customTargetDir = $this->tempDir . '/custom-target';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $commandTester = new CommandTester($this->command);
 
         // Execute with custom path option
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -306,9 +394,11 @@ final class RectorLintCommandTest extends TestCase
             ->willReturnMap([
                 ['config', null],
                 ['path', null],
-                ['no-optimization', true],
-                ['show-optimization', false]
+                ['no-optimization', false],
             ]);
+
+        $this->mockOutput
+            ->method('writeln');
 
         // Since the executable doesn't exist, this will fail at the process level
         // and the executeProcess method will return a non-zero exit code
@@ -381,7 +471,7 @@ final class RectorLintCommandTest extends TestCase
     {
         // Create a custom target directory with PHP files
         $customTargetDir = $this->tempDir . '/src';
-        mkdir($customTargetDir, 0777, true);
+        mkdir($customTargetDir, 0o777, true);
 
         $testFile = $customTargetDir . '/Service.php';
         file_put_contents($testFile, "<?php\nclass Service {\n    public function process() {\n        return true;\n    }\n}\n");
@@ -390,7 +480,7 @@ final class RectorLintCommandTest extends TestCase
 
         // Execute lint command targeting specific path
         $commandTester->execute([
-            '--path' => $customTargetDir
+            '--path' => $customTargetDir,
         ]);
 
         // Command should execute successfully
@@ -399,5 +489,21 @@ final class RectorLintCommandTest extends TestCase
         // Output should contain rector execution result
         $output = $commandTester->getDisplay();
         $this->assertStringContainsString('Rector dry-run completed successfully', $output);
+    }
+
+    private function createConfigurationLoader(): ConfigurationLoader
+    {
+        $validator = new ConfigurationValidator();
+        $securityService = new SecurityService();
+        $filesystem = new Filesystem();
+        $filesystemService = new FilesystemService($filesystem, $securityService);
+        $toolValidator = new ToolConfigurationValidationService([]);
+
+        return new ConfigurationLoader(
+            $validator,
+            $securityService,
+            $filesystemService,
+            $toolValidator,
+        );
     }
 }

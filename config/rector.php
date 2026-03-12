@@ -24,18 +24,20 @@ if (count($installedProjects) === 1) {
     $installPath = \Composer\InstalledVersions::getInstallPath($projectName);
 }
 
+// Default scan paths for TYPO3 v13
+$scanPaths = [
+    $installPath . '/config/system',
+    $installPath . '/packages',
+];
+
 return RectorConfig::configure()
-    ->withPaths([
-        $installPath . '/config/system',
-        $installPath . '/packages',
-    ])
+    ->withPaths($scanPaths)
     ->withPhpVersion(PhpVersion::PHP_83)
     ->withSets([
+        // add Rector Rules/Sets here
         Typo3SetList::CODE_QUALITY,
         Typo3SetList::GENERAL,
         Typo3LevelSetList::UP_TO_TYPO3_13,
-        // To migrate to Doctrine Dbal 4, uncomment the following line
-        // \Rector\Doctrine\Set\DoctrineSetList::DOCTRINE_DBAL_40,
     ])
     // To have a better analysis from PHPStan, we teach it here some more things
     ->withPHPStanConfigs([Typo3Option::PHPSTAN_FOR_RECTOR_PATH])
@@ -51,6 +53,7 @@ return RectorConfig::configure()
     ->withSkip([
         // @see https://github.com/sabbelasichon/typo3-rector/issues/2536
         $installPath . '/**/Configuration/ExtensionBuilder/*',
+        // @todo remove this, obsolete since TYPO3 11.4
         NameImportingPostRector::class => [
             'ext_localconf.php',
             // This line can be removed since TYPO3 11.4, see https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/11.4/Important-94280-MoveContentsOfExtPhpIntoLocalScopes.html

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Utility;
 
-final class ProjectMetrics
+final readonly class ProjectMetrics
 {
-    public readonly array $php;
-    public readonly array $yaml;
-    public readonly array $json;
-    public readonly array $xml;
-    public readonly array $typoscript;
-    public readonly array $other;
+    public array $php;
+    public array $yaml;
+    public array $json;
+    public array $xml;
+    public array $typoscript;
+    public array $other;
 
     public function __construct(array $metrics)
     {
@@ -56,9 +56,11 @@ final class ProjectMetrics
 
         if ($totalFiles < 100) {
             return 'small';
-        } elseif ($totalFiles < 1000) {
+        }
+        if ($totalFiles < 1000) {
             return 'medium';
-        } elseif ($totalFiles < 5000) {
+        }
+        if ($totalFiles < 5000) {
             return 'large';
         }
 
@@ -80,8 +82,8 @@ final class ProjectMetrics
                 'projectSize' => $this->getProjectSize(),
                 'phpFiles' => $this->getPhpFileCount(),
                 'phpLines' => $this->getPhpLines(),
-                'complexityScore' => $this->getPhpComplexityScore()
-            ]
+                'complexityScore' => $this->getPhpComplexityScore(),
+            ],
         ];
     }
 }

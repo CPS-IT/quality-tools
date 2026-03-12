@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Targets PHP 8.3+ and TYPO3 v13.4
 - Collection of preconfigured quality assurance tools for TYPO3 projects
 - **Complete CLI interface implemented** - Use `vendor/bin/qt` commands as shortcuts
-- **Status: Completed MVP** - All 10 tool commands implemented and tested (96.91% coverage)
+- **Status: Completed MVP** – All 10 tool commands implemented and tested (96.91% coverage)
 
 ## Architecture
 This package provides standardized configurations for:
@@ -104,17 +104,138 @@ vendor/bin/typoscript-lint -c vendor/cpsit/quality-tools/config/typoscript-lint.
 ```
 
 ## Path Configuration
+
+### Standard Path Detection
 The configurations automatically detect the TYPO3 project root and scan:
 - `config/system/` - System configuration files
 - `packages/` - Custom packages and extensions
 - `config/sites/` - Site configuration (Fractor only)
+
+### Advanced Path Configuration (Feature 013)
+The system now supports flexible path configuration for complex project structures:
+
+**Additional Path Patterns:**
+- **Glob Patterns**: `src/**/*.php`, `packages/*/Classes/**/*.php`
+- **Vendor Namespaces**: `cpsit/*`, `fr/*/Classes`, `mycompany/*/src`
+- **Direct Paths**: `custom-extensions/`, `legacy/Classes/`
+- **Exclusion Patterns**: `packages/legacy/*`, `vendor/*/Tests/`, `*.backup`
+
+**Tool-Specific Path Overrides:**
+```yaml
+# Example .quality-tools.yaml with advanced path configuration
+quality-tools:
+  paths:
+    additional:
+      - "src/**/*.php"                    # Custom source directory
+      - "vendor/cpsit/*/Classes"          # Scan CPSIT vendor packages
+      - "vendor/fr/*/Classes"             # Scan FR vendor packages
+
+    exclude_patterns:
+      - "packages/legacy/*"               # Exclude legacy packages
+      - "vendor/*/Tests/"                 # Exclude vendor tests
+
+    tool_overrides:
+      rector:
+        additional:
+          - "config/custom/*.php"         # Rector-specific configs
+      fractor:
+        additional:
+          - "config/sites/*/setup.typoscript"
+      phpstan:
+        exclude:
+          - "packages/experimental/*"     # Exclude unstable code
+```
+
+**Use Cases:**
+- **Monorepos**: Scan multiple apps and libraries with patterns like `apps/*/src/**/*.php`
+- **Custom Vendor Packages**: Include company packages with `vendor/company/*`
+- **Legacy Projects**: Include legacy code with `legacy/**/*.php` while excluding deprecated parts
+- **Non-Standard Structures**: Adapt to any project layout with flexible patterns
 
 ## Quality Standards
 - PHP version: 8.3+ (configured in Rector)
 - TYPO3 version: 13.4.x (configured in Rector ExtEmConf)
 - PHPStan level: 6 (strict analysis)
 - Indentation: 2 spaces for TypoScript, follows TYPO3 standards for PHP
+- maintain the highest possible code quality, all linting commands must succeed before committing
 - Code style: TYPO3 coding standards via php-cs-fixer
+
+## Code Quality Standards
+- **String Constants**: Replace repeated string literals with typed class constants
+  - Use `private const string KEY_NAME = 'value'` for string constants
+  - Use `private const int KEY_NAME = 123` for integer constants
+  - Use `private const array KEY_NAME = [...]` for array constants
+  - Group related constants logically within classes
+  - Always use descriptive, SCREAMING_SNAKE_CASE names for constants
+
+## Architecture Decision Records (ADRs)
+
+**Purpose**: Document significant architectural decisions to maintain project knowledge and rationale over time.
+
+**Location**: `docs/architecture/` - All ADRs are stored here with sequential numbering (0001-, 0002-, etc.)
+
+**Template**: Use `docs/.templates/adr.md` as the starting point for new ADRs
+
+**When to Create an ADR**:
+- Making a significant architectural choice with multiple alternatives
+- Choosing between different design patterns or approaches
+- Decisions that affect system-wide behavior or structure
+- Trade-offs that future maintainers need to understand
+- Deviations from standard practices that require justification
+
+**ADR Structure**:
+1. **Status**: Proposed, Accepted, Deprecated, or Superseded
+2. **Context**: The issue or situation motivating the decision
+3. **Decision**: The chosen approach stated clearly
+4. **Consequences**: Positive, negative, and neutral impacts
+5. **Alternatives Considered**: Other options evaluated and why they were rejected
+
+**Naming Convention**: `NNNN-descriptive-title.md` where NNNN is a zero-padded sequential number
+
+**Examples**:
+- `0001-context-aware-security-validation.md`
+- `0002-security-at-entry-points.md`
+- `0003-code-duplication-elimination-through-refactoring.md`
+
+**Best Practices**:
+- Write ADRs at the time of decision, not retroactively
+- Keep ADRs concise but complete (1-2 pages typical)
+- Use clear, technical language without jargon
+- Link to related ADRs and external documentation
+- Never delete ADRs - mark them as Deprecated or Superseded instead
+
+## Implementation Completion Standards
+
+**CRITICAL:** Implementation of features and bug fixing is **NOT** finished before any failing tests and linting issues are fixed.
+
+**MANDATORY PRE-DEVELOPMENT REQUIREMENT:**
+- **ALL linting issues MUST be resolved BEFORE starting any new feature, issue, or bugfix work**
+- Run `composer lint` and `composer sca` to ensure clean starting state
+- No development work proceeds with existing quality violations
+
+**Definition of Done:**
+- All tasks in the current feature specification are completed
+- All success criteria are met
+- All unit tests must pass
+- All integration tests must pass
+- **ALL linting checks must pass without errors or warnings:**
+  - `composer lint:composer` - Composer.json validation
+  - `composer lint:editorconfig` - File formatting compliance
+  - `composer lint:php` - PHP coding standards
+  - `composer lint:rector` - Code modernization compliance
+  - `composer sca:php` - Static analysis at level 6
+- Code coverage requirements must be met
+- Documentation must be updated and accurate
+
+**Quality Gate Requirements:**
+- No failing test suites
+- Zero linting errors across all tools
+- Zero PHPStan issues above level 6
+- Proper error handling and edge case coverage
+- All quality metrics are maintained or improved
+
+**Quality Tools Package Standard:**
+As a package that provides quality assurance tools, we maintain the highest standards and serve as an exemplar of best practices. Every commit must demonstrate excellence in code quality.
 
 ## Communication Guidelines
 

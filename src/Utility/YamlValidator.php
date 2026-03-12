@@ -12,56 +12,56 @@ use Symfony\Component\Yaml\Yaml;
  */
 final class YamlValidator
 {
-    private array $validationResults = [];
-
     /**
      * Validate YAML files in a directory and return validation results.
      *
      * @param string $projectPath Directory to scan for YAML files
+     *
      * @return array{valid: array, invalid: array, summary: array}
      */
     public function validateYamlFiles(string $projectPath): array
     {
-        $this->validationResults = ['valid' => [], 'invalid' => [], 'summary' => []];
+        $validationResults = ['valid' => [], 'invalid' => []];
 
         $yamlFiles = $this->findYamlFiles($projectPath);
 
         foreach ($yamlFiles as $yamlFile) {
             $result = $this->validateSingleFile($yamlFile);
             if ($result['valid']) {
-                $this->validationResults['valid'][] = $result;
+                $validationResults['valid'][] = $result;
             } else {
-                $this->validationResults['invalid'][] = $result;
+                $validationResults['invalid'][] = $result;
             }
         }
 
-        $this->validationResults['summary'] = [
-            'total' => count($yamlFiles),
-            'valid' => count($this->validationResults['valid']),
-            'invalid' => count($this->validationResults['invalid']),
+        $validationResults['summary'] = [
+            'total' => \count($yamlFiles),
+            'valid' => \count($validationResults['valid']),
+            'invalid' => \count($validationResults['invalid']),
         ];
 
-        return $this->validationResults;
+        return $validationResults;
     }
 
     /**
      * Find all YAML files in a directory.
      *
      * @param string $projectPath Directory to scan
+     *
      * @return string[] Array of YAML file paths
      */
     private function findYamlFiles(string $projectPath): array
     {
         $yamlFiles = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($projectPath, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY
+            new \RecursiveDirectoryIterator($projectPath, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY,
         );
 
         foreach ($iterator as $file) {
             if ($file->isFile()) {
-                $extension = strtolower($file->getExtension());
-                if (in_array($extension, ['yaml', 'yml'], true)) {
+                $extension = strtolower((string) $file->getExtension());
+                if (\in_array($extension, ['yaml', 'yml'], true)) {
                     $yamlFiles[] = $file->getRealPath();
                 }
             }
@@ -74,6 +74,7 @@ final class YamlValidator
      * Validate a single YAML file.
      *
      * @param string $filePath Path to YAML file
+     *
      * @return array{file: string, valid: bool, error: string|null, type: string}
      */
     private function validateSingleFile(string $filePath): array
@@ -82,17 +83,19 @@ final class YamlValidator
             'file' => $filePath,
             'valid' => false,
             'error' => null,
-            'type' => 'unknown'
+            'type' => 'unknown',
         ];
 
         if (!file_exists($filePath) || !is_readable($filePath)) {
             $result['error'] = 'File not readable';
+
             return $result;
         }
 
         $content = file_get_contents($filePath);
         if ($content === false) {
             $result['error'] = 'Could not read file content';
+
             return $result;
         }
 
@@ -100,30 +103,31 @@ final class YamlValidator
         if (trim($content) === '') {
             $result['error'] = 'Empty file';
             $result['type'] = 'empty';
+
             return $result;
         }
 
         try {
             $parsed = Yaml::parse($content);
 
-            // Check if parsed result is array (expected by Fractor)
-            if (!is_array($parsed)) {
-                $result['error'] = sprintf(
+            // Check if the parsed result is an array (expected by Fractor)
+            if (!\is_array($parsed)) {
+                $result['error'] = \sprintf(
                     'YAML parses to %s instead of array (Fractor requirement)',
-                    gettype($parsed)
+                    \gettype($parsed),
                 );
                 $result['type'] = 'wrong_type';
+
                 return $result;
             }
 
             $result['valid'] = true;
             $result['type'] = 'valid_array';
-
         } catch (ParseException $e) {
-            $result['error'] = sprintf('Parse error: %s', $e->getMessage());
+            $result['error'] = \sprintf('Parse error: %s', $e->getMessage());
             $result['type'] = 'parse_error';
         } catch (\Exception $e) {
-            $result['error'] = sprintf('Validation error: %s', $e->getMessage());
+            $result['error'] = \sprintf('Validation error: %s', $e->getMessage());
             $result['type'] = 'validation_error';
         }
 
@@ -134,6 +138,7 @@ final class YamlValidator
      * Get a summary of problematic YAML files for user reporting.
      *
      * @param array $validationResults Results from validateYamlFiles()
+     *
      * @return string[] Array of user-friendly error descriptions
      */
     public function getProblematicFilesSummary(array $validationResults): array
@@ -142,7 +147,7 @@ final class YamlValidator
 
         foreach ($validationResults['invalid'] as $invalid) {
             $relativePath = $this->getRelativePath($invalid['file']);
-            $summary[] = sprintf('%s: %s', $relativePath, $invalid['error']);
+            $summary[] = \sprintf('%s: %s', $relativePath, $invalid['error']);
         }
 
         return $summary;
@@ -152,6 +157,7 @@ final class YamlValidator
      * Create exclude patterns for Fractor to skip problematic YAML files.
      *
      * @param array $validationResults Results from validateYamlFiles()
+     *
      * @return string[] Array of file paths to exclude
      */
     public function getProblematicFilePaths(array $validationResults): array
@@ -160,17 +166,19 @@ final class YamlValidator
     }
 
     /**
-     * Get relative path for display purposes.
+     * Get a relative path for display purposes.
      *
      * @param string $filePath Absolute file path
+     *
      * @return string Relative path for display
      */
     private function getRelativePath(string $filePath): string
     {
         $cwd = getcwd();
         if ($cwd !== false && str_starts_with($filePath, $cwd)) {
-            return substr($filePath, strlen($cwd) + 1);
+            return substr($filePath, \strlen($cwd) + 1);
         }
+
         return $filePath;
     }
 }

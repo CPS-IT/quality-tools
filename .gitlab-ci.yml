@@ -1,0 +1,23 @@
+---
+variables:
+  CUSTOMER_NAME: "CPSIT"
+  PROJECT_NAME: 'quality-tools'
+  COMPOSER_HOME: ${CI_PROJECT_DIR}/.composer
+
+default:
+  image: $CI_REGISTRY/x-it-docker/docker-php:${PHP_VERSION}-build-stable
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages:
+  - build
+  - test
+
+include:
+  - '.gitlab-ci/**.yaml'
+

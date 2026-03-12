@@ -1,0 +1,7 @@
+# Scenario 6: Invalid Config File Path
+# Pre-condition: config_file points to a non-existent path
+# Expected: config:validate reports warning/error, lint:rector fails with clear message
+quality-tools:
+  tools:
+    rector:
+      config_file: "non-existent/rector.php"

@@ -1,0 +1,9 @@
+quality-tools:
+  project:
+    name: 'test-valid-composer-root'
+    php_version: '8.3'
+  paths:
+    scan:
+      - '.'
+      - 'packages/'
+      - 'config/system/'

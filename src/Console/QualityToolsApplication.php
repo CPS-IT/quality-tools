@@ -4,36 +4,46 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Console;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionClass;
+use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 final class QualityToolsApplication extends Application
 {
-    private const APP_NAME = 'CPSIT Quality Tools';
-    private const APP_VERSION = '1.0.0-dev';
+    private const string APP_NAME = 'CPSIT Quality Tools';
+    private const string APP_VERSION = '1.0.0-dev';
+    private const string COMMAND_TAG = 'console.command';
 
     private ?string $projectRoot = null;
+    private ContainerBuilder $container;
 
     public function __construct()
     {
         parent::__construct(self::APP_NAME, self::APP_VERSION);
 
+        // Initialize service container (gracefully handle test scenarios)
+        try {
+            $this->container = ServiceContainer::getContainer();
+        } catch (\Throwable) {
+            // Fallback for test scenarios where container initialization might fail
+            $this->container = new ContainerBuilder();
+        }
+
         try {
             $this->projectRoot = $this->findProjectRoot();
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException) {
             // Project root detection will be handled per-command if needed
         }
 
         $this->registerCommands();
     }
 
+    #[\Override]
     public function getHelp(): string
     {
-        return 'Simple command-line interface for TYPO3 quality assurance tools';
+        return Tagline::random();
     }
 
     public function getProjectRoot(): string
@@ -43,6 +53,15 @@ final class QualityToolsApplication extends Application
         }
 
         return $this->projectRoot;
+    }
+
+    /**
+     * Clear cached project root to force re-detection.
+     * Useful for tests that change environment variables.
+     */
+    public function clearCachedProjectRoot(): void
+    {
+        $this->projectRoot = null;
     }
 
     private function findProjectRoot(): string
@@ -62,16 +81,14 @@ final class QualityToolsApplication extends Application
         $searchDir = $currentDir;
         $maxLevels = 10; // Prevent infinite traversal
 
-        for ($i = 0; $i < $maxLevels; $i++) {
+        for ($i = 0; $i < $maxLevels; ++$i) {
             $composerFile = $searchDir . '/composer.json';
 
-            if (file_exists($composerFile)) {
-                if ($this->isTypo3Project($composerFile)) {
-                    return $searchDir;
-                }
+            if (file_exists($composerFile) && $this->isTypo3Project($composerFile)) {
+                return $searchDir;
             }
 
-            $parentDir = dirname($searchDir);
+            $parentDir = \dirname($searchDir);
             if ($parentDir === $searchDir) {
                 // Reached filesystem root
                 break;
@@ -80,10 +97,7 @@ final class QualityToolsApplication extends Application
             $searchDir = $parentDir;
         }
 
-        throw new RuntimeException(
-            'TYPO3 project root not found. Please run this command from within a TYPO3 project directory, ' .
-            'or set the QT_PROJECT_ROOT environment variable.'
-        );
+        throw new RuntimeException('TYPO3 project root not found. Please run this command from within a TYPO3 project directory, or set the QT_PROJECT_ROOT environment variable.');
     }
 
     private function isTypo3Project(string $composerFile): bool
@@ -100,10 +114,10 @@ final class QualityToolsApplication extends Application
             }
 
             $composer = json_decode($content, true);
-            if (!is_array($composer)) {
+            if (!\is_array($composer)) {
                 return false;
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // File access failed (permissions, corruption, etc.)
             return false;
         }
@@ -111,7 +125,7 @@ final class QualityToolsApplication extends Application
         // Check for TYPO3 dependencies
         $dependencies = array_merge(
             $composer['require'] ?? [],
-            $composer['require-dev'] ?? []
+            $composer['require-dev'] ?? [],
         );
 
         $typo3Packages = [
@@ -129,60 +143,22 @@ final class QualityToolsApplication extends Application
         return false;
     }
 
+    /**
+     * Discover and register all commands tagged with 'console.command' in the DI container.
+     */
     private function registerCommands(): void
     {
-        $commandDir = __DIR__ . '/Command';
+        $taggedServiceIds = $this->container->findTaggedServiceIds(self::COMMAND_TAG);
 
-        if (!is_dir($commandDir)) {
-            return; // No commands directory yet
-        }
-
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($commandDir, RecursiveDirectoryIterator::SKIP_DOTS)
-        );
-
-        foreach ($iterator as $file) {
-            if ($file->getExtension() !== 'php') {
+        foreach (array_keys($taggedServiceIds) as $serviceId) {
+            try {
+                $command = $this->container->get($serviceId);
+                if ($command instanceof Command) {
+                    $this->add($command);
+                }
+            } catch (\Throwable) {
                 continue;
             }
-
-            $relativePath = str_replace($commandDir . '/', '', $file->getPathname());
-            $className = $this->getClassNameFromFile($relativePath);
-
-            if ($className && $this->isValidCommandClass($className)) {
-                try {
-                    $command = new $className();
-                    $this->add($command);
-                } catch (\Throwable $e) {
-                    // Skip commands that fail to instantiate
-                    continue;
-                }
-            }
-        }
-    }
-
-    private function getClassNameFromFile(string $relativePath): ?string
-    {
-        $pathWithoutExtension = str_replace('.php', '', $relativePath);
-        $classPath = str_replace('/', '\\', $pathWithoutExtension);
-
-        return 'Cpsit\\QualityTools\\Console\\Command\\' . $classPath;
-    }
-
-    private function isValidCommandClass(string $className): bool
-    {
-        if (!class_exists($className)) {
-            return false;
-        }
-
-        try {
-            $reflection = new ReflectionClass($className);
-
-            return $reflection->isSubclassOf(Command::class) &&
-                   !$reflection->isAbstract() &&
-                   $reflection->isInstantiable();
-        } catch (\Throwable $e) {
-            return false;
         }
     }
 }

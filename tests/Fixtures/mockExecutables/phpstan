@@ -1,0 +1,29 @@
+#!/bin/bash
+# Mock phpstan executable for testing
+# This mock simulates phpstan using the configuration file passed via -c flag
+# and outputs the paths configured in that file
+
+# Parse arguments to find config file
+CONFIG_FILE=""
+for arg in "$@"; do
+    # Handle separate flags: -c file or --configuration file
+    if [[ "$prev_arg" == "-c" ]] || [[ "$prev_arg" == "--configuration" ]]; then
+        CONFIG_FILE="$arg"
+    # Handle combined flag: --configuration=file
+    elif [[ "$arg" =~ ^--configuration=(.+)$ ]]; then
+        CONFIG_FILE="${BASH_REMATCH[1]}"
+    fi
+    prev_arg="$arg"
+done
+
+# If a config file is specified and exists, extract the path from it
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Extract the path from the phpstan neon file
+    # Look for paths like 'custom-phpstan-root-path' or 'custom-phpstan-config-path'
+    PATH_VALUE=$(grep -o 'custom-[a-z-]*-path' "$CONFIG_FILE" | head -1)
+    if [[ -n "$PATH_VALUE" ]]; then
+        echo "$PATH_VALUE"
+    fi
+fi
+
+exit 0

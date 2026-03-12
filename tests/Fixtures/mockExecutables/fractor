@@ -1,0 +1,36 @@
+#!/usr/bin/env php
+<?php
+// Mock fractor executable for testing
+// Works both when called directly (#!/usr/bin/env php) and via "php fractor"
+
+$configFile = null;
+$args = array_slice($argv, 1);
+
+for ($i = 0; $i < count($args); $i++) {
+    $arg = $args[$i];
+
+    // Handle --config=file format
+    if (preg_match('/^--config=(.+)$/', $arg, $matches)) {
+        $configFile = $matches[1];
+    }
+    // Handle -c file or --config file format
+    elseif (($arg === '-c' || $arg === '--config') && isset($args[$i + 1])) {
+        $configFile = $args[$i + 1];
+        $i++;
+    }
+}
+
+// Check if we're using a custom config
+if ($configFile !== null && file_exists($configFile)) {
+    $content = file_get_contents($configFile);
+    if (str_contains($content, 'custom-fractor')) {
+        if (preg_match("/['\"]([^'\"]*fractor[^'\"]*-path[^'\"]*)['\"]/" , $content, $matches)) {
+            echo $matches[1] . PHP_EOL;
+            exit(0);
+        }
+    }
+}
+
+// Default behavior
+echo "No custom config detected - using package defaults" . PHP_EOL;
+exit(0);

@@ -114,9 +114,11 @@ vendor/bin/qt fix:rector --no-optimization
 ```
 
 ### View Optimization Decisions
+Optimization details are shown by default for all commands:
+
 ```bash
-# Show detailed optimization decisions
-vendor/bin/qt lint:phpstan --show-optimization
+# Optimization details are shown automatically
+vendor/bin/qt lint:phpstan
 
 # Example output:
 # Project Analysis: Project size: MEDIUM (1,001 files)
@@ -222,8 +224,8 @@ vendor/bin/qt lint:phpstan --no-optimization
 
 **Performance Slower Than Expected:**
 ```bash
-# Check if optimization is actually enabled
-vendor/bin/qt lint:phpstan --show-optimization
+# Optimization details are shown by default, check the output
+vendor/bin/qt lint:phpstan
 
 # Verify path scoping is working
 # Should show "Found X files in /packages" not entire project
@@ -231,8 +233,8 @@ vendor/bin/qt lint:phpstan --show-optimization
 
 **Optimization Not Working:**
 ```bash
-# Check project detection
-vendor/bin/qt lint:phpstan --show-optimization
+# Check project detection (details shown by default)
+vendor/bin/qt lint:phpstan
 
 # Verify TYPO3 project detection:
 # Should show "TYPO3 project detected" in analysis output
