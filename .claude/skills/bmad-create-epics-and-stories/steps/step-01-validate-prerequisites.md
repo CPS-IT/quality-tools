@@ -84,8 +84,8 @@ From the PRD document (full or sharded), read then entire document and extract A
 **Format the FR list as:**
 
 ```
-FR1: [Clear, testable requirement description]
-FR2: [Clear, testable requirement description]
+- FR1: [Clear, testable requirement description]
+- FR2: [Clear, testable requirement description]
 ...
 ```
 
@@ -102,8 +102,8 @@ From the PRD document, extract ALL non-functional requirements:
 **Format the NFR list as:**
 
 ```
-NFR1: [Performance/Security/Usability requirement]
-NFR2: [Performance/Security/Usability requirement]
+- NFR1: [Performance/Security/Usability requirement]
+- NFR2: [Performance/Security/Usability requirement]
 ...
 ```
 
@@ -151,8 +151,8 @@ Read the FULL UX Design document and extract ALL actionable work items:
 **Format UX Design Requirements as a SEPARATE section (not merged into Additional Requirements):**
 
 ```
-UX-DR1: [Actionable UX design requirement with clear implementation scope]
-UX-DR2: [Actionable UX design requirement with clear implementation scope]
+- UX-DR1: [Actionable UX design requirement with clear implementation scope]
+- UX-DR2: [Actionable UX design requirement with clear implementation scope]
 ...
 ```
 

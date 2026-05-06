@@ -87,10 +87,10 @@ So that {value_benefit}.
 
 **Acceptance Criteria:**
 
-**Given** {precondition}
-**When** {action}
-**Then** {expected_outcome}
-**And** {additional_criteria}
+- **Given** {precondition}
+- **When** {action}
+- **Then** {expected_outcome}
+- **And** {additional_criteria}
 ```
 
 **✅ GOOD STORY EXAMPLES:**

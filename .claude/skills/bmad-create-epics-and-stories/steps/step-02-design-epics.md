@@ -130,9 +130,9 @@ Create {{requirements_coverage_map}} showing how each FR maps to an epic:
 ```
 ### FR Coverage Map
 
-FR1: Epic 1 - [Brief description]
-FR2: Epic 1 - [Brief description]
-FR3: Epic 2 - [Brief description]
+- FR1: Epic 1 - [Brief description]
+- FR2: Epic 1 - [Brief description]
+- FR3: Epic 2 - [Brief description]
 ...
 ```
 

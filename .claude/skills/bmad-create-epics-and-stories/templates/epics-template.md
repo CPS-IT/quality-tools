@@ -53,9 +53,9 @@ So that {{value_benefit}}.
 
 <!-- for each AC on this story -->
 
-**Given** {{precondition}}
-**When** {{action}}
-**Then** {{expected_outcome}}
-**And** {{additional_criteria}}
+- **Given** {{precondition}}
+- **When** {{action}}
+- **Then** {{expected_outcome}}
+- **And** {{additional_criteria}}
 
 <!-- End story repeat -->
