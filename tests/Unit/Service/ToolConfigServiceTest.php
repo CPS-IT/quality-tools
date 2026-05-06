@@ -130,7 +130,7 @@ final class ToolConfigServiceTest extends TestCase
 
         $expected = [
             'enabled' => true,
-            'level' => 'typo3-13',
+            'level' => 'typo3-14',
             'php_version' => '8.4',
         ];
 
