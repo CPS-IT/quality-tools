@@ -123,6 +123,10 @@ final readonly class RectorRunner implements ToolRunnerInterface
 
         $rectorConfig = $this->configLoader->load($projectRoot)->getToolConfig('rector');
         $level = $rectorConfig['level'] ?? ConfigurationInterface::DEFAULT_RECTOR_LEVEL;
+        if (!\in_array($level, ConfigurationInterface::ALLOWED_RECTOR_LEVELS, true)) {
+            $level = ConfigurationInterface::DEFAULT_RECTOR_LEVEL;
+        }
+
         $packageConfigDir = $this->projectEnv->getPackageConfigDir();
         $versionedConfig = $packageConfigDir . '/rector-' . $level . '.php';
 

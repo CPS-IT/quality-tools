@@ -1,6 +1,6 @@
 # Story 1.1: Add versioned Rector configurations for TYPO3 v13 and v14
 
-Status: review
+Status: done
 
 ## Story
 
@@ -204,3 +204,14 @@ claude-sonnet-4-6
 - src/Tool/Runner/RectorRunner.php (modified)
 - tests/Unit/Tool/Runner/RectorRunnerTest.php (modified)
 - tests/Integration/Console/Command/ToolCommandPathConfigurationTest.php (modified)
+
+### Review Findings
+
+- [x] [Review][Decision] RESOLVED (option 1): DEFAULT_RECTOR_LEVEL changed to 'typo3-14'. Updated ConfigurationInterface, schema enum/default, ToolConfigService, ConfigurationTemplateGenerator (4 templates), and 3 test assertions. [src/Configuration/ConfigurationInterface.php:32]
+- [x] [Review][Patch] FIXED: `level` value validated against ALLOWED_RECTOR_LEVELS before path construction; invalid values fall back to DEFAULT_RECTOR_LEVEL. [src/Tool/Runner/RectorRunner.php:126, src/Configuration/ConfigurationInterface.php:33]
+- [x] [Review][Defer] $installPath undefined when count($installedProjects) > 1: error_log silently continues into undefined variable [config/rector-typo3-13.php:23, config/rector-typo3-14.php:23] — deferred, pre-existing pattern from original rector.php
+- [x] [Review][Defer] getInstallPath() can return null, string concatenation produces broken paths silently [config/rector-typo3-13.php:28, config/rector-typo3-14.php:29] — deferred, pre-existing pattern from original rector.php
+- [x] [Review][Defer] configLoader->load() called twice per resolveConfigPath invocation if loader is not cached [src/Tool/Runner/RectorRunner.php:124] — deferred, needs loader caching investigation
+- [x] [Review][Defer] Fallback rector.php path returned without existence check [src/Tool/Runner/RectorRunner.php:131] — deferred, pre-existing pattern
+- [x] [Review][Defer] No test covers the branch where resolveToolConfigPath returns a non-null discovered path, bypassing level logic [tests/Unit/Tool/Runner/RectorRunnerTest.php] — deferred, pre-existing test gap
+- [x] [Review][Defer] setUp mock in RectorRunnerTest does not stub getResolvedPathsForTool, relying on PHPUnit null return [tests/Unit/Tool/Runner/RectorRunnerTest.php:44] — deferred, pre-existing test setup pattern

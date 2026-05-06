@@ -56,7 +56,7 @@ final readonly class ToolConfigService
 
         return array_merge([
             'enabled' => true,
-            'level' => 'typo3-13',
+            'level' => 'typo3-14',
             'php_version' => $phpVersion,
         ], $config);
     }

@@ -217,7 +217,7 @@ final class RectorRunnerTest extends TestCase
     }
 
     #[Test]
-    public function runFallsBackToDefaultConfigWhenLevelHasNoVersionedFile(): void
+    public function runFallsBackToDefaultLevelConfigWhenLevelIsInvalid(): void
     {
         $capturedCommand = null;
         $runner = $this->createRunnerCapturingCommandWithLevel('unknown-level', $capturedCommand);
@@ -226,7 +226,7 @@ final class RectorRunnerTest extends TestCase
         $runner->run($request, new BufferingOutputCollector());
 
         self::assertIsArray($capturedCommand);
-        self::assertStringEndsWith('/config/rector.php', $capturedCommand[2]);
+        self::assertStringEndsWith('/config/rector-' . ConfigurationInterface::DEFAULT_RECTOR_LEVEL . '.php', $capturedCommand[2]);
     }
 
     #[Test]

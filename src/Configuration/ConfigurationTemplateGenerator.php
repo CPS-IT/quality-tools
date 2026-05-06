@@ -94,7 +94,7 @@ final readonly class ConfigurationTemplateGenerator
               tools:
                 rector:
                   enabled: true
-                  level: "typo3-13"
+                  level: "typo3-14"
 
                 fractor:
                   enabled: true
@@ -148,7 +148,7 @@ final readonly class ConfigurationTemplateGenerator
               tools:
                 rector:
                   enabled: true
-                  level: "typo3-13"
+                  level: "typo3-14"
 
                 fractor:
                   enabled: true
@@ -200,7 +200,7 @@ final readonly class ConfigurationTemplateGenerator
               tools:
                 rector:
                   enabled: true
-                  level: "typo3-13"
+                  level: "typo3-14"
 
                 fractor:
                   enabled: true
@@ -256,7 +256,7 @@ final readonly class ConfigurationTemplateGenerator
               tools:
                 rector:
                   enabled: true
-                  level: "typo3-13"
+                  level: "typo3-14"
 
                 fractor:
                   enabled: true
