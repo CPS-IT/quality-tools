@@ -1,0 +1,1 @@
+The composer sca:php seems to fail since commit dc701eb0809308a19bc84bdef8dbf4b3690351f2. This was an updated of dependencies. I need to understand why the test suddenly fails.
