@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tests\Integration\Console\Command;
 
+use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
 use Cpsit\QualityTools\Service\FilesystemService;
@@ -445,9 +446,9 @@ final class ToolCommandPathConfigurationTest extends TestCase
         $description = $runner->describe($request);
 
         self::assertStringContainsString(
-            'rector.php',
+            'rector-' . ConfigurationInterface::DEFAULT_RECTOR_LEVEL . '.php',
             $description->configPath,
-            'Rector should resolve a config path containing rector.php',
+            'Rector should resolve a config path for the default level',
         );
     }
 

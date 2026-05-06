@@ -1,6 +1,6 @@
 # Story 1.1: Add versioned Rector configurations for TYPO3 v13 and v14
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -23,24 +23,28 @@ available for projects not yet upgrading.
 
 ## Tasks / Subtasks
 
-- [ ] Create `config/rector-typo3-13.php` (AC: 1)
-  - [ ] Copy the full content of `config/rector.php` verbatim into `config/rector-typo3-13.php`
-  - [ ] Update the leading comment to identify this as the v13-targeted configuration
-- [ ] Create `config/rector-typo3-14.php` (AC: 2)
-  - [ ] Use `Typo3LevelSetList::UP_TO_TYPO3_14` instead of `UP_TO_TYPO3_13`
-  - [ ] Update `ExtEmConfRector` constraints to target TYPO3 14.x
-  - [ ] Keep `PhpVersion::PHP_83` (package targets PHP ^8.3, not ^8.4)
-  - [ ] Keep all skip rules and paths identical to the v13 config
-- [ ] Update `config/rector.php` to delegate to `config/rector-typo3-14.php` (AC: 3)
-  - [ ] Replace inline configuration with a `require` of `config/rector-typo3-14.php`
-  - [ ] Add a comment explaining that this is the stable-default alias for the current version
-- [ ] Verify all quality gates pass (AC: 5)
-  - [ ] Run `composer lint:composer`
-  - [ ] Run `composer lint:editorconfig`
-  - [ ] Run `composer lint:php`
-  - [ ] Run `composer lint:rector` (dry-run, must show zero errors against this package itself)
-  - [ ] Run `composer sca:php`
-  - [ ] Run `composer test` (all unit tests must pass)
+- [x] Create `config/rector-typo3-13.php` (AC: 1)
+  - [x] Copy the full content of `config/rector.php` verbatim into `config/rector-typo3-13.php`
+  - [x] Update the leading comment to identify this as the v13-targeted configuration
+- [x] Create `config/rector-typo3-14.php` (AC: 2)
+  - [x] Use `Typo3LevelSetList::UP_TO_TYPO3_14` instead of `UP_TO_TYPO3_13`
+  - [x] Update `ExtEmConfRector` constraints to target TYPO3 14.x
+  - [x] Keep `PhpVersion::PHP_83` (package targets PHP ^8.3, not ^8.4)
+  - [x] Keep all skip rules and paths identical to the v13 config
+- [x] Update `config/rector.php` to delegate to `config/rector-typo3-14.php` (AC: 3)
+  - [x] Replace inline configuration with a `require` of `config/rector-typo3-14.php`
+  - [x] Add a comment explaining that this is the stable-default alias for the current version
+- [x] Wire `rector.level` config to versioned config file selection in `RectorRunner` (AC: 4, backward compat)
+  - [x] In `RectorRunner::resolveConfigPath()`, load the rector config and map `level` to `rector-{level}.php`
+  - [x] Fall back to `rector.php` alias if the versioned file does not exist
+  - [x] Add unit test covering level-based config selection
+- [x] Verify all quality gates pass (AC: 5)
+  - [x] Run `composer lint:composer`
+  - [x] Run `composer lint:editorconfig`
+  - [x] Run `composer lint:php`
+  - [x] Run `composer lint:rector` (dry-run, must show zero errors against this package itself)
+  - [x] Run `composer sca:php`
+  - [x] Run `composer test` (all unit tests must pass)
 
 ## Dev Notes
 
@@ -185,4 +189,18 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- Created `config/rector-typo3-13.php` with v13 rules (Typo3LevelSetList::UP_TO_TYPO3_13, TYPO3 version constraint 13.4.0-13.4.99).
+- Created `config/rector-typo3-14.php` with v14 rules (Typo3LevelSetList::UP_TO_TYPO3_14, TYPO3 version constraint 14.0.0-14.99.99). Both use PhpVersion::PHP_83.
+- Replaced `config/rector.php` body with a `return require` alias delegating to `rector-typo3-14.php`.
+- Fixed missing backward-compat requirement: `RectorRunner::resolveConfigPath()` now reads `rector.level` from the loaded configuration and maps it to the corresponding versioned config file (e.g. `rector-typo3-13.php`). Falls back to `rector.php` for unknown levels.
+- Updated `RectorRunnerTest` and the integration test in `ToolCommandPathConfigurationTest` to reflect the new config resolution behavior.
+- All quality gates passed: composer lint:composer, lint:editorconfig, lint:php, lint:rector, sca:php, and all 1155 unit+integration tests pass.
+
 ### File List
+
+- config/rector-typo3-13.php (created)
+- config/rector-typo3-14.php (created)
+- config/rector.php (modified)
+- src/Tool/Runner/RectorRunner.php (modified)
+- tests/Unit/Tool/Runner/RectorRunnerTest.php (modified)
+- tests/Integration/Console/Command/ToolCommandPathConfigurationTest.php (modified)
