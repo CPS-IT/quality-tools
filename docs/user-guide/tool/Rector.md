@@ -45,7 +45,7 @@ Optimization: Enabling caching and optimized processing for performance
 ### CLI Options
 
 ```shell
-# Basic analysis
+# Basic analysis (uses the configured TYPO3 version target, default: typo3-13)
 vendor/bin/qt lint:rector
 
 # Apply fixes
@@ -64,6 +64,49 @@ vendor/bin/qt lint:rector --no-optimization
 # (use --no-optimization to disable)
 ```
 
+## TYPO3 Version Targeting
+
+The package ships two versioned Rector configurations that can be selected independently:
+
+| Config file                  | TYPO3 target | Rector set              |
+|------------------------------|--------------|-------------------------|
+| `config/rector-typo3-13.php` | 13.4         | UP_TO_TYPO3_13          |
+| `config/rector-typo3-14.php` | 14.x         | UP_TO_TYPO3_14          |
+
+`config/rector.php` is a stable-default alias that currently points to `rector-typo3-14.php`.
+
+### Selecting the version via `.quality-tools.yaml`
+
+The `tools.rector.level` setting controls which versioned config is used when no
+explicit `--config` override is provided:
+
+```yaml
+quality-tools:
+  tools:
+    rector:
+      level: "typo3-13"   # keeps a project on TYPO3 v13 rules
+```
+
+```yaml
+quality-tools:
+  tools:
+    rector:
+      level: "typo3-14"   # opts a project in to TYPO3 v14 rules
+```
+
+The default value is `typo3-13`, so existing projects without an explicit `level`
+setting continue to receive v13 rules until they opt in.
+
+### Targeting a version explicitly via --config
+
+```shell
+# Analyze against TYPO3 v13 rules
+vendor/bin/qt lint:rector --config config/rector-typo3-13.php
+
+# Analyze against TYPO3 v14 rules
+vendor/bin/qt lint:rector --config config/rector-typo3-14.php
+```
+
 ## Direct Tool Usage (Alternative)
 
 ### Default Configuration (Analysis Only)
@@ -71,7 +114,14 @@ vendor/bin/qt lint:rector --no-optimization
 For direct tool usage without optimization:
 
 ```shell
+# Uses the stable-default alias (currently rector-typo3-14.php)
 $ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php --dry-run
+
+# Target TYPO3 v13 explicitly
+$ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector-typo3-13.php --dry-run
+
+# Target TYPO3 v14 explicitly
+$ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector-typo3-14.php --dry-run
 ```
 
 **Note**: Direct usage does not include automatic optimization and may encounter memory issues on large projects.
@@ -81,7 +131,7 @@ $ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php --dr
 Apply fixes directly without optimization:
 
 ```shell
-$ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector.php
+$ app/vendor/bin/rector -c app/vendor/cpsit/quality-tools/config/rector-typo3-13.php
 ```
 
 ## Optimization Details
@@ -201,7 +251,7 @@ The system automatically detects TYPO3 projects and applies specific optimizatio
 
 - **Path Scoping**: Defaults to `/packages` directory instead of entire project
 - **TYPO3 Rules**: Uses TYPO3-specific Rector rules for optimal modernization
-- **Configuration**: Automatically uses TYPO3 13.4 target configuration
+- **Configuration**: Uses the version selected by `tools.rector.level` (default: `typo3-13`)
 - **Performance**: Optimized for typical TYPO3 project structures
 
 ### Memory Multipliers

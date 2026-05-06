@@ -56,7 +56,7 @@ quality-tools:
   tools:
     rector:
       enabled: boolean              # Enable/disable Rector
-      level: string                 # Rector level: "typo3-13", "typo3-12", "typo3-11"
+      level: string                 # Rector level: "typo3-13" or "typo3-14" (default: "typo3-13")
       config_file: string           # Custom configuration file path
       php_version: string           # Override project PHP version
       dry_run: boolean              # Always run in dry-run mode
@@ -307,13 +307,13 @@ Each tool can be individually configured with its specific options.
 
 #### Rector Configuration
 
-| Option        | Type    | Default             | Description                                 |
-|---------------|---------|---------------------|---------------------------------------------|
-| `enabled`     | boolean | true                | Enable/disable Rector                       |
-| `level`       | string  | "typo3-13"          | Rector level (typo3-13, typo3-12, typo3-11) |
-| `php_version` | string  | project.php_version | Override PHP version for rules              |
-| `dry_run`     | boolean | false               | Always run in dry-run mode                  |
-| `paths`       | object  | {}                  | Tool-specific path overrides                |
+| Option        | Type    | Default             | Description                                           |
+|---------------|---------|---------------------|-------------------------------------------------------|
+| `enabled`     | boolean | true                | Enable/disable Rector                                 |
+| `level`       | string  | "typo3-13"          | TYPO3 version target: `"typo3-13"` or `"typo3-14"`.  Selects `config/rector-typo3-{level}.php`. |
+| `php_version` | string  | project.php_version | Override PHP version for rules                        |
+| `dry_run`     | boolean | false               | Always run in dry-run mode                            |
+| `paths`       | object  | {}                  | Tool-specific path overrides                          |
 
 **Example:**
 ```yaml
