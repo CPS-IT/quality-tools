@@ -110,7 +110,7 @@ The MVP is complete. The following features are organized into implementation it
   Flexible path configuration extending unified YAML system
 - [x] **[014 - Vendor Folder Derivation](feature/done/014-vendor-folder-derivation.md)** *(4–6 hours)*
   Automatic vendor path detection for non-standard project structures
-- [ ] **[015 - Configuration Overwrites](feature/done/015-configuration-overwrites.md)** *(6–8 hours)*
+- [x] **[015 - Configuration Overwrites](feature/done/015-configuration-overwrites.md)** *(6–8 hours)*
   Hierarchical configuration override system for project customization
 - [ ] **[026 - Fail on Warnings Configuration](feature/026-fail-on-warnings-configuration.md)** *(4–6 hours)*
   Configurable exit code behavior for linting tools to ensure CI/CD reliability
@@ -199,7 +199,7 @@ The following features have been deferred to future iterations:
 |    012 | Human-Readable Reports                  | Open     | [012-human-readable-reports.md](feature/012-human-readable-reports.md)                                 |
 |    013 | Additional Packages Paths Scanning      | Done     | [013-additional-packages-paths-scanning.md](feature/done/013-additional-packages-paths-scanning.md)    |
 |    014 | Vendor Folder Derivation                | Done     | [014-vendor-folder-derivation.md](feature/done/014-vendor-folder-derivation.md)                        |
-|    015 | Configuration Overwrites                | Open     | [015-configuration-overwrites.md](feature/done/015-configuration-overwrites.md)                             |
+|    015 | Configuration Overwrites                | Done     | [015-configuration-overwrites.md](feature/done/015-configuration-overwrites.md)                             |
 |    016 | Unified Arguments Options               | Deferred | [016-unified-arguments-options.md](feature/deferred/016-unified-arguments-options.md)                  |
 |    017 | Single Package Scanning                 | Deferred | [017-single-package-scanning.md](feature/deferred/017-single-package-scanning.md)                      |
 |    018 | Global Installation                     | Deferred | [018-global-installation.md](feature/deferred/018-global-installation.md)                              |
@@ -210,11 +210,11 @@ The following features have been deferred to future iterations:
 |    023 | Code Quality Metrics                    | Deferred | [023-code-quality-metrics.md](feature/deferred/023-code-quality-metrics.md)                            |
 |    024 | PHAR Installation                       | Deferred | [024-phar-installation.md](feature/deferred/024-phar-installation.md)                                  |
 |    025 | Tool Abstraction                        | Deferred | [025-tool-abstraction.md](feature/deferred/025-tool-abstraction.md)                                    |
-|    026 | Fail on Warnings Configuration          | Open     | [026-fail-on-warnings-configuration.md](feature/026-fail-on-warnings-configuration.md)                 |
-|    031 | Enhanced Schema Validation              | Open     | [031-enhanced-schema-validation.md](feature/031-enhanced-schema-validation.md)                         |
-|    032 | EditorConfig CLI Integration            | Open     | [032-editorconfig-integration.md](feature/032-editorconfig-integration.md)                             |
-|    033 | Comprehensive Security Test Suite       | Open     | [033-comprehensive-security-test-suite.md](feature/033-comprehensive-security-test-suite.md)           |
-
+|    026 | Fail on Warnings Configuration          | Open     | [026-fail-on-warnings-configuration.md](feature/026-fail-on-warnings-configuration.md) (GL#10 / GH#8)  |
+|    031 | Enhanced Schema Validation              | Open     | [031-enhanced-schema-validation.md](feature/031-enhanced-schema-validation.md) (GL#11)                 |
+|    032 | EditorConfig CLI Integration            | Open     | [032-editorconfig-integration.md](feature/032-editorconfig-integration.md) (GL#12 / GH#9)              |
+|    033 | Comprehensive Security Test Suite       | Open     | [033-comprehensive-security-test-suite.md](feature/033-comprehensive-security-test-suite.md) (GL#13)   |
+|    034 | XLF / XLIFF File Linting                | Open     | [034-lint-xlf-files.md](feature/034-lint-xlf-files.md) (GL#4 / GH#4)                                  |
 **Note:** Feature numbers are preserved for existing files. Newer features were renumbered (026, 031-033) to avoid conflicts with older deferred features.
 
 ## Issue Overview Table
@@ -240,9 +240,12 @@ The following features have been deferred to future iterations:
 |    017 | Property Based Testing Path Resolution               | Done   | [017-property-based-testing-path-resolution.md](issue/done/017-property-based-testing-path-resolution.md)                             |
 |    018 | BaseCommand ExecuteProcess Method Refactoring        | Done   | [018-basecommand-executeprocess-method-refactoring.md](issue/done/018-basecommand-executeprocess-method-refactoring.md)               |
 |    019 | Configuration Class Hierarchy Simplification         | Done   | [019-configuration-class-hierarchy-simplification.md](issue/done/019-configuration-class-hierarchy-simplification.md)                 |
-|    020 | DI Configuration Inconsistency                       | Open   | [020-di-configuration-inconsistency.md](issue/done/020-di-configuration-inconsistency.md)                                                  |
-|    021 | Missing Integration Test Coverage                    | Open   | [021-missing-integration-test-coverage.md](issue/021-missing-integration-test-coverage.md)                                            |
+|    020 | DI Configuration Inconsistency                       | Done   | [020-di-configuration-inconsistency.md](issue/done/020-di-configuration-inconsistency.md)                                                  |
+|    021 | Missing Integration Test Coverage                    | Done   | [021-missing-integration-test-coverage.md](issue/021-missing-integration-test-coverage.md)                                            |
 |    022 | Configuration File Replacement Schema Validation     | Done   | [022-configuration-file-replacement-schema-validation.md](issue/done/022-configuration-file-replacement-schema-validation.md)         |
 |    023 | BaseCommand Service Locator to Constructor Injection | Done   | [023-basecommand-service-locator-to-constructor-injection.md](issue/done/023-basecommand-service-locator-to-constructor-injection.md) |
 |    024 | Config Commands Runner Architecture                  | Done   | [024-config-commands-runner-architecture.md](issue/done/024-config-commands-runner-architecture.md)                                   |
-|    025 | PathResolutionService Tool Paths Structure            | Open   | [025-path-resolution-service-tool-paths-structure.md](issue/025-path-resolution-service-tool-paths-structure.md)                     |
+|    025 | PathResolutionService Tool Paths Structure            | Open   | [025-path-resolution-service-tool-paths-structure.md](issue/025-path-resolution-service-tool-paths-structure.md) (GL#9 / GH#7)       |
+|    026 | typoscript-lint.yaml Extension Not Recognized        | Open   | [026-typoscript-lint-yaml-extension-not-recognized.md](issue/026-typoscript-lint-yaml-extension-not-recognized.md) (GL#7)            |
+|    027 | lint:composer Bundle Scope                           | Open   | [027-lint-composer-bundle-scope.md](issue/027-lint-composer-bundle-scope.md) (GL#3 / GH#3)             |
+|    028 | Pass-Through of Tool-Specific Parameters             | Open   | [028-pass-through-tool-specific-parameters.md](issue/028-pass-through-tool-specific-parameters.md) (GL#8) |

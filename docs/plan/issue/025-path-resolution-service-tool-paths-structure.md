@@ -3,6 +3,8 @@
 |               |                                                        |
 |---------------|--------------------------------------------------------|
 | **Status:**   | Open                                                   |
+| **GitLab:**   | GL#9 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/9) |
+| **GitHub:**   | GH#7 (https://github.com/CPS-IT/quality-tools/issues/7) |
 | **Priority:** | High                                                   |
 | **Effort:**   | Low (1-2h)                                             |
 | **Impact:**   | High                                                   |

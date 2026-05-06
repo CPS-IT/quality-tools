@@ -6,6 +6,8 @@ Comprehensive schema validation enhancements discovered during Issue 022 investi
 ## Status
 **Identified** - Extracted from Issue 022 scope. Ready for future implementation.
 
+- **GitLab:** GL#11 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/11)
+
 ## Scope and Requirements
 
 ### Core Functionality
