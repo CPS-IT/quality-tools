@@ -39,13 +39,10 @@ trait YamlFileLoaderTrait
                 throw new ConfigurationLoadException('Configuration file must contain valid YAML data', $path);
             }
 
-            // Validate configuration if validator is available
-            if (isset($this->validator)) {
-                $validationResult = $this->validator->validateSafe($data);
-                if (!$validationResult->isValid()) {
-                    $errors = implode("\n", $validationResult->getErrors());
-                    throw new ConfigurationLoadException("Invalid configuration:\n$errors", $path);
-                }
+            $validationResult = $this->validator->validateSafe($data);
+            if (!$validationResult->isValid()) {
+                $errors = implode("\n", $validationResult->getErrors());
+                throw new ConfigurationLoadException("Invalid configuration:\n$errors", $path);
             }
 
             return $data;
