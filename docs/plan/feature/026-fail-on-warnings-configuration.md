@@ -4,6 +4,8 @@
 **Estimated Time:** 4-6 hours
 **Layer:** 002 Configuration
 **Dependencies:** 010-unified-yaml-configuration-system (Completed)
+**GitLab:** GL#10 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/10)
+**GitHub:** GH#8 (https://github.com/CPS-IT/quality-tools/issues/8)
 
 ## Description
 

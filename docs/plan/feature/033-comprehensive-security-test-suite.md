@@ -3,6 +3,8 @@
 ## Overview
 Implement a dedicated security test suite to validate path resolution security, prevent path traversal attacks, and ensure consistent security enforcement across all entry points.
 
+- **GitLab:** GL#13 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/13)
+
 ## Motivation
 While the secure path resolution implementation (Issue 022, Phase 2 Step 5) is functionally complete, it lacks comprehensive security-focused test coverage. The current tests verify functionality but don't specifically test security attack vectors, edge cases, or boundary conditions that could expose vulnerabilities.
 

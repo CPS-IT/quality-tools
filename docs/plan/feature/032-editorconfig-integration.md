@@ -4,6 +4,8 @@
 **Estimated Time:** 6–8 hours
 **Layer:** to be defined
 **Dependencies:** 010-unified-yaml-configuration-system (Completed), 026-fail-on-warnings-configuration (Not Started)
+**GitLab:** GL#12 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/12)
+**GitHub:** GH#9 (https://github.com/CPS-IT/quality-tools/issues/9)
 
 ## Description
 
