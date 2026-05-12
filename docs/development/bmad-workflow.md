@@ -37,25 +37,30 @@ per story when the sprint scope is confirmed.
    (e.g. `_bmad-output/stories/STORY-ID.md`).
 4. If the story is user-visible (new command, new config option, observable behaviour change),
    also create a GitHub issue and link both trackers.
-5. Note the GL# (and GH# if applicable) in `_bmad-output/planning-artifacts/sprint-plan.md`.
+5. Note the GL# (and GH# if applicable) as a comment on the story line in
+   `_bmad-output/implementation-artifacts/sprint-status.yaml`.
 
 **What not to do:** Do not create GitLab issues for all stories in all epics upfront. Create
 issues only for stories that enter an active sprint. Unmapped stories in future epics stay as
 entries in `epics.md` until they are planned.
 
+**Note (2026-05-12):** All sprint stories across Epics 1-9 have been pre-created as GitLab issues
+(GL#14-39). The sprint-status.yaml already contains GL# references for every story. When a future
+epic is planned, create issues for those stories at that time following the steps above.
+
 **GitLab Milestones (Epic mapping):**
 
-| Milestone | Epic |
-|-----------|------|
-| Epic 1 - Core Infrastructure Improvements | Epic 1 |
-| Epic 2 - Bug Fixes and Prerequisites | Epic 2 |
-| Epic 3 - Enhanced Tool Output and Reporting | Epic 3 |
-| Epic 4 - Tool Coverage Expansion | Epic 4 |
-| Epic 5 - Advanced Configuration Features | Epic 5 |
-| Epic 6 - Developer Experience Enhancement | Epic 6 |
-| Epic 7 - Performance and Reliability | Epic 7 |
-| Epic 8 - Documentation and Examples | Epic 8 |
-| Epic 9 - Security and Compliance | Epic 9 |
+| GL Milestone | Epic | Stories |
+|-------------|------|---------|
+| [Epic 1: TYPO3 v14 Compatibility](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/1) | Epic 1 | GL#14-17 |
+| [Epic 2: Platform Stability and Defect Resolution](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/2) | Epic 2 | GL#9, 13, 18, 19 |
+| [Epic 3: Machine-Readable Report Generation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/3) | Epic 3 | GL#8, 20-26 |
+| [Epic 4: Human-Readable Quality Reports](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/4) | Epic 4 | GL#27-28 |
+| [Epic 5: Reliable CI/CD Quality Gates](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/5) | Epic 5 | GL#10, 29 |
+| [Epic 6: Enhanced Configuration and Schema Validation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/6) | Epic 6 | GL#3, 11, 30-31 |
+| [Epic 7: EditorConfig Integration](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/7) | Epic 7 | GL#4, 12, 32 |
+| [Epic 8: Unified Quality Commands](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/8) | Epic 8 | GL#33-34 |
+| [Epic 9: Cross-Project Quality Dashboard](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/9) | Epic 9 | GL#35-39 |
 
 ## During BMAD Story Creation
 
@@ -78,8 +83,8 @@ BMAD Epic 2 (Prerequisites) must be completed before Epics 3, 5, 6:
 | Prerequisite | Local doc | GL# | GH# | Status |
 |-------------|-----------|-----|-----|--------|
 | Fix PathResolutionService TypeError | `docs/plan/issue/025-...md` | GL#9 | GH#7 | Open |
-| Evaluate DI configuration inconsistency | `docs/plan/issue/done/020-...md` | - | - | Done |
-| Triage all open GL/GH issues | `tmp/gitlab-sync-overview.md` | - | - | Done (2026-05-06) |
+| Resolve DI configuration inconsistency | `docs/plan/issue/done/020-...md` | GL#19 | - | Open (story 2.3) |
+| Triage all open GL/GH issues | `tmp/gitlab-sync-overview.md` | GL#18 | - | Open (story 2.1) |
 
 ## After BMAD Story Implementation
 
@@ -99,16 +104,16 @@ At the end of each sprint, the BMAD retrospective (`bmad-retrospective` skill) s
 - Whether any issues were found that had no tracker entry (add them retroactively)
 - Whether any tracker issues are stale (open >60 days with no activity -- add a comment or close as "won't fix")
 
-## Issue Number Reference (as of 2026-05-06)
+## Issue Number Reference (as of 2026-05-12)
 
 ### Open GitLab Issues
 
 | GL# | Title | Local doc / Story | GH# | Milestone |
 |----:|-------|-------------------|----:|-----------|
-| #3 | Lint Composer within the bundle itself | `docs/plan/issue/027-...md` | GH#3 | - |
-| #4 | qt should lint xlf-Files | `docs/plan/feature/034-...md` | GH#4 | - |
-| #7 | typoscript-lint.yaml extension not recognized | `docs/plan/issue/026-...md` | - | - |
-| #8 | Support more Parameter (pass-through) | `docs/plan/issue/028-...md` | - | - |
+| #3 | Lint Composer within the bundle itself | `docs/plan/issue/027-...md` | GH#3 | Epic 6 |
+| #4 | qt should lint xlf-Files | `docs/plan/feature/034-...md` | GH#4 | Epic 7 |
+| #7 | typoscript-lint.yaml extension not recognized | `docs/plan/issue/026-...md` | - | Epic 2 |
+| #8 | Support more Parameter (pass-through) | `docs/plan/issue/028-...md` | - | Epic 3 |
 | #9 | PathResolutionService TypeError | `docs/plan/issue/025-...md` | GH#7 | Epic 2 |
 | #10 | Fail-on-warnings configuration | `docs/plan/feature/026-...md` | GH#8 | Epic 5 |
 | #11 | Enhanced schema validation | `docs/plan/feature/031-...md` | - | Epic 6 |
@@ -118,6 +123,28 @@ At the end of each sprint, the BMAD retrospective (`bmad-retrospective` skill) s
 | #15 | Story 1.2: Add versioned Fractor configs for TYPO3 v13 and v14 | Story 1.2 | - | Epic 1 |
 | #16 | Story 1.3: Publish TYPO3 version support matrix | Story 1.3 | - | Epic 1 |
 | #17 | Story 1.4: Establish LTS/ELTS bugfix branch strategy | Story 1.4 | - | Epic 1 |
+| #18 | Story 2.1: Triage all open GitLab issues | Story 2.1 | - | Epic 2 |
+| #19 | Story 2.3: Resolve DI configuration inconsistency (Issue 020) | Story 2.3 | - | Epic 2 |
+| #20 | Story 3.1: Extend ToolRunResult with a typed findings collection | Story 3.1 | - | Epic 3 |
+| #21 | Story 3.2: Research and align on shared contracts package | Story 3.2 | - | Epic 3 |
+| #22 | Story 3.4: Implement dual-output mode and Finding DTOs for PHPStan | Story 3.4 | - | Epic 3 |
+| #23 | Story 3.5: Implement dual-output mode and Finding DTOs for Rector | Story 3.5 | - | Epic 3 |
+| #24 | Story 3.6: Dual-output mode for PHP CS Fixer, Fractor, TypoScript Lint | Story 3.6 | - | Epic 3 |
+| #25 | Story 3.7: Implement ReportWriter and JSON report output | Story 3.7 | - | Epic 3 |
+| #26 | Story 3.8: Publish JSON report schema documentation | Story 3.8 | - | Epic 3 |
+| #27 | Story 4.1: Implement Markdown report output | Story 4.1 | - | Epic 4 |
+| #28 | Story 4.2: Implement HTML report output | Story 4.2 | - | Epic 4 |
+| #29 | Story 5.1: Implement warning detection in all existing runners | Story 5.1 | - | Epic 5 |
+| #30 | Story 6.1: Enhanced config:validate error messages | Story 6.1 | - | Epic 6 |
+| #31 | Story 6.2: Additional scan paths and tool-specific path overrides | Story 6.2 | - | Epic 6 |
+| #32 | Story 7.2: Auto-provision .editorconfig template on qt config:init | Story 7.2 | - | Epic 7 |
+| #33 | Story 8.1: Implement qt lint and qt fix unified commands | Story 8.1 | - | Epic 8 |
+| #34 | Story 8.2: Runner enable/disable and execution order configuration | Story 8.2 | - | Epic 8 |
+| #35 | Story 9.1: Aggregation service -- report ingestion endpoint | Story 9.1 | - | Epic 9 |
+| #36 | Story 9.2: Per-project quality status storage and trend calculation | Story 9.2 | - | Epic 9 |
+| #37 | Story 9.3: Cross-project dashboard -- tech lead view | Story 9.3 | - | Epic 9 |
+| #38 | Story 9.4: Non-technical summary view for product owners | Story 9.4 | - | Epic 9 |
+| #39 | Story 9.5: Automated issue creation from report thresholds | Story 9.5 | - | Epic 9 |
 
 ### Closed GitLab Issues
 
