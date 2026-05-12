@@ -53,60 +53,60 @@ development_status:
 
   # Epic 2: Platform Stability & Defect Resolution
   epic-2: backlog
-  2-1-triage-all-open-gitlab-issues: backlog
-  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: backlog
-  2-3-resolve-di-configuration-inconsistency-issue-020: backlog
-  2-4-comprehensive-security-test-suite-feature-033: backlog
+  2-1-triage-all-open-gitlab-issues: backlog  # GL#18
+  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: backlog  # GL#9
+  2-3-resolve-di-configuration-inconsistency-issue-020: backlog  # GL#19
+  2-4-comprehensive-security-test-suite-feature-033: backlog  # GL#13
   epic-2-retrospective: optional
 
   # Epic 3: Machine-Readable Report Generation
   epic-3: backlog
-  3-1-extend-toolrunresult-with-a-typed-findings-collection: backlog
-  3-2-research-and-align-on-shared-contracts-package-with-upgrade-analyser: backlog
-  3-3-add-report-format-and-report-file-options-to-all-lint-commands: backlog
-  3-4-implement-dual-output-mode-and-finding-dtos-for-phpstan: backlog
-  3-5-implement-dual-output-mode-and-finding-dtos-for-rector: backlog
-  3-6-implement-dual-output-mode-and-finding-dtos-for-php-cs-fixer-fractor-and-typoscript-lint: backlog
-  3-7-implement-reportwriter-and-json-report-output: backlog
-  3-8-publish-json-report-schema-documentation: backlog
+  3-1-extend-toolrunresult-with-a-typed-findings-collection: backlog  # GL#20
+  3-2-research-and-align-on-shared-contracts-package-with-upgrade-analyser: backlog  # GL#21
+  3-3-add-report-format-and-report-file-options-to-all-lint-commands: backlog  # GL#8
+  3-4-implement-dual-output-mode-and-finding-dtos-for-phpstan: backlog  # GL#22
+  3-5-implement-dual-output-mode-and-finding-dtos-for-rector: backlog  # GL#23
+  3-6-implement-dual-output-mode-and-finding-dtos-for-php-cs-fixer-fractor-and-typoscript-lint: backlog  # GL#24
+  3-7-implement-reportwriter-and-json-report-output: backlog  # GL#25
+  3-8-publish-json-report-schema-documentation: backlog  # GL#26
   epic-3-retrospective: optional
 
   # Epic 4: Human-Readable Quality Reports
   epic-4: backlog
-  4-1-implement-markdown-report-output: backlog
-  4-2-implement-html-report-output: backlog
+  4-1-implement-markdown-report-output: backlog  # GL#27
+  4-2-implement-html-report-output: backlog  # GL#28
   epic-4-retrospective: optional
 
   # Epic 5: Reliable CI/CD Quality Gates
   epic-5: backlog
-  5-1-implement-warning-detection-in-all-existing-runners: backlog
-  5-2-implement-toleratewarnings-configuration-and-exit-code-behaviour: backlog
+  5-1-implement-warning-detection-in-all-existing-runners: backlog  # GL#29
+  5-2-implement-toleratewarnings-configuration-and-exit-code-behaviour: backlog  # GL#10
   epic-5-retrospective: optional
 
   # Epic 6: Enhanced Configuration & Schema Validation
   epic-6: backlog
-  6-1-enhanced-config-validate-error-messages: backlog
-  6-2-additional-scan-paths-and-tool-specific-path-overrides: backlog
-  6-3-security-pattern-validation-and-tool-specific-file-extension-validation: backlog
+  6-1-enhanced-config-validate-error-messages: backlog  # GL#30
+  6-2-additional-scan-paths-and-tool-specific-path-overrides: backlog  # GL#31
+  6-3-security-pattern-validation-and-tool-specific-file-extension-validation: backlog  # GL#11
   epic-6-retrospective: optional
 
   # Epic 7: EditorConfig Integration
   epic-7: backlog
-  7-1-implement-qt-lint-editorconfig-and-qt-fix-editorconfig-commands: backlog
-  7-2-auto-provision-editorconfig-template-on-qt-config-init: backlog
+  7-1-implement-qt-lint-editorconfig-and-qt-fix-editorconfig-commands: backlog  # GL#12
+  7-2-auto-provision-editorconfig-template-on-qt-config-init: backlog  # GL#32
   epic-7-retrospective: optional
 
   # Epic 8: Unified Quality Commands
   epic-8: backlog
-  8-1-implement-qt-lint-and-qt-fix-unified-commands: backlog
-  8-2-runner-enable-disable-and-execution-order-configuration: backlog
+  8-1-implement-qt-lint-and-qt-fix-unified-commands: backlog  # GL#33
+  8-2-runner-enable-disable-and-execution-order-configuration: backlog  # GL#34
   epic-8-retrospective: optional
 
   # Epic 9: Cross-Project Quality Dashboard
   epic-9: backlog
-  9-1-aggregation-service-report-ingestion-endpoint: backlog
-  9-2-per-project-quality-status-storage-and-trend-calculation: backlog
-  9-3-cross-project-dashboard-tech-lead-view: backlog
-  9-4-non-technical-summary-view-for-product-owners: backlog
-  9-5-automated-issue-creation-from-report-thresholds: backlog
+  9-1-aggregation-service-report-ingestion-endpoint: backlog  # GL#35
+  9-2-per-project-quality-status-storage-and-trend-calculation: backlog  # GL#36
+  9-3-cross-project-dashboard-tech-lead-view: backlog  # GL#37
+  9-4-non-technical-summary-view-for-product-owners: backlog  # GL#38
+  9-5-automated-issue-creation-from-report-thresholds: backlog  # GL#39
   epic-9-retrospective: optional
