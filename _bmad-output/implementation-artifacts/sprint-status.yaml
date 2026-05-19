@@ -57,7 +57,7 @@ development_status:
   2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: backlog  # GL#9
   2-3-resolve-di-configuration-inconsistency-issue-020: backlog  # GL#19
   2-4-comprehensive-security-test-suite-feature-033: backlog  # GL#13
-  2-5-fix-typoscript-lint-yaml-config-overwrite-validation-error: ready-for-dev  # GL#7
+  2-5-fix-typoscript-lint-yaml-config-overwrite-validation-error: review  # GL#7
   epic-2-retrospective: optional
 
   # Epic 3: Machine-Readable Report Generation
