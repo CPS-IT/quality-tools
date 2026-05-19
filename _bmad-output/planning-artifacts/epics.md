@@ -239,6 +239,25 @@ So that path traversal, injection attempts, and environment variable misuse are 
 - **And** test coverage remains at or above 95% line coverage after all new tests are added
 - **And** all five quality gates pass with zero errors
 
+### Story 2.5: Fix typoscript-lint.yaml config overwrite validation error (GL#7)
+
+As a developer,
+I want to place a `typoscript-lint.yaml` file in my project root to override the default typoscript-lint configuration,
+So that I can customize typoscript-lint rules with the standard filename without getting a schema validation error.
+
+**Acceptance Criteria:**
+
+- **Given** a project root containing a file named `typoscript-lint.yaml`
+- **When** any `qt lint:typoscript` command is executed
+- **Then** qt recognizes the file as the typoscript-lint tool configuration and uses it
+- **And** qt does not validate that file against the quality-tools schema (`quality-tools.json`)
+- **And** no validation error is reported due to a schema mismatch
+- **And** `qt config:validate` continues to validate `.quality-tools.yaml` correctly without false positives
+- **And** a unit test covers the `.yaml` extension variant being recognized as a tool config
+- **And** an integration test verifies end-to-end command execution with a root-level `typoscript-lint.yaml` file succeeds without error
+- **And** all existing tests continue to pass
+- **And** all five quality gates pass with zero errors
+
 ---
 
 ### Epic 3: Machine-Readable Report Generation
