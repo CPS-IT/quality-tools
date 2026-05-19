@@ -1,6 +1,6 @@
 # Story 2.5: Fix typoscript-lint.yaml config overwrite validation error (GL#7)
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -29,31 +29,31 @@ a schema validation error.
 
 ## Tasks / Subtasks
 
-- [ ] Add `.yaml` extension to `ConfigurationHierarchy` constants (AC: 1, 2, 3)
-  - [ ] Add `'typoscript-lint.yaml'` to `FILE_PATTERNS['tool_specific']`
-  - [ ] Add `'config/typoscript-lint.yaml'` to `FILE_PATTERNS['tool_config_dir']`
-  - [ ] Add `'typoscript-lint.yaml'` to `TOOL_CONFIG_FILES['typoscript-lint']`
-- [ ] Investigate and fix the secondary path that routes unrecognized YAML files to
+- [x] Add `.yaml` extension to `ConfigurationHierarchy` constants (AC: 1, 2, 3)
+  - [x] Add `'typoscript-lint.yaml'` to `FILE_PATTERNS['tool_specific']`
+  - [x] Add `'config/typoscript-lint.yaml'` to `FILE_PATTERNS['tool_config_dir']`
+  - [x] Add `'typoscript-lint.yaml'` to `TOOL_CONFIG_FILES['typoscript-lint']`
+- [x] Investigate and fix the secondary path that routes unrecognized YAML files to
       `ConfigurationValidator` (AC: 2, 3)
-  - [ ] Trace why `typoscript-lint.yaml` (before the fix) reaches `ConfigurationValidator`
+  - [x] Trace why `typoscript-lint.yaml` (before the fix) reaches `ConfigurationValidator`
         rather than failing silently; identify the code path
-  - [ ] Apply a guard if needed so only known quality-tools config filenames are validated
+  - [x] Apply a guard if needed so only known quality-tools config filenames are validated
         against the quality-tools JSON schema
-- [ ] Add unit tests (AC: 5, 7)
-  - [ ] `ConfigurationHierarchyTest`: assert `typoscript-lint.yaml` resolves to tool
+- [x] Add unit tests (AC: 5, 7)
+  - [x] `ConfigurationHierarchyTest`: assert `typoscript-lint.yaml` resolves to tool
         `typoscript-lint` via `getToolForConfigFile`
-  - [ ] `ConfigurationHierarchyTest`: assert `typoscript-lint.yaml` appears in
+  - [x] `ConfigurationHierarchyTest`: assert `typoscript-lint.yaml` appears in
         `FILE_PATTERNS['tool_specific']` and `TOOL_CONFIG_FILES['typoscript-lint']`
-- [ ] Add integration test (AC: 6, 7)
-  - [ ] Verify `qt lint:typoscript` executes without error when `typoscript-lint.yaml`
+- [x] Add integration test (AC: 6, 7)
+  - [x] Verify `qt lint:typoscript` executes without error when `typoscript-lint.yaml`
         is present in the project root
-- [ ] Verify all quality gates pass (AC: 8)
-  - [ ] Run `composer lint:composer`
-  - [ ] Run `composer lint:editorconfig`
-  - [ ] Run `composer lint:php`
-  - [ ] Run `composer lint:rector`
-  - [ ] Run `composer sca:php`
-  - [ ] Run `composer test`
+- [x] Verify all quality gates pass (AC: 8)
+  - [x] Run `composer lint:composer`
+  - [x] Run `composer lint:editorconfig`
+  - [x] Run `composer lint:php`
+  - [x] Run `composer lint:rector`
+  - [x] Run `composer sca:php`
+  - [x] Run `composer test`
 
 ## Dev Notes
 
@@ -130,10 +130,54 @@ variants for one tool.
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+Secondary code path traced: `ConfigurationDiscovery.loadConfigurationFile()` dispatches YAML
+files to `YamlFileLoaderTrait.loadYamlFile()`, which validates all YAML content against the
+quality-tools JSON schema. After the primary fix makes `typoscript-lint.yaml` visible to the
+hierarchy, the file would be loaded as a generic YAML and schema-validated, causing a
+validation error. Fixed by adding a guard in `loadConfigurationFile()` that routes
+tool-specific YAML files through `loadToolConfigurationFile()` instead.
+
+Pre-existing editorconfig issue (missing final newline) in two planning artifact files was
+fixed as part of bringing all quality gates to a clean state. Pre-existing Rector warning
+about deprecated skip rule was resolved by removing the unused rule and import.
 
 ### Completion Notes List
 
+- Primary fix: Added `'typoscript-lint.yaml'` to three constants in `ConfigurationHierarchy`:
+  `FILE_PATTERNS['tool_specific']`, `FILE_PATTERNS['tool_config_dir']` (as
+  `'config/typoscript-lint.yaml'`), and `TOOL_CONFIG_FILES['typoscript-lint']`.
+- Secondary fix: Added guard in `ConfigurationDiscovery.loadConfigurationFile()` to route
+  tool-specific YAML files through `loadToolConfigurationFile()`, bypassing quality-tools
+  schema validation.
+- Updated `testToolConfigFileMappings` to expect the new `typoscript-lint.yaml` entry.
+- Added two unit tests: `testTyposcriptLintYamlIsInFilePatterns` and
+  `testTyposcriptLintYamlResolvesToTool`.
+- Added integration test class `TyposcriptLintYamlConfigTest` with three tests covering
+  discovery, schema-validation safety, and command execution.
+- Created fixture `tests/Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml` and
+  mock executable `tests/Fixtures/mockExecutables/typoscript-lint`.
+- All 1157 tests pass (1152 baseline + 5 new); all five quality gates pass with zero errors.
+
 ### File List
+
+- src/Configuration/ConfigurationHierarchy.php
+- src/Configuration/ConfigurationDiscovery.php
+- rector.php
+- tests/Unit/Configuration/ConfigurationHierarchyTest.php
+- tests/Integration/Configuration/TyposcriptLintYamlConfigTest.php
+- tests/Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml
+- tests/Fixtures/mockExecutables/typoscript-lint
+- _bmad-output/implementation-artifacts/sprint-status.yaml
+- _bmad-output/planning-artifacts/sprint-change-proposal-2026-05-19.md
+
+### Change Log
+
+- 2026-05-19: Implemented GL#7 fix -- typoscript-lint.yaml in project root is now recognized
+  and used without triggering quality-tools schema validation errors. Added 5 tests. All
+  quality gates pass.
 
 ### Review Findings
