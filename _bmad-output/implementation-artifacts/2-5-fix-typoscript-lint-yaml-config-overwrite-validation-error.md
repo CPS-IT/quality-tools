@@ -1,6 +1,6 @@
 # Story 2.5: Fix typoscript-lint.yaml config overwrite validation error (GL#7)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -181,3 +181,11 @@ about deprecated skip rule was resolved by removing the unused rule and import.
   quality gates pass.
 
 ### Review Findings
+
+- [x] [Review][Decision] AC4 gap: no test verifying qt config:validate produces no false positives with typoscript-lint.yaml present -- resolved: added testConfigValidateProducesNoFalsePositivesWithTyposcriptLintYaml
+- [x] [Review][Patch] Fragile output assertion in testLintTyposcriptCommandSucceedsWithYamlConfig [tests/Integration/Configuration/TyposcriptLintYamlConfigTest.php] -- fixed: assertMatchesRegularExpression('/Config: .*typoscript-lint\.yaml/')
+- [x] [Review][Patch] copy() return value unchecked in three test methods [tests/Integration/Configuration/TyposcriptLintYamlConfigTest.php] -- fixed: assertTrue(copy(...))
+- [x] [Review][Patch] testLoadingConfigWithTyposcriptLintYamlDoesNotThrow assertion too weak: assertIsArray() does not verify absence of configuration errors [tests/Integration/Configuration/TyposcriptLintYamlConfigTest.php] -- fixed: added assertEmpty(getConfigurationErrors()) and wired TyposcriptLintConfigurationValidator
+- [x] [Review][Defer] config/typoscript-lint.yaml (tool_config_dir level) has no end-to-end test placing the file at config/ and verifying discovery and routing [src/Configuration/ConfigurationHierarchy.php] -- deferred, pre-existing gap
+- [x] [Review][Defer] ConfigurationDiscovery::loadConfigurationFile guard has no dedicated unit test [src/Configuration/ConfigurationDiscovery.php] -- deferred, pre-existing gap
+- [x] [Review][Defer] TypoScriptLintRunner::DEFAULT_CONFIG_FILE hardcodes .yml, inconsistent with new .yaml support -- deferred, pre-existing

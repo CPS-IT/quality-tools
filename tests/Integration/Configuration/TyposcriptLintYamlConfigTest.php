@@ -6,6 +6,7 @@ namespace Cpsit\QualityTools\Tests\Integration\Configuration;
 
 use Cpsit\QualityTools\Configuration\ConfigurationLoader;
 use Cpsit\QualityTools\Configuration\ConfigurationValidator;
+use Cpsit\QualityTools\Configuration\Validator\TyposcriptLintConfigurationValidator;
 use Cpsit\QualityTools\Console\QualityToolsApplication;
 use Cpsit\QualityTools\DependencyInjection\ServiceContainer;
 use Cpsit\QualityTools\Service\FilesystemService;
@@ -37,7 +38,9 @@ final class TyposcriptLintYamlConfigTest extends TestCase
         $validator = new ConfigurationValidator();
         $securityService = new SecurityService();
         $filesystemService = new FilesystemService(new Filesystem(), $securityService);
-        $toolValidator = new ToolConfigurationValidationService();
+        $toolValidator = new ToolConfigurationValidationService([
+            new TyposcriptLintConfigurationValidator($filesystemService),
+        ]);
 
         $this->configLoader = new ConfigurationLoader(
             $validator,
@@ -57,7 +60,10 @@ final class TyposcriptLintYamlConfigTest extends TestCase
     public function testTyposcriptLintYamlIsDiscoveredAsToolConfig(): void
     {
         $fixturePath = __DIR__ . '/../../Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml';
-        copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml');
+        $this->assertTrue(
+            copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml'),
+            'fixture copy failed',
+        );
 
         $resolved = $this->configLoader->resolveToolConfigPath($this->tempDir, 'typoscript-lint');
 
@@ -68,25 +74,80 @@ final class TyposcriptLintYamlConfigTest extends TestCase
     public function testLoadingConfigWithTyposcriptLintYamlDoesNotThrow(): void
     {
         $fixturePath = __DIR__ . '/../../Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml';
-        copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml');
+        $this->assertTrue(
+            copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml'),
+            'fixture copy failed',
+        );
 
-        // Must not throw a schema validation exception; assert the config loaded successfully
         $config = $this->configLoader->load($this->tempDir);
 
         $this->assertIsArray($config->toArray());
+
+        $errors = $this->configLoader->getConfigurationErrors($this->tempDir);
+        $this->assertEmpty(
+            $errors,
+            'typoscript-lint.yaml must not produce quality-tools schema validation errors: ' . implode(', ', $errors),
+        );
+    }
+
+    public function testConfigValidateProducesNoFalsePositivesWithTyposcriptLintYaml(): void
+    {
+        file_put_contents(
+            $this->tempDir . '/.quality-tools.yaml',
+            "quality-tools:\n  tools:\n    rector:\n      enabled: true\n",
+        );
+
+        $fixturePath = __DIR__ . '/../../Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml';
+        $this->assertTrue(
+            copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml'),
+            'fixture copy failed',
+        );
+
+        TestHelper::withEnvironment(
+            ['QT_PROJECT_ROOT' => $this->tempDir],
+            function (): void {
+                VendorDirectoryDetector::clearCache();
+                ServiceContainer::reset();
+
+                $application = new QualityToolsApplication();
+                $command = $application->find('config:validate');
+                $commandTester = new CommandTester($command);
+
+                $exitCode = $commandTester->execute([]);
+                $output = $commandTester->getDisplay();
+
+                $this->assertEquals(
+                    0,
+                    $exitCode,
+                    'config:validate must succeed with typoscript-lint.yaml in project root. Output: ' . $output,
+                );
+
+                $this->assertStringContainsString(
+                    'Configuration is valid.',
+                    $output,
+                    'config:validate must report a valid configuration, not a false positive from typoscript-lint.yaml',
+                );
+            },
+        );
     }
 
     public function testLintTyposcriptCommandSucceedsWithYamlConfig(): void
     {
         $fixturePath = __DIR__ . '/../../Fixtures/typoscriptLintYamlOverride/typoscript-lint.yaml';
-        copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml');
+        $this->assertTrue(
+            copy($fixturePath, $this->tempDir . '/typoscript-lint.yaml'),
+            'fixture copy failed',
+        );
 
         $vendorDir = TestHelper::createVendorStructure($this->tempDir, false, true);
         $binDir = $vendorDir . '/bin';
 
-        copy(
-            __DIR__ . '/../../Fixtures/mockExecutables/typoscript-lint',
-            $binDir . '/typoscript-lint',
+        $this->assertTrue(
+            copy(
+                __DIR__ . '/../../Fixtures/mockExecutables/typoscript-lint',
+                $binDir . '/typoscript-lint',
+            ),
+            'mock executable copy failed',
         );
         chmod($binDir . '/typoscript-lint', 0o755);
 
@@ -109,10 +170,10 @@ final class TyposcriptLintYamlConfigTest extends TestCase
                     'lint:typoscript should succeed when typoscript-lint.yaml is in project root. Output: ' . $output,
                 );
 
-                $this->assertStringContainsString(
-                    'typoscript-lint.yaml',
+                $this->assertMatchesRegularExpression(
+                    '/Config: .*typoscript-lint\.yaml/',
                     $output,
-                    'Command should use the project-level typoscript-lint.yaml config',
+                    'Command must pass the project-level typoscript-lint.yaml to the binary via -c',
                 );
             },
         );
