@@ -618,9 +618,10 @@ quality-tools:
 
   tools:
     phpstan:
-      paths:  # PHPStan-specific paths
-        - "packages/"
-        - "Tests/"
+      paths:
+        scan:
+          - "packages/"
+          - "Tests/"
 
     typoscript-lint:
       # Uses global scan paths

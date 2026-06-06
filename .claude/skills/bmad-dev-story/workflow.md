@@ -379,6 +379,9 @@ Load config from `{project-root}/_bmad/bmm/config.yaml` and resolve:
       - Dev Agent Record contains implementation notes
       - Change Log includes summary of changes
       - Only permitted story sections were modified
+      - User documentation in docs/user-guide/ is correct and complete: all code examples,
+        option names, and behavioral descriptions reflect the implemented behavior; no stale
+        references to changed interfaces or removed options remain
     </action>
 
     <!-- Mark story ready for review - sprint status conditional -->
