@@ -83,7 +83,7 @@ final class PathResolutionServiceTest extends TestCase
             'quality-tools' => [
                 'tools' => [
                     'rector' => [
-                        'paths' => ['src/', 'packages/'],
+                        'paths' => ['scan' => ['src/', 'packages/']],
                     ],
                 ],
             ],
@@ -103,13 +103,62 @@ final class PathResolutionServiceTest extends TestCase
         self::assertSame([], $result);
     }
 
+    public function testGetToolPathsWithValidNestedStructure(): void
+    {
+        $data = [
+            'quality-tools' => [
+                'tools' => [
+                    'rector' => [
+                        'paths' => ['scan' => ['custom/']],
+                    ],
+                ],
+            ],
+        ];
+
+        $result = $this->pathResolutionService->getToolPaths($data, 'rector');
+
+        self::assertSame(['custom/'], $result);
+    }
+
+    public function testGetToolPathsWithEmptyScanKey(): void
+    {
+        $data = [
+            'quality-tools' => [
+                'tools' => [
+                    'rector' => [
+                        'paths' => ['scan' => []],
+                    ],
+                ],
+            ],
+        ];
+
+        $result = $this->pathResolutionService->getToolPaths($data, 'rector');
+
+        self::assertSame([], $result);
+    }
+
+    public function testGetToolPathsWithMissingPathsKey(): void
+    {
+        $data = [
+            'quality-tools' => [
+                'tools' => [
+                    'rector' => ['enabled' => true],
+                ],
+            ],
+        ];
+
+        $result = $this->pathResolutionService->getToolPaths($data, 'rector');
+
+        self::assertSame([], $result);
+    }
+
     public function testGetResolvedPathsForToolWithConfiguredPaths(): void
     {
         $data = [
             'quality-tools' => [
                 'tools' => [
                     'rector' => [
-                        'paths' => ['custom/', 'special/'],
+                        'paths' => ['scan' => ['custom/', 'special/']],
                     ],
                 ],
             ],

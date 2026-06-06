@@ -75,7 +75,7 @@ final class PathResolutionService
         $qualityTools = $data['quality-tools'] ?? [];
         $toolsConfig = $qualityTools['tools'] ?? [];
 
-        return $toolsConfig[$tool]['paths'] ?? [];
+        return $toolsConfig[$tool]['paths']['scan'] ?? [];
     }
 
     /**

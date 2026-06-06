@@ -1,6 +1,6 @@
 # Story 2.2: Fix PathResolutionService nested structure bug (Issue 025)
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -49,8 +49,8 @@ The test fixture confirming the schema-correct format:
 
 ## Tasks / Subtasks
 
-- [ ] Fix `PathResolutionService::getToolPaths()` (AC: 1, 2)
-  - [ ] In `src/Service/PathResolutionService.php:75-79`, change:
+- [x] Fix `PathResolutionService::getToolPaths()` (AC: 1, 2)
+  - [x] In `src/Service/PathResolutionService.php:75-79`, change:
     ```php
     return $toolsConfig[$tool]['paths'] ?? [];
     ```
@@ -58,49 +58,49 @@ The test fixture confirming the schema-correct format:
     ```php
     return $toolsConfig[$tool]['paths']['scan'] ?? [];
     ```
-  - [ ] This aligns the return value with what all callers expect: a flat `list<string>` of scan
+  - [x] This aligns the return value with what all callers expect: a flat `list<string>` of scan
         paths, matching the `"tool_paths".scan` field in `config/schema/quality-tools.json`
 
-- [ ] Update existing unit tests that use schema-incorrect flat `paths` arrays (AC: 3, 5)
-  - [ ] In `tests/Unit/Service/PathResolutionServiceTest.php`, fix `testGetToolPathsWithConfiguredPaths`:
+- [x] Update existing unit tests that use schema-incorrect flat `paths` arrays (AC: 3, 5)
+  - [x] In `tests/Unit/Service/PathResolutionServiceTest.php`, fix `testGetToolPathsWithConfiguredPaths`:
     - Change test data from `'paths' => ['src/', 'packages/']` (flat, invalid schema)
     - To `'paths' => ['scan' => ['src/', 'packages/']]` (nested, schema-correct)
     - Assert `['src/', 'packages/']` as before
-  - [ ] Fix `testGetResolvedPathsForToolWithConfiguredPaths` similarly:
+  - [x] Fix `testGetResolvedPathsForToolWithConfiguredPaths` similarly:
     - Change `'paths' => ['custom/', 'special/']` to `'paths' => ['scan' => ['custom/', 'special/']]`
     - Assert `['custom/', 'special/']` (no change to expectation, the fix makes this work correctly)
 
-- [ ] Add new unit tests for the nested structure variants (AC: 3)
-  - [ ] `testGetToolPathsWithValidNestedStructure`:
+- [x] Add new unit tests for the nested structure variants (AC: 3)
+  - [x] `testGetToolPathsWithValidNestedStructure`:
     - Input: `tools.rector.paths.scan = ['custom/']`
     - Expected: `['custom/']`
-  - [ ] `testGetToolPathsWithEmptyScanKey`:
+  - [x] `testGetToolPathsWithEmptyScanKey`:
     - Input: `tools.rector.paths = ['scan' => []]`
     - Expected: `[]`
-  - [ ] `testGetToolPathsWithMissingPathsKey`:
+  - [x] `testGetToolPathsWithMissingPathsKey`:
     - Input: `tools.rector = ['enabled' => true]` (no paths key)
     - Expected: `[]`
 
-- [ ] Fix behavior-documenting integration tests in `ToolCommandPathConfigurationTest` (AC: 4, 5)
+- [x] Fix behavior-documenting integration tests in `ToolCommandPathConfigurationTest` (AC: 4, 5)
   - File: `tests/Integration/Console/Command/ToolCommandPathConfigurationTest.php`
-  - [ ] Rename `rectorToolSpecificPathsReturnNestedStructure` (line 116) to
+  - [x] Rename `rectorToolSpecificPathsReturnNestedStructure` (line 116) to
         `rectorToolSpecificPathsReturnFlatList`; remove the "Documents current behavior" comment;
         change assertions to verify:
     - `$resolvedPaths` is a `list<string>` (no `scan` key present)
     - `assertContains('custom-rector-src/', $resolvedPaths)` (the actual path value)
-  - [ ] Do the same for `phpstanToolSpecificPathsReturnNestedStructure` -> `phpstanToolSpecificPathsReturnFlatList`
-  - [ ] In `rectorRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig` (line 369), add assertion
+  - [x] Do the same for `phpstanToolSpecificPathsReturnNestedStructure` -> `phpstanToolSpecificPathsReturnFlatList`
+  - [x] In `rectorRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig` (line 369), add assertion
         that `$description->targetPaths` contains flat strings (not nested arrays):
     - `assertContains('custom-rector-src/', $description->targetPaths)` or assert no array elements
-  - [ ] In `phpstanRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig` (line 391), same addition
+  - [x] In `phpstanRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig` (line 391), same addition
 
-- [ ] Verify all quality gates pass (AC: 6)
-  - [ ] `composer lint:composer`
-  - [ ] `composer lint:editorconfig`
-  - [ ] `composer lint:php`
-  - [ ] `composer lint:rector`
-  - [ ] `composer sca:php`
-  - [ ] `composer test`
+- [x] Verify all quality gates pass (AC: 6)
+  - [x] `composer lint:composer`
+  - [x] `composer lint:editorconfig`
+  - [x] `composer lint:php`
+  - [x] `composer lint:rector`
+  - [x] `composer sca:php`
+  - [x] `composer test`
 
 ## Dev Notes
 
@@ -169,4 +169,24 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+One-line fix in `PathResolutionService::getToolPaths()`: changed `$toolsConfig[$tool]['paths'] ?? []`
+to `$toolsConfig[$tool]['paths']['scan'] ?? []`. This aligns the return value with the schema-correct
+nested YAML structure `tools.<tool>.paths.scan: [...]` and returns a flat `list<string>` as callers
+expect.
+
+Updated three existing tests that used the invalid flat `paths` structure, added three new unit tests
+(valid nested, empty scan key, missing paths key), renamed and corrected two behavior-documenting
+integration tests to assert flat list output, and strengthened two runner `describe()` tests with
+`assertContains` checks on the actual path strings.
+
+Also found and fixed one additional test in `UnifiedConfigurationSimpleTest` using the same incorrect
+flat structure (`testPathConfigurationWithServices`).
+
+All 1155 tests pass. All six quality gates pass with zero errors.
+
 ### File List
+
+- src/Service/PathResolutionService.php
+- tests/Unit/Service/PathResolutionServiceTest.php
+- tests/Unit/Configuration/UnifiedConfigurationSimpleTest.php
+- tests/Integration/Console/Command/ToolCommandPathConfigurationTest.php
