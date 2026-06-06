@@ -121,11 +121,7 @@ final class ToolCommandPathConfigurationTest extends TestCase
         $resolvedPaths = $config->getResolvedPathsForTool(ToolName::Rector->value);
 
         self::assertNotEmpty($resolvedPaths, 'Tool-specific paths should be returned');
-        self::assertArrayNotHasKey(
-            'scan',
-            $resolvedPaths,
-            'Tool-specific paths should return a flat list, not a nested structure',
-        );
+        $this->assertFlatStringList($resolvedPaths, 'Rector resolved paths');
         self::assertContains(
             'custom-rector-src/',
             $resolvedPaths,
@@ -142,11 +138,7 @@ final class ToolCommandPathConfigurationTest extends TestCase
         $resolvedPaths = $config->getResolvedPathsForTool(ToolName::PhpStan->value);
 
         self::assertNotEmpty($resolvedPaths, 'Tool-specific paths should be returned');
-        self::assertArrayNotHasKey(
-            'scan',
-            $resolvedPaths,
-            'Tool-specific paths should return a flat list, not a nested structure',
-        );
+        $this->assertFlatStringList($resolvedPaths, 'PHPStan resolved paths');
         self::assertContains(
             'custom-phpstan-src/',
             $resolvedPaths,
@@ -378,6 +370,7 @@ final class ToolCommandPathConfigurationTest extends TestCase
             $description->targetPaths,
             'Rector describe() should return non-empty paths with tool-specific config',
         );
+        $this->assertFlatStringList($description->targetPaths, 'Rector targetPaths');
         self::assertContains(
             'custom-rector-src/',
             $description->targetPaths,
@@ -402,6 +395,7 @@ final class ToolCommandPathConfigurationTest extends TestCase
             $description->targetPaths,
             'PHPStan describe() should return non-empty paths with tool-specific config',
         );
+        $this->assertFlatStringList($description->targetPaths, 'PHPStan targetPaths');
         self::assertContains(
             'custom-phpstan-src/',
             $description->targetPaths,
@@ -554,6 +548,27 @@ final class ToolCommandPathConfigurationTest extends TestCase
             $this->createProjectEnvironment($projectRoot),
             $this->configLoader,
         );
+    }
+
+    /**
+     * Assert that the given value is a flat list of strings -- no string keys
+     * and no nested array elements. Containment checks alone pass even when the
+     * array carries extra nested junk, so this guards the actual contract.
+     *
+     * @param array<mixed> $paths
+     */
+    private function assertFlatStringList(array $paths, string $context): void
+    {
+        self::assertTrue(
+            array_is_list($paths),
+            "{$context} should be a flat list (sequential integer keys), not a keyed/nested structure.",
+        );
+        foreach ($paths as $path) {
+            self::assertIsString(
+                $path,
+                "{$context} should contain only string paths, not nested arrays or other types.",
+            );
+        }
     }
 
     /**

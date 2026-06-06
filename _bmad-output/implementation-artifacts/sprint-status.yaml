@@ -54,7 +54,7 @@ development_status:
   # Epic 2: Platform Stability & Defect Resolution
   epic-2: in-progress
   2-1-triage-all-open-gitlab-issues: backlog  # GL#18
-  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: review  # GL#9
+  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: done  # GL#9
   2-3-resolve-di-configuration-inconsistency-issue-020: backlog  # GL#19
   2-4-comprehensive-security-test-suite-feature-033: backlog  # GL#13
   epic-2-retrospective: optional
