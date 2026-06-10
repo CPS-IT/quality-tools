@@ -199,7 +199,7 @@ The following features have been deferred to future iterations:
 |    012 | Human-Readable Reports                  | Open     | [012-human-readable-reports.md](feature/012-human-readable-reports.md)                                 |
 |    013 | Additional Packages Paths Scanning      | Done     | [013-additional-packages-paths-scanning.md](feature/done/013-additional-packages-paths-scanning.md)    |
 |    014 | Vendor Folder Derivation                | Done     | [014-vendor-folder-derivation.md](feature/done/014-vendor-folder-derivation.md)                        |
-|    015 | Configuration Overwrites                | Done     | [015-configuration-overwrites.md](feature/done/015-configuration-overwrites.md)                             |
+|    015 | Configuration Overwrites                | Done     | [015-configuration-overwrites.md](feature/done/015-configuration-overwrites.md)                        |
 |    016 | Unified Arguments Options               | Deferred | [016-unified-arguments-options.md](feature/deferred/016-unified-arguments-options.md)                  |
 |    017 | Single Package Scanning                 | Deferred | [017-single-package-scanning.md](feature/deferred/017-single-package-scanning.md)                      |
 |    018 | Global Installation                     | Deferred | [018-global-installation.md](feature/deferred/018-global-installation.md)                              |
@@ -214,113 +214,190 @@ The following features have been deferred to future iterations:
 |    031 | Enhanced Schema Validation              | Open     | [031-enhanced-schema-validation.md](feature/031-enhanced-schema-validation.md) (GL#11)                 |
 |    032 | EditorConfig CLI Integration            | Open     | [032-editorconfig-integration.md](feature/032-editorconfig-integration.md) (GL#12 / GH#9)              |
 |    033 | Comprehensive Security Test Suite       | Open     | [033-comprehensive-security-test-suite.md](feature/033-comprehensive-security-test-suite.md) (GL#13)   |
-|    034 | XLF / XLIFF File Linting                | Open     | [034-lint-xlf-files.md](feature/034-lint-xlf-files.md) (GL#4 / GH#4)                                  |
+|    034 | XLF / XLIFF File Linting                | Open     | [034-lint-xlf-files.md](feature/034-lint-xlf-files.md) (GL#4 / GH#4)                                   |
+
 **Note:** Feature numbers are preserved for existing files. Newer features were renumbered (026, 031-033) to avoid conflicts with older deferred features.
 
 ## Work Items by Epic
 
-Source of truth: the GitLab tracker [DevOps/testing/quality-tools](https://gitlab.321.works/DevOps/testing/quality-tools/-/issues), generated 2026-06-10. Each row links to its GitLab work item; a GitHub link is shown for the issues mirrored on the public [CPS-IT/quality-tools](https://github.com/CPS-IT/quality-tools/issues) repository. Estimates come from the GitLab time-tracking field (GitLab counts `1d` as `8h`). The `Spec` column links to a dedicated spec/story document where one exists, otherwise to the [epic breakdown](../../_bmad-output/planning-artifacts/epics.md).
+Source of truth: the GitLab tracker [DevOps/testing/quality-tools][gl-issues], generated 2026-06-10. Each row links to its GitLab work item; a GitHub link is shown for the issues mirrored on the public [CPS-IT/quality-tools][gh-repo] repository. Estimates come from the GitLab time-tracking field (GitLab counts `1d` as `8h`). The `Spec` column links to a dedicated spec/story document where one exists, otherwise to the [epic breakdown][epics].
 
 ### Summary
 
-| Epic | Items | Open | Closed | Estimate |
-|------|------:|-----:|-------:|---------:|
-| [Epic 1: TYPO3 v14 Compatibility](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/1) | 4 | 4 | 0 | 11 h |
-| [Epic 2: Platform Stability and Defect Resolution](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/2) | 5 | 4 | 1 | 15.5 h |
-| [Epic 3: Machine-Readable Report Generation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/3) | 8 | 8 | 0 | 27 h |
-| [Epic 4: Human-Readable Quality Reports](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/4) | 2 | 2 | 0 | 9 h |
-| [Epic 5: Reliable CI/CD Quality Gates](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/5) | 2 | 2 | 0 | 8.5 h |
-| [Epic 6: Enhanced Configuration and Schema Validation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/6) | 4 | 4 | 0 | 10 h |
-| [Epic 7: EditorConfig Integration](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/7) | 3 | 3 | 0 | 15 h |
-| [Epic 8: Unified Quality Commands](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/8) | 2 | 2 | 0 | 7 h |
-| [Epic 9: Cross-Project Quality Dashboard](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/9) | 5 | 5 | 0 | 86 h |
-| Pre-tracker (closed) | 2 | 0 | 2 | -- |
-| **Total** | **37** | **34** | **3** | **189 h** |
+| Epic                                                         |  Items |   Open | Closed |  Estimate |
+|--------------------------------------------------------------|-------:|-------:|-------:|----------:|
+| [Epic 1: TYPO3 v14 Compatibility][ms-1]                      |      4 |      4 |      0 |      11 h |
+| [Epic 2: Platform Stability and Defect Resolution][ms-2]     |      5 |      4 |      1 |    15.5 h |
+| [Epic 3: Machine-Readable Report Generation][ms-3]           |      8 |      8 |      0 |      27 h |
+| [Epic 4: Human-Readable Quality Reports][ms-4]               |      2 |      2 |      0 |       9 h |
+| [Epic 5: Reliable CI/CD Quality Gates][ms-5]                 |      2 |      2 |      0 |     8.5 h |
+| [Epic 6: Enhanced Configuration and Schema Validation][ms-6] |      4 |      4 |      0 |      10 h |
+| [Epic 7: EditorConfig Integration][ms-7]                     |      3 |      3 |      0 |      15 h |
+| [Epic 8: Unified Quality Commands][ms-8]                     |      2 |      2 |      0 |       7 h |
+| [Epic 9: Cross-Project Quality Dashboard][ms-9]              |      5 |      5 |      0 |      86 h |
+| Pre-tracker (closed)                                         |      2 |      0 |      2 |        -- |
+| **Total**                                                    | **37** | **34** |  **3** | **189 h** |
 
-### [Epic 1: TYPO3 v14 Compatibility](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/1)
+### [Epic 1: TYPO3 v14 Compatibility][ms-1]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#14](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/14) | Story 1.1: Versioned Rector configs (v13/v14) | [story](../../_bmad-output/implementation-artifacts/1-1-add-versioned-rector-configurations-for-typo3-v13-and-v14.md) | Open | 3h | -- |
-| [#15](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/15) | Story 1.2: Versioned Fractor configs (v13/v14) | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 4h | -- |
-| [#16](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/16) | Story 1.3: Publish TYPO3 version support matrix | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 2h | -- |
-| [#17](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/17) | Story 1.4: LTS/ELTS bugfix branch strategy | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 2h | -- |
+| Ticket       | Title                                           | Spec                    | Status | Estimate | GitHub |
+|--------------|-------------------------------------------------|-------------------------|--------|---------:|--------|
+| [#14][gl-14] | Story 1.1: Versioned Rector configs (v13/v14)   | [story][spec-story-1-1] | Open   |       3h | --     |
+| [#15][gl-15] | Story 1.2: Versioned Fractor configs (v13/v14)  | [epics.md][epics]       | Open   |       4h | --     |
+| [#16][gl-16] | Story 1.3: Publish TYPO3 version support matrix | [epics.md][epics]       | Open   |       2h | --     |
+| [#17][gl-17] | Story 1.4: LTS/ELTS bugfix branch strategy      | [epics.md][epics]       | Open   |       2h | --     |
 
-### [Epic 2: Platform Stability and Defect Resolution](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/2)
+### [Epic 2: Platform Stability and Defect Resolution][ms-2]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#18](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/18) | Story 2.1: Triage all open GitLab issues | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 2h | -- |
-| [#9](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/9) | Story 2.2: PathResolutionService returns flat path list | [story](../../_bmad-output/implementation-artifacts/2-2-fix-pathresolutionservice-nested-structure-bug-issue-025.md) | Closed | 4h | [GH#7](https://github.com/CPS-IT/quality-tools/issues/7) |
-| [#19](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/19) | Story 2.3: Resolve DI configuration inconsistency | [issue 020](issue/done/020-di-configuration-inconsistency.md) | Open | 2h 30m | -- |
-| [#13](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/13) | Story 2.4: Comprehensive security test suite | [feature 033](feature/033-comprehensive-security-test-suite.md) | Open | 3h | -- |
-| [#7](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/7) | Story 2.5: Overwrite of typoscript-lint.yml failed | [issue 026](issue/026-typoscript-lint-yaml-extension-not-recognized.md) | Open | 4h | -- |
+| Ticket       | Title                                                   | Spec                            | Status | Estimate | GitHub       |
+|--------------|---------------------------------------------------------|---------------------------------|--------|---------:|--------------|
+| [#18][gl-18] | Story 2.1: Triage all open GitLab issues                | [epics.md][epics]               | Open   |       2h | --           |
+| [#9][gl-9]   | Story 2.2: PathResolutionService returns flat path list | [story][spec-story-2-2]         | Closed |       4h | [GH#7][gh-7] |
+| [#19][gl-19] | Story 2.3: Resolve DI configuration inconsistency       | [issue 020][spec-issue-020]     | Open   |   2h 30m | --           |
+| [#13][gl-13] | Story 2.4: Comprehensive security test suite            | [feature 033][spec-feature-033] | Open   |       3h | --           |
+| [#7][gl-7]   | Story 2.5: Overwrite of typoscript-lint.yml failed      | [issue 026][spec-issue-026]     | Open   |       4h | --           |
 
-### [Epic 3: Machine-Readable Report Generation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/3)
+### [Epic 3: Machine-Readable Report Generation][ms-3]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#20](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/20) | Story 3.1: Extend ToolRunResult with typed findings | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 6h | -- |
-| [#21](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/21) | Story 3.2: Shared contracts package with upgrade-analyser | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 1d | -- |
-| [#22](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/22) | Story 3.4: Dual-output + Finding DTOs (PHPStan) | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 2h | -- |
-| [#23](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/23) | Story 3.5: Dual-output + Finding DTOs (Rector) | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 2h | -- |
-| [#24](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/24) | Story 3.6: Dual-output + Finding DTOs (CS Fixer/Fractor/TS Lint) | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 4h | -- |
-| [#25](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/25) | Story 3.7: ReportWriter and JSON report output | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 4h | -- |
-| [#26](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/26) | Story 3.8: Publish JSON report schema documentation | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 1h | -- |
-| [#8](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/8) | Support more parameters (tool-specific pass-through) | [issue 028](issue/028-pass-through-tool-specific-parameters.md) | Open | -- | -- |
+| Ticket       | Title                                                            | Spec                        | Status | Estimate | GitHub |
+|--------------|------------------------------------------------------------------|-----------------------------|--------|---------:|--------|
+| [#20][gl-20] | Story 3.1: Extend ToolRunResult with typed findings              | [epics.md][epics]           | Open   |       6h | --     |
+| [#21][gl-21] | Story 3.2: Shared contracts package with upgrade-analyser        | [epics.md][epics]           | Open   |       1d | --     |
+| [#22][gl-22] | Story 3.4: Dual-output + Finding DTOs (PHPStan)                  | [epics.md][epics]           | Open   |       2h | --     |
+| [#23][gl-23] | Story 3.5: Dual-output + Finding DTOs (Rector)                   | [epics.md][epics]           | Open   |       2h | --     |
+| [#24][gl-24] | Story 3.6: Dual-output + Finding DTOs (CS Fixer/Fractor/TS Lint) | [epics.md][epics]           | Open   |       4h | --     |
+| [#25][gl-25] | Story 3.7: ReportWriter and JSON report output                   | [epics.md][epics]           | Open   |       4h | --     |
+| [#26][gl-26] | Story 3.8: Publish JSON report schema documentation              | [epics.md][epics]           | Open   |       1h | --     |
+| [#8][gl-8]   | Support more parameters (tool-specific pass-through)             | [issue 028][spec-issue-028] | Open   |       -- | --     |
 
-### [Epic 4: Human-Readable Quality Reports](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/4)
+### [Epic 4: Human-Readable Quality Reports][ms-4]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#27](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/27) | Story 4.1: Implement Markdown report output | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 4h | -- |
-| [#28](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/28) | Story 4.2: Implement HTML report output | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 5h | -- |
+| Ticket       | Title                                       | Spec              | Status | Estimate | GitHub |
+|--------------|---------------------------------------------|-------------------|--------|---------:|--------|
+| [#27][gl-27] | Story 4.1: Implement Markdown report output | [epics.md][epics] | Open   |       4h | --     |
+| [#28][gl-28] | Story 4.2: Implement HTML report output     | [epics.md][epics] | Open   |       5h | --     |
 
-### [Epic 5: Reliable CI/CD Quality Gates](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/5)
+### [Epic 5: Reliable CI/CD Quality Gates][ms-5]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#10](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/10) | Configurable exit code (fail-on-warnings) | [feature 026](feature/026-fail-on-warnings-configuration.md) | Open | 3h 30m | [GH#8](https://github.com/CPS-IT/quality-tools/issues/8) |
-| [#29](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/29) | Story 5.1: Warning detection in all existing runners | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 5h | -- |
+| Ticket       | Title                                                | Spec                            | Status | Estimate | GitHub       |
+|--------------|------------------------------------------------------|---------------------------------|--------|---------:|--------------|
+| [#10][gl-10] | Configurable exit code (fail-on-warnings)            | [feature 026][spec-feature-026] | Open   |   3h 30m | [GH#8][gh-8] |
+| [#29][gl-29] | Story 5.1: Warning detection in all existing runners | [epics.md][epics]               | Open   |       5h | --           |
 
-### [Epic 6: Enhanced Configuration and Schema Validation](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/6)
+### [Epic 6: Enhanced Configuration and Schema Validation][ms-6]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#3](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/3) | Lint Composer within the bundle itself | [issue 027](issue/027-lint-composer-bundle-scope.md) | Open | 2h | [GH#3](https://github.com/CPS-IT/quality-tools/issues/3) |
-| [#11](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/11) | Enhanced schema validation for config_file paths | [feature 031](feature/031-enhanced-schema-validation.md) | Open | 2h | -- |
-| [#30](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/30) | Story 6.1: Enhanced config:validate error messages | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3h | -- |
-| [#31](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/31) | Story 6.2: Additional scan paths + tool-specific overrides | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3h | -- |
+| Ticket       | Title                                                      | Spec                            | Status | Estimate | GitHub       |
+|--------------|------------------------------------------------------------|---------------------------------|--------|---------:|--------------|
+| [#3][gl-3]   | Lint Composer within the bundle itself                     | [issue 027][spec-issue-027]     | Open   |       2h | [GH#3][gh-3] |
+| [#11][gl-11] | Enhanced schema validation for config_file paths           | [feature 031][spec-feature-031] | Open   |       2h | --           |
+| [#30][gl-30] | Story 6.1: Enhanced config:validate error messages         | [epics.md][epics]               | Open   |       3h | --           |
+| [#31][gl-31] | Story 6.2: Additional scan paths + tool-specific overrides | [epics.md][epics]               | Open   |       3h | --           |
 
-### [Epic 7: EditorConfig Integration](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/7)
+### [Epic 7: EditorConfig Integration][ms-7]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#4](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/4) | qt should lint xlf files | [feature 034](feature/034-lint-xlf-files.md) | Open | 4h | [GH#4](https://github.com/CPS-IT/quality-tools/issues/4) |
-| [#12](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/12) | EditorConfig CLI integration (lint/fix:editorconfig) | [feature 032](feature/032-editorconfig-integration.md) | Open | 1d | [GH#9](https://github.com/CPS-IT/quality-tools/issues/9) |
-| [#32](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/32) | Story 7.2: Auto-provision .editorconfig on config:init | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3h | -- |
+| Ticket       | Title                                                  | Spec                            | Status | Estimate | GitHub       |
+|--------------|--------------------------------------------------------|---------------------------------|--------|---------:|--------------|
+| [#4][gl-4]   | qt should lint xlf files                               | [feature 034][spec-feature-034] | Open   |       4h | [GH#4][gh-4] |
+| [#12][gl-12] | EditorConfig CLI integration (lint/fix:editorconfig)   | [feature 032][spec-feature-032] | Open   |       1d | [GH#9][gh-9] |
+| [#32][gl-32] | Story 7.2: Auto-provision .editorconfig on config:init | [epics.md][epics]               | Open   |       3h | --           |
 
-### [Epic 8: Unified Quality Commands](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/8)
+### [Epic 8: Unified Quality Commands][ms-8]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#33](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/33) | Story 8.1: Unified qt lint and qt fix commands | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 4h | -- |
-| [#34](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/34) | Story 8.2: Runner enable/disable and execution order | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3h | -- |
+| Ticket       | Title                                                | Spec              | Status | Estimate | GitHub |
+|--------------|------------------------------------------------------|-------------------|--------|---------:|--------|
+| [#33][gl-33] | Story 8.1: Unified qt lint and qt fix commands       | [epics.md][epics] | Open   |       4h | --     |
+| [#34][gl-34] | Story 8.2: Runner enable/disable and execution order | [epics.md][epics] | Open   |       3h | --     |
 
-### [Epic 9: Cross-Project Quality Dashboard](https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/9)
+### [Epic 9: Cross-Project Quality Dashboard][ms-9]
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#35](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/35) | Story 9.1: Aggregation service ingestion endpoint | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 6h | -- |
-| [#36](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/36) | Story 9.2: Per-project status storage and trend calculation | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 1d | -- |
-| [#37](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/37) | Story 9.3: Cross-project dashboard (tech lead view) | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3d | -- |
-| [#38](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/38) | Story 9.4: Non-technical summary view | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3d | -- |
-| [#39](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/39) | Story 9.5: Automated issue creation from report thresholds | [epics.md](../../_bmad-output/planning-artifacts/epics.md) | Open | 3d | -- |
+| Ticket       | Title                                                       | Spec              | Status | Estimate | GitHub |
+|--------------|-------------------------------------------------------------|-------------------|--------|---------:|--------|
+| [#35][gl-35] | Story 9.1: Aggregation service ingestion endpoint           | [epics.md][epics] | Open   |       6h | --     |
+| [#36][gl-36] | Story 9.2: Per-project status storage and trend calculation | [epics.md][epics] | Open   |       1d | --     |
+| [#37][gl-37] | Story 9.3: Cross-project dashboard (tech lead view)         | [epics.md][epics] | Open   |       3d | --     |
+| [#38][gl-38] | Story 9.4: Non-technical summary view                       | [epics.md][epics] | Open   |       3d | --     |
+| [#39][gl-39] | Story 9.5: Automated issue creation from report thresholds  | [epics.md][epics] | Open   |       3d | --     |
 
 ### Pre-tracker (closed, no epic)
 
-| Ticket | Title | Spec | Status | Estimate | GitHub |
-|--------|-------|------|--------|---------:|--------|
-| [#1](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/1) | Configuration Overwrites (Feature 015) | [feature 015](feature/done/015-configuration-overwrites.md) | Closed | -- | [GH#1](https://github.com/CPS-IT/quality-tools/issues/1) |
-| [#5](https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/5) | Configuration File Replacement Schema Validation Bug | [issue 022](issue/done/022-configuration-file-replacement-schema-validation.md) | Closed | -- | [GH#5](https://github.com/CPS-IT/quality-tools/issues/5) |
+| Ticket     | Title                                                | Spec                            | Status | Estimate | GitHub       |
+|------------|------------------------------------------------------|---------------------------------|--------|---------:|--------------|
+| [#1][gl-1] | Configuration Overwrites (Feature 015)               | [feature 015][spec-feature-015] | Closed |       -- | [GH#1][gh-1] |
+| [#5][gl-5] | Configuration File Replacement Schema Validation Bug | [issue 022][spec-issue-022]     | Closed |       -- | [GH#5][gh-5] |
+
+<!-- Reference link definitions -->
+
+[gl-issues]: https://gitlab.321.works/DevOps/testing/quality-tools/-/issues
+[gh-repo]: https://github.com/CPS-IT/quality-tools/issues
+[epics]: ../../_bmad-output/planning-artifacts/epics.md
+
+[ms-1]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/1
+[ms-2]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/2
+[ms-3]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/3
+[ms-4]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/4
+[ms-5]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/5
+[ms-6]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/6
+[ms-7]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/7
+[ms-8]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/8
+[ms-9]: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/9
+
+[gl-1]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/1
+[gl-3]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/3
+[gl-4]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/4
+[gl-5]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/5
+[gl-7]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/7
+[gl-8]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/8
+[gl-9]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/9
+[gl-10]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/10
+[gl-11]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/11
+[gl-12]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/12
+[gl-13]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/13
+[gl-14]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/14
+[gl-15]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/15
+[gl-16]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/16
+[gl-17]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/17
+[gl-18]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/18
+[gl-19]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/19
+[gl-20]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/20
+[gl-21]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/21
+[gl-22]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/22
+[gl-23]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/23
+[gl-24]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/24
+[gl-25]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/25
+[gl-26]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/26
+[gl-27]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/27
+[gl-28]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/28
+[gl-29]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/29
+[gl-30]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/30
+[gl-31]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/31
+[gl-32]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/32
+[gl-33]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/33
+[gl-34]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/34
+[gl-35]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/35
+[gl-36]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/36
+[gl-37]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/37
+[gl-38]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/38
+[gl-39]: https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/39
+
+[gh-1]: https://github.com/CPS-IT/quality-tools/issues/1
+[gh-3]: https://github.com/CPS-IT/quality-tools/issues/3
+[gh-4]: https://github.com/CPS-IT/quality-tools/issues/4
+[gh-5]: https://github.com/CPS-IT/quality-tools/issues/5
+[gh-7]: https://github.com/CPS-IT/quality-tools/issues/7
+[gh-8]: https://github.com/CPS-IT/quality-tools/issues/8
+[gh-9]: https://github.com/CPS-IT/quality-tools/issues/9
+
+[spec-story-1-1]: ../../_bmad-output/implementation-artifacts/1-1-add-versioned-rector-configurations-for-typo3-v13-and-v14.md
+[spec-story-2-2]: ../../_bmad-output/implementation-artifacts/2-2-fix-pathresolutionservice-nested-structure-bug-issue-025.md
+[spec-issue-020]: issue/done/020-di-configuration-inconsistency.md
+[spec-issue-022]: issue/done/022-configuration-file-replacement-schema-validation.md
+[spec-issue-026]: issue/026-typoscript-lint-yaml-extension-not-recognized.md
+[spec-issue-027]: issue/027-lint-composer-bundle-scope.md
+[spec-issue-028]: issue/028-pass-through-tool-specific-parameters.md
+[spec-feature-015]: feature/done/015-configuration-overwrites.md
+[spec-feature-031]: feature/031-enhanced-schema-validation.md
+[spec-feature-032]: feature/032-editorconfig-integration.md
+[spec-feature-033]: feature/033-comprehensive-security-test-suite.md
+[spec-feature-034]: feature/034-lint-xlf-files.md
+[spec-feature-026]: feature/026-fail-on-warnings-configuration.md
 
