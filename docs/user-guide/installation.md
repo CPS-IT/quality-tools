@@ -21,7 +21,7 @@ Install CPSIT Quality Tools as a development dependency in your TYPO3 project:
 composer require --dev cpsit/quality-tools
 ```
 
-This method ensures the tool is available only in development environments and automatically handles all dependencies.
+This method ensures the tool is available only in development environments and automatically handles all dependencies. Pin to the major version matching your TYPO3 version (e.g. `cpsit/quality-tools:^13.0` for TYPO3 v13) - see [Versioning and TYPO3 Compatibility](versioning.md).
 
 ### Method 2: Global Composer Installation
 
@@ -115,9 +115,10 @@ CPSIT Quality Tools automatically installs these tools and their configurations:
 Once installation is complete:
 
 1. Read the [Getting Started](getting-started.md) guide for basic usage
-2. Learn about [Project Detection](project-detection.md) to understand how the tool finds your TYPO3 project
-3. Configure [Environment Variables](configuration.md) if needed
-4. Review [Troubleshooting](troubleshooting.md) for common installation issues
+2. Check [Versioning and TYPO3 Compatibility](versioning.md) to confirm you installed the version matching your TYPO3 project
+3. Learn about [Project Detection](project-detection.md) to understand how the tool finds your TYPO3 project
+4. Configure [Environment Variables](configuration.md) if needed
+5. Review [Troubleshooting](troubleshooting.md) for common installation issues
 
 ## Uninstallation
 

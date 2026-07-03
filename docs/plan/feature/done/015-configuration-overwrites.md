@@ -4,6 +4,9 @@
 - **Estimated Time:** 6–8 hours
 - **Layer:** MVP
 - **Dependencies:** 010-unified-yaml-configuration-system (Not Started)
+- **GitLab:** GL#1 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/1)
+- **GitHub:** GH#1 (https://github.com/CPS-IT/quality-tools/issues/1)
+- **Resolved by:** GH PR#2 (merged 2026-03-12)
 
 ## Description
 

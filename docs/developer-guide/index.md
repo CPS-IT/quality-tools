@@ -252,9 +252,12 @@ vendor/bin/qt config:show -v
 5. Update documentation
 6. Publish release notes
 
+See [Versioning and Branching Strategy](versioning-and-branching.md) for how releases map to TYPO3 major versions and when a bugfix support branch is cut.
+
 ## Resources
 
 - [Testing Infrastructure](testing.md) - Comprehensive testing guide
+- [Versioning and Branching Strategy](versioning-and-branching.md) - How releases map to TYPO3 major versions
 - [User Guide](../user-guide/index.md) - End-user documentation
 - [Configuration Reference](../configuration/reference.md) - Complete configuration options
 - [Migration Guide](../configuration/migration.md) - Version upgrade guidance

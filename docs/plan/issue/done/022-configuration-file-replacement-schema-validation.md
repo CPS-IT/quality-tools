@@ -1,11 +1,15 @@
 # Issue 022: Configuration File Replacement Schema Validation Bug
 
+- **GitLab:** GL#5 (https://gitlab.321.works/DevOps/testing/quality-tools/-/work_items/5)
+- **GitHub:** GH#5 (https://github.com/CPS-IT/quality-tools/issues/5)
+- **Resolved by:** GH PR#6 (merged 2026-03-01)
+
 ## Status
 **Completed**
 
-**Core Achievement**: Schema now supports `config_file` properties - users can specify `config_file` in YAML configurations without validation errors.
+**Core Achievement**: Schema now supports `config_file` properties - users can specify `config_file` in YAML configurations without validation errors. The `tool_config_file` and `custom_config` metadata keys have been removed from `ConfigurationDiscovery`; tool-specific config files are now represented under the proper `quality-tools.tools.<tool>.config_file` schema path.
 
-**Remaining Work**: ConfigurationDiscovery metadata injection still causes integration test failures.
+**Note on "Remaining Work"**: The earlier note about ConfigurationDiscovery metadata injection causing integration test failures is resolved. The code no longer injects those keys.
 
 ## Problem Summary
 When users place custom configuration files for tools (e.g., `rector.php`, `phpstan.neon`) in their project root or config directory, the custom files should replace the default configurations provided by quality-tools. However, this functionality has multiple validation and execution issues:
