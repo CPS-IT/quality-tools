@@ -400,4 +400,3 @@ Source of truth: the GitLab tracker [DevOps/testing/quality-tools][gl-issues], g
 [spec-feature-033]: feature/033-comprehensive-security-test-suite.md
 [spec-feature-034]: feature/034-lint-xlf-files.md
 [spec-feature-026]: feature/026-fail-on-warnings-configuration.md
-

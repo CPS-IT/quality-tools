@@ -198,11 +198,39 @@ final class ConfigurationHierarchyTest extends TestCase
             'rector' => ['rector.php'],
             'phpstan' => ['phpstan.neon', 'phpstan.neon.dist'],
             'php-cs-fixer' => ['.php-cs-fixer.dist.php', '.php-cs-fixer.php'],
-            'typoscript-lint' => ['typoscript-lint.yml'],
+            'typoscript-lint' => ['typoscript-lint.yml', 'typoscript-lint.yaml'],
             'fractor' => ['fractor.php'],
         ];
 
         $this->assertEquals($expectedMappings, ConfigurationHierarchy::TOOL_CONFIG_FILES);
+    }
+
+    public function testTyposcriptLintYamlIsInFilePatterns(): void
+    {
+        $this->assertContains('typoscript-lint.yaml', ConfigurationHierarchy::FILE_PATTERNS['tool_specific']);
+        $this->assertContains('config/typoscript-lint.yaml', ConfigurationHierarchy::FILE_PATTERNS['tool_config_dir']);
+        $this->assertContains('typoscript-lint.yaml', ConfigurationHierarchy::TOOL_CONFIG_FILES['typoscript-lint']);
+    }
+
+    public function testTyposcriptLintYamlResolvesToTool(): void
+    {
+        file_put_contents($this->tempDir . '/typoscript-lint.yaml', "paths:\n  - packages/\n");
+
+        $existingFiles = $this->hierarchy->getExistingConfigurationFiles();
+
+        $this->assertArrayHasKey('tool_specific', $existingFiles);
+
+        $toolFile = null;
+        foreach ($existingFiles['tool_specific'] as $fileInfo) {
+            if (str_ends_with((string) $fileInfo['path'], 'typoscript-lint.yaml')) {
+                $toolFile = $fileInfo;
+                break;
+            }
+        }
+
+        $this->assertNotNull($toolFile, 'typoscript-lint.yaml should be found as a tool_specific config');
+        $this->assertEquals('typoscript-lint', $toolFile['tool']);
+        $this->assertEquals('yaml', $toolFile['type']);
     }
 
     public function testFilePatternDefinitions(): void

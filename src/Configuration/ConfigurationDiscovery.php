@@ -145,9 +145,16 @@ final class ConfigurationDiscovery
 
     /**
      * Load configuration data based on a file type.
+     *
+     * Tool-specific YAML files (e.g. typoscript-lint.yaml) must not be validated
+     * against the quality-tools schema -- they use their own tool schema.
      */
     private function loadConfigurationFile(array $fileInfo): array
     {
+        if ($fileInfo['tool'] !== null && $fileInfo['type'] === 'yaml') {
+            return $this->loadToolConfigurationFile($fileInfo['path']);
+        }
+
         return match ($fileInfo['type']) {
             'yaml' => $this->loadYamlFile($fileInfo['path']),
             'php' => $this->loadPhpFile($fileInfo['path']),
