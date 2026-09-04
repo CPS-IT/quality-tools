@@ -202,10 +202,7 @@ final class CustomToolConfigurationTest extends TestCase
     }
 
     /**
-     * Test tool commands ignore custom configuration files.
-     *
-     * This test verifies that lint commands currently ignore custom tool configs
-     * and use package defaults instead. This is the FAILING behavior we want to fix.
+     * Test that tool commands discover and use custom configuration files from the project.
      */
     #[DataProvider('toolCommandScenarios')]
     public function testToolCommandsIgnoreCustomConfig(
@@ -242,25 +239,11 @@ final class CustomToolConfigurationTest extends TestCase
             },
         );
 
-        // This test documents the current INCORRECT behavior:
-        // Tool commands should auto-discover and use custom config files,
-        // but they currently don't - they use package defaults instead.
-        //
-        // Once auto-discovery is implemented in AbstractToolCommand,
-        // this test will start passing.
-        //
-        // EXPECTED: Output should contain the custom path from the custom config
-        // ACTUAL: Output does NOT contain the custom path - uses package defaults instead
-
-        // For now, we expect this to fail (custom configs are ignored)
-        // When auto-discovery is implemented the test should pass
-
         $this->assertStringContainsString(
             $expectedPath,
             $output,
-            "Auto-discovery not yet implemented. Tool command '{$toolCommand}' currently ignores " .
-            "custom config and uses package defaults. Expected path '{$expectedPath}' not found in output." .
-            "Scenario: {$scenarioName}",
+            "Tool command '{$toolCommand}' should use the discovered custom config. " .
+            "Expected path '{$expectedPath}' not found in output. Scenario: {$scenarioName}",
         );
     }
 
@@ -462,11 +445,6 @@ return static function (RectorConfig $rectorConfig): void {
         } elseif (str_contains($fixtureDirectory, 'fractor')) {
             copy($mockExecutablesDir . '/fractor', $binDir . '/fractor');
             chmod($binDir . '/fractor', 0o755);
-            // Fractor needs a default config file in case auto-discovery fails
-            $configDir = $vendorDir . '/cpsit/quality-tools/config';
-            if (!file_exists($configDir . '/fractor.php')) {
-                file_put_contents($configDir . '/fractor.php', "<?php\nreturn static function (\$config) {\n    \$config->paths(['custom-fractor-root-path/']);\n};");
-            }
         } elseif (str_contains($fixtureDirectory, 'php-cs-fixer')) {
             copy($mockExecutablesDir . '/php-cs-fixer', $binDir . '/php-cs-fixer');
             chmod($binDir . '/php-cs-fixer', 0o755);

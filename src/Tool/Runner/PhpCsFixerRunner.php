@@ -126,8 +126,7 @@ final readonly class PhpCsFixerRunner implements ToolRunnerInterface
             return $discovered;
         }
 
-        return $this->projectEnv->getVendorPath()
-            . '/cpsit/quality-tools/config/' . self::DEFAULT_CONFIG_FILE;
+        return $this->projectEnv->getPackageConfigDir() . '/' . self::DEFAULT_CONFIG_FILE;
     }
 
     /**

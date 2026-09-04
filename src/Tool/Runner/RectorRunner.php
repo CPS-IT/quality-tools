@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Tool\Runner;
 
+use Cpsit\QualityTools\Configuration\ConfigurationInterface;
 use Cpsit\QualityTools\Configuration\ConfigurationLoaderInterface;
 use Cpsit\QualityTools\Messaging\OutputCollectorInterface;
 use Cpsit\QualityTools\Service\MemoryOptimizer;
@@ -120,8 +121,20 @@ final readonly class RectorRunner implements ToolRunnerInterface
             return $discovered;
         }
 
-        return $this->projectEnv->getVendorPath()
-            . '/cpsit/quality-tools/config/' . self::DEFAULT_CONFIG_FILE;
+        $rectorConfig = $this->configLoader->load($projectRoot)->getToolConfig('rector');
+        $level = $rectorConfig['level'] ?? ConfigurationInterface::DEFAULT_RECTOR_LEVEL;
+        if (!\in_array($level, ConfigurationInterface::ALLOWED_RECTOR_LEVELS, true)) {
+            $level = ConfigurationInterface::DEFAULT_RECTOR_LEVEL;
+        }
+
+        $packageConfigDir = $this->projectEnv->getPackageConfigDir();
+        $versionedConfig = $packageConfigDir . '/rector-' . $level . '.php';
+
+        if (file_exists($versionedConfig)) {
+            return $versionedConfig;
+        }
+
+        return $packageConfigDir . '/' . self::DEFAULT_CONFIG_FILE;
     }
 
     /**

@@ -41,6 +41,7 @@ final readonly class ConfigurationHierarchy
         ],
         'tool_specific' => [
             'rector.php',
+            'fractor.php',
             'phpstan.neon',
             'phpstan.neon.dist',
             '.php-cs-fixer.dist.php',
@@ -50,6 +51,7 @@ final readonly class ConfigurationHierarchy
         ],
         'tool_config_dir' => [
             'config/rector.php',
+            'config/fractor.php',
             'config/phpstan.neon',
             'config/.php-cs-fixer.dist.php',
             'config/.php-cs-fixer.php',

@@ -165,8 +165,8 @@
         "level": {
           "type": "string",
           "description": "Rector level configuration",
-          "enum": ["typo3-11", "typo3-12", "typo3-13"],
-          "default": "typo3-13"
+          "enum": ["typo3-11", "typo3-12", "typo3-13", "typo3-14"],
+          "default": "typo3-14"
         },
         "php_version": {
           "type": "string",
