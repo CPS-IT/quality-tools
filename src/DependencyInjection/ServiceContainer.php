@@ -24,9 +24,7 @@ final class ServiceContainer
      */
     public static function getContainer(): ContainerBuilder
     {
-        if (self::$container === null) {
-            self::$container = self::buildContainer();
-        }
+        self::$container ??= self::buildContainer();
 
         return self::$container;
     }

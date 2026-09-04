@@ -271,9 +271,7 @@ final class ConfigurationMerger
 
         foreach ($this->conflicts as $conflict) {
             $keyPath = $conflict['key_path'];
-            if (!isset($summary['conflicts_by_key'][$keyPath])) {
-                $summary['conflicts_by_key'][$keyPath] = 0;
-            }
+            $summary['conflicts_by_key'][$keyPath] ??= 0;
             ++$summary['conflicts_by_key'][$keyPath];
         }
 
