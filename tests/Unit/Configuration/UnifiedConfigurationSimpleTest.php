@@ -270,7 +270,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
                     'exclude' => ['build/', 'tmp/'],
                 ],
                 'tools' => [
-                    'rector' => ['paths' => ['packages/', 'extensions/']],
+                    'rector' => ['paths' => ['scan' => ['packages/', 'extensions/']]],
                 ],
             ],
         ];

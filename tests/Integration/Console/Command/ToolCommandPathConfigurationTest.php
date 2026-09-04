@@ -114,48 +114,36 @@ final class ToolCommandPathConfigurationTest extends TestCase
     // -- Tool-specific override tests ----------------------------------------
 
     #[Test]
-    public function rectorToolSpecificPathsReturnNestedStructure(): void
+    public function rectorToolSpecificPathsReturnFlatList(): void
     {
-        // Documents current behavior: PathResolutionService::getToolPaths()
-        // returns raw nested structure ['scan' => [...]] rather than a flat list.
-        // This should be fixed in PathResolutionService in a future issue.
         $projectRoot = $this->prepareFixture('tool-specific-overrides');
 
         $config = $this->configLoader->load($projectRoot);
         $resolvedPaths = $config->getResolvedPathsForTool(ToolName::Rector->value);
 
         self::assertNotEmpty($resolvedPaths, 'Tool-specific paths should be returned');
-        self::assertArrayHasKey(
-            'scan',
-            $resolvedPaths,
-            'Tool-specific paths currently return nested structure with scan key',
-        );
+        $this->assertFlatStringList($resolvedPaths, 'Rector resolved paths');
         self::assertContains(
             'custom-rector-src/',
-            $resolvedPaths['scan'],
-            'Nested scan array should contain the custom rector path',
+            $resolvedPaths,
+            'Flat list should contain the custom rector path',
         );
     }
 
     #[Test]
-    public function phpstanToolSpecificPathsReturnNestedStructure(): void
+    public function phpstanToolSpecificPathsReturnFlatList(): void
     {
-        // Documents current behavior: same nested structure issue as rector.
         $projectRoot = $this->prepareFixture('tool-specific-overrides');
 
         $config = $this->configLoader->load($projectRoot);
         $resolvedPaths = $config->getResolvedPathsForTool(ToolName::PhpStan->value);
 
         self::assertNotEmpty($resolvedPaths, 'Tool-specific paths should be returned');
-        self::assertArrayHasKey(
-            'scan',
-            $resolvedPaths,
-            'Tool-specific paths currently return nested structure with scan key',
-        );
+        $this->assertFlatStringList($resolvedPaths, 'PHPStan resolved paths');
         self::assertContains(
             'custom-phpstan-src/',
-            $resolvedPaths['scan'],
-            'Nested scan array should contain the custom phpstan path',
+            $resolvedPaths,
+            'Flat list should contain the custom phpstan path',
         );
     }
 
@@ -369,9 +357,6 @@ final class ToolCommandPathConfigurationTest extends TestCase
     #[Test]
     public function rectorRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig(): void
     {
-        // Documents that runner receives paths from ConfigurationLoader.
-        // Due to the nested structure issue in PathResolutionService::getToolPaths(),
-        // the returned targetPaths contain a nested array rather than flat strings.
         $projectRoot = $this->prepareFixture('tool-specific-overrides');
         $runner = $this->createRectorRunner($projectRoot);
 
@@ -386,12 +371,17 @@ final class ToolCommandPathConfigurationTest extends TestCase
             $description->targetPaths,
             'Rector describe() should return non-empty paths with tool-specific config',
         );
+        $this->assertFlatStringList($description->targetPaths, 'Rector targetPaths');
+        self::assertContains(
+            'custom-rector-src/',
+            $description->targetPaths,
+            'Rector targetPaths should contain the flat path string, not nested arrays',
+        );
     }
 
     #[Test]
     public function phpstanRunnerDescribeReturnsNonEmptyPathsWithToolSpecificConfig(): void
     {
-        // Same nested structure behavior as rector.
         $projectRoot = $this->prepareFixture('tool-specific-overrides');
         $runner = $this->createPhpStanRunner($projectRoot);
 
@@ -405,6 +395,12 @@ final class ToolCommandPathConfigurationTest extends TestCase
         self::assertNotEmpty(
             $description->targetPaths,
             'PHPStan describe() should return non-empty paths with tool-specific config',
+        );
+        $this->assertFlatStringList($description->targetPaths, 'PHPStan targetPaths');
+        self::assertContains(
+            'custom-phpstan-src/',
+            $description->targetPaths,
+            'PHPStan targetPaths should contain the flat path string, not nested arrays',
         );
     }
 
@@ -553,6 +549,27 @@ final class ToolCommandPathConfigurationTest extends TestCase
             $this->createProjectEnvironment($projectRoot),
             $this->configLoader,
         );
+    }
+
+    /**
+     * Assert that the given value is a flat list of strings -- no string keys
+     * and no nested array elements. Containment checks alone pass even when the
+     * array carries extra nested junk, so this guards the actual contract.
+     *
+     * @param array<mixed> $paths
+     */
+    private function assertFlatStringList(array $paths, string $context): void
+    {
+        self::assertTrue(
+            array_is_list($paths),
+            "{$context} should be a flat list (sequential integer keys), not a keyed/nested structure.",
+        );
+        foreach ($paths as $path) {
+            self::assertIsString(
+                $path,
+                "{$context} should contain only string paths, not nested arrays or other types.",
+            );
+        }
     }
 
     /**

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-06"
-last_updated: "2026-05-06T19:10"
+last_updated: "2026-06-06"
 project: quality-tools
 project_key: NOKEY
 tracking_system: file-system
@@ -52,11 +52,12 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Platform Stability & Defect Resolution
-  epic-2: backlog
+  epic-2: in-progress
   2-1-triage-all-open-gitlab-issues: backlog  # GL#18
-  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: backlog  # GL#9
+  2-2-fix-pathresolutionservice-nested-structure-bug-issue-025: done  # GL#9
   2-3-resolve-di-configuration-inconsistency-issue-020: backlog  # GL#19
   2-4-comprehensive-security-test-suite-feature-033: backlog  # GL#13
+  2-5-fix-typoscript-lint-yaml-config-overwrite-validation-error: done  # GL#7
   epic-2-retrospective: optional
 
   # Epic 3: Machine-Readable Report Generation

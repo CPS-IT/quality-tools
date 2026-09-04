@@ -27,9 +27,7 @@ final class ProjectEnvironment
 
     public function getProjectRoot(): string
     {
-        if ($this->projectRoot === null) {
-            $this->projectRoot = $this->detectProjectRoot();
-        }
+        $this->projectRoot ??= $this->detectProjectRoot();
 
         return $this->projectRoot;
     }

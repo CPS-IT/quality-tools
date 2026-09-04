@@ -47,6 +47,7 @@ final readonly class ConfigurationHierarchy
             '.php-cs-fixer.dist.php',
             '.php-cs-fixer.php',
             'typoscript-lint.yml',
+            'typoscript-lint.yaml',
         ],
         'tool_config_dir' => [
             'config/rector.php',
@@ -55,6 +56,7 @@ final readonly class ConfigurationHierarchy
             'config/.php-cs-fixer.dist.php',
             'config/.php-cs-fixer.php',
             'config/typoscript-lint.yml',
+            'config/typoscript-lint.yaml',
         ],
         'package_config' => [
             'packages/*/quality-tools.yaml',
@@ -69,7 +71,7 @@ final readonly class ConfigurationHierarchy
         'rector' => ['rector.php'],
         'phpstan' => ['phpstan.neon', 'phpstan.neon.dist'],
         'php-cs-fixer' => ['.php-cs-fixer.dist.php', '.php-cs-fixer.php'],
-        'typoscript-lint' => ['typoscript-lint.yml'],
+        'typoscript-lint' => ['typoscript-lint.yml', 'typoscript-lint.yaml'],
         'fractor' => ['fractor.php'],
     ];
 

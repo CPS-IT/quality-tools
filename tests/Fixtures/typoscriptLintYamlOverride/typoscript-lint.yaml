@@ -1,0 +1,7 @@
+paths:
+  - packages/
+sniffs:
+  - class: Indentation
+    parameters:
+      indentPerLevel: 2
+      useSpaces: true

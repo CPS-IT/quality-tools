@@ -58,7 +58,8 @@ CPSIT Quality Tools provides a unified command-line interface for running variou
 3. [Dynamic Resource Optimization](optimization.md) - How automatic optimization works
 4. [Project Detection](project-detection.md) - How the tool finds TYPO3 projects
 5. [Configuration](configuration.md) - Configuration system with hierarchical override support
-6. [Troubleshooting](troubleshooting.md) - Common issues and solutions
+6. [Versioning and TYPO3 Compatibility](versioning.md) - How quality-tools versions map to TYPO3 versions
+7. [Troubleshooting](troubleshooting.md) - Common issues and solutions
 
 ## Configuration System
 

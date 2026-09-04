@@ -18,6 +18,8 @@ New ADRs should be created using the template at: `docs/.templates/adr.md`
 | [0002](0002-security-at-entry-points.md) | Security at Entry Points | Accepted | Issue 022 |
 | [0003](0003-code-duplication-elimination-through-refactoring.md) | Code Duplication Elimination Through Refactoring | Accepted | Issue 022 |
 | [0004](0004-inheritance-based-security-propagation.md) | Inheritance-Based Security Propagation | Accepted | Issue 022 |
+| [0005](0005-simplified-command-architecture.md) | Simplified Command Architecture | Accepted | - |
+| [0006](0006-typo3-aligned-trunk-based-versioning.md) | TYPO3-Aligned Trunk-Based Versioning and Branching Strategy | Accepted | GL#17, Issue 79373 |
 
 ## Creating New ADRs
 

@@ -75,7 +75,7 @@ final class PathResolutionService
         $qualityTools = $data['quality-tools'] ?? [];
         $toolsConfig = $qualityTools['tools'] ?? [];
 
-        return $toolsConfig[$tool]['paths'] ?? [];
+        return $toolsConfig[$tool]['paths']['scan'] ?? [];
     }
 
     /**
@@ -145,9 +145,7 @@ final class PathResolutionService
      */
     private function getPathScanner(string $projectRoot): PathScanner
     {
-        if ($this->pathScanner === null) {
-            $this->pathScanner = new PathScanner($projectRoot);
-        }
+        $this->pathScanner ??= new PathScanner($projectRoot);
 
         return $this->pathScanner;
     }

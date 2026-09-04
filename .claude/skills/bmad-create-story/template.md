@@ -20,6 +20,9 @@ so that {{benefit}}.
   - [ ] Subtask 1.1
 - [ ] Task 2 (AC: #)
   - [ ] Subtask 2.1
+- [ ] Validate user documentation (AC: all)
+  - [ ] Check that all examples in docs/user-guide/ that relate to changed behavior are correct
+  - [ ] Update any outdated descriptions, code examples, or option references
 
 ## Dev Notes
 
