@@ -45,7 +45,7 @@ development_status:
   # Epic 1: TYPO3 v14 Compatibility
   # GL milestone: https://gitlab.321.works/DevOps/testing/quality-tools/-/milestones/1
   epic-1: in-progress
-  1-1-add-versioned-rector-configurations-for-typo3-v13-and-v14: ready-for-dev  # GL#14
+  1-1-add-versioned-rector-configurations-for-typo3-v13-and-v14: done  # GL#14
   1-2-add-versioned-fractor-configurations-for-typo3-v13-and-v14: backlog  # GL#15
   1-3-publish-typo3-version-support-matrix: backlog  # GL#16
   1-4-establish-lts-elts-bugfix-branch-strategy: backlog  # GL#17

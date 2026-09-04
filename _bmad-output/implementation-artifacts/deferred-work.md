@@ -1,10 +1,17 @@
 # Deferred Work
 
+## Deferred from: code review of 1-1-add-versioned-rector-configurations-for-typo3-v13-and-v14 (2026-05-06)
 Items surfaced during reviews that are real but not actionable in their originating
 story. Each entry notes where it came from.
 
 ## Deferred from: code review of story 2-2-fix-pathresolutionservice-nested-structure-bug-issue-025 (2026-06-06)
 
+- `$installPath` undefined when count($installedProjects) > 1: error_log continues silently into undefined variable use. Pre-existing pattern copied from original rector.php. [config/rector-typo3-13.php:23, config/rector-typo3-14.php:23]
+- `getInstallPath()` can return null, string concatenation produces broken paths silently. Pre-existing pattern. [config/rector-typo3-13.php:28, config/rector-typo3-14.php:29]
+- `configLoader->load()` called twice per `resolveConfigPath` invocation if loader is not cached. Needs loader caching investigation. [src/Tool/Runner/RectorRunner.php:124]
+- Fallback `rector.php` path returned without existence check. Pre-existing pattern. [src/Tool/Runner/RectorRunner.php:131]
+- No test covers the branch where `resolveToolConfigPath` returns a non-null discovered path, bypassing level logic. Pre-existing test gap. [tests/Unit/Tool/Runner/RectorRunnerTest.php]
+- `setUp` mock in `RectorRunnerTest` does not stub `getResolvedPathsForTool`, relying on PHPUnit null return for arrays. Pre-existing test setup pattern. [tests/Unit/Tool/Runner/RectorRunnerTest.php:44]
 - tools.<tool>.paths with an `additional`/`exclude` sub-key but no `scan` key now returns `[]` from `getToolPaths()`, so those configured paths are silently ignored. The schema permits this shape (`scan` is optional). No test covers "paths present, scan absent" -- the case where the new `['scan'] ?? []` diverges most from the old code. Explicitly scoped to Story 6.2 per the story's Dev Notes. [src/Service/PathResolutionService.php:78]
 - A non-list `scan` value (e.g. a string) reaching `getToolPaths()` via the deferred-validation `Configuration` path would trigger string-offset access. Pre-existing concern of the unvalidated config path; the validated load path rejects a string `scan` at schema validation. [src/Service/PathResolutionService.php:78]
 - An explicit `scan: []` override silently falls back to the global PathScanner rather than scanning nothing. This is the pre-existing `!empty($toolPaths)` semantics of `getResolvedPathsForTool()`, unchanged by this fix; flagged for a future design decision on whether explicit-empty should mean "no override" or "scan nothing". [src/Service/PathResolutionService.php:59]

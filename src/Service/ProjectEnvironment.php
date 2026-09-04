@@ -27,9 +27,7 @@ final class ProjectEnvironment
 
     public function getProjectRoot(): string
     {
-        if ($this->projectRoot === null) {
-            $this->projectRoot = $this->detectProjectRoot();
-        }
+        $this->projectRoot ??= $this->detectProjectRoot();
 
         return $this->projectRoot;
     }
@@ -42,6 +40,18 @@ final class ProjectEnvironment
     public function getVendorBinPath(): string
     {
         return $this->getVendorPath() . '/bin';
+    }
+
+    /**
+     * Returns the absolute path to this package's bundled config directory.
+     *
+     * Uses __DIR__-relative resolution so the path is correct regardless of
+     * whether the package is installed as a vendor dependency or used as the
+     * Composer project root (e.g. during the package's own test runs).
+     */
+    public function getPackageConfigDir(): string
+    {
+        return \dirname(__DIR__, 2) . '/config';
     }
 
     /**

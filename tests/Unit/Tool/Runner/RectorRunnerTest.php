@@ -44,6 +44,9 @@ final class RectorRunnerTest extends TestCase
         $this->projectEnv = new ProjectEnvironment(new VendorDirectoryDetector());
 
         $this->configuration = $this->createMock(ConfigurationInterface::class);
+        $this->configuration->method('getToolConfig')
+            ->with('rector')
+            ->willReturn([]);
         $this->configLoader = $this->createMock(ConfigurationLoaderInterface::class);
         $this->configLoader->method('load')->willReturn($this->configuration);
     }
@@ -77,7 +80,7 @@ final class RectorRunnerTest extends TestCase
         self::assertStringEndsWith('/rector', $capturedCommand[0]);
         self::assertSame('process', $capturedCommand[1]);
         self::assertStringStartsWith('--config=', $capturedCommand[2]);
-        self::assertStringEndsWith('/config/rector.php', $capturedCommand[2]);
+        self::assertStringEndsWith('/config/rector-' . ConfigurationInterface::DEFAULT_RECTOR_LEVEL . '.php', $capturedCommand[2]);
     }
 
     #[Test]
@@ -188,6 +191,45 @@ final class RectorRunnerTest extends TestCase
     }
 
     #[Test]
+    public function runSelectsTypo3V13ConfigWhenLevelIsTypo3V13(): void
+    {
+        $capturedCommand = null;
+        $runner = $this->createRunnerCapturingCommandWithLevel('typo3-13', $capturedCommand);
+        $request = new ToolRunRequest('rector', dryRun: false);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertStringEndsWith('/config/rector-typo3-13.php', $capturedCommand[2]);
+    }
+
+    #[Test]
+    public function runSelectsTypo3V14ConfigWhenLevelIsTypo3V14(): void
+    {
+        $capturedCommand = null;
+        $runner = $this->createRunnerCapturingCommandWithLevel('typo3-14', $capturedCommand);
+        $request = new ToolRunRequest('rector', dryRun: false);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertStringEndsWith('/config/rector-typo3-14.php', $capturedCommand[2]);
+    }
+
+    #[Test]
+    public function runFallsBackToDefaultLevelConfigWhenLevelIsInvalid(): void
+    {
+        $capturedCommand = null;
+        $runner = $this->createRunnerCapturingCommandWithLevel('unknown-level', $capturedCommand);
+        $request = new ToolRunRequest('rector', dryRun: false);
+
+        $runner->run($request, new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertStringEndsWith('/config/rector-' . ConfigurationInterface::DEFAULT_RECTOR_LEVEL . '.php', $capturedCommand[2]);
+    }
+
+    #[Test]
     public function runReturnsExitCode(): void
     {
         $runner = $this->createRunnerWithExitCode(42);
@@ -225,6 +267,23 @@ final class RectorRunnerTest extends TestCase
         $executor = $this->createCapturingExecutor($capturedCommand);
 
         return new RectorRunner($executor, $this->projectEnv, $this->configLoader);
+    }
+
+    /**
+     * @param list<string>|null $capturedCommand
+     */
+    private function createRunnerCapturingCommandWithLevel(string $level, ?array &$capturedCommand): RectorRunner
+    {
+        $configuration = $this->createMock(ConfigurationInterface::class);
+        $configuration->method('getToolConfig')->with('rector')->willReturn(['level' => $level]);
+        $configuration->method('getResolvedPathsForTool')->willReturn([]);
+
+        $configLoader = $this->createMock(ConfigurationLoaderInterface::class);
+        $configLoader->method('load')->willReturn($configuration);
+
+        $executor = $this->createCapturingExecutor($capturedCommand);
+
+        return new RectorRunner($executor, $this->projectEnv, $configLoader);
     }
 
     private function createRunnerWithExitCode(int $exitCode): RectorRunner

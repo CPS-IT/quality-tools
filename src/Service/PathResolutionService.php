@@ -145,9 +145,7 @@ final class PathResolutionService
      */
     private function getPathScanner(string $projectRoot): PathScanner
     {
-        if ($this->pathScanner === null) {
-            $this->pathScanner = new PathScanner($projectRoot);
-        }
+        $this->pathScanner ??= new PathScanner($projectRoot);
 
         return $this->pathScanner;
     }

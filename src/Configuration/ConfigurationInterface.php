@@ -29,7 +29,8 @@ interface ConfigurationInterface
     ];
 
     // Tool configuration defaults
-    public const string DEFAULT_RECTOR_LEVEL = 'typo3-13';
+    public const string DEFAULT_RECTOR_LEVEL = 'typo3-14';
+    public const array ALLOWED_RECTOR_LEVELS = ['typo3-11', 'typo3-12', 'typo3-13', 'typo3-14'];
     public const int DEFAULT_FRACTOR_INDENTATION = 2;
     public const int DEFAULT_PHPSTAN_LEVEL = 6;
     public const string DEFAULT_PHPSTAN_MEMORY_LIMIT = '1G';
