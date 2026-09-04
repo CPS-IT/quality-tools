@@ -358,7 +358,7 @@ return static function (FractorConfig $fractorConfig): void {
                 }
 
                 // Additional validation for PHPStan specific structure
-                return !(isset($parsed['parameters']['level']) && $parsed['parameters']['level'] > 8);
+                return !isset($parsed['parameters']['level']) || $parsed['parameters']['level'] <= 8;
             }
 
             // Fallback: check for basic YAML structure and validate level

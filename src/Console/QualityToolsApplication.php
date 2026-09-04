@@ -48,9 +48,7 @@ final class QualityToolsApplication extends Application
 
     public function getProjectRoot(): string
     {
-        if ($this->projectRoot === null) {
-            $this->projectRoot = $this->findProjectRoot();
-        }
+        $this->projectRoot ??= $this->findProjectRoot();
 
         return $this->projectRoot;
     }
