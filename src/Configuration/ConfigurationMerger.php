@@ -168,12 +168,20 @@ final class ConfigurationMerger
      */
     private function getMergeStrategy(array $keyPath): string
     {
+        if ($keyPath === []) {
+            return 'deep_merge';
+        }
+
         $fullPath = implode('.', $keyPath);
         $lastKey = end($keyPath);
 
+        if (!\is_string($lastKey) && !\is_int($lastKey)) {
+            return 'deep_merge';
+        }
+
         // Check for special keys
         foreach (ConfigurationHierarchy::SPECIAL_KEYS as $specialKey => $strategy) {
-            if ($lastKey === $specialKey || str_contains($fullPath, $specialKey)) {
+            if ($lastKey === $specialKey || str_contains($fullPath, (string) $specialKey)) {
                 return $strategy;
             }
         }
