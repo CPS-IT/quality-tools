@@ -160,7 +160,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
                 'inputConfig' => [],
                 'expectedConfig' => [
                     'enabled' => true,
-                    'level' => 'typo3-14',
+                    'level' => 'typo3-13',
                     'php_version' => '8.3', // Dynamic value from getProjectPhpVersion()
                 ],
                 'expectedEnabled' => true,
@@ -343,7 +343,7 @@ final class UnifiedConfigurationSimpleTest extends TestCase
 
         // Tool defaults
         self::assertTrue($config->isToolEnabled('rector'));
-        self::assertSame(['enabled' => true, 'level' => 'typo3-14', 'php_version' => '8.3'], $config->getToolConfig('rector'));
+        self::assertSame(['enabled' => true, 'level' => 'typo3-13', 'php_version' => '8.3'], $config->getToolConfig('rector'));
 
         // Output defaults
         self::assertSame(ConfigurationInterface::DEFAULT_VERBOSITY, $config->getVerbosity());
