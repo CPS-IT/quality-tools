@@ -100,7 +100,7 @@ final class ConfigInitCommandTest extends TestCase
         self::assertStringContainsString('quality-tools:', $content);
         self::assertStringContainsString('test/project', $content);
         self::assertStringContainsString('php_version: "8.3"', $content);
-        self::assertStringContainsString('typo3_version: "13.4"', $content);
+        self::assertStringContainsString('typo3_version: "14.0"', $content);
     }
 
     public function testExecuteExtensionTemplate(): void

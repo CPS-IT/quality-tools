@@ -14,7 +14,7 @@ interface ConfigurationInterface
 {
     // Default configuration values
     public const string DEFAULT_PHP_VERSION = '8.3';
-    public const string DEFAULT_TYPO3_VERSION = '13.4';
+    public const string DEFAULT_TYPO3_VERSION = '14.0';
     public const array DEFAULT_SCAN_PATHS = ['packages/', 'config/system/'];
     public const array DEFAULT_EXCLUDE_PATHS = [
         'var/',

@@ -332,7 +332,7 @@ final class ConfigShowCommandTest extends TestCase
 
         $output = $this->commandTester->getDisplay();
         self::assertStringContainsString("php_version: '8.3'", $output);
-        self::assertStringContainsString("typo3_version: '13.4'", $output);
+        self::assertStringContainsString("typo3_version: '14.0'", $output);
         self::assertStringContainsString('packages/', $output);
         self::assertStringContainsString('config/system/', $output);
         self::assertStringContainsString('enabled: true', $output);

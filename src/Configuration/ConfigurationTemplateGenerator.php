@@ -80,7 +80,7 @@ final readonly class ConfigurationTemplateGenerator
               project:
                 name: "$projectName"
                 php_version: "8.3"
-                typo3_version: "13.4"
+                typo3_version: "14.0"
 
               paths:
                 scan:
@@ -133,7 +133,7 @@ final readonly class ConfigurationTemplateGenerator
               project:
                 name: "$projectName"
                 php_version: "8.3"
-                typo3_version: "13.4"
+                typo3_version: "14.0"
 
               paths:
                 scan:
@@ -185,7 +185,7 @@ final readonly class ConfigurationTemplateGenerator
               project:
                 name: "$projectName"
                 php_version: "8.3"
-                typo3_version: "13.4"
+                typo3_version: "14.0"
 
               paths:
                 scan:
@@ -239,7 +239,7 @@ final readonly class ConfigurationTemplateGenerator
               project:
                 name: "$projectName"
                 php_version: "8.3"
-                typo3_version: "13.4"
+                typo3_version: "14.0"
 
               paths:
                 scan:
