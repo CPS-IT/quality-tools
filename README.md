@@ -8,9 +8,9 @@ I'm qt;) - I will help you cutify your code.
 
 A complete command-line interface for TYPO3 quality assurance tools. This package provides both preconfigured tool access via direct commands and a unified CLI with simple shortcuts for common quality assurance tasks.
 
-## Status: MVP Complete with Dynamic Optimization
+## Status: Production Ready
 
-* **Version:** 0.1.0
+* **Version:** 14.0 (TYPO3 v14 support)
 * **All 10 tool commands fully implemented and tested**
 * **Dynamic Resource Optimization:** - Automatic memory and performance optimization for all tools
 * **Configuration Hierarchy:** - Supports global user configuration, project-specific configuration, CLI overrides
@@ -19,9 +19,26 @@ A complete command-line interface for TYPO3 quality assurance tools. This packag
 
 ## Installation
 
+### For TYPO3 v14 Projects
+
 ```shell
-composer require --dev cpsit/quality-tools
+composer require --dev cpsit/quality-tools:^14.0
 ```
+
+### For TYPO3 v13 Projects
+
+```shell
+composer require --dev cpsit/quality-tools:^13.0
+```
+
+## Version Strategy
+
+Starting with version 13.0, quality-tools follows TYPO3-aligned versioning:
+
+- **quality-tools 14.x** targets TYPO3 v14 (active development on `main` branch)
+- **quality-tools 13.x** targets TYPO3 v13 (bugfix support on `13.x` branch)
+
+This versioning makes it easy to select the right version for your TYPO3 project. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ## Included Quality Tools
 
@@ -58,7 +75,7 @@ quality-tools:
   project:
     name: "my-typo3-project"
     php_version: "8.3"
-    typo3_version: "13.4"
+    typo3_version: "14.0"
 
   # Path configuration for flexible scanning
   paths:
@@ -76,7 +93,7 @@ quality-tools:
   tools:
     rector:
       enabled: true
-      level: "typo3-13"
+      level: "typo3-14"
     phpstan:
       enabled: true
       level: 6
