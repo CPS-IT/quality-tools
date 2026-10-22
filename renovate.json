@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>CPS-IT/renovate-config:default"
+    "github>CPS-IT/renovate-config:default",
+    "group:all"
   ],"baseBranchPatterns": [
     "main",
     "13.x"
