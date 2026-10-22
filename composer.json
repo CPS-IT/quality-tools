@@ -10,7 +10,7 @@
     "ergebnis/composer-normalize": "^2.52",
     "friendsofphp/php-cs-fixer": "^3.95",
     "helmich/typo3-typoscript-lint": "^3.3",
-    "justinrainbow/json-schema": "^5.2",
+    "justinrainbow/json-schema": "^6.0",
     "phpstan/phpstan": "^2.2",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpunit/php-code-coverage": "^11.0",
