@@ -5,7 +5,7 @@
   "homepage": "https://github.com/CPS-IT/quality-tools",
   "require": {
     "php": "^8.3",
-    "a9f/typo3-fractor": "~1.0.0",
+    "a9f/typo3-fractor": "~1.1.0",
     "armin/editorconfig-cli": "^2.2",
     "ergebnis/composer-normalize": "^2.52",
     "friendsofphp/php-cs-fixer": "^3.95",
