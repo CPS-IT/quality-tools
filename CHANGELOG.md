@@ -26,6 +26,9 @@ See [ADR-0006](docs/architecture/0006-typo3-aligned-trunk-based-versioning.md) f
 - `QT_TOOL_BIN_PATH` environment variable to override the directory the tools are taken from
 - README section on an isolated installation (`.build/quality-tools/composer.json`)
 
+### Fixed
+- Tool processes no longer abort after 60 seconds: `ProcessExecutor` ran every tool with Symfony Process' default timeout, which killed Rector or PHPStan runs on larger projects; the limit is now 30 minutes, which only catches a hanging tool
+
 ## [14.0.0] - 2026-09-06
 
 ### Added

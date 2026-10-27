@@ -15,6 +15,13 @@ use Symfony\Component\Process\Process;
  */
 final readonly class ProcessExecutor
 {
+    /**
+     * Analysis tools legitimately run for minutes on larger projects, so
+     * Symfony's default of 60 seconds would abort them. The limit only
+     * catches a hanging tool, well before a typical CI job timeout.
+     */
+    public const int PROCESS_TIMEOUT_SECONDS = 1800;
+
     /** @var \Closure(list<string>, string, array<string, string>): Process */
     private \Closure $processFactory;
 
@@ -41,6 +48,7 @@ final readonly class ProcessExecutor
         OutputCollectorInterface $collector,
     ): int {
         $process = ($this->processFactory)($command, $workingDirectory, $environment);
+        $process->setTimeout(self::PROCESS_TIMEOUT_SECONDS);
 
         $process->run(function (string $type, string $buffer) use ($collector): void {
             if ($type === Process::ERR) {

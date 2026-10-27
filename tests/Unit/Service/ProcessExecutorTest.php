@@ -111,6 +111,23 @@ final class ProcessExecutorTest extends TestCase
         self::assertSame(0, $result);
     }
 
+    #[Test]
+    public function executeWithCollectorRunsProcessWithThirtyMinuteTimeout(): void
+    {
+        $process = null;
+        $factory = static function (array $command, string $cwd, array $env) use (&$process): Process {
+            $process = new Process($command, $cwd, $env);
+
+            return $process;
+        };
+
+        $executor = new ProcessExecutor($factory);
+        $executor->executeWithCollector(['echo', 'test'], '/tmp', [], new BufferingOutputCollector());
+
+        self::assertInstanceOf(Process::class, $process);
+        self::assertSame(1800.0, $process->getTimeout());
+    }
+
     private function createExecutorWithProcess(
         int $exitCode,
         string $stdout = '',
