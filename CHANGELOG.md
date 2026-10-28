@@ -19,6 +19,7 @@ See [ADR-0006](docs/architecture/0006-typo3-aligned-trunk-based-versioning.md) f
 ### Changed
 - Tools always run from qt's own installation instead of the project's `vendor/bin`. With qt in the project's `require-dev` nothing changes; with qt installed globally or in a separate directory, the tools no longer need to be (and are no longer taken from) project dependencies, so their dependencies cannot conflict with the project's
 - Rector gets the project's autoloader via `--autoload-file` when qt runs from a separate installation
+- `a9f/typo3-fractor` is allowed in any 1.x version (was `~1.0.0`), so an isolated installation can use Fractor 1.1
 - The TypoScript-Lint default configuration is resolved from qt's own config directory instead of `<project vendor>/cpsit/quality-tools/config`
 
 ### Added
