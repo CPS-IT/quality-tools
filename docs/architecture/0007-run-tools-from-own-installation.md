@@ -61,5 +61,6 @@ Projects install conflicting tools in their own directories and override the CI 
 
 ## References
 
+- Issue: #42
 - Installation guide: `docs/user-guide/installation.md` ("Isolated Installation per Project", "Where the Tools Come From")
 - Related: process timeout fix (#41, MR !32)

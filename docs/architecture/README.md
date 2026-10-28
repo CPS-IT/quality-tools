@@ -20,7 +20,7 @@ New ADRs should be created using the template at: `docs/.templates/adr.md`
 | [0004](0004-inheritance-based-security-propagation.md) | Inheritance-Based Security Propagation | Accepted | Issue 022 |
 | [0005](0005-simplified-command-architecture.md) | Simplified Command Architecture | Accepted | - |
 | [0006](0006-typo3-aligned-trunk-based-versioning.md) | TYPO3-Aligned Trunk-Based Versioning and Branching Strategy | Accepted | GL#17, Issue 79373 |
-| [0007](0007-run-tools-from-own-installation.md) | Run the Tools from qt's Own Installation | Proposed | - |
+| [0007](0007-run-tools-from-own-installation.md) | Run the Tools from qt's Own Installation | Proposed | #42 |
 
 ## Creating New ADRs
 
