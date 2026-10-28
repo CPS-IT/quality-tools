@@ -222,6 +222,59 @@ final class ProjectEnvironmentTest extends TestCase
         $this->assertSame($vendorPath . '/bin', $env->getVendorBinPath());
     }
 
+    // -- Tool installation --
+
+    #[Test]
+    public function getToolBinPathReturnsInjectedPath(): void
+    {
+        $env = new ProjectEnvironment(new VendorDirectoryDetector(), '/opt/qt/vendor/bin');
+
+        $this->assertSame('/opt/qt/vendor/bin', $env->getToolBinPath());
+    }
+
+    #[Test]
+    public function getToolBinPathDefaultsToOwnInstallationRegardlessOfProject(): void
+    {
+        // The project has no vendor directory; the tools still come from
+        // the installation running these tests (the package's own vendor)
+        putenv('QT_PROJECT_ROOT=' . self::fixturePath('valid-typo3-project'));
+
+        $env = new ProjectEnvironment(new VendorDirectoryDetector());
+
+        $this->assertSame(realpath(\dirname(__DIR__, 3) . '/vendor/bin'), $env->getToolBinPath());
+    }
+
+    #[Test]
+    public function getProjectAutoloadFileReturnsNullWhenToolsRunFromProjectInstallation(): void
+    {
+        putenv('QT_PROJECT_ROOT=' . \dirname(__DIR__, 3));
+
+        $env = new ProjectEnvironment(new VendorDirectoryDetector());
+
+        $this->assertNull($env->getProjectAutoloadFile());
+    }
+
+    #[Test]
+    public function getProjectAutoloadFileReturnsProjectAutoloaderForSeparateInstallation(): void
+    {
+        $packageRoot = \dirname(__DIR__, 3);
+        putenv('QT_PROJECT_ROOT=' . $packageRoot);
+
+        $env = new ProjectEnvironment(new VendorDirectoryDetector(), '/opt/qt/vendor/bin');
+
+        $this->assertSame($env->getVendorPath() . '/autoload.php', $env->getProjectAutoloadFile());
+    }
+
+    #[Test]
+    public function getProjectAutoloadFileReturnsNullWhenProjectHasNoAutoloader(): void
+    {
+        putenv('QT_PROJECT_ROOT=' . self::fixturePath('valid-typo3-project'));
+
+        $env = new ProjectEnvironment(new VendorDirectoryDetector(), '/opt/qt/vendor/bin');
+
+        $this->assertNull($env->getProjectAutoloadFile());
+    }
+
     // -- Helper --
 
     private static function fixturePath(string $fixture): string

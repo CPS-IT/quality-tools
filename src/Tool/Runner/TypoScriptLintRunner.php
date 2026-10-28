@@ -51,7 +51,7 @@ final readonly class TypoScriptLintRunner implements ToolRunnerInterface
         $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
 
         $command = [
-            $this->projectEnv->getVendorBinPath() . '/typoscript-lint',
+            $this->projectEnv->getToolBinPath() . '/typoscript-lint',
             '-c',
             $configPath,
         ];
@@ -82,8 +82,7 @@ final readonly class TypoScriptLintRunner implements ToolRunnerInterface
             return $discovered;
         }
 
-        return $this->projectEnv->getVendorPath()
-            . '/cpsit/quality-tools/config/' . self::DEFAULT_CONFIG_FILE;
+        return $this->projectEnv->getPackageConfigDir() . '/' . self::DEFAULT_CONFIG_FILE;
     }
 
     /**

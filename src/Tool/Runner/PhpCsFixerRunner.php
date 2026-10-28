@@ -63,7 +63,7 @@ final readonly class PhpCsFixerRunner implements ToolRunnerInterface
         $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
 
         $command = [
-            $this->projectEnv->getVendorBinPath() . '/php-cs-fixer',
+            $this->projectEnv->getToolBinPath() . '/php-cs-fixer',
             'fix',
         ];
 

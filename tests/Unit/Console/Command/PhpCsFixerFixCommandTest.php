@@ -50,6 +50,8 @@ final class PhpCsFixerFixCommandTest extends TestCase
         // Set QT_PROJECT_ROOT for the entire test lifecycle
         $this->originalProjectRoot = getenv('QT_PROJECT_ROOT');
         putenv('QT_PROJECT_ROOT=' . $this->tempDir);
+        // The fake tools live in the temporary project, not in qt's installation
+        putenv('QT_TOOL_BIN_PATH=' . $this->tempDir . '/vendor/bin');
         $_ENV['QT_PROJECT_ROOT'] = $this->tempDir;
         $_SERVER['QT_PROJECT_ROOT'] = $this->tempDir;
 
@@ -105,6 +107,8 @@ final class PhpCsFixerFixCommandTest extends TestCase
 
     protected function tearDown(): void
     {
+        putenv('QT_TOOL_BIN_PATH');
+
         // Restore original QT_PROJECT_ROOT
         if ($this->originalProjectRoot === false) {
             putenv('QT_PROJECT_ROOT');

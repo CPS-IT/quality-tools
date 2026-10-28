@@ -104,7 +104,7 @@ final class TyposcriptLintYamlConfigTest extends TestCase
         );
 
         TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
+            ['QT_PROJECT_ROOT' => $this->tempDir, 'QT_TOOL_BIN_PATH' => $this->tempDir . '/vendor/bin'],
             function (): void {
                 VendorDirectoryDetector::clearCache();
                 ServiceContainer::reset();
@@ -152,7 +152,7 @@ final class TyposcriptLintYamlConfigTest extends TestCase
         chmod($binDir . '/typoscript-lint', 0o755);
 
         TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
+            ['QT_PROJECT_ROOT' => $this->tempDir, 'QT_TOOL_BIN_PATH' => $this->tempDir . '/vendor/bin'],
             function (): void {
                 VendorDirectoryDetector::clearCache();
                 ServiceContainer::reset();

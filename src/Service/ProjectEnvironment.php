@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cpsit\QualityTools\Service;
 
+use Composer\Autoload\ClassLoader;
 use Cpsit\QualityTools\Utility\VendorDirectoryDetector;
 use Symfony\Component\Console\Exception\RuntimeException;
 
@@ -17,11 +18,13 @@ final class ProjectEnvironment
 {
     private const int MAX_TRAVERSAL_LEVELS = 10;
     private const string ENV_PROJECT_ROOT = 'QT_PROJECT_ROOT';
+    private const string ENV_TOOL_BIN_PATH = 'QT_TOOL_BIN_PATH';
 
     private ?string $projectRoot = null;
 
     public function __construct(
         private readonly VendorDirectoryDetector $vendorDetector,
+        private readonly ?string $toolBinPath = null,
     ) {
     }
 
@@ -40,6 +43,66 @@ final class ProjectEnvironment
     public function getVendorBinPath(): string
     {
         return $this->getVendorPath() . '/bin';
+    }
+
+    /**
+     * Returns the bin directory of the installation qt itself runs from.
+     *
+     * The analysis tools are dependencies of qt, so they are always taken from
+     * here and never from the project. This keeps them out of the project's
+     * dependency tree, where they would compete with production packages for
+     * versions.
+     */
+    public function getToolBinPath(): string
+    {
+        if ($this->toolBinPath !== null) {
+            return $this->toolBinPath;
+        }
+
+        $envToolBinPath = getenv(self::ENV_TOOL_BIN_PATH);
+        if ($envToolBinPath !== false && is_dir($envToolBinPath)) {
+            return realpath($envToolBinPath) ?: $envToolBinPath;
+        }
+
+        // Set by Composer's bin proxy (vendor/bin/qt) since Composer 2.2
+        $composerBinDir = $GLOBALS['_composer_bin_dir'] ?? null;
+        if (\is_string($composerBinDir) && is_dir($composerBinDir)) {
+            return realpath($composerBinDir) ?: $composerBinDir;
+        }
+
+        $classLoaderFile = (new \ReflectionClass(ClassLoader::class))->getFileName();
+        if ($classLoaderFile === false) {
+            throw new RuntimeException('Unable to locate the quality-tools installation.');
+        }
+
+        return \dirname($classLoaderFile, 2) . '/bin';
+    }
+
+    /**
+     * Returns the project's Composer autoloader if the tools run from a
+     * separate installation, so that tools which need the project's classes
+     * (Rector) can load them. Returns null if qt is installed in the project
+     * itself, where the tools already use that autoloader.
+     */
+    public function getProjectAutoloadFile(): ?string
+    {
+        try {
+            $vendorPath = $this->getVendorPath();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $autoloadFile = $vendorPath . '/autoload.php';
+        if (!is_file($autoloadFile)) {
+            return null;
+        }
+
+        $toolVendorPath = realpath(\dirname($this->getToolBinPath()));
+        if ($toolVendorPath !== false && $toolVendorPath === realpath($vendorPath)) {
+            return null;
+        }
+
+        return $autoloadFile;
     }
 
     /**

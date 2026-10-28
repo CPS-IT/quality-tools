@@ -64,7 +64,7 @@ final readonly class RectorRunner implements ToolRunnerInterface
         $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
 
         $command = [
-            $this->projectEnv->getVendorBinPath() . '/rector',
+            $this->projectEnv->getToolBinPath() . '/rector',
             'process',
         ];
 
@@ -73,6 +73,11 @@ final readonly class RectorRunner implements ToolRunnerInterface
         }
 
         $command[] = '--config=' . $configPath;
+
+        $projectAutoloadFile = $this->projectEnv->getProjectAutoloadFile();
+        if ($projectAutoloadFile !== null) {
+            $command[] = '--autoload-file=' . $projectAutoloadFile;
+        }
 
         foreach ($targetPaths as $path) {
             $command[] = $path;

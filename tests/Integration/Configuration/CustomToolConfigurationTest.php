@@ -117,7 +117,7 @@ final class CustomToolConfigurationTest extends TestCase
 
         // Run within isolated environment pointing to temp dir
         TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
+            ['QT_PROJECT_ROOT' => $this->tempDir, 'QT_TOOL_BIN_PATH' => $this->tempDir . '/vendor/bin'],
             function () use ($scenarioName): void {
                 // Create application and test config:validate command
                 $application = new QualityToolsApplication();
@@ -165,7 +165,7 @@ final class CustomToolConfigurationTest extends TestCase
         $this->copyFixtureToTempDir($fixturePath);
 
         TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
+            ['QT_PROJECT_ROOT' => $this->tempDir, 'QT_TOOL_BIN_PATH' => $this->tempDir . '/vendor/bin'],
             function (): void {
                 $application = new QualityToolsApplication();
                 $command = $application->find('config:validate');
@@ -223,7 +223,7 @@ final class CustomToolConfigurationTest extends TestCase
 
         // Run the test with the temp directory as project root
         TestHelper::withEnvironment(
-            ['QT_PROJECT_ROOT' => $this->tempDir],
+            ['QT_PROJECT_ROOT' => $this->tempDir, 'QT_TOOL_BIN_PATH' => $this->tempDir . '/vendor/bin'],
             function () use ($toolCommand, &$output): void {
                 // Reset static caches so the new environment is picked up
                 VendorDirectoryDetector::clearCache();

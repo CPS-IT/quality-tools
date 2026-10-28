@@ -84,6 +84,34 @@ final class RectorRunnerTest extends TestCase
     }
 
     #[Test]
+    public function runOmitsAutoloadFileWhenToolsRunFromProjectInstallation(): void
+    {
+        $capturedCommand = null;
+        $runner = $this->createRunnerCapturingCommand($capturedCommand);
+
+        $runner->run(new ToolRunRequest('rector', dryRun: true), new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        foreach ($capturedCommand as $argument) {
+            self::assertStringStartsNotWith('--autoload-file=', $argument);
+        }
+    }
+
+    #[Test]
+    public function runUsesSeparateInstallationAndPassesProjectAutoloader(): void
+    {
+        $capturedCommand = null;
+        $projectEnv = new ProjectEnvironment(new VendorDirectoryDetector(), '/opt/qt/vendor/bin');
+        $runner = new RectorRunner($this->createCapturingExecutor($capturedCommand), $projectEnv, $this->configLoader);
+
+        $runner->run(new ToolRunRequest('rector', dryRun: true), new BufferingOutputCollector());
+
+        self::assertIsArray($capturedCommand);
+        self::assertSame('/opt/qt/vendor/bin/rector', $capturedCommand[0]);
+        self::assertContains('--autoload-file=' . $projectEnv->getVendorPath() . '/autoload.php', $capturedCommand);
+    }
+
+    #[Test]
     public function runPassesDryRunFlag(): void
     {
         $capturedCommand = null;

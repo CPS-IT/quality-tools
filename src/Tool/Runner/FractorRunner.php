@@ -63,7 +63,7 @@ final readonly class FractorRunner implements ToolRunnerInterface
         $targetPaths = $this->resolveTargetPaths($request, $projectRoot);
 
         $command = [
-            $this->projectEnv->getVendorBinPath() . '/fractor',
+            $this->projectEnv->getToolBinPath() . '/fractor',
             'process',
         ];
 

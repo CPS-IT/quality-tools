@@ -16,6 +16,15 @@ See [ADR-0006](docs/architecture/0006-typo3-aligned-trunk-based-versioning.md) f
 
 ## [Unreleased]
 
+### Changed
+- Tools always run from qt's own installation instead of the project's `vendor/bin`. With qt in the project's `require-dev` nothing changes; with qt installed globally or in a separate directory, the tools no longer need to be (and are no longer taken from) project dependencies, so their dependencies cannot conflict with the project's
+- Rector gets the project's autoloader via `--autoload-file` when qt runs from a separate installation
+- The TypoScript-Lint default configuration is resolved from qt's own config directory instead of `<project vendor>/cpsit/quality-tools/config`
+
+### Added
+- `QT_TOOL_BIN_PATH` environment variable to override the directory the tools are taken from
+- README section on an isolated installation (`.build/quality-tools/composer.json`)
+
 ## [14.0.0] - 2026-09-06
 
 ### Added

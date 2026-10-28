@@ -31,6 +31,50 @@ composer require --dev cpsit/quality-tools:^14.0
 composer require --dev cpsit/quality-tools:^13.0
 ```
 
+### Isolated Installation (Recommended for Projects with Conflicting Dependencies)
+
+qt always runs the tools from the installation it runs from itself, never from
+the project's `vendor/bin`. Installed with `require --dev`, that is the project's
+own vendor directory. If the tools' dependencies conflict with the project's
+(e.g. `ssch/typo3-rector` or `helmich/typo3-typoscript-lint` requiring an older
+Symfony major than the project uses), install qt in its own directory with its
+own lock file instead, e.g. in `.build/quality-tools/composer.json`:
+
+```json
+{
+    "require": {
+        "cpsit/quality-tools": "^14.0",
+        "phpstan/extension-installer": "^1.4",
+        "saschaegerer/phpstan-typo3": "^3.0"
+    },
+    "replace": {
+        "typo3/cms-core": "*",
+        "typo3/cms-extbase": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "a9f/fractor-extension-installer": true,
+            "phpstan/extension-installer": true
+        }
+    }
+}
+```
+
+```shell
+composer install -d .build/quality-tools
+.build/quality-tools/vendor/bin/qt lint:phpstan
+```
+
+* Commit `composer.lock` so local runs and CI use the same tool versions.
+* The `replace` section lets PHPStan extensions such as `saschaegerer/phpstan-typo3`
+  install without a second copy of TYPO3; the project's own TYPO3 is loaded through
+  the project's autoloader.
+* qt passes the project's autoloader to Rector (`--autoload-file`). PHPStan finds
+  it on its own.
+* `QT_TOOL_BIN_PATH` overrides the directory the tools are taken from.
+* `composer normalize` is a Composer plugin and still runs through the project's
+  Composer.
+
 ## Version Strategy
 
 Starting with version 13.0, quality-tools follows TYPO3-aligned versioning:

@@ -73,7 +73,7 @@ final readonly class PhpStanRunner implements ToolRunnerInterface
         $actualConfigPath = $temporaryConfigPath ?? $configPath;
 
         $command = [
-            $this->projectEnv->getVendorBinPath() . '/phpstan',
+            $this->projectEnv->getToolBinPath() . '/phpstan',
             'analyse',
             '--configuration=' . $actualConfigPath,
         ];
