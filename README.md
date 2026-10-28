@@ -75,6 +75,8 @@ composer install -d .build/quality-tools
 * `composer normalize` is a Composer plugin and still runs through the project's
   Composer.
 
+Details: [Installation Guide](docs/user-guide/installation.md).
+
 ## Version Strategy
 
 Starting with version 13.0, quality-tools follows TYPO3-aligned versioning:

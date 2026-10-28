@@ -38,6 +38,61 @@ Make sure your global Composer bin directory is in your PATH:
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 ```
 
+Since the tools run from the global installation (see below), they do not need to be dependencies of the project.
+
+### Method 3: Isolated Installation per Project
+
+Use this when the tools' dependencies conflict with the project's, e.g. `ssch/typo3-rector` or `helmich/typo3-typoscript-lint` requiring an older Symfony major than the project uses. qt gets its own directory with its own lock file, so the tool versions are pinned per project without touching the project's dependency tree.
+
+`.build/quality-tools/composer.json`:
+
+```json
+{
+    "require": {
+        "cpsit/quality-tools": "^14.0",
+        "phpstan/extension-installer": "^1.4",
+        "saschaegerer/phpstan-typo3": "^3.0"
+    },
+    "replace": {
+        "typo3/cms-core": "*",
+        "typo3/cms-extbase": "*"
+    },
+    "config": {
+        "allow-plugins": {
+            "a9f/fractor-extension-installer": true,
+            "phpstan/extension-installer": true
+        }
+    }
+}
+```
+
+```bash
+composer install -d .build/quality-tools
+.build/quality-tools/vendor/bin/qt lint:phpstan
+```
+
+* Commit `.build/quality-tools/composer.lock` so local runs and CI use the same tool versions.
+* PHPStan extensions (e.g. `saschaegerer/phpstan-typo3`) belong into this installation, next to PHPStan.
+* The `replace` section keeps a second copy of TYPO3 out; the project's TYPO3 is loaded through the project's autoloader.
+
+### Where the Tools Come From
+
+qt always runs Rector, PHPStan, Fractor, PHP CS Fixer and TypoScript Lint from the installation it runs from itself, never from the project's `vendor/bin`:
+
+| Installation Method | Tools are taken from |
+|-------------------|----------------------|
+| Composer require (Method 1) | the project's `vendor/bin` (qt's installation is the project's) |
+| Global (Method 2) | `~/.composer/vendor/bin` |
+| Isolated (Method 3) | `.build/quality-tools/vendor/bin` |
+
+When the tools run from a separate installation (Method 2 or 3), qt passes the project's Composer autoloader to Rector (`--autoload-file`); PHPStan finds it on its own. Fractor, PHP CS Fixer and TypoScript Lint do not need the project's classes. `composer normalize` is a Composer plugin and keeps running through the project's Composer.
+
+To take the tools from a different directory, set `QT_TOOL_BIN_PATH`:
+
+```bash
+QT_TOOL_BIN_PATH=/opt/tools/vendor/bin vendor/bin/qt lint:phpstan
+```
+
 ## Verification
 
 After installation, verify the tool is working correctly:
@@ -63,6 +118,7 @@ The tool will be available at different paths depending on your installation met
 |-------------------|-----------------|---------------|
 | Local (project) | `vendor/bin/qt` | `vendor/bin/qt [command]` |
 | Global | `~/.composer/vendor/bin/qt` | `qt [command]` |
+| Isolated | `.build/quality-tools/vendor/bin/qt` | `.build/quality-tools/vendor/bin/qt [command]` |
 
 ## Post-Installation Setup
 
