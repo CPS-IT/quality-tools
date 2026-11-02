@@ -31,7 +31,7 @@ composer require --dev cpsit/quality-tools:^14.0
 composer require --dev cpsit/quality-tools:^13.0
 ```
 
-### Isolated Installation (Recommended for Projects with Conflicting Dependencies)
+### Stand-alone Installation (Recommended for Projects with Conflicting Dependencies)
 
 qt always runs the tools from the installation it runs from itself, never from
 the project's `vendor/bin`. Installed with `require --dev`, that is the project's

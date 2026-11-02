@@ -40,7 +40,7 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 Since the tools run from the global installation (see below), they do not need to be dependencies of the project.
 
-### Method 3: Isolated Installation per Project
+### Method 3: Stand-alone Installation per Project
 
 Use this when the tools' dependencies conflict with the project's, e.g. `ssch/typo3-rector` or `helmich/typo3-typoscript-lint` requiring an older Symfony major than the project uses. qt gets its own directory with its own lock file, so the tool versions are pinned per project without touching the project's dependency tree.
 
@@ -83,7 +83,7 @@ qt always runs Rector, PHPStan, Fractor, PHP CS Fixer and TypoScript Lint from t
 |-------------------|----------------------|
 | Composer require (Method 1) | the project's `vendor/bin` (qt's installation is the project's) |
 | Global (Method 2) | `~/.composer/vendor/bin` |
-| Isolated (Method 3) | `.build/quality-tools/vendor/bin` |
+| Stand-alone (Method 3) | `.build/quality-tools/vendor/bin` |
 
 When the tools run from a separate installation (Method 2 or 3), qt passes the project's Composer autoloader to Rector (`--autoload-file`); PHPStan finds it on its own. Fractor, PHP CS Fixer and TypoScript Lint do not need the project's classes. `composer normalize` is a Composer plugin and keeps running through the project's Composer.
 
@@ -118,7 +118,7 @@ The tool will be available at different paths depending on your installation met
 |-------------------|-----------------|---------------|
 | Local (project) | `vendor/bin/qt` | `vendor/bin/qt [command]` |
 | Global | `~/.composer/vendor/bin/qt` | `qt [command]` |
-| Isolated | `.build/quality-tools/vendor/bin/qt` | `.build/quality-tools/vendor/bin/qt [command]` |
+| Stand-alone | `.build/quality-tools/vendor/bin/qt` | `.build/quality-tools/vendor/bin/qt [command]` |
 
 ## Post-Installation Setup
 
